@@ -5,7 +5,7 @@ from Cython.Build import cythonize
 setup(
 ext_modules = cythonize([
     Extension("iarray", ["iarray.pyx"],
-              library_dirs=['/Users/aleix11alcacer/Documents/Francesc Alted/IronArray/iron-array/cmake-build-release'],
-              libraries=["iarray"])
+              include_dirs=["/home/aleix/INAOS/inac-linux-x86_64-debug-1.0.2/include", "/home/aleix/iron-array/include"],
+              extra_objects=["/home/aleix/iron-array/build/libiarray.a"])
     ])
 )
