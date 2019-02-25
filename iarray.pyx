@@ -49,7 +49,7 @@ def iarray_arange(ctx, dtshape, start, stop, step):
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> ctx
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
     cdef ciarray.iarray_container_t *c
-    err = ciarray.iarray_arange(ctxgit pu_, &dtshape_, start, stop, step, NULL, 0, &c)
+    err = ciarray.iarray_arange(ctx_, &dtshape_, start, stop, step, NULL, 0, &c)
     if err != 0:
         return None
     return <object>c
