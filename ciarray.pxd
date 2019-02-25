@@ -5,7 +5,6 @@ cdef extern from "<stdint.h>":
 cdef extern from "libiarray/iarray.h":
     cdef enum:
         IARRAY_DIMENSION_MAX = 8
-
     ctypedef uint64_t ina_rc_t
     ctypedef enum iarray_data_type_t:
         IARRAY_DATA_TYPE_DOUBLE,
