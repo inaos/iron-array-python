@@ -1,5 +1,4 @@
 cimport ciarray_ext as ciarray
-import cython
 import numpy as np
 cimport numpy as np
 from cpython.pycapsule cimport PyCapsule_New, PyCapsule_IsValid, PyCapsule_GetPointer
@@ -62,6 +61,25 @@ def dtshape_new(shape, pshape=None, type="double"):
     return <object> dtshape
 
 
+def container_new(ctx, dtshape, filename=None):
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx, "iarray_context_t*")
+    cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
+
+    cdef ciarray.iarray_store_properties_t store
+    if filename is not None:
+        store.id = filename
+
+    flags = 0 if filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+
+    cdef ciarray.iarray_container_t *c
+    if flags == ciarray.IARRAY_CONTAINER_PERSIST:
+        ciarray.iarray_container_new(ctx_, &dtshape_, &store, flags, &c)
+    else:
+        ciarray.iarray_container_new(ctx_, &dtshape_, NULL, flags, &c)
+
+    return PyCapsule_New(c, "iarray_container_t*", NULL)
+
+
 def arange(ctx, dtshape, start, stop, step):
 
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx, "iarray_context_t*")
@@ -72,9 +90,6 @@ def arange(ctx, dtshape, start, stop, step):
 
     return PyCapsule_New(c, "iarray_container_t*", NULL)
 
-def get_slice():
-    ciarray.iarray_get_slice(ctx, c, start, stop, pshape, store, flags, view, c)
-    return PyCapsule_New(c, "iarray_container_t*", NULL)
 
 def iarray2numpy(ctx, c):
 
@@ -152,3 +167,42 @@ def container_free(ctx, c):
     cdef ciarray.iarray_container_t *c_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(c, "iarray_container_t*")
 
     ciarray.iarray_container_free(ctx_, &c_)
+
+
+# Expression functions
+
+def expr_new(ctx):
+    cdef ciarray.iarray_context_t* ctx_= <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx, "iarray_context_t*")
+
+    cdef ciarray.iarray_expression_t *expr
+    ciarray.iarray_expr_new(ctx_, &expr)
+
+    return PyCapsule_New(expr, "iarray_expression_t*", NULL)
+
+def expr_free(ctx, expr):
+    cdef ciarray.iarray_context_t* ctx_= <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx, "iarray_context_t*")
+    cdef ciarray.iarray_expression_t* expr_= <ciarray.iarray_expression_t*> PyCapsule_GetPointer(expr, "iarray_expression_t*")
+
+    ciarray.iarray_expr_free(ctx_, &expr_)
+
+
+def expr_bind(expr, var, c):
+    cdef ciarray.iarray_expression_t* expr_= <ciarray.iarray_expression_t*> PyCapsule_GetPointer(expr, "iarray_expression_t*")
+    cdef ciarray.iarray_container_t *c_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(c, "iarray_container_t*")
+    ciarray.iarray_expr_bind(expr_, var, c_)
+
+def expr_bind_scalar_float(e, var, c):
+    pass
+
+def expr_bind_scalar_double(e, var, c):
+    pass
+
+def expr_compile(expr, expression):
+    cdef ciarray.iarray_expression_t* expr_= <ciarray.iarray_expression_t*> PyCapsule_GetPointer(expr, "iarray_expression_t*")
+    ciarray.iarray_expr_compile(expr_, expression)
+
+def expr_eval(expr, c):
+    cdef ciarray.iarray_expression_t* expr_= <ciarray.iarray_expression_t*> PyCapsule_GetPointer(expr, "iarray_expression_t*")
+    cdef ciarray.iarray_container_t *c_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(c, "iarray_container_t*")
+    ciarray.iarray_eval(expr_, c_)
+

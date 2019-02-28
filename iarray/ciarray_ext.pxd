@@ -56,6 +56,8 @@ cdef extern from "libiarray/iarray.h":
 
     ctypedef struct iarray_container_t
 
+    ctypedef struct iarray_expression_t
+
     ina_rc_t iarray_init()
 
     void iarray_destroy()
@@ -64,6 +66,12 @@ cdef extern from "libiarray/iarray.h":
                                 iarray_context_t **ctx)
 
     void iarray_context_free(iarray_context_t **ctx)
+
+    ina_rc_t iarray_container_new(iarray_context_t *ctx,
+                                  iarray_dtshape_t *dtshape,
+                                  iarray_store_properties_t *store,
+                                  int flags,
+                                  iarray_container_t **container)
 
     void iarray_container_free(iarray_context_t *ctx,
                                iarray_container_t **container)
@@ -107,3 +115,14 @@ cdef extern from "libiarray/iarray.h":
     ina_rc_t iarray_from_file(iarray_context_t *ctx,
                               iarray_store_properties_t *store,
                               iarray_container_t **container)
+
+    ina_rc_t iarray_expr_new(iarray_context_t *ctx, iarray_expression_t **e)
+    void iarray_expr_free(iarray_context_t *ctx, iarray_expression_t **e)
+
+    ina_rc_t iarray_expr_bind(iarray_expression_t *e, const char *var, iarray_container_t *val)
+    ina_rc_t iarray_expr_bind_scalar_float(iarray_expression_t *e, const char *var, float val)
+    ina_rc_t iarray_expr_bind_scalar_double(iarray_expression_t *e, const char *var, double val)
+
+    ina_rc_t iarray_expr_compile(iarray_expression_t *e, const char *expr)
+
+    ina_rc_t iarray_eval(iarray_expression_t *e, iarray_container_t *ret)
