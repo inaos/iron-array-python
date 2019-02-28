@@ -3,9 +3,9 @@ from distutils.extension import Extension
 from Cython.Build import cythonize
 import numpy
 
-setup(
+setup(name="iarray",
 ext_modules = cythonize([
-    Extension("iarray", ["iarray.pyx"],
+    Extension("iarray.iarray_ext", ["iarray/iarray_ext.pyx"],
               include_dirs=["/Users/aleix11alcacer/INAOS/inac-darwin-x86_64-release-1.0.2/include",
                             "/Users/aleix11alcacer/Documents/Francesc Alted/IronArray/iron-array/include",
                             numpy.get_include()],

@@ -1,4 +1,4 @@
-cimport ciarray
+cimport ciarray_ext as ciarray
 import cython
 import numpy as np
 cimport numpy as np
@@ -72,6 +72,9 @@ def arange(ctx, dtshape, start, stop, step):
 
     return PyCapsule_New(c, "iarray_container_t*", NULL)
 
+def get_slice():
+    ciarray.iarray_get_slice(ctx, c, start, stop, pshape, store, flags, view, c)
+    return PyCapsule_New(c, "iarray_container_t*", NULL)
 
 def iarray2numpy(ctx, c):
 
