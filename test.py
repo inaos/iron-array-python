@@ -1,38 +1,38 @@
 import iarray as ia
 import numpy as np
 
+# Init iarray
 ia.init()
 
+# Create iarray context
 cfg = ia.config_new()
-
 ctx = ia.context_new(cfg)
 
-shape = (4, 8)
+# Define array params
+shape = (7, 13)
 pshape = (2, 3)
+size = int(np.prod(shape))
 
-size = np.prod(shape, dtype=np.int64)
+# Create numpy array
+a = np.arange(size, dtype=np.float64).reshape(shape)
 
-dtshape = ia.dtshape_new(shape, pshape)
+# Obtain persistent iarray container from numpy array
+filename = b'arange.iarray'
+b = ia.numpy2iarray(ctx, a, pshape, filename)
+ia.container_free(ctx, b)
 
-a = ia.arange(ctx, dtshape, 0, size, 1)
+# Load iarray container from disk
+c = ia.from_file(ctx, filename)
 
-b = ia.iarray2numpy(ctx, a)
+# Get numpy array from iarray container
+d = ia.iarray2numpy(ctx, c)
 
-print(b)
+# Assert numpy arrays
+np.testing.assert_array_equal(a, d)
 
-c = np.linspace(0, 0.99, 100, dtype=np.float64).reshape(10, 10)
-
-d = ia.numpy2iarray(ctx, c, pshape, b'linspace.iarray')
-ia.container_free(ctx, d)
-
-e = ia.from_file(ctx, b'linspace.iarray')
-
-f = ia.iarray2numpy(ctx, e)
-
-print(f)
-
-ia.container_free(ctx, a)
-ia.container_free(ctx, e)
+# Free data
+ia.container_free(ctx, c)
 ia.context_free(ctx)
 
+# Destroy iarray
 ia.destroy()

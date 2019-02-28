@@ -12,10 +12,10 @@ cdef extern from "<stdint.h>":
 
 
 cdef extern from "libiarray/iarray.h":
+    ctypedef uint64_t ina_rc_t
+
     cdef enum:
         IARRAY_DIMENSION_MAX = 8
-
-    ctypedef uint64_t ina_rc_t
 
     ctypedef enum iarray_container_flags_t:
         IARRAY_CONTAINER_PERSIST = 0x1
@@ -53,26 +53,47 @@ cdef extern from "libiarray/iarray.h":
         uint64_t pshape[IARRAY_DIMENSION_MAX]
 
     ctypedef struct iarray_context_t
+
     ctypedef struct iarray_container_t
 
-    ina_rc_t iarray_context_new(iarray_config_t *cfg, iarray_context_t **ctx)
+    ina_rc_t iarray_init()
+
+    void iarray_destroy()
+
+    ina_rc_t iarray_context_new(iarray_config_t *cfg,
+                                iarray_context_t **ctx)
 
     void iarray_context_free(iarray_context_t **ctx)
 
-    void iarray_container_free(iarray_context_t *ctx, iarray_container_t **container)
+    void iarray_container_free(iarray_context_t *ctx,
+                               iarray_container_t **container)
 
-    ina_rc_t iarray_init()
-    void iarray_destroy()
+    ina_rc_t iarray_arange(iarray_context_t *ctx,
+                           iarray_dtshape_t *dtshape,
+                           double start,
+                           double stop,
+                           double step,
+                           iarray_store_properties_t *store,
+                           int flags,
+                           iarray_container_t **container)
 
-    ina_rc_t iarray_arange(iarray_context_t *ctx, iarray_dtshape_t *dtshape, double start, double stop, double step,
-                           iarray_store_properties_t *store, int flags, iarray_container_t **container)
+    ina_rc_t iarray_to_buffer(iarray_context_t *ctx,
+                              iarray_container_t *container,
+                              void *buffer,
+                              size_t buffer_len)
 
-    ina_rc_t iarray_to_buffer(iarray_context_t *ctx, iarray_container_t *container, void *buffer,
-                                   size_t buffer_len)
+    ina_rc_t iarray_container_dtshape(iarray_context_t *ctx,
+                                      iarray_container_t *c,
+                                      iarray_dtshape_t **dtshape)
 
-    ina_rc_t iarray_container_dtshape(iarray_context_t *ctx, iarray_container_t *c, iarray_dtshape_t **dtshape)
+    ina_rc_t iarray_from_buffer(iarray_context_t *ctx,
+                                iarray_dtshape_t *dtshape,
+                                void *buffer,
+                                size_t buffer_len,
+                                iarray_store_properties_t *store,
+                                int flags,
+                                iarray_container_t **container)
 
-    ina_rc_t iarray_from_buffer(iarray_context_t *ctx, iarray_dtshape_t *dtshape, void *buffer, size_t buffer_len,
-                                iarray_store_properties_t *store, int flags, iarray_container_t **container)
-
-    ina_rc_t iarray_from_file(iarray_context_t *ctx, iarray_store_properties_t *store, iarray_container_t **container)
+    ina_rc_t iarray_from_file(iarray_context_t *ctx,
+                              iarray_store_properties_t *store,
+                              iarray_container_t **container)
