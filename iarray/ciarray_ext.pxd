@@ -34,6 +34,12 @@ cdef extern from "libiarray/iarray.h":
         IARRAY_COMPRESSION_ZSTD,
         IARRAY_COMPRESSION_LIZARD
 
+    ctypedef enum iarray_eval_flags_t:
+        IARRAY_EXPR_EVAL_BLOCK = 0x1
+        IARRAY_EXPR_EVAL_CHUNK = 0x2
+        IARRAY_EXPR_EVAL_ITERBLOCK = 0x4
+        IARRAY_EXPR_EVAL_ITERCHUNK = 0x8
+
     ctypedef struct iarray_config_t:
         iarray_compression_codec_t compression_codec
         int compression_level
@@ -85,6 +91,15 @@ cdef extern from "libiarray/iarray.h":
                            int flags,
                            iarray_container_t **container)
 
+    ina_rc_t iarray_linspace(iarray_context_t *ctx,
+                             iarray_dtshape_t *dtshape,
+                             int64_t nelem,
+                             double start,
+                             double stop,
+                             iarray_store_properties_t *store,
+                             int flags,
+                             iarray_container_t **container);
+
     ina_rc_t iarray_get_slice(iarray_context_t *ctx,
                               iarray_container_t *c,
                               int64_t *start,
@@ -120,7 +135,7 @@ cdef extern from "libiarray/iarray.h":
     void iarray_expr_free(iarray_context_t *ctx, iarray_expression_t **e)
 
     ina_rc_t iarray_expr_bind(iarray_expression_t *e, const char *var, iarray_container_t *val)
-    ina_rc_t iarray_expr_bind_scalar_float(iarray_expression_t *e, const char *var, float val)
+
     ina_rc_t iarray_expr_bind_scalar_double(iarray_expression_t *e, const char *var, double val)
 
     ina_rc_t iarray_expr_compile(iarray_expression_t *e, const char *expr)

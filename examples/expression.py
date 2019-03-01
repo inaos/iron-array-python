@@ -1,47 +1,49 @@
 import iarray as ia
 import numpy as np
-...
+import numexpr as ne
+
 # Init iarray
 ia.init()
 
 # Create iarray context
-cfg = ia.config_new()
+cfg = ia.config_new(eval_flags="iterblock", blocksize=0)
 ctx = ia.context_new(cfg)
 
 # Define array params
-shape = [1000]
-pshape = [10]
+shape = [100 * 200 * 1000]
+pshape = [200 * 1000]
 size = int(np.prod(shape))
 
-# Create dtshape
-dtshape = ia.dtshape_new(shape, pshape, "double")
-
 # Create iarray containers
-a = ia.arange(ctx, dtshape, 0, size, 1)
-b = ia.arange(ctx, dtshape, 0, size, 1)
-c = ia.container_new(ctx, dtshape)
+a = ia.linspace(ctx, size, 0, 10)
+x = ia.iarray2numpy(ctx, a)
+
+b = ia.container_new(ctx, shape)
 
 # Create iarray expression
 expr = ia.expr_new(ctx)
 
 # Bind iarray containers
-ia.expr_bind(expr, b'a', a)
-ia.expr_bind(expr, b'b', b)
+ia.expr_bind(expr, b'x', a)
 
 # Compile a+b expression
-ia.expr_compile(expr, b'a+1')
+ia.expr_compile(expr, b'(x - 1.35) * (x - 4.45) * (x - 8.5)')
 
 # Eval expression
-ia.expr_eval(expr, c)
-d = ia.iarray2numpy(ctx, c)
+ia.expr_eval(expr, b)
+c = ia.iarray2numpy(ctx, b)
+print(c)
+
+# Numexpr
+d = ne.evaluate("(x - 1.35) * (x - 4.45) * (x - 8.5)")
 print(d)
 
 # Free data
 ia.expr_free(ctx, expr)
 ia.container_free(ctx, a)
 ia.container_free(ctx, b)
-ia.container_free(ctx, c)
 ia.context_free(ctx)
 
 # Destroy iarray
 ia.destroy()
+
