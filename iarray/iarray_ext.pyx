@@ -5,9 +5,160 @@ from cpython.pycapsule cimport PyCapsule_New, PyCapsule_IsValid, PyCapsule_GetPo
 from math import ceil
 
 
+cdef class Config:
+    cdef ciarray.iarray_config_t _cfg
+
+    def __cinit__(self, compression_codec=1, compression_level=5, filter_flags=0, eval_flags="iterblock",
+                max_num_threads=1, fp_mantissa_bits=0, blocksize=0):
+        self._cfg.compression_codec = compression_codec
+        self._cfg.compression_level = compression_level
+        self._cfg.filter_flags = filter_flags
+        if eval_flags == "iterblock":
+            self._cfg.eval_flags = ciarray.IARRAY_EXPR_EVAL_ITERBLOCK
+        elif eval_flags == "iterchunk":
+            self._cfg.eval_flags = ciarray.IARRAY_EXPR_EVAL_ITERCHUNK
+        elif eval_flags == "chunk":
+            self._cfg.eval_flags = ciarray.IARRAY_EXPR_EVAL_CHUNK
+        else:
+            self._cfg.eval_flags = ciarray.IARRAY_EXPR_EVAL_BLOCK
+        self._cfg.max_num_threads = max_num_threads
+        self._cfg.fp_mantissa_bits = fp_mantissa_bits
+        self._cfg.blocksize = blocksize
+
+    def _get(self):
+        return <object> self._cfg
+
+    @property
+    def compression_codec(self):
+            codec = ["BloscLZ", "LZ4", "LZ4HC", "Snappy", "Zlib", "Zstd", "Lizard"]
+            return codec[self._cfg.compression_codec]
+
+    @property
+    def compression_level(self):
+        return self._cfg.compression_level
+
+    @property
+    def filter_flags(self):
+        flags = {0: "No filters", 1: "Shuffle", 2: "Bit Shuffle", 4: "Delta", 8: "Trunc. Precision"}
+        return flags[self._cfg.filter_flags]
+
+    @property
+    def eval_flags(self):
+        flags = {1: "Block", 2: "Chunk", 4: "Block (iter)", 8: "Chunk (iter)"}
+        return flags[self._cfg.eval_flags]
+
+    @property
+    def max_num_threads(self):
+        return self._cfg.max_num_threads
+
+    @property
+    def fp_mantissa_bits(self):
+        return self._cfg.fp_mantissa_bits
+
+    @property
+    def blocksize(self):
+        return self._cfg.blocksize
+
+    def __str__(self):
+        res = f"IARRAY CONFIG OBJECT\n"
+        compression_codec = f"    Compression codec: {self.compression_codec}\n"
+        compression_level = f"    Compression level: {self.compression_level}\n"
+        filter_flags = f"    Filter flags: {self.filter_flags}\n"
+        eval_flags = f"    Eval flags: {self.eval_flags}\n"
+        max_num_threads = f"    Max. num. threads: {self.max_num_threads}\n"
+        fp_mantissa_bits = f"    Fp mantissa bits: {self.fp_mantissa_bits}\n"
+        blocksize = f"    Blocksize: {self.blocksize}"
+        return res + compression_codec + compression_level + filter_flags + eval_flags +\
+               max_num_threads + fp_mantissa_bits + blocksize
+
+
+cdef class Dtshape:
+    cdef ciarray.iarray_dtshape_t _dtshape
+
+    def __cinit__(self, shape, pshape=None, dtype="double"):
+        self._dtshape.ndim = len(shape)
+        if dtype == "double":
+            self._dtshape.dtype = ciarray.IARRAY_DATA_TYPE_DOUBLE
+        elif dtype == "float":
+            self._dtshape.dtype = ciarray.IARRAY_DATA_TYPE_FLOAT
+        for i in range(len(shape)):
+            self._dtshape.shape[i] = shape[i]
+            if pshape is not None:
+               self._dtshape.pshape[i] = pshape[i]
+            else:
+                self._dtshape.pshape[i] = shape[i]
+
+    cdef _get(self):
+        return <object> self._dtshape
+
+    @property
+    def ndim(self):
+        return self._dtshape.ndim
+
+    @property
+    def dtype(self):
+        dtype = ["double", "float"]
+        return dtype[self._dtshape.dtype]
+
+    @property
+    def shape(self):
+        shape = []
+        for i in range(self.ndim):
+            shape.append(self._dtshape.shape[i])
+        return shape
+
+    @property
+    def pshape(self):
+        pshape = []
+        for i in range(self.ndim):
+            pshape.append(self._dtshape.pshape[i])
+        return pshape
+
+    def __str__(self):
+        res = f"IARRAY DTSHAPE OBJECT\n"
+        ndim = f"    Dimensions: {self.ndim}\n"
+        shape = f"    Shape: {self.shape}\n"
+        pshape = f"    Pshape: {self.pshape}\n"
+        dtype = f"    Datatype: {self.dtype}"
+
+        return res + ndim + shape + pshape + dtype
+
+
+cdef class Context:
+    cdef ciarray.iarray_context_t *_ctx
+
+    def __cinit__(self, cfg):
+        cdef ciarray.iarray_config_t cfg__ = cfg._get()
+        cdef ciarray.iarray_config_t cfg_ = cfg__
+        ciarray.iarray_context_new(&cfg_, &self._ctx)
+
+    def __dealloc__(self):
+        ciarray.iarray_context_free(&self._ctx)
+
+    def _get(self):
+        PyCapsule_New(self._ctx, "iarray_context_t*", NULL)
+
+    def __str__(self):
+        return "IARRAY CONTEXT OBJECT"
+
+
+cdef class Container:
+    cdef ciarray.iarray_container_t *_c
+    cdef ciarray.iarray_context_t *_ctx
+
+    def __cinit__(self, ctx, c):
+        ctx__ = ctx._get()
+        cdef ciarray.iarray_context_t* ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx, "iarray_context_t*")
+        self._ctx = ctx_
+
+        cdef ciarray.iarray_container_t* c_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(c, "iarray_container_t*")
+        self._c = c_
+
+    def __dealloc__(self):
+        ciarray.iarray_container_free(self._ctx, &self._c)
+
 def init():
     err = ciarray.iarray_init()
-
 
 def destroy():
     ciarray.iarray_destroy()
