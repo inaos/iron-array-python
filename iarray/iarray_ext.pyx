@@ -229,11 +229,13 @@ cdef class Expression:
         ciarray.iarray_expr_free(self._ctx._ctx, &self._e)
 
     def bind(self, var, c):
+        var2 = var.encode("utf-8") if isinstance(var, str) else var
         cdef ciarray.iarray_container_t *c_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(c.to_capsule(), "iarray_container_t*")
-        ciarray.iarray_expr_bind(self._e, var, c_)
+        ciarray.iarray_expr_bind(self._e, var2, c_)
 
     def compile(self, expr):
-        er = ciarray.iarray_expr_compile(self._e, expr)
+        expr2 = expr.encode("utf-8") if isinstance(expr, str) else expr
+        ciarray.iarray_expr_compile(self._e, expr2)
 
     def eval(self, shape, pshape, dtype, filename=None):
 
@@ -267,6 +269,7 @@ def arange(ctx, *args, shape=None, pshape=None, dtype="double", filename=None):
 
     cdef ciarray.iarray_store_properties_t store
     if filename is not None:
+        filename = filename.encode("utf-8") if isinstance(filename, str) else filename
         store.id = filename
 
     flags = 0 if filename is None else ciarray.IARRAY_CONTAINER_PERSIST
@@ -293,6 +296,7 @@ def linspace(ctx, nelem, start, stop, shape=None, pshape=None, dtype="double", f
 
     cdef ciarray.iarray_store_properties_t store
     if filename is not None:
+        filename = filename.encode("utf-8") if isinstance(filename, str) else filename
         store.id = filename
 
     flags = 0 if filename is None else ciarray.IARRAY_CONTAINER_PERSIST
@@ -318,6 +322,7 @@ def _get_slice(ctx, data, start, stop, pshape=None, filename=None, view=True):
 
     cdef ciarray.iarray_store_properties_t store
     if filename is not None:
+        filename = filename.encode("utf-8") if isinstance(filename, str) else filename
         store.id = filename
 
     flags = 0 if filename is None else ciarray.IARRAY_CONTAINER_PERSIST
@@ -356,6 +361,7 @@ def numpy2iarray(ctx, a, pshape=None, filename=None):
 
     cdef ciarray.iarray_store_properties_t store
     if filename is not None:
+        filename = filename.encode("utf-8") if isinstance(filename, str) else filename
         store.id = filename
 
     flags = 0 if filename is None else ciarray.IARRAY_CONTAINER_PERSIST
@@ -398,6 +404,7 @@ def from_file(ctx, filename):
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
 
     cdef ciarray.iarray_store_properties_t store
+    filename = filename.encode("utf-8") if isinstance(filename, str) else filename
     store.id = filename
 
     cdef ciarray.iarray_container_t *c

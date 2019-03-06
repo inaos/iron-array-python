@@ -18,8 +18,8 @@ def test_expression(eval_flags, shape, pshape, dtype, expression):
     b = ia.iarray2numpy(ctx, a)
 
     e = ia.Expression(ctx)
-    e.bind("x".encode("utf-8"), a)
-    e.compile(expression.encode("utf-8"))
+    e.bind("x", a)
+    e.compile(expression)
     c = e.eval(shape, pshape, dtype)
     d = ia.iarray2numpy(ctx, c)
 
