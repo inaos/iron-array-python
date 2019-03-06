@@ -2,11 +2,10 @@ import pytest
 import iarray as ia
 import numpy as np
 
-
 @pytest.mark.parametrize("start, stop, shape, pshape, dtype",
                          [
                              (0, 10, [10, 12, 5], [2, 3, 2], "double"),
-                             (-0.1, -0.2, [4, 3, 5, 2], [2, 3, 2, 2], "float")
+                             (-0.1, -0.2, [4, 3, 5, 2], None, "float")
                          ])
 def test_linspace(start, stop, shape, pshape, dtype):
     cfg = ia.Config()
