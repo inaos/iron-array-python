@@ -51,3 +51,69 @@ def test_from_file(start, stop, shape, pshape, dtype, filename):
     c = ia.from_file(ctx, filename)
     d = ia.iarray2numpy(ctx, c)
     np.testing.assert_almost_equal(a, d)
+
+
+@pytest.mark.parametrize("start, stop, slice, shape, pshape, dtype",
+                         [
+                             (0, 10, (slice(2, 4), slice(5, 10), slice(1, 2)), [10, 12, 5], [2, 3, 2], "double"),
+                             (-0.1, -0.2, (slice(2, 4), slice(7, 12)), [12, 16], [2, 7], "float")
+                         ])
+def test_slice(start, stop, slice, shape, pshape, dtype):
+    cfg = ia.Config()
+    ctx = ia.Context(cfg)
+    size = int(np.prod(shape))
+    step = (stop - start)/size
+    a = ia.arange(ctx, start, stop, step, shape=shape, pshape=pshape, dtype=dtype)
+    b = a[slice]
+    c = ia.iarray2numpy(ctx, b)
+    npdtype = np.float64 if dtype == "double" else np.float32
+    d = np.arange(start, stop, step, dtype=npdtype).reshape(shape)[slice]
+    np.testing.assert_almost_equal(c, d)
+
+
+@pytest.mark.parametrize("shape, pshape, dtype",
+                         [
+                             ([10, 12, 5], [2, 3, 2], "double"),
+                             ([12, 16], [2, 7], "float")
+                         ])
+def test_zeros(shape, pshape, dtype):
+    cfg = ia.Config()
+    ctx = ia.Context(cfg)
+
+    a = ia.zeros(ctx, shape, pshape, dtype)
+    b = ia.iarray2numpy(ctx, a)
+    npdtype = np.float64 if dtype == "double" else np.float32
+    c = np.zeros(shape, dtype=npdtype)
+    np.testing.assert_almost_equal(b, c)
+
+
+@pytest.mark.parametrize("shape, pshape, dtype",
+                         [
+                             ([10, 12, 5], [2, 3, 2], "double"),
+                             ([12, 16], [2, 7], "float")
+                         ])
+def test_ones(shape, pshape, dtype):
+    cfg = ia.Config()
+    ctx = ia.Context(cfg)
+
+    a = ia.ones(ctx, shape, pshape, dtype)
+    b = ia.iarray2numpy(ctx, a)
+    npdtype = np.float64 if dtype == "double" else np.float32
+    c = np.ones(shape, dtype=npdtype)
+    np.testing.assert_almost_equal(b, c)
+
+
+@pytest.mark.parametrize("fill_value, shape, pshape, dtype",
+                         [
+                             (8.34, [10, 12, 5], [2, 3, 2], "double"),
+                             (2.00001, [12, 16], [2, 7], "float")
+                         ])
+def test_full(fill_value, shape, pshape, dtype):
+    cfg = ia.Config()
+    ctx = ia.Context(cfg)
+
+    a = ia.full(ctx, fill_value, shape, pshape, dtype)
+    b = ia.iarray2numpy(ctx, a)
+    npdtype = np.float64 if dtype == "double" else np.float32
+    c = np.full(shape, fill_value, dtype=npdtype)
+    np.testing.assert_almost_equal(b, c)

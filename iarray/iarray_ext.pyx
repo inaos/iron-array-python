@@ -311,6 +311,81 @@ def linspace(ctx, nelem, start, stop, shape=None, pshape=None, dtype="double", f
     return Container(ctx, c_c)
 
 
+def zeros(ctx, shape, pshape=None, dtype="double", filename=None):
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
+
+    dtshape = _Dtshape(shape, pshape, dtype).to_dict()
+    cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
+
+    cdef ciarray.iarray_store_properties_t store
+    if filename is not None:
+        filename = filename.encode("utf-8") if isinstance(filename, str) else filename
+        store.id = filename
+
+    flags = 0 if filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+
+    cdef ciarray.iarray_container_t *c
+    if flags == ciarray.IARRAY_CONTAINER_PERSIST:
+        ciarray.iarray_zeros(ctx_, &dtshape_, &store, flags, &c)
+    else:
+        ciarray.iarray_zeros(ctx_, &dtshape_, NULL, flags, &c)
+
+    c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
+    return Container(ctx, c_c)
+
+
+def ones(ctx, shape, pshape=None, dtype="double", filename=None):
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
+
+    dtshape = _Dtshape(shape, pshape, dtype).to_dict()
+    cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
+
+    cdef ciarray.iarray_store_properties_t store
+    if filename is not None:
+        filename = filename.encode("utf-8") if isinstance(filename, str) else filename
+        store.id = filename
+
+    flags = 0 if filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+
+    cdef ciarray.iarray_container_t *c
+    if flags == ciarray.IARRAY_CONTAINER_PERSIST:
+        ciarray.iarray_ones(ctx_, &dtshape_, &store, flags, &c)
+    else:
+        ciarray.iarray_ones(ctx_, &dtshape_, NULL, flags, &c)
+
+    c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
+    return Container(ctx, c_c)
+
+
+def full(ctx, fill_value, shape, pshape=None, dtype="double", filename=None):
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
+
+    dtshape = _Dtshape(shape, pshape, dtype).to_dict()
+    cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
+
+    cdef ciarray.iarray_store_properties_t store
+    if filename is not None:
+        filename = filename.encode("utf-8") if isinstance(filename, str) else filename
+        store.id = filename
+
+    flags = 0 if filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+
+    cdef ciarray.iarray_container_t *c
+    if flags == ciarray.IARRAY_CONTAINER_PERSIST:
+        if dtype == "double":
+            ciarray.iarray_fill_double(ctx_, &dtshape_, fill_value, &store, flags, &c)
+        else:
+            ciarray.iarray_fill_float(ctx_, &dtshape_, fill_value, &store, flags, &c)
+    else:
+        if dtype == "double":
+            ciarray.iarray_fill_double(ctx_, &dtshape_, fill_value, NULL, flags, &c)
+        else:
+            ciarray.iarray_fill_float(ctx_, &dtshape_, fill_value, NULL, flags, &c)
+
+    c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
+    return Container(ctx, c_c)
+
+
 def _get_slice(ctx, data, start, stop, pshape=None, filename=None, view=True):
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
     cdef ciarray.iarray_container_t *data_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(data.to_capsule(), "iarray_container_t*")

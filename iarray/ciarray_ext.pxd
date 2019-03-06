@@ -98,7 +98,33 @@ cdef extern from "libiarray/iarray.h":
                              double stop,
                              iarray_store_properties_t *store,
                              int flags,
-                             iarray_container_t **container);
+                             iarray_container_t **container)
+
+    ina_rc_t iarray_zeros(iarray_context_t *ctx,
+                          iarray_dtshape_t *dtshape,
+                          iarray_store_properties_t *store,
+                          int flags,
+                          iarray_container_t **container)
+
+    ina_rc_t iarray_ones(iarray_context_t *ctx,
+                         iarray_dtshape_t *dtshape,
+                         iarray_store_properties_t *store,
+                         int flags,
+                         iarray_container_t **container)
+
+    ina_rc_t iarray_fill_float(iarray_context_t *ctx,
+                               iarray_dtshape_t *dtshape,
+                               float value,
+                               iarray_store_properties_t *store,
+                               int flags,
+                               iarray_container_t **container)
+
+    ina_rc_t iarray_fill_double(iarray_context_t *ctx,
+                                     iarray_dtshape_t *dtshape,
+                                     double value,
+                                     iarray_store_properties_t *store,
+                                     int flags,
+                                     iarray_container_t **container)
 
     ina_rc_t iarray_get_slice(iarray_context_t *ctx,
                               iarray_container_t *c,
