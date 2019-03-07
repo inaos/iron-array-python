@@ -151,6 +151,7 @@ cdef class Context:
 
 cdef class Container:
     cdef ciarray.iarray_container_t *_c
+    cdef ciarray.iarray_iter_read_t *_iter
     cdef Context _ctx
 
     def __cinit__(self, ctx, c):
@@ -160,6 +161,23 @@ cdef class Container:
 
     def __dealloc__(self):
         ciarray.iarray_container_free(self._ctx._ctx, &self._c)
+
+    def __iter__(self):
+        ciarray.iarray_iter_read_new(self._ctx._ctx, self._c, &self._iter)
+        ciarray.iarray_iter_read_init(self._iter)
+        return self
+
+    def __next__(self):
+        cdef ciarray.iarray_iter_read_value_t value
+
+        if ciarray.iarray_iter_read_finished(self._iter):
+            ciarray.iarray_iter_read_free(self._iter)
+            raise StopIteration
+        else:
+            ciarray.iarray_iter_read_value(self._iter, &value)
+            ciarray.iarray_iter_read_next(self._iter)
+            index = [value.index[i] for i in range(self.ndim)]
+            return index, value.nelem
 
     def to_capsule(self):
         return PyCapsule_New(self._c, "iarray_container_t*", NULL)

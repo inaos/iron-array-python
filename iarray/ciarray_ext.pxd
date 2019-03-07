@@ -167,3 +167,24 @@ cdef extern from "libiarray/iarray.h":
     ina_rc_t iarray_expr_compile(iarray_expression_t *e, const char *expr)
 
     ina_rc_t iarray_eval(iarray_expression_t *e, iarray_container_t *ret)
+
+    # Iterators
+    ctypedef struct iarray_iter_read_t
+
+    ctypedef struct iarray_iter_write_value_t:
+        void *pointer
+        uint64_t *index
+        uint64_t nelem
+
+    ctypedef struct iarray_iter_read_value_t:
+        void *pointer
+        uint64_t *index
+        uint64_t nelem
+
+    ina_rc_t iarray_iter_read_new(iarray_context_t *ctx, iarray_container_t *container,
+                                       iarray_iter_read_t **itr);
+    void iarray_iter_read_free(iarray_iter_read_t *itr);
+    void iarray_iter_read_init(iarray_iter_read_t *itr);
+    ina_rc_t iarray_iter_read_next(iarray_iter_read_t *itr);
+    int iarray_iter_read_finished(iarray_iter_read_t *itr);
+    void iarray_iter_read_value(iarray_iter_read_t *itr, iarray_iter_read_value_t *val);
