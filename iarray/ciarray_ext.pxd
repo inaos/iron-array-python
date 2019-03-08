@@ -46,7 +46,7 @@ cdef extern from "libiarray/iarray.h":
         int filter_flags
         int eval_flags
         int max_num_threads
-        uint8_t fp_mantissa_bits
+        int8_t fp_mantissa_bits
         int blocksize
 
     ctypedef struct iarray_store_properties_t:
@@ -54,9 +54,9 @@ cdef extern from "libiarray/iarray.h":
 
     ctypedef struct iarray_dtshape_t:
         iarray_data_type_t dtype
-        uint8_t ndim
-        uint64_t shape[IARRAY_DIMENSION_MAX]
-        uint64_t pshape[IARRAY_DIMENSION_MAX]
+        int8_t ndim
+        int64_t shape[IARRAY_DIMENSION_MAX]
+        int64_t pshape[IARRAY_DIMENSION_MAX]
 
     ctypedef struct iarray_context_t
 
@@ -130,7 +130,7 @@ cdef extern from "libiarray/iarray.h":
                               iarray_container_t *c,
                               int64_t *start,
                               int64_t *stop,
-                              uint64_t *pshape,
+                              int64_t *pshape,
                               iarray_store_properties_t *store,
                               int flags,
                               bool view,
@@ -141,9 +141,9 @@ cdef extern from "libiarray/iarray.h":
                               void *buffer,
                               size_t buffer_len)
 
-    ina_rc_t iarray_container_dtshape(iarray_context_t *ctx,
-                                      iarray_container_t *c,
-                                      iarray_dtshape_t **dtshape)
+    ina_rc_t iarray_get_dtshape(iarray_context_t *ctx,
+                                iarray_container_t *c,
+                                iarray_dtshape_t *dtshape)
 
     ina_rc_t iarray_from_buffer(iarray_context_t *ctx,
                                 iarray_dtshape_t *dtshape,
@@ -162,8 +162,6 @@ cdef extern from "libiarray/iarray.h":
 
     ina_rc_t iarray_expr_bind(iarray_expression_t *e, const char *var, iarray_container_t *val)
 
-    ina_rc_t iarray_expr_bind_scalar_double(iarray_expression_t *e, const char *var, double val)
-
     ina_rc_t iarray_expr_compile(iarray_expression_t *e, const char *expr)
 
     ina_rc_t iarray_eval(iarray_expression_t *e, iarray_container_t *ret)
@@ -171,15 +169,10 @@ cdef extern from "libiarray/iarray.h":
     # Iterators
     ctypedef struct iarray_iter_read_t
 
-    ctypedef struct iarray_iter_write_value_t:
-        void *pointer
-        uint64_t *index
-        uint64_t nelem
-
     ctypedef struct iarray_iter_read_value_t:
         void *pointer
-        uint64_t *index
-        uint64_t nelem
+        int64_t *index
+        int64_t nelem
 
     ina_rc_t iarray_iter_read_new(iarray_context_t *ctx, iarray_container_t *container,
                                        iarray_iter_read_t **itr);
@@ -188,3 +181,79 @@ cdef extern from "libiarray/iarray.h":
     ina_rc_t iarray_iter_read_next(iarray_iter_read_t *itr);
     int iarray_iter_read_finished(iarray_iter_read_t *itr);
     void iarray_iter_read_value(iarray_iter_read_t *itr, iarray_iter_read_value_t *val);
+
+    ctypedef struct iarray_iter_read_block_t
+
+    ctypedef struct iarray_iter_read_block_value_t:
+        void *pointer
+        int64_t *block_index
+        int64_t *elem_index
+        int64_t nelem
+        int64_t* block_shape
+
+    ina_rc_t iarray_iter_read_block_new(iarray_context_t *ctx, iarray_container_t *container,
+                                                 iarray_iter_read_block_t **itr, int64_t *blockshape)
+    void iarray_iter_read_block_free(iarray_iter_read_block_t *itr)
+    void iarray_iter_read_block_init(iarray_iter_read_block_t *itr)
+    ina_rc_t iarray_iter_read_block_next(iarray_iter_read_block_t *itr)
+    int iarray_iter_read_block_finished(iarray_iter_read_block_t *itr)
+    void iarray_iter_read_block_value(iarray_iter_read_block_t *itr, iarray_iter_read_block_value_t *value)
+
+    # Random
+
+    ctypedef enum iarray_random_rng_t:
+        IARRAY_RANDOM_RNG_MERSENNE_TWISTER
+        IARRAY_RANDOM_RNG_SOBOL
+
+    ctypedef enum iarray_random_dist_parameter_t:
+        IARRAY_RANDOM_DIST_PARAM_MU
+        IARRAY_RANDOM_DIST_PARAM_SIGMA
+        IARRAY_RANDOM_DIST_PARAM_ALPHA
+        IARRAY_RANDOM_DIST_PARAM_BETA
+        IARRAY_RANDOM_DIST_PARAM_SENTINEL
+
+    ctypedef struct iarray_random_ctx_t
+
+    ina_rc_t iarray_random_ctx_new(iarray_context_t *ctx,
+                                   uint32_t seed,
+                                   iarray_random_rng_t rng,
+                                   iarray_random_ctx_t **rng_ctx)
+
+    void iarray_random_ctx_free(iarray_context_t *ctx, iarray_random_ctx_t **rng_ctx)
+
+    ina_rc_t iarray_random_dist_set_param_float(iarray_random_ctx_t *ctx,
+                                                iarray_random_dist_parameter_t key,
+                                                float value)
+
+    ina_rc_t iarray_random_dist_set_param_double(iarray_random_ctx_t *ctx,
+                                                 iarray_random_dist_parameter_t key,
+                                                 double value)
+
+    ina_rc_t iarray_random_rand(iarray_context_t *ctx,
+                                iarray_dtshape_t *dtshape,
+                                iarray_random_ctx_t *rand_ctx,
+                                iarray_store_properties_t *store,
+                                int flags,
+                                iarray_container_t **container)
+
+    ina_rc_t iarray_random_randn(iarray_context_t *ctx,
+                                 iarray_dtshape_t *dtshape,
+                                 iarray_random_ctx_t *rand_ctx,
+                                 iarray_store_properties_t *store,
+                                 int flags,
+                                 iarray_container_t **container)
+
+    ina_rc_t iarray_random_beta(iarray_context_t *ctx,
+                                iarray_dtshape_t *dtshape,
+                                iarray_random_ctx_t *rand_ctx,
+                                iarray_store_properties_t *store,
+                                int flags,
+                                iarray_container_t **container)
+
+    ina_rc_t iarray_random_lognormal(iarray_context_t *ctx,
+                                     iarray_dtshape_t *dtshape,
+                                     iarray_random_ctx_t *rand_ctx,
+                                     iarray_store_properties_t *store,
+                                     int flags,
+                                     iarray_container_t **container)
+

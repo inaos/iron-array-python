@@ -4,6 +4,91 @@ cimport numpy as np
 from cpython.pycapsule cimport PyCapsule_New, PyCapsule_IsValid, PyCapsule_GetPointer
 from math import ceil
 
+cdef class ReadElemIter:
+    cdef ciarray.iarray_iter_read_t *_iter
+    cdef Container _c
+    cdef dtype
+
+    def __cinit__(self, c):
+        self._c = c
+        ciarray.iarray_iter_read_new(self._c._ctx._ctx, self._c._c, &self._iter)
+        if self._c.dtype == "double":
+            self.dtype = 0
+        else:
+            self.dtype = 1
+
+    def __dealloc__(self):
+        ciarray.iarray_iter_read_free(self._iter)
+
+    def __iter__(self):
+        ciarray.iarray_iter_read_init(self._iter)
+        return self
+
+    def __next__(self):
+        cdef ciarray.iarray_iter_read_value_t value
+
+        if ciarray.iarray_iter_read_finished(self._iter):
+            raise StopIteration
+        else:
+            ciarray.iarray_iter_read_value(self._iter, &value)
+            index = [value.index[i] for i in range(self._c.ndim)]
+            if self.dtype == 0:
+                elem = (<double*> value.pointer)[0]
+            else:
+                elem = (<float*> value.pointer)[0]
+            ciarray.iarray_iter_read_next(self._iter)
+            return index, elem
+
+
+cdef class ReadBlockIter:
+    cdef ciarray.iarray_iter_read_block_t *_iter
+    cdef Container _c
+    cdef dtype
+
+    def __cinit__(self, c, block):
+        self._c = c
+        cdef ciarray.int64_t block_[ciarray.IARRAY_DIMENSION_MAX]
+        for i in range(len(block)):
+            block_[i] = block[i]
+
+        ciarray.iarray_iter_read_block_new(self._c._ctx._ctx, self._c._c, &self._iter, block_)
+        if self._c.dtype == "double":
+            self.dtype = 0
+        else:
+            self.dtype = 1
+
+    def __dealloc__(self):
+        ciarray.iarray_iter_read_block_free(self._iter)
+
+    def __iter__(self):
+        ciarray.iarray_iter_read_block_init(self._iter)
+        return self
+
+    def __next__(self):
+        cdef ciarray.iarray_iter_read_block_value_t value
+
+        if ciarray.iarray_iter_read_block_finished(self._iter):
+            raise StopIteration
+        else:
+            ciarray.iarray_iter_read_block_value(self._iter, &value)
+
+        shape = [value.block_shape[i] for i in range(self._c.ndim)]
+        size = np.prod(shape)
+
+        if self.dtype == 0:
+            a = np.empty(shape, dtype=np.float64).flatten()
+            for i in range(size):
+                a[i] = (<double*> value.pointer)[i]
+        else:
+            a = np.empty(shape, dtype=np.float32)
+            for i in range(size):
+                a[i] = (<float*> value.pointer)[i]
+
+        index = [value.block_index[i] for i in range(self._c.ndim)]
+
+        ciarray.iarray_iter_read_block_next(self._iter)
+        return index, a.reshape(shape)
+
 
 cdef class IarrayInit:
     def __cinit__(self):
@@ -149,6 +234,28 @@ cdef class Context:
         return "IARRAY CONTEXT OBJECT"
 
 
+cdef class RandomContext:
+    cdef ciarray.iarray_random_ctx_t *_r_ctx
+    cdef Context _ctx
+
+    def __cinit__(self, ctx, seed=0, rng="MERSENNE_TWISTER"):
+        self._ctx = ctx
+        cdef ciarray.iarray_random_ctx_t* r_ctx
+        if rng == "MERSENNE_TWISTER":
+            ciarray.iarray_random_ctx_new(self._ctx._ctx, seed, ciarray.IARRAY_RANDOM_RNG_MERSENNE_TWISTER, &r_ctx)
+        else:
+            ciarray.iarray_random_ctx_new(self._ctx._ctx, seed, ciarray.IARRAY_RANDOM_RNG_SOBOL, &r_ctx)
+        self._r_ctx = r_ctx
+
+    def __dealloc__(self):
+        ciarray.iarray_random_ctx_free(self._ctx._ctx, &self._r_ctx)
+
+    def to_capsule(self):
+        return PyCapsule_New(self._r_ctx, "iarray_random_ctx_t*", NULL)
+
+    def __str__(self):
+        return "IARRAY RANDOM CONTEXT OBJECT"
+
 cdef class Container:
     cdef ciarray.iarray_container_t *_c
     cdef ciarray.iarray_iter_read_t *_iter
@@ -162,45 +269,34 @@ cdef class Container:
     def __dealloc__(self):
         ciarray.iarray_container_free(self._ctx._ctx, &self._c)
 
-    def __iter__(self):
-        ciarray.iarray_iter_read_new(self._ctx._ctx, self._c, &self._iter)
-        ciarray.iarray_iter_read_init(self._iter)
-        return self
+    def iter_elem(self):
+        return ReadElemIter(self)
 
-    def __next__(self):
-        cdef ciarray.iarray_iter_read_value_t value
-
-        if ciarray.iarray_iter_read_finished(self._iter):
-            ciarray.iarray_iter_read_free(self._iter)
-            raise StopIteration
-        else:
-            ciarray.iarray_iter_read_value(self._iter, &value)
-            ciarray.iarray_iter_read_next(self._iter)
-            index = [value.index[i] for i in range(self.ndim)]
-            return index, value.nelem
+    def iter_block(self, block):
+        return ReadBlockIter(self, block)
 
     def to_capsule(self):
         return PyCapsule_New(self._c, "iarray_container_t*", NULL)
 
     @property
     def ndim(self):
-        cdef ciarray.iarray_dtshape_t *dtshape
-        ciarray.iarray_container_dtshape(self._ctx._ctx, self._c, &dtshape)
+        cdef ciarray.iarray_dtshape_t dtshape
+        ciarray.iarray_get_dtshape(self._ctx._ctx, self._c, &dtshape)
 
         return dtshape.ndim
 
     @property
     def shape(self):
-        cdef ciarray.iarray_dtshape_t *dtshape
-        ciarray.iarray_container_dtshape(self._ctx._ctx, self._c, &dtshape)
+        cdef ciarray.iarray_dtshape_t dtshape
+        ciarray.iarray_get_dtshape(self._ctx._ctx, self._c, &dtshape)
 
         shape = [dtshape.shape[i] for i in range(self.ndim)]
         return shape
 
     @property
     def pshape(self):
-        cdef ciarray.iarray_dtshape_t *dtshape
-        ciarray.iarray_container_dtshape(self._ctx._ctx, self._c, &dtshape)
+        cdef ciarray.iarray_dtshape_t dtshape
+        ciarray.iarray_get_dtshape(self._ctx._ctx, self._c, &dtshape)
 
         pshape = [dtshape.pshape[i] for i in range(self.ndim)]
         return pshape
@@ -208,8 +304,8 @@ cdef class Container:
     @property
     def dtype(self):
         dtype = ["double", "float"]
-        cdef ciarray.iarray_dtshape_t *dtshape
-        ciarray.iarray_container_dtshape(self._ctx._ctx, self._c, &dtshape)
+        cdef ciarray.iarray_dtshape_t dtshape
+        ciarray.iarray_get_dtshape(self._ctx._ctx, self._c, &dtshape)
 
         return dtype[dtshape.dtype]
 
@@ -421,7 +517,7 @@ def _get_slice(ctx, data, start, stop, pshape=None, filename=None, view=True):
     flags = 0 if filename is None else ciarray.IARRAY_CONTAINER_PERSIST
     cdef ciarray.int64_t start_[ciarray.IARRAY_DIMENSION_MAX]
     cdef ciarray.int64_t stop_[ciarray.IARRAY_DIMENSION_MAX]
-    cdef ciarray.uint64_t pshape_[ciarray.IARRAY_DIMENSION_MAX]
+    cdef ciarray.int64_t pshape_[ciarray.IARRAY_DIMENSION_MAX]
 
     for i in range(len(start)):
         start_[i] = start[i]
@@ -476,8 +572,8 @@ def iarray2numpy(ctx, c):
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
     cdef ciarray.iarray_container_t *c_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(c.to_capsule(), "iarray_container_t*")
 
-    cdef ciarray.iarray_dtshape_t *dtshape
-    ciarray.iarray_container_dtshape(ctx_, c_, &dtshape)
+    cdef ciarray.iarray_dtshape_t dtshape
+    ciarray.iarray_get_dtshape(ctx_, c_, &dtshape)
 
     shape = []
     for i in range(dtshape.ndim):
@@ -513,10 +609,6 @@ def expr_bind(e, var, c):
     cdef ciarray.iarray_container_t *c_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(c.to_capsule(), "iarray_container_t*")
     ciarray.iarray_expr_bind(e_, var, c_)
 
-def expr_bind_scalar_double(e, var, d):
-    cdef ciarray.iarray_expression_t* e_= <ciarray.iarray_expression_t*> PyCapsule_GetPointer(e, "iarray_expression_t*")
-    ciarray.iarray_expr_bind_scalar_double(e_, var, d)
-
 def expr_compile(e, expr):
     cdef ciarray.iarray_expression_t* e_= <ciarray.iarray_expression_t*> PyCapsule_GetPointer(e, "iarray_expression_t*")
     ciarray.iarray_expr_compile(e_, expr)
@@ -525,3 +617,51 @@ def expr_eval(e, c):
     cdef ciarray.iarray_expression_t* e_= <ciarray.iarray_expression_t*> PyCapsule_GetPointer(e, "iarray_expression_t*")
     cdef ciarray.iarray_container_t *c_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(c.to_capsule(), "iarray_container_t*")
     ciarray.iarray_eval(e_, c_)
+
+# Random functions
+
+def random_rand(ctx, r_ctx, shape, pshape=None, dtype="double", filename=None):
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
+    cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(), "iarray_random_ctx_t*")
+
+    dtshape = _Dtshape(shape, pshape, dtype).to_dict()
+    cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
+
+    cdef ciarray.iarray_store_properties_t store
+    if filename is not None:
+        filename = filename.encode("utf-8") if isinstance(filename, str) else filename
+        store.id = filename
+
+    flags = 0 if filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+
+    cdef ciarray.iarray_container_t *c
+    if flags == ciarray.IARRAY_CONTAINER_PERSIST:
+        ciarray.iarray_random_rand(ctx_, &dtshape_, r_ctx_, &store, flags, &c)
+    else:
+        ciarray.iarray_random_rand(ctx_, &dtshape_, r_ctx_, NULL, flags, &c)
+
+    c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
+    return Container(ctx, c_c)
+
+def random_randn(ctx, r_ctx, shape, pshape=None, dtype="double", filename=None):
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
+    cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(), "iarray_random_ctx_t*")
+
+    dtshape = _Dtshape(shape, pshape, dtype).to_dict()
+    cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
+
+    cdef ciarray.iarray_store_properties_t store
+    if filename is not None:
+        filename = filename.encode("utf-8") if isinstance(filename, str) else filename
+        store.id = filename
+
+    flags = 0 if filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+
+    cdef ciarray.iarray_container_t *c
+    if flags == ciarray.IARRAY_CONTAINER_PERSIST:
+        ciarray.iarray_random_randn(ctx_, &dtshape_, r_ctx_, &store, flags, &c)
+    else:
+        ciarray.iarray_random_randn(ctx_, &dtshape_, r_ctx_, NULL, flags, &c)
+
+    c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
+    return Container(ctx, c_c)
