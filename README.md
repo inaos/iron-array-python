@@ -9,7 +9,7 @@ For now, this package is setup so that an IronArray repository is installed loca
 $ export INAC_DIR=$HOME/.inaos/cmake/inac-darwin-x86_64-relwithdebinfo-1.0.4
 $ export IARRAY_DIR=../iron-array
 $ export BLOSC_DIR=$IARRAY_DIR/contribs/c-blosc2
-$ export LD_LIBRARY_PATH=$IARRAY_DIR/contribs/c-blosc2/build/blosc:$IARRAY_DIR/build
+$ export PYTHONPATH=.
 ```
 
 We can now proceed with the compilation of the actual Python wrapper for iarray with:

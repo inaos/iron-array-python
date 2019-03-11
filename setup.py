@@ -54,6 +54,7 @@ setup(
         'numpy>=1.7',
         'cython>=0.23',
         'pytest',
+        'matplotlib',
     ],
     package_dir={'': '.'},
     packages=find_packages(),
