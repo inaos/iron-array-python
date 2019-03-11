@@ -6,8 +6,7 @@ import numpy
 setup(name="iarray",
 ext_modules = cythonize([
     Extension("iarray.iarray_ext", ["iarray/iarray_ext.pyx"],
-              include_dirs=["/Users/aleix11alcacer/INAOS/inac-darwin-x86_64-release-1.0.2/include",
-                            "/Users/aleix11alcacer/Documents/Francesc Alted/IronArray/iron-array/include",
+              include_dirs=["/Users/aleix11alcacer/Documents/Francesc Alted/IronArray/iron-array/include",
                             numpy.get_include()],
               extra_objects=["/Users/aleix11alcacer/Documents/Francesc Alted/IronArray/iron-array/cmake-build-relwithdebinfo/libiarray.dylib"])
     ])
