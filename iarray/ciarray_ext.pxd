@@ -257,3 +257,9 @@ cdef extern from "libiarray/iarray.h":
                                      int flags,
                                      iarray_container_t **container)
 
+    ina_rc_t iarray_random_exponential(iarray_context_t *ctx,
+                                       iarray_dtshape_t *dtshape,
+                                       iarray_random_ctx_t *random_ctx,
+                                       iarray_store_properties_t *store,
+                                       int flags,
+                                       iarray_container_t **container)

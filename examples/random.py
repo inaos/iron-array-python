@@ -10,14 +10,13 @@ r_ctx = ia.RandomContext(ctx)
 size = 1000000
 shape = [size]
 
-mu = 1
-sigma = 0.5
+beta = 2
 
-a = ia.random_lognormal(ctx, r_ctx, mu, sigma, shape)
+a = ia.random_exponential(ctx, r_ctx, beta, shape)
 
 b = ia.iarray2numpy(ctx, a)
 
-c = np.random.lognormal(mu, sigma, size)
+c = np.random.exponential(beta, size)
 
 
 plt.hist(b, bins='auto', density=True, histtype="step")

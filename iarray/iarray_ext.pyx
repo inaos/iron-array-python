@@ -706,7 +706,7 @@ def random_lognormal(ctx, r_ctx, mu, sigma, shape, pshape=None, dtype="double", 
         ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_SIGMA, sigma)
     else:
         ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_MU, mu)
-        ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_MU, sigma)
+        ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_SIGMA, sigma)
 
     dtshape = _Dtshape(shape, pshape, dtype).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
@@ -723,6 +723,34 @@ def random_lognormal(ctx, r_ctx, mu, sigma, shape, pshape=None, dtype="double", 
         ciarray.iarray_random_lognormal(ctx_, &dtshape_, r_ctx_, &store, flags, &c)
     else:
         ciarray.iarray_random_lognormal(ctx_, &dtshape_, r_ctx_, NULL, flags, &c)
+
+    c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
+    return Container(ctx, c_c)
+
+def random_exponential(ctx, r_ctx, beta, shape, pshape=None, dtype="double", filename=None):
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
+    cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(), "iarray_random_ctx_t*")
+
+    if dtype == "double":
+        ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_BETA, beta)
+    else:
+        ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_BETA, beta)
+
+    dtshape = _Dtshape(shape, pshape, dtype).to_dict()
+    cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
+
+    cdef ciarray.iarray_store_properties_t store
+    if filename is not None:
+        filename = filename.encode("utf-8") if isinstance(filename, str) else filename
+        store.id = filename
+
+    flags = 0 if filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+
+    cdef ciarray.iarray_container_t *c
+    if flags == ciarray.IARRAY_CONTAINER_PERSIST:
+        ciarray.iarray_random_exponential(ctx_, &dtshape_, r_ctx_, &store, flags, &c)
+    else:
+        ciarray.iarray_random_exponential(ctx_, &dtshape_, r_ctx_, NULL, flags, &c)
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     return Container(ctx, c_c)
