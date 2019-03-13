@@ -210,6 +210,8 @@ cdef extern from "libiarray/iarray.h":
         IARRAY_RANDOM_DIST_PARAM_SIGMA
         IARRAY_RANDOM_DIST_PARAM_ALPHA
         IARRAY_RANDOM_DIST_PARAM_BETA
+        IARRAY_RANDOM_DIST_PARAM_A
+        IARRAY_RANDOM_DIST_PARAM_B
         IARRAY_RANDOM_DIST_PARAM_SENTINEL
 
     ctypedef struct iarray_random_ctx_t
@@ -263,3 +265,17 @@ cdef extern from "libiarray/iarray.h":
                                        iarray_store_properties_t *store,
                                        int flags,
                                        iarray_container_t **container)
+
+
+    ina_rc_t iarray_random_uniform(iarray_context_t *ctx,
+                                   iarray_dtshape_t *dtshape,
+                                   iarray_random_ctx_t *random_ctx,
+                                   iarray_store_properties_t *store,
+                                   int flags,
+                                   iarray_container_t **container)
+
+
+    ina_rc_t iarray_random_kstest(iarray_context_t *ctx,
+                                  iarray_container_t *c1,
+                                  iarray_container_t *c2,
+                                  bool *res)
