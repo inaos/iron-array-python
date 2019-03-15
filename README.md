@@ -15,7 +15,7 @@ The two modes are setup and driven by environment variables.  Here are examples:
 
 ```
 $ export IARRAY_DEVELOP_MODE=True
-$ export INAC_DIR=$HOME/.inaos/cmake/inac-darwin-x86_64-relwithdebinfo-1.0.4
+$ export INAC_DIR=~/.inaos/cmake/inac-darwin-x86_64-relwithdebinfo-1.0.4
 $ export IARRAY_DIR=../iron-array  # the default; if your path is this one, no need to set this
 $ export BLOSC_DIR=$IARRAY_DIR/contribs/c-blosc2  # the default; if your path is this one, no need to set this
 $ export PYTHONPATH=.
