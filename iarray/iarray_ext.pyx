@@ -84,7 +84,7 @@ cdef class ReadBlockIter:
             for i in range(size):
                 a[i] = (<float*> value.pointer)[i]
 
-        index = [value.block_index[i] for i in range(self._c.ndim)]
+        index = [value.elem_index[i] for i in range(self._c.ndim)]
 
         ciarray.iarray_iter_read_block_next(self._iter)
         return tuple(index), a.reshape(shape)
@@ -118,6 +118,7 @@ cdef class WritePartIter:
         cdef ciarray.iarray_iter_write_part_value_t value
 
         if ciarray.iarray_iter_write_part_finished(self._iter):
+            ciarray.iarray_iter_write_part_next(self._iter)
             raise StopIteration
         else:
             ciarray.iarray_iter_write_part_value(self._iter, &value)
@@ -266,7 +267,7 @@ cdef class _Dtshape:
 cdef class Context:
     cdef ciarray.iarray_context_t *_ctx
 
-    def __cinit__(self, cfg):
+    def __init__(self, cfg):
         cdef ciarray.iarray_config_t cfg_ = cfg.to_dict()
         ciarray.iarray_context_new(&cfg_, &self._ctx)
 
