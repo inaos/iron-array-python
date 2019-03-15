@@ -15,23 +15,41 @@ LFLAGS = os.environ.get('LFLAGS', '').split()
 # Sources & libraries
 include_dirs = [numpy.get_include()]
 library_dirs = []
-libraries = []
+libraries = ['blosc', 'iarray', 'inac']
 define_macros = []
 sources = ['iarray/iarray_ext.pyx']
 
-BLOSC_DIR = os.environ.get('BLOSC_DIR', '')
-if BLOSC_DIR != '':
-    library_dirs += [os.path.join(BLOSC_DIR, 'build/blosc')]
-    include_dirs += [os.path.join(BLOSC_DIR, 'blosc')]
-    libraries += ['blosc']
+if 'IARRAY_DEVELOP_MODE' in os.environ:
+    print("*** Entering iarray develop mode ***")
+    BLOSC_DIR = os.environ.get('BLOSC_DIR', '../iron-array/contribs/c-blosc2')
+    print("Looking at blosc library at:", BLOSC_DIR, ".  If not correct, use the `BLOSC_DIR` envvar")
+    IARRAY_DIR = os.environ.get('IARRAY_DIR', '../iron-array')
+    print("Looking at iarray library at:", IARRAY_DIR, ".  If not correct, use the `IARRAY_DIR` envvar")
 
-IARRAY_DIR = os.environ.get('IARRAY_DIR', '')
-if IARRAY_DIR != '':
-    library_dirs += [os.path.join(IARRAY_DIR, 'build')]
-    include_dirs += [os.path.join(IARRAY_DIR, 'include')]
-    libraries += ['iarray']
+    if BLOSC_DIR != '':
+        library_dirs += [os.path.join(BLOSC_DIR, 'build/blosc')]
+        include_dirs += [os.path.join(BLOSC_DIR, 'blosc')]
 
-INAC_DIR = os.environ.get('INAC_DIR', '')
+    if IARRAY_DIR != '':
+        library_dirs += [os.path.join(IARRAY_DIR, 'build')]
+        include_dirs += [os.path.join(IARRAY_DIR, 'include')]
+else:
+    print("*** Entering iarray production mode ***")
+    BLOSC_DIR = os.environ.get('BLOSC_DIR', '/usr/local')
+    print("Looking at blosc library at:", BLOSC_DIR, ".  If not correct, use the `BLOSC_DIR` envvar")
+    IARRAY_DIR = os.environ.get('IARRAY_DIR', '/usr/local')
+    print("Looking at iarray library at:", IARRAY_DIR, ".  If not correct, use the `IARRAY_DIR` envvar")
+
+    if BLOSC_DIR != '':
+        library_dirs += [os.path.join(BLOSC_DIR, 'lib')]
+        include_dirs += [os.path.join(BLOSC_DIR, 'include')]
+
+    if IARRAY_DIR != '':
+        library_dirs += [os.path.join(IARRAY_DIR, 'lib')]
+        include_dirs += [os.path.join(IARRAY_DIR, 'include')]
+
+INAC_DIR = os.environ.get('INAC_DIR', '../INAOS')
+print("Looking at the inac library at:", INAC_DIR, ".  If not correct, use the `INAC_DIR` envvar")
 if INAC_DIR != '':
     library_dirs += [os.path.join(INAC_DIR, 'lib')]
     include_dirs += [os.path.join(INAC_DIR, 'include')]
@@ -49,12 +67,13 @@ setup(
     setup_requires=[
         'setuptools>18.0',
         'setuptools-scm>3.0'
-    ],
-    install_requires=[
-        'numpy>=1.7',
+        'numpy>=1.15',
         'cython>=0.23',
+    ],
+    python_requires=">=3.6",
+    install_requires=[
+        'numpy>=1.15',
         'pytest',
-        'matplotlib',
     ],
     package_dir={'': '.'},
     packages=find_packages(),
@@ -69,5 +88,12 @@ setup(
             extra_link_args=LFLAGS,
             )
     ],
-    )
+    ),
+    extras_require={
+        'doc': [
+            'sphinx >= 1.5',
+            'sphinx_rtd_theme',
+            'numpydoc'],
+        'examples': [
+            'matplotlib']},
 )
