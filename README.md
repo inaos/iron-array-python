@@ -5,9 +5,9 @@ IronArray for Python
 
 This package supports two modes for building the Python extension: develop and release.
 
-* The develop mode uses the `iarray` repo locallly, including its `contribs/c-blosc2` submodule so as to find the headers and libraries (you must ensure that the libraries can be found in the `build/` directory of the both repo *and* submodule).  This allows to develop both packages in parallel without the need to re-install in every iteration.
+* The develop mode uses the `iarray` repo locallly so as to find the headers and libraries (you must ensure that the libraries can be found in the `build/` directory of the local repo).  This allows to develop both packages (the C library and the Python wrapper) in parallel without the need to re-install the C library in every iteration.
 
-* The release mode assumes that both the `iarray` and `blosc2` libraries are installed in the system.
+* The release mode assumes that both the `iarray` library is installed in the system.
 
 The two modes are setup and driven by environment variables.  Here are examples:
 
@@ -17,7 +17,6 @@ The two modes are setup and driven by environment variables.  Here are examples:
 $ export IARRAY_DEVELOP_MODE=True
 $ export INAC_DIR=~/.inaos/cmake/inac-darwin-x86_64-relwithdebinfo-1.0.4
 $ export IARRAY_DIR=../iron-array  # the default; if your path is this one, no need to set this
-$ export BLOSC_DIR=$IARRAY_DIR/contribs/c-blosc2  # the default; if your path is this one, no need to set this
 $ export PYTHONPATH=.
 ```
 
