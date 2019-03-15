@@ -96,7 +96,11 @@ setup(
         'doc': [
             'sphinx >= 1.5',
             'sphinx_rtd_theme',
-            'numpydoc'],
+            'numpydoc',
+        ],
         'examples': [
-            'matplotlib']},
+            'matplotlib',
+            'numexpr',
+            'numba',
+        ]},
 )
