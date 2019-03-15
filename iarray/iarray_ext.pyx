@@ -104,6 +104,11 @@ cdef class WritePartIter:
             self.dtype = 1
 
     def __dealloc__(self):
+        # TODO: look if this workaround for forcing a flush when no StopIteration happens can be improved
+        # TODO: study if this should be used for read iterators or it is not necessary
+        # TODO: setup tests where zip(iter1, iter2) with different combinations of read/write iters are used
+        if self.flag:
+            ciarray.iarray_iter_write_part_next(self._iter)
         ciarray.iarray_iter_write_part_free(self._iter)
 
     def __iter__(self):
@@ -118,7 +123,7 @@ cdef class WritePartIter:
         cdef ciarray.iarray_iter_write_part_value_t value
 
         if ciarray.iarray_iter_write_part_finished(self._iter):
-            ciarray.iarray_iter_write_part_next(self._iter)
+            self.flga = False  # means that everything has been flushed
             raise StopIteration
         else:
             ciarray.iarray_iter_write_part_value(self._iter, &value)
