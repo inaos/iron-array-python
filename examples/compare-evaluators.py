@@ -21,37 +21,62 @@ def poly(x):
     return y
 
 
-def do_compare():
-    print("Evaluating expression:", expression, "with %d elements" % N)
-    cfg = ia.Config()
-    ctx = ia.Context(cfg)
+def do_regular_evaluation():
+    print("Regular evaluation of the expression:", expression, "with %d elements" % N)
 
     x = np.linspace(0, 10, N, dtype=np.double)
+
+    # Reference to compare to
+    y0 = (x - 1.35) * (x - 4.45) * (x - 8.5)
+    # print(y0, y0.shape)
+
+    t0 = time()
+    y1 = (x - 1.35) * (x - 4.45) * (x - 8.5)
+    print("Regular evaluate via numpy:", round(time() - t0, 3))
+
+    t0 = time()
+    y2 = ne.evaluate(expression, local_dict={'x': x})
+    print("Regular evaluate via numexpr:", round(time() - t0, 3))
+
+    t0 = time()
+    y3 = poly(x)
+    print("Regular evaluate via numba:", round(time() - t0, 3))
+
+    np.testing.assert_almost_equal(y0, y1)
+    np.testing.assert_almost_equal(y0, y2)
+    np.testing.assert_almost_equal(y0, y3)
+
+
+def do_block_evaluation():
+    print("Block evaluation of the expression:", expression, "with %d elements" % N)
+
+    x = np.linspace(0, 10, N, dtype=np.double)
+    # TODO: looks like nelem is not in the same position than numpy
     xa = ia.linspace(ctx, N, 0., 10., shape=shape, pshape=pshape)
 
     # Reference to compare to
     y0 = (x - 1.35) * (x - 4.45) * (x - 8.5)
+    # print(y0, y0.shape)
 
     t0 = time()
     ya = ia.empty(ctx, shape=shape, pshape=pshape)
     for ((i, x), (j, y)) in zip(xa.iter_block(block_size), ya.iter_write()):
         y[:] = (x - 1.35) * (x - 4.45) * (x - 8.5)
-    print("Evaluate via numpy:", round(time() - t0, 3))
+    print("Block evaluate via numpy:", round(time() - t0, 3))
     y1 = ia.iarray2numpy(ctx, ya)
-    # print(y1, y1.shape)
 
     t0 = time()
     ya = ia.empty(ctx, shape=shape, pshape=pshape)
     for ((i, x), (j, y)) in zip(xa.iter_block(block_size), ya.iter_write()):
         y[:] = ne.evaluate(expression, local_dict={'x': x})
-    print("Evaluate via numexpr:", round(time() - t0, 3))
+    print("Block evaluate via numexpr:", round(time() - t0, 3))
     y2 = ia.iarray2numpy(ctx, ya)
 
     t0 = time()
     ya = ia.empty(ctx, shape=shape, pshape=pshape)
     for ((i, x), (j, y)) in zip(xa.iter_block(block_size), ya.iter_write()):
         y[:] = poly(x)
-    print("Evaluate via numba:", round(time() - t0, 3))
+    print("Block evaluate via numba:", round(time() - t0, 3))
     y3 = ia.iarray2numpy(ctx, ya)
 
     np.testing.assert_almost_equal(y0, y1)
@@ -60,4 +85,8 @@ def do_compare():
 
 
 if __name__ == "__main__":
-    do_compare()
+    cfg = ia.Config()
+    ctx = ia.Context(cfg)
+    do_regular_evaluation()
+    print("-*-"*10)
+    do_block_evaluation()
