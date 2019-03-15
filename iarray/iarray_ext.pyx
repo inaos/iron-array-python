@@ -1,7 +1,7 @@
-cimport ciarray_ext as ciarray
+cimport iarray.ciarray_ext as ciarray
 import numpy as np
 cimport numpy as np
-from cpython.pycapsule cimport PyCapsule_New, PyCapsule_IsValid, PyCapsule_GetPointer
+from cpython.pycapsule cimport PyCapsule_New, PyCapsule_GetPointer
 from math import ceil
 
 cdef class ReadElemIter:

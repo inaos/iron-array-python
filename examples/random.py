@@ -1,7 +1,6 @@
 import iarray as ia
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy import stats
 
 cfg = ia.Config()
 ctx = ia.Context(cfg)
