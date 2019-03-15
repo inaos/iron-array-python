@@ -37,7 +37,7 @@ cdef class ReadElemIter:
             else:
                 elem = (<float*> value.pointer)[0]
             ciarray.iarray_iter_read_next(self._iter)
-            return index, elem
+            return tuple(index), elem
 
 
 cdef class ReadBlockIter:
@@ -87,7 +87,7 @@ cdef class ReadBlockIter:
         index = [value.block_index[i] for i in range(self._c.ndim)]
 
         ciarray.iarray_iter_read_block_next(self._iter)
-        return index, a.reshape(shape)
+        return tuple(index), a.reshape(shape)
 
 cdef class WritePartIter:
     cdef ciarray.iarray_iter_write_part_t *_iter
@@ -134,7 +134,7 @@ cdef class WritePartIter:
 
         index = [value.elem_index[i] for i in range(self._c.ndim)]
 
-        return index, a.reshape(shape)
+        return tuple(index), a.reshape(shape)
 
 cdef class IarrayInit:
     def __cinit__(self):
@@ -244,14 +244,14 @@ cdef class _Dtshape:
         shape = []
         for i in range(self.ndim):
             shape.append(self._dtshape.shape[i])
-        return shape
+        return tuple(shape)
 
     @property
     def pshape(self):
         pshape = []
         for i in range(self.ndim):
             pshape.append(self._dtshape.pshape[i])
-        return pshape
+        return tuple(pshape)
 
     def __str__(self):
         res = f"IARRAY DTSHAPE OBJECT\n"
@@ -340,7 +340,7 @@ cdef class Container:
         ciarray.iarray_get_dtshape(self._ctx._ctx, self._c, &dtshape)
 
         shape = [dtshape.shape[i] for i in range(self.ndim)]
-        return shape
+        return tuple(shape)
 
     @property
     def pshape(self):
@@ -348,7 +348,7 @@ cdef class Container:
         ciarray.iarray_get_dtshape(self._ctx._ctx, self._c, &dtshape)
 
         pshape = [dtshape.pshape[i] for i in range(self.ndim)]
-        return pshape
+        return tuple(pshape)
 
     @property
     def dtype(self):
