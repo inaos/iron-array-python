@@ -8,18 +8,13 @@ r_ctx = ia.RandomContext(ctx)
 
 size = 1000000
 shape = [size]
+pshape = [100]
 
-mu = 1
-sigma = 0.5
+a1 = ia.random_beta(ctx, r_ctx, 2, 5, shape, pshape)
+a2 = ia.iarray2numpy(ctx, a1)
 
-# a = ia.random_lognormal(ctx, r_ctx, mu, sigma, shape)
-a = ia.random_randn(ctx, r_ctx, shape)
+b = np.random.beta(2, 5, size)
 
-b = ia.iarray2numpy(ctx, a)
+plt.hist([a2, b], bins='auto', density=True, histtype="step", cumulative=False)
 
-# c = np.random.lognormal(mu, sigma, size)
-c = np.random.randn(size)
-
-plt.hist(b, bins='auto', density=True, histtype="step")
-plt.hist(c, bins='auto', density=True, histtype="step")
 plt.show()

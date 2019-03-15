@@ -1,25 +1,22 @@
 import iarray as ia
 import numpy as np
+import matplotlib.pyplot as plt
 
 cfg = ia.Config()
 ctx = ia.Context(cfg)
+rnd_ctx = ia.RandomContext(ctx, seed=123)
+np.random.seed(456)
 
-shape = [4, 4]
-pshape = [2, 3]
-block = [2, 2]
+shape = [10, 10]
+pshape = [4, 5]
 
 size = int(np.prod(shape))
 
-a = ia.arange(ctx, size, shape=shape, pshape=pshape)
+c1 = ia.empty(ctx, shape, pshape)
 
-b = ia.iarray2numpy(ctx, a)
+for (elem_ind, part) in c1.iter_write():
+    part[:] = np.ones(part.shape, dtype=np.float64)
 
-print("Element-wise")
+c2 = ia.iarray2numpy(ctx, c1)
 
-for index, elem in a.iter_elem():
-    print(f"{index}: {elem}")
-
-print("Block-wise")
-
-for index, bl in a.iter_block(block):
-    print(f"{index}: {bl}")
+print(c2)

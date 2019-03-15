@@ -22,8 +22,10 @@ sources = ['iarray/iarray_ext.pyx']
 if 'IARRAY_DEVELOP_MODE' in os.environ:
     print("*** Entering iarray develop mode ***")
     BLOSC_DIR = os.environ.get('BLOSC_DIR', '../iron-array/contribs/c-blosc2')
+    BLOSC_DIR = os.path.expanduser(BLOSC_DIR)
     print("Looking at blosc library at:", BLOSC_DIR, ".  If not correct, use the `BLOSC_DIR` envvar")
     IARRAY_DIR = os.environ.get('IARRAY_DIR', '../iron-array')
+    IARRAY_DIR = os.path.expanduser(IARRAY_DIR)
     print("Looking at iarray library at:", IARRAY_DIR, ".  If not correct, use the `IARRAY_DIR` envvar")
 
     if BLOSC_DIR != '':
@@ -49,6 +51,7 @@ else:
         include_dirs += [os.path.join(IARRAY_DIR, 'include')]
 
 INAC_DIR = os.environ.get('INAC_DIR', '../INAOS')
+INAC_DIR = os.path.expanduser(INAC_DIR)
 print("Looking at the inac library at:", INAC_DIR, ".  If not correct, use the `INAC_DIR` envvar")
 if INAC_DIR != '':
     library_dirs += [os.path.join(INAC_DIR, 'lib')]
