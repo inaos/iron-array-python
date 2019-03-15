@@ -56,7 +56,6 @@ def do_block_evaluation():
 
     # Reference to compare to
     y0 = (x - 1.35) * (x - 4.45) * (x - 8.5)
-    # print(y0, y0.shape)
 
     t0 = time()
     ya = ia.empty(ctx, shape=shape, pshape=pshape)

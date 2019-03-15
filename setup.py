@@ -15,36 +15,23 @@ LFLAGS = os.environ.get('LFLAGS', '').split()
 # Sources & libraries
 include_dirs = [numpy.get_include()]
 library_dirs = []
-libraries = ['blosc', 'iarray', 'inac']
+libraries = ['iarray', 'inac']
 define_macros = []
 sources = ['iarray/iarray_ext.pyx']
 
 if 'IARRAY_DEVELOP_MODE' in os.environ:
     print("*** Entering iarray develop mode ***")
-    BLOSC_DIR = os.environ.get('BLOSC_DIR', '../iron-array/contribs/c-blosc2')
-    BLOSC_DIR = os.path.expanduser(BLOSC_DIR)
-    print("Looking at blosc library at:", BLOSC_DIR, ".  If not correct, use the `BLOSC_DIR` envvar")
     IARRAY_DIR = os.environ.get('IARRAY_DIR', '../iron-array')
     IARRAY_DIR = os.path.expanduser(IARRAY_DIR)
     print("Looking at iarray library at:", IARRAY_DIR, ".  If not correct, use the `IARRAY_DIR` envvar")
-
-    if BLOSC_DIR != '':
-        library_dirs += [os.path.join(BLOSC_DIR, 'build/blosc')]
-        include_dirs += [os.path.join(BLOSC_DIR, 'blosc')]
 
     if IARRAY_DIR != '':
         library_dirs += [os.path.join(IARRAY_DIR, 'build')]
         include_dirs += [os.path.join(IARRAY_DIR, 'include')]
 else:
     print("*** Entering iarray production mode ***")
-    BLOSC_DIR = os.environ.get('BLOSC_DIR', '/usr/local')
-    print("Looking at blosc library at:", BLOSC_DIR, ".  If not correct, use the `BLOSC_DIR` envvar")
     IARRAY_DIR = os.environ.get('IARRAY_DIR', '/usr/local')
     print("Looking at iarray library at:", IARRAY_DIR, ".  If not correct, use the `IARRAY_DIR` envvar")
-
-    if BLOSC_DIR != '':
-        library_dirs += [os.path.join(BLOSC_DIR, 'lib')]
-        include_dirs += [os.path.join(BLOSC_DIR, 'include')]
 
     if IARRAY_DIR != '':
         library_dirs += [os.path.join(IARRAY_DIR, 'lib')]
