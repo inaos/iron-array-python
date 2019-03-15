@@ -77,6 +77,16 @@ def do_regular_evaluation():
     print("Regular evaluate via pre-compiled numba:", round(time() - t0, 3))
     np.testing.assert_almost_equal(y0, y1)
 
+    t0 = time()
+    y1 = ia.poly_cython(x)
+    print("Regular evaluate via cython:", round(time() - t0, 3))
+    np.testing.assert_almost_equal(y0, y1)
+
+    t0 = time()
+    y1 = ia.poly_cython_nogil(x)
+    print("Regular evaluate via cython (nogil):", round(time() - t0, 3))
+    np.testing.assert_almost_equal(y0, y1)
+
 
 def do_block_evaluation():
     print("Block evaluation of the expression:", expression, "with %d elements" % N)

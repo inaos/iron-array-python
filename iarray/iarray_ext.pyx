@@ -1,6 +1,10 @@
+# Hey Cython, this is Python 3!
+# cython: language_level=3
+
 cimport iarray.ciarray_ext as ciarray
 import numpy as np
 cimport numpy as np
+import cython
 from cpython.pycapsule cimport PyCapsule_New, PyCapsule_GetPointer
 from math import ceil
 
@@ -876,3 +880,34 @@ def random_kstest(ctx, a, b):
     cdef ciarray.bool res;
     ciarray.iarray_random_kstest(ctx_, a_, b_, &res)
     return res
+
+
+# TODO: the next functions are just for benchmarking purposes and should be moved to its own extension
+
+@cython.boundscheck(False) # turn off bounds-checking for entire function
+@cython.wraparound(False)  # turn off negative index wrapping for entire function
+def poly_cython(xa):
+    cdef np.ndarray[np.npy_float64] y = np.empty(xa.shape, xa.dtype)
+    cdef np.ndarray[np.npy_float64] x = xa
+    for i in range(len(x)):
+        y[i] = (x[i] - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
+    return y
+
+
+cimport cython
+from cython.parallel import prange
+@cython.boundscheck(False) # turn off bounds-checking for entire function
+@cython.wraparound(False)  # turn off negative index wrapping for entire function
+cdef void poly_nogil(double[:] x, double[:] y, int n) nogil:
+    # for i in prange(n):
+    for i in range(n):
+        y[i] = (x[i] - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
+
+
+def poly_cython_nogil(xa):
+    cdef np.ndarray[np.npy_float64] y = np.empty(xa.shape, xa.dtype)
+    cdef np.ndarray[np.npy_float64] x = xa
+    poly_nogil(x, y, len(x))
+    return y
+
+# TODO: End of the benchmarking code
