@@ -23,10 +23,12 @@ if 'IARRAY_DEVELOP_MODE' in os.environ:
     print("*** Entering iarray develop mode ***")
     IARRAY_DIR = os.environ.get('IARRAY_DIR', '../iron-array')
     IARRAY_DIR = os.path.expanduser(IARRAY_DIR)
-    print("Looking at iarray library at:", IARRAY_DIR, ".  If not correct, use the `IARRAY_DIR` envvar")
+    print("Looking at iarray sources at:", IARRAY_DIR, ".  If not correct, use the `IARRAY_DIR` envvar")
 
     if IARRAY_DIR != '':
-        library_dirs += [os.path.join(IARRAY_DIR, 'build')]
+        IARRAY_BUILD_DIR = os.environ.get('IARRAY_BUILD_DIR', os.path.join(IARRAY_DIR, 'build'))
+        print("Looking at iarray library at:", IARRAY_BUILD_DIR, ".  If not correct, use the `IARRAY_BUILD_DIR` envvar")
+        library_dirs += [IARRAY_BUILD_DIR]
         include_dirs += [os.path.join(IARRAY_DIR, 'include')]
 else:
     print("*** Entering iarray production mode ***")
