@@ -5,42 +5,52 @@ IronArray for Python
 
 This package supports two modes for building the Python extension: develop and release.
 
-* The develop mode uses the `iarray` repo locallly so as to find the headers and libraries (you must ensure that the libraries can be found in the `build/` directory of the local repo).  This allows to develop both packages (the C library and the Python wrapper) in parallel without the need to re-install the C library in every iteration.
+* The develop mode uses the `iarray` repo locallly so as to find the headers and libraries.  This allows to develop both packages (the C library and the Python wrapper) in parallel without the need to re-install the C library in every iteration.
 
 * The release mode assumes that both the `iarray` library is installed in the system.
 
-The two modes are setup and driven by environment variables.  Here are examples:
+The two modes are setup and driven by environment variables.  Here are examples for Linux/Mac OSX:
 
 ### Develop mode
 
-```
-$ export IARRAY_DEVELOP_MODE=True
-$ export INAC_DIR=~/.inaos/cmake/inac-darwin-x86_64-relwithdebinfo-1.0.4
-$ export IARRAY_DIR=../iron-array  # the default; if your path is this one, no need to set this
-$ export PYTHONPATH=.
+```bash
+export IARRAY_DEVELOP_MODE=True
+export INAC_DIR=~/.inaos/cmake/inac-darwin-x86_64-relwithdebinfo-1.0.4
+export IARRAY_DIR=../iron-array  # the default; if your path is this one, no need to set this
+export IARRAY_BUILD_DIR=../iron-array/build  # the default; if your path is this one, no need to set this
+export LD_LIBRARY_PATH=../iron-array/build  # the default; if your path is this one, no need to set this. Linux only.
+export PYTHONPATH=.
 ```
 
 ### Release mode
 
-```
-$ unset IARRAY_DEVELOP_MODE
-$ export INAC_DIR=$HOME/.inaos/cmake/inac-darwin-x86_64-relwithdebinfo-1.0.4
-$ export PYTHONPATH=.
+```bash
+unset IARRAY_DEVELOP_MODE
+export INAC_DIR=$HOME/.inaos/cmake/inac-darwin-x86_64-relwithdebinfo-1.0.4
+export PYTHONPATH=.
 ```
 
 ## Compile
 
+In case you have Intel IPP libraries installed (for a turbo-enable LZ4 codec within C-Blosc2), make sure that you run:
+
+```bash
+source ~/intel/bin/compilervars.sh intel64
+```
+
+so as to allow the iarray library to find the IPP libraries.  This applies to both develop and release modes.  Also, be careful and run this *after* you have set the `LD_LIBRARY_PATH` above (in case you are using the develop mode on Linux/MacOSX).
+
 After setting up the build mode, we can proceed with the compilation of the actual Python wrapper for iarray:
 
-```
-$ rm -rf build iarray/*.so    # *.pyd if on windows.  This step is a cleanup and purely optional.
-$ python setup.py build_ext -i
+```bash
+rm -rf build iarray/*.so    # *.pyd if on windows.  This step is a cleanup and purely optional.
+python setup.py build_ext -i
 ```
 
 and  execute the tests with:
 
-```
-$ pytest
+```bash
+pytest
 ====================================================================================== test session starts =======================================================================================
 platform darwin -- Python 3.7.1, pytest-4.3.0, py-1.8.0, pluggy-0.9.0
 rootdir: /Users/faltet/inaos/iron-array-python, inifile:
@@ -56,8 +66,8 @@ iarray/tests/test_expression.py ..                                              
 
 When in release mode, you may want to install this package in the system.  For doing this, use:
 
-```
-$ python setup.py install
+```bash
+python setup.py install
 ```
 
 The setup.py can be used to produce wheels, where all the libraries are included (see https://pythonwheels.com).
