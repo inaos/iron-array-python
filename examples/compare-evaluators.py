@@ -4,8 +4,6 @@ import numpy as np
 import numexpr as ne
 from numba import jit
 from numba.pycc import CC
-import numba_prec  # for pre-compiled numba code
-
 
 cc = CC('numba_prec')
 # Uncomment the following line to print out the compilation steps
@@ -63,8 +61,15 @@ def do_regular_evaluation():
     np.testing.assert_almost_equal(y0, y1)
 
     t0 = time()
+    nthreads = ne.set_num_threads(1)
     y1 = ne.evaluate(expression, local_dict={'x': x})
     print("Regular evaluate via numexpr:", round(time() - t0, 3))
+    np.testing.assert_almost_equal(y0, y1)
+
+    t0 = time()
+    ne.set_num_threads(nthreads)
+    y1 = ne.evaluate(expression, local_dict={'x': x})
+    print("Regular evaluate via numexpr (multi-thread):", round(time() - t0, 3))
     np.testing.assert_almost_equal(y0, y1)
 
     t0 = time()
@@ -86,7 +91,6 @@ def do_regular_evaluation():
     y1 = ia.poly_cython_nogil(x)
     print("Regular evaluate via cython (nogil):", round(time() - t0, 3))
     np.testing.assert_almost_equal(y0, y1)
-
 
 def do_block_evaluation():
     print("Block evaluation of the expression:", expression, "with %d elements" % N)
@@ -130,10 +134,21 @@ def do_block_evaluation():
     y1 = ia.iarray2numpy(ctx, ya)
     np.testing.assert_almost_equal(y0, y1)
 
+    t0 = time()
+    expr = ia.Expression(ctx)
+    expr.bind(b'x', xa)
+    expr.compile(b'(x - 1.35) * (x - 4.45) * (x - 8.5)')
+    for i in range(1):   # TODO: setting this to a number larger than 1, makes it crash, at least on Linux
+        ya = expr.eval(shape, pshape, "double")
+    print("Block evaluate via iarray.eval:", round(time() - t0, 3))
+    y1 = ia.iarray2numpy(ctx, ya)
+    np.testing.assert_almost_equal(y0, y1)
+
 
 if __name__ == "__main__":
     cc.compile()
-    cfg = ia.Config()
+    import numba_prec  # for pre-compiled numba code
+    cfg = ia.Config(eval_flags="iterblock", blocksize=0)
     ctx = ia.Context(cfg)
     do_regular_evaluation()
     print("-*-"*10)

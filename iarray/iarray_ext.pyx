@@ -894,20 +894,20 @@ def poly_cython(xa):
     return y
 
 
-cimport cython
 from cython.parallel import prange
 @cython.boundscheck(False) # turn off bounds-checking for entire function
 @cython.wraparound(False)  # turn off negative index wrapping for entire function
-cdef void poly_nogil(double[:] x, double[:] y, int n) nogil:
-    # for i in prange(n):
-    for i in range(n):
+cdef void poly_nogil(double *x, double *y, int n) nogil:
+    cdef int i
+    for i in prange(n):
+    # for i in range(n):
         y[i] = (x[i] - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
 
 
 def poly_cython_nogil(xa):
     cdef np.ndarray[np.npy_float64] y = np.empty(xa.shape, xa.dtype)
     cdef np.ndarray[np.npy_float64] x = xa
-    poly_nogil(x, y, len(x))
+    poly_nogil(&x[0], &y[0], len(x))
     return y
 
 # TODO: End of the benchmarking code
