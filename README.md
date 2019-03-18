@@ -18,7 +18,7 @@ export IARRAY_DEVELOP_MODE=True
 export INAC_DIR=~/.inaos/cmake/inac-darwin-x86_64-relwithdebinfo-1.0.4
 export IARRAY_DIR=../iron-array  # the default; if your path is this one, no need to set this
 export IARRAY_BUILD_DIR=../iron-array/build  # the default; if your path is this one, no need to set this
-export LD_LIBRARY_PATH=../iron-array/build  # the default; if your path is this one, no need to set this. Linux only.
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:../iron-array/build  # Linux only
 export PYTHONPATH=.
 ```
 
@@ -38,7 +38,7 @@ In case you have Intel IPP libraries installed (for a turbo-enable LZ4 codec wit
 source ~/intel/bin/compilervars.sh intel64
 ```
 
-so as to allow the iarray library to find the IPP libraries.  This applies to both develop and release modes.  Also, be careful and run this *after* you have set the `LD_LIBRARY_PATH` above (in case you are using the develop mode on Linux/MacOSX).
+so as to allow the iarray library to find the IPP libraries.  This applies to both develop and release modes.
 
 After setting up the build mode, we can proceed with the compilation of the actual Python wrapper for iarray:
 
