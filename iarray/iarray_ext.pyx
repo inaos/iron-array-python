@@ -8,6 +8,7 @@ import cython
 from cpython.pycapsule cimport PyCapsule_New, PyCapsule_GetPointer
 from math import ceil
 
+
 cdef class ReadElemIter:
     cdef ciarray.iarray_iter_read_t *_iter
     cdef Container _c
@@ -48,6 +49,7 @@ cdef class ReadBlockIter:
     cdef ciarray.iarray_iter_read_block_t *_iter
     cdef Container _c
     cdef dtype
+    cdef flag
 
     def __cinit__(self, c, block):
         self._c = c
@@ -62,36 +64,39 @@ cdef class ReadBlockIter:
             self.dtype = 1
 
     def __dealloc__(self):
+        # TODO: contrarily to a write iter, it looks like a next is not necessary here
+        # if self.flag:
+        #     ciarray.iarray_iter_read_block_next(self._iter)
         ciarray.iarray_iter_read_block_free(self._iter)
 
     def __iter__(self):
         ciarray.iarray_iter_read_block_init(self._iter)
+        self.flag = False
         return self
 
     def __next__(self):
-        cdef ciarray.iarray_iter_read_block_value_t value
+        if self.flag:
+            ciarray.iarray_iter_read_block_next(self._iter)
+        self.flag = True
 
+        cdef ciarray.iarray_iter_read_block_value_t value
         if ciarray.iarray_iter_read_block_finished(self._iter):
             raise StopIteration
         else:
             ciarray.iarray_iter_read_block_value(self._iter, &value)
 
-        shape = [value.block_shape[i] for i in range(self._c.ndim)]
+        shape = tuple(value.block_shape[i] for i in range(self._c.ndim))
         size = np.prod(shape)
 
         if self.dtype == 0:
-            a = np.empty(shape, dtype=np.float64).flatten()
-            for i in range(size):
-                a[i] = (<double*> value.pointer)[i]
+            view = <np.float64_t[:size]> value.pointer
         else:
-            a = np.empty(shape, dtype=np.float32)
-            for i in range(size):
-                a[i] = (<float*> value.pointer)[i]
+            view = <np.float32_t[:size]> value.pointer
+        a = np.asarray(view)
 
-        index = [value.elem_index[i] for i in range(self._c.ndim)]
+        index = tuple(value.elem_index[i] for i in range(self._c.ndim))
 
-        ciarray.iarray_iter_read_block_next(self._iter)
-        return tuple(index), a.reshape(shape)
+        return index, a.reshape(shape)
 
 cdef class WritePartIter:
     cdef ciarray.iarray_iter_write_part_t *_iter
@@ -132,19 +137,18 @@ cdef class WritePartIter:
         else:
             ciarray.iarray_iter_write_part_value(self._iter, &value)
 
-        shape = [value.part_shape[i] for i in range(self._c.ndim)]
+        shape = tuple(value.part_shape[i] for i in range(self._c.ndim))
         size = np.prod(shape)
 
         if self.dtype == 0:
             view = <np.float64_t[:size]> value.pointer
-            a = np.asarray(view)
         else:
             view = <np.float32_t[:size]> value.pointer
-            a = np.asarray(view)
+        a = np.asarray(view)
 
-        index = [value.elem_index[i] for i in range(self._c.ndim)]
+        index = tuple(value.elem_index[i] for i in range(self._c.ndim))
 
-        return tuple(index), a.reshape(shape)
+        return index, a.reshape(shape)
 
 cdef class IarrayInit:
     def __cinit__(self):
