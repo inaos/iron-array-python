@@ -48,8 +48,8 @@ cdef class ReadElemIter:
 cdef class ReadBlockIter:
     cdef ciarray.iarray_iter_read_block_t *_iter
     cdef Container _c
-    cdef dtype
-    cdef flag
+    cdef int dtype
+    cdef int flag
 
     def __cinit__(self, c, block):
         self._c = c
@@ -101,8 +101,8 @@ cdef class ReadBlockIter:
 cdef class WritePartIter:
     cdef ciarray.iarray_iter_write_part_t *_iter
     cdef Container _c
-    cdef dtype
-    cdef flag
+    cdef int dtype
+    cdef int flag
 
     def __cinit__(self, c):
         self._c = c
