@@ -3,11 +3,27 @@ from time import time
 import numpy as np
 import numexpr as ne
 from numba import jit
-from numba.pycc import CC
 
-cc = CC('numba_prec')
-# Uncomment the following line to print out the compilation steps
-cc.verbose = True
+# Make this True if you want to test the pre-compilation in Numba (not necessary, really)
+NUMBA_PRECOMP = False
+
+if NUMBA_PRECOMP:
+    from numba.pycc import CC
+    cc = CC('numba_prec')
+    # Uncomment the following line to print out the compilation steps
+    cc.verbose = True
+
+    @cc.export('poly_double', 'f8[:](f8[:])')
+    def poly_numba_prec(x):
+        y = np.empty(x.shape, x.dtype)
+        for i in range(len(x)):
+            y[i] = (x[i] - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
+        return y
+
+    cc.compile()
+    import numba_prec  # for pre-compiled numba code
+else:
+    numba_prec = None
 
 # Vector sizes and partitions
 N = 2 * 1000 * 1000
@@ -32,13 +48,6 @@ def poly_numba(x):
         y[i] = (x[i] - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
     return y
 
-
-@cc.export('poly_double', 'f8[:](f8[:])')
-def poly_numba_prec(x):
-    y = np.empty(x.shape, x.dtype)
-    for i in range(len(x)):
-        y[i] = (x[i] - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
-    return y
 
 
 def do_regular_evaluation():
@@ -82,10 +91,11 @@ def do_regular_evaluation():
     print("Regular evaluate via numba (II):", round(time() - t0, 3))
     np.testing.assert_almost_equal(y0, y1)
 
-    t0 = time()
-    y1 = numba_prec.poly_double(x)
-    print("Regular evaluate via pre-compiled numba:", round(time() - t0, 3))
-    np.testing.assert_almost_equal(y0, y1)
+    if NUMBA_PRECOMP:
+        t0 = time()
+        y1 = numba_prec.poly_double(x)
+        print("Regular evaluate via pre-compiled numba:", round(time() - t0, 3))
+        np.testing.assert_almost_equal(y0, y1)
 
     t0 = time()
     y1 = ia.poly_cython(x)
@@ -133,13 +143,14 @@ def do_block_evaluation():
     y1 = ia.iarray2numpy(ctx, ya)
     np.testing.assert_almost_equal(y0, y1)
 
-    t0 = time()
-    ya = ia.empty(ctx, shape=shape, pshape=pshape)
-    for ((i, x), (j, y)) in zip(xa.iter_block(block_size), ya.iter_write()):
-        y[:] = numba_prec.poly_double(x)
-    print("Block evaluate via pre-compiled numba:", round(time() - t0, 3))
-    y1 = ia.iarray2numpy(ctx, ya)
-    np.testing.assert_almost_equal(y0, y1)
+    if NUMBA_PRECOMP:
+        t0 = time()
+        ya = ia.empty(ctx, shape=shape, pshape=pshape)
+        for ((i, x), (j, y)) in zip(xa.iter_block(block_size), ya.iter_write()):
+            y[:] = numba_prec.poly_double(x)
+        print("Block evaluate via pre-compiled numba:", round(time() - t0, 3))
+        y1 = ia.iarray2numpy(ctx, ya)
+        np.testing.assert_almost_equal(y0, y1)
 
     # t0 = time()
     # expr = ia.Expression(ctx)
@@ -153,8 +164,6 @@ def do_block_evaluation():
 
 
 if __name__ == "__main__":
-    cc.compile()
-    import numba_prec  # for pre-compiled numba code
     do_regular_evaluation()
     print("-*-"*10)
     do_block_evaluation()
