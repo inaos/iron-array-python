@@ -75,15 +75,16 @@ cdef class ReadBlockIter:
         return self
 
     def __next__(self):
+        if ciarray.iarray_iter_read_block_finished(self._iter):
+            self.flag = False
+            raise StopIteration
+
         if self.flag:
             ciarray.iarray_iter_read_block_next(self._iter)
         self.flag = True
 
         cdef ciarray.iarray_iter_read_block_value_t value
-        if ciarray.iarray_iter_read_block_finished(self._iter):
-            raise StopIteration
-        else:
-            ciarray.iarray_iter_read_block_value(self._iter, &value)
+        ciarray.iarray_iter_read_block_value(self._iter, &value)
 
         shape = tuple(value.block_shape[i] for i in range(self._c.ndim))
         size = np.prod(shape)
@@ -126,16 +127,16 @@ cdef class WritePartIter:
         return self
 
     def __next__(self):
+        if ciarray.iarray_iter_write_part_finished(self._iter):
+            self.flag = False  # means that everything has been flushed
+            raise StopIteration
+
         if self.flag:
             ciarray.iarray_iter_write_part_next(self._iter)
         self.flag = True
-        cdef ciarray.iarray_iter_write_part_value_t value
 
-        if ciarray.iarray_iter_write_part_finished(self._iter):
-            self.flga = False  # means that everything has been flushed
-            raise StopIteration
-        else:
-            ciarray.iarray_iter_write_part_value(self._iter, &value)
+        cdef ciarray.iarray_iter_write_part_value_t value
+        ciarray.iarray_iter_write_part_value(self._iter, &value)
 
         shape = tuple(value.part_shape[i] for i in range(self._c.ndim))
         size = np.prod(shape)
