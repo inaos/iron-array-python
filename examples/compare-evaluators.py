@@ -4,6 +4,16 @@ import numpy as np
 import numexpr as ne
 from numba import jit
 
+
+# Vector sizes and partitions
+N = 2 * 1000 * 1000
+shape = [N]
+pshape = [2 * 100 * 1000]
+block_size = pshape
+expression = '(x - 1.35) * (x - 4.45) * (x - 8.5)'
+clevel = 0   # compression level
+clib = ia.IARRAY_LZ4  # compression codec
+
 # Make this True if you want to test the pre-compilation in Numba (not necessary, really)
 NUMBA_PRECOMP = False
 
@@ -22,15 +32,6 @@ if NUMBA_PRECOMP:
 
     cc.compile()
     import numba_prec  # for pre-compiled numba code
-else:
-    numba_prec = None
-
-# Vector sizes and partitions
-N = 2 * 1000 * 1000
-shape = [N]
-pshape = [2 * 100 * 1000]
-block_size = pshape
-expression = '(x - 1.35) * (x - 4.45) * (x - 8.5)'
 
 
 def poly_python(x):
@@ -47,7 +48,6 @@ def poly_numba(x):
     for i in range(len(x)):
         y[i] = (x[i] - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
     return y
-
 
 
 def do_regular_evaluation():
@@ -107,9 +107,10 @@ def do_regular_evaluation():
     print("Regular evaluate via cython (nogil):", round(time() - t0, 3))
     np.testing.assert_almost_equal(y0, y1)
 
+
 def do_block_evaluation():
     print("Block evaluation of the expression:", expression, "with %d elements" % N)
-    cfg = ia.Config(eval_flags="iterblock", blocksize=0)
+    cfg = ia.Config(eval_flags="iterblock", compression_codec=clib, compression_level=clevel, blocksize=0)
     ctx = ia.Context(cfg)
 
     x = np.linspace(0, 10, N, dtype=np.double)
@@ -151,6 +152,22 @@ def do_block_evaluation():
         print("Block evaluate via pre-compiled numba:", round(time() - t0, 3))
         y1 = ia.iarray2numpy(ctx, ya)
         np.testing.assert_almost_equal(y0, y1)
+
+    t0 = time()
+    ya = ia.empty(ctx, shape=shape, pshape=pshape)
+    for ((i, x), (j, y)) in zip(xa.iter_block(block_size), ya.iter_write()):
+        y[:] = ia.poly_cython(x)
+    print("Block evaluate via cython:", round(time() - t0, 3))
+    y1 = ia.iarray2numpy(ctx, ya)
+    np.testing.assert_almost_equal(y0, y1)
+
+    t0 = time()
+    ya = ia.empty(ctx, shape=shape, pshape=pshape)
+    for ((i, x), (j, y)) in zip(xa.iter_block(block_size), ya.iter_write()):
+        y[:] = ia.poly_cython_nogil(x)
+    print("Block evaluate via cython (nogil):", round(time() - t0, 3))
+    y1 = ia.iarray2numpy(ctx, ya)
+    np.testing.assert_almost_equal(y0, y1)
 
     # t0 = time()
     # expr = ia.Expression(ctx)
