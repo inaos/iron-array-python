@@ -78,6 +78,11 @@ def do_regular_evaluation():
     np.testing.assert_almost_equal(y0, y1)
 
     t0 = time()
+    y1 = poly_numba(x)
+    print("Regular evaluate via numba (II):", round(time() - t0, 3))
+    np.testing.assert_almost_equal(y0, y1)
+
+    t0 = time()
     y1 = numba_prec.poly_double(x)
     print("Regular evaluate via pre-compiled numba:", round(time() - t0, 3))
     np.testing.assert_almost_equal(y0, y1)
