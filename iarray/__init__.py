@@ -6,7 +6,8 @@ IARRAY_LZ4HC = 2
 IARRAY_ZLIB = 4
 IARRAY_LIZARD = 5
 
-from .iarray_ext import *
+from .iarray_ext import *  # the order of the import is important: extensions first
+from .container import IArray
 from .version import version as __version__
 
 IarrayInit()
