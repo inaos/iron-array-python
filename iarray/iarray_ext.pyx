@@ -9,6 +9,173 @@ from cpython.pycapsule cimport PyCapsule_New, PyCapsule_GetPointer
 from math import ceil
 
 
+cdef class IarrayInit:
+    def __cinit__(self):
+        ciarray.iarray_init()
+
+    def __delloc(self):
+        ciarray.iarray_destroy()
+
+
+cdef class Config:
+    cdef ciarray.iarray_config_t _cfg
+
+    def __init__(self, compression_codec=1, compression_level=5, filter_flags=0, eval_flags="iterblock",
+                 max_num_threads=1, fp_mantissa_bits=0, blocksize=0):
+        self._cfg.compression_codec = compression_codec
+        self._cfg.compression_level = compression_level
+        self._cfg.filter_flags = filter_flags
+        if eval_flags == "iterblock":
+            self._cfg.eval_flags = ciarray.IARRAY_EXPR_EVAL_ITERBLOCK
+        elif eval_flags == "iterchunk":
+            self._cfg.eval_flags = ciarray.IARRAY_EXPR_EVAL_ITERCHUNK
+        elif eval_flags == "chunk":
+            self._cfg.eval_flags = ciarray.IARRAY_EXPR_EVAL_CHUNK
+        else:
+            self._cfg.eval_flags = ciarray.IARRAY_EXPR_EVAL_BLOCK
+        self._cfg.max_num_threads = max_num_threads
+        self._cfg.fp_mantissa_bits = fp_mantissa_bits
+        self._cfg.blocksize = blocksize
+
+    def to_dict(self):
+        return <object> self._cfg
+
+    @property
+    def compression_codec(self):
+            codec = ["BloscLZ", "LZ4", "LZ4HC", "Snappy", "Zlib", "Zstd", "Lizard"]
+            return codec[self._cfg.compression_codec]
+
+    @property
+    def compression_level(self):
+        return self._cfg.compression_level
+
+    @property
+    def filter_flags(self):
+        flags = {0: "No filters", 1: "Shuffle", 2: "Bit Shuffle", 4: "Delta", 8: "Trunc. Precision"}
+        return flags[self._cfg.filter_flags]
+
+    @property
+    def eval_flags(self):
+        flags = {1: "Block", 2: "Chunk", 4: "Block (iter)", 8: "Chunk (iter)"}
+        return flags[self._cfg.eval_flags]
+
+    @property
+    def max_num_threads(self):
+        return self._cfg.max_num_threads
+
+    @property
+    def fp_mantissa_bits(self):
+        return self._cfg.fp_mantissa_bits
+
+    @property
+    def blocksize(self):
+        return self._cfg.blocksize
+
+    def __str__(self):
+        res = f"IARRAY CONFIG OBJECT\n"
+        compression_codec = f"    Compression codec: {self.compression_codec}\n"
+        compression_level = f"    Compression level: {self.compression_level}\n"
+        filter_flags = f"    Filter flags: {self.filter_flags}\n"
+        eval_flags = f"    Eval flags: {self.eval_flags}\n"
+        max_num_threads = f"    Max. num. threads: {self.max_num_threads}\n"
+        fp_mantissa_bits = f"    Fp mantissa bits: {self.fp_mantissa_bits}\n"
+        blocksize = f"    Blocksize: {self.blocksize}"
+        return res + compression_codec + compression_level + filter_flags + eval_flags +\
+               max_num_threads + fp_mantissa_bits + blocksize
+
+
+cdef class Context:
+    cdef ciarray.iarray_context_t *_ctx
+
+    def __init__(self, cfg):
+        cdef ciarray.iarray_config_t cfg_ = cfg.to_dict()
+        ciarray.iarray_context_new(&cfg_, &self._ctx)
+
+    def __dealloc__(self):
+        ciarray.iarray_context_free(&self._ctx)
+
+    def to_capsule(self):
+        return PyCapsule_New(self._ctx, "iarray_context_t*", NULL)
+
+    def __str__(self):
+        return "IARRAY CONTEXT OBJECT"
+
+
+cdef class _Dtshape:
+    cdef ciarray.iarray_dtshape_t _dtshape
+
+    def __cinit__(self, shape, pshape=None, dtype="double"):
+        self._dtshape.ndim = len(shape)
+        if dtype == "double":
+            self._dtshape.dtype = ciarray.IARRAY_DATA_TYPE_DOUBLE
+        elif dtype == "float":
+            self._dtshape.dtype = ciarray.IARRAY_DATA_TYPE_FLOAT
+        for i in range(len(shape)):
+            self._dtshape.shape[i] = shape[i]
+            if pshape is not None:
+               self._dtshape.pshape[i] = pshape[i]
+            else:
+                self._dtshape.pshape[i] = shape[i]
+
+    cdef to_dict(self):
+        return <object> self._dtshape
+
+    @property
+    def ndim(self):
+        return self._dtshape.ndim
+
+    @property
+    def dtype(self):
+        dtype = ["double", "float"]
+        return dtype[self._dtshape.dtype]
+
+    @property
+    def shape(self):
+        shape = []
+        for i in range(self.ndim):
+            shape.append(self._dtshape.shape[i])
+        return tuple(shape)
+
+    @property
+    def pshape(self):
+        pshape = []
+        for i in range(self.ndim):
+            pshape.append(self._dtshape.pshape[i])
+        return tuple(pshape)
+
+    def __str__(self):
+        res = f"IARRAY DTSHAPE OBJECT\n"
+        ndim = f"    Dimensions: {self.ndim}\n"
+        shape = f"    Shape: {self.shape}\n"
+        pshape = f"    Pshape: {self.pshape}\n"
+        dtype = f"    Datatype: {self.dtype}"
+
+        return res + ndim + shape + pshape + dtype
+
+
+cdef class RandomContext:
+    cdef ciarray.iarray_random_ctx_t *_r_ctx
+    cdef Context _ctx
+
+    def __cinit__(self, ctx, seed=0, rng="MERSENNE_TWISTER"):
+        self._ctx = ctx
+        cdef ciarray.iarray_random_ctx_t* r_ctx
+        if rng == "MERSENNE_TWISTER":
+            ciarray.iarray_random_ctx_new(self._ctx._ctx, seed, ciarray.IARRAY_RANDOM_RNG_MERSENNE_TWISTER, &r_ctx)
+        else:
+            ciarray.iarray_random_ctx_new(self._ctx._ctx, seed, ciarray.IARRAY_RANDOM_RNG_SOBOL, &r_ctx)
+        self._r_ctx = r_ctx
+
+    def __dealloc__(self):
+        ciarray.iarray_random_ctx_free(self._ctx._ctx, &self._r_ctx)
+
+    def to_capsule(self):
+        return PyCapsule_New(self._r_ctx, "iarray_random_ctx_t*", NULL)
+
+    def __str__(self):
+        return "IARRAY RANDOM CONTEXT OBJECT"
+
+
 cdef class ReadElemIter:
     cdef ciarray.iarray_iter_read_t *_iter
     cdef Container _c
@@ -99,6 +266,7 @@ cdef class ReadBlockIter:
 
         return index, a.reshape(shape)
 
+
 cdef class WritePartIter:
     cdef ciarray.iarray_iter_write_part_t *_iter
     cdef Container _c
@@ -151,171 +319,6 @@ cdef class WritePartIter:
 
         return index, a.reshape(shape)
 
-cdef class IarrayInit:
-    def __cinit__(self):
-        ciarray.iarray_init()
-
-    def __delloc(self):
-        ciarray.iarray_destroy()
-
-
-cdef class Config:
-    cdef ciarray.iarray_config_t _cfg
-
-    def __init__(self, compression_codec=1, compression_level=5, filter_flags=0, eval_flags="iterblock",
-                max_num_threads=1, fp_mantissa_bits=0, blocksize=0):
-        self._cfg.compression_codec = compression_codec
-        self._cfg.compression_level = compression_level
-        self._cfg.filter_flags = filter_flags
-        if eval_flags == "iterblock":
-            self._cfg.eval_flags = ciarray.IARRAY_EXPR_EVAL_ITERBLOCK
-        elif eval_flags == "iterchunk":
-            self._cfg.eval_flags = ciarray.IARRAY_EXPR_EVAL_ITERCHUNK
-        elif eval_flags == "chunk":
-            self._cfg.eval_flags = ciarray.IARRAY_EXPR_EVAL_CHUNK
-        else:
-            self._cfg.eval_flags = ciarray.IARRAY_EXPR_EVAL_BLOCK
-        self._cfg.max_num_threads = max_num_threads
-        self._cfg.fp_mantissa_bits = fp_mantissa_bits
-        self._cfg.blocksize = blocksize
-
-    def to_dict(self):
-        return <object> self._cfg
-
-    @property
-    def compression_codec(self):
-            codec = ["BloscLZ", "LZ4", "LZ4HC", "Snappy", "Zlib", "Zstd", "Lizard"]
-            return codec[self._cfg.compression_codec]
-
-    @property
-    def compression_level(self):
-        return self._cfg.compression_level
-
-    @property
-    def filter_flags(self):
-        flags = {0: "No filters", 1: "Shuffle", 2: "Bit Shuffle", 4: "Delta", 8: "Trunc. Precision"}
-        return flags[self._cfg.filter_flags]
-
-    @property
-    def eval_flags(self):
-        flags = {1: "Block", 2: "Chunk", 4: "Block (iter)", 8: "Chunk (iter)"}
-        return flags[self._cfg.eval_flags]
-
-    @property
-    def max_num_threads(self):
-        return self._cfg.max_num_threads
-
-    @property
-    def fp_mantissa_bits(self):
-        return self._cfg.fp_mantissa_bits
-
-    @property
-    def blocksize(self):
-        return self._cfg.blocksize
-
-    def __str__(self):
-        res = f"IARRAY CONFIG OBJECT\n"
-        compression_codec = f"    Compression codec: {self.compression_codec}\n"
-        compression_level = f"    Compression level: {self.compression_level}\n"
-        filter_flags = f"    Filter flags: {self.filter_flags}\n"
-        eval_flags = f"    Eval flags: {self.eval_flags}\n"
-        max_num_threads = f"    Max. num. threads: {self.max_num_threads}\n"
-        fp_mantissa_bits = f"    Fp mantissa bits: {self.fp_mantissa_bits}\n"
-        blocksize = f"    Blocksize: {self.blocksize}"
-        return res + compression_codec + compression_level + filter_flags + eval_flags +\
-               max_num_threads + fp_mantissa_bits + blocksize
-
-
-cdef class _Dtshape:
-    cdef ciarray.iarray_dtshape_t _dtshape
-
-    def __cinit__(self, shape, pshape=None, dtype="double"):
-        self._dtshape.ndim = len(shape)
-        if dtype == "double":
-            self._dtshape.dtype = ciarray.IARRAY_DATA_TYPE_DOUBLE
-        elif dtype == "float":
-            self._dtshape.dtype = ciarray.IARRAY_DATA_TYPE_FLOAT
-        for i in range(len(shape)):
-            self._dtshape.shape[i] = shape[i]
-            if pshape is not None:
-               self._dtshape.pshape[i] = pshape[i]
-            else:
-                self._dtshape.pshape[i] = shape[i]
-
-    cdef to_dict(self):
-        return <object> self._dtshape
-
-    @property
-    def ndim(self):
-        return self._dtshape.ndim
-
-    @property
-    def dtype(self):
-        dtype = ["double", "float"]
-        return dtype[self._dtshape.dtype]
-
-    @property
-    def shape(self):
-        shape = []
-        for i in range(self.ndim):
-            shape.append(self._dtshape.shape[i])
-        return tuple(shape)
-
-    @property
-    def pshape(self):
-        pshape = []
-        for i in range(self.ndim):
-            pshape.append(self._dtshape.pshape[i])
-        return tuple(pshape)
-
-    def __str__(self):
-        res = f"IARRAY DTSHAPE OBJECT\n"
-        ndim = f"    Dimensions: {self.ndim}\n"
-        shape = f"    Shape: {self.shape}\n"
-        pshape = f"    Pshape: {self.pshape}\n"
-        dtype = f"    Datatype: {self.dtype}"
-
-        return res + ndim + shape + pshape + dtype
-
-
-cdef class Context:
-    cdef ciarray.iarray_context_t *_ctx
-
-    def __init__(self, cfg):
-        cdef ciarray.iarray_config_t cfg_ = cfg.to_dict()
-        ciarray.iarray_context_new(&cfg_, &self._ctx)
-
-    def __dealloc__(self):
-        ciarray.iarray_context_free(&self._ctx)
-
-    def to_capsule(self):
-        return PyCapsule_New(self._ctx, "iarray_context_t*", NULL)
-
-    def __str__(self):
-        return "IARRAY CONTEXT OBJECT"
-
-
-cdef class RandomContext:
-    cdef ciarray.iarray_random_ctx_t *_r_ctx
-    cdef Context _ctx
-
-    def __cinit__(self, ctx, seed=0, rng="MERSENNE_TWISTER"):
-        self._ctx = ctx
-        cdef ciarray.iarray_random_ctx_t* r_ctx
-        if rng == "MERSENNE_TWISTER":
-            ciarray.iarray_random_ctx_new(self._ctx._ctx, seed, ciarray.IARRAY_RANDOM_RNG_MERSENNE_TWISTER, &r_ctx)
-        else:
-            ciarray.iarray_random_ctx_new(self._ctx._ctx, seed, ciarray.IARRAY_RANDOM_RNG_SOBOL, &r_ctx)
-        self._r_ctx = r_ctx
-
-    def __dealloc__(self):
-        ciarray.iarray_random_ctx_free(self._ctx._ctx, &self._r_ctx)
-
-    def to_capsule(self):
-        return PyCapsule_New(self._r_ctx, "iarray_random_ctx_t*", NULL)
-
-    def __str__(self):
-        return "IARRAY RANDOM CONTEXT OBJECT"
 
 cdef class Container:
     cdef ciarray.iarray_container_t *_c
@@ -383,7 +386,6 @@ cdef class Container:
         return res + ndim + shape + pshape + dtype
 
     def __getitem__(self, item):
-
         if self.ndim == 1:
             item = [item]
 
@@ -428,7 +430,9 @@ cdef class Expression:
 
         return Container(self._ctx, c_c)
 
+#
 # Iarray container creators
+#
 
 def empty(ctx, shape, pshape=None, dtype="double", filename=None):
 
@@ -454,6 +458,7 @@ def empty(ctx, shape, pshape=None, dtype="double", filename=None):
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
 
     return Container(ctx, c_c)
+
 
 def arange(ctx, *args, shape=None, pshape=None, dtype="double", filename=None):
 
@@ -694,7 +699,9 @@ def from_file(ctx, filename):
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     return Container(ctx, c_c)
 
+#
 # Expression functions
+#
 
 def expr_bind(e, var, c):
     cdef ciarray.iarray_expression_t* e_= <ciarray.iarray_expression_t*> PyCapsule_GetPointer(e, "iarray_expression_t*")
@@ -710,7 +717,9 @@ def expr_eval(e, c):
     cdef ciarray.iarray_container_t *c_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(c.to_capsule(), "iarray_container_t*")
     ciarray.iarray_eval(e_, c_)
 
+#
 # Random functions
+#
 
 def random_rand(ctx, r_ctx, shape, pshape=None, dtype="double", filename=None):
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
@@ -734,6 +743,7 @@ def random_rand(ctx, r_ctx, shape, pshape=None, dtype="double", filename=None):
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     return Container(ctx, c_c)
+
 
 def random_randn(ctx, r_ctx, shape, pshape=None, dtype="double", filename=None):
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
@@ -789,6 +799,7 @@ def random_beta(ctx, r_ctx, alpha, beta, shape, pshape=None, dtype="double", fil
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     return Container(ctx, c_c)
 
+
 def random_lognormal(ctx, r_ctx, mu, sigma, shape, pshape=None, dtype="double", filename=None):
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
     cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(), "iarray_random_ctx_t*")
@@ -819,6 +830,7 @@ def random_lognormal(ctx, r_ctx, mu, sigma, shape, pshape=None, dtype="double", 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     return Container(ctx, c_c)
 
+
 def random_exponential(ctx, r_ctx, beta, shape, pshape=None, dtype="double", filename=None):
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
     cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(), "iarray_random_ctx_t*")
@@ -846,6 +858,7 @@ def random_exponential(ctx, r_ctx, beta, shape, pshape=None, dtype="double", fil
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     return Container(ctx, c_c)
+
 
 def random_uniform(ctx, r_ctx, a, b, shape, pshape=None, dtype="double", filename=None):
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
@@ -886,8 +899,9 @@ def random_kstest(ctx, a, b):
     ciarray.iarray_random_kstest(ctx_, a_, b_, &res)
     return res
 
-
+#
 # TODO: the next functions are just for benchmarking purposes and should be moved to its own extension
+#
 
 @cython.boundscheck(False) # turn off bounds-checking for entire function
 @cython.wraparound(False)  # turn off negative index wrapping for entire function
