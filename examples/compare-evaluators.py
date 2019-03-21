@@ -8,7 +8,7 @@ from numba import jit
 # Vector sizes and partitions
 N = 2 * 1000 * 1000
 shape = [N]
-pshape = [2 * 100 * 1000]
+pshape = [100 * 1000]
 block_size = pshape
 expression = '(x - 1.35) * (x - 4.45) * (x - 8.5)'
 clevel = 0   # compression level
