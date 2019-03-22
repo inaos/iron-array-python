@@ -11,7 +11,7 @@
 
 import numpy as np
 import numexpr as ne
-import iarray.iarray_ext as ext
+from . import iarray_ext as ext
 import iarray as ia
 
 
