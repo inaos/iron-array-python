@@ -188,15 +188,23 @@ def do_block_evaluation():
     y1 = ia.iarray2numpy(ctx, ya)
     np.testing.assert_almost_equal(y0, y1)
 
-    # t0 = time()
-    # expr = ia.Expression(ctx)
-    # expr.bind(b'x', xa)
-    # expr.compile(b'(x - 1.35) * (x - 4.45) * (x - 8.5)')
-    # for i in range(1):   # TODO: setting this to a number larger than 1, makes it crash, at least on Linux
-    #     ya = expr.eval(shape, pshape, "double")
-    # print("Block evaluate via iarray.eval:", round(time() - t0, 3))
-    # y1 = ia.iarray2numpy(ctx, ya)
-    # np.testing.assert_almost_equal(y0, y1)
+    t0 = time()
+    expr = ia.Expression(ctx)
+    expr.bind(b'x', xa)
+    expr.compile(b'(x - 1.35) * (x - 4.45) * (x - 8.5)')
+    for i in range(1):   # TODO: setting this to a number larger than 1, makes it crash, at least on Linux
+        ya = expr.eval(shape, pshape, "double")
+    print("Block evaluate via iarray.eval:", round(time() - t0, 3))
+    y1 = ia.iarray2numpy(ctx, ya)
+    np.testing.assert_almost_equal(y0, y1)
+
+    t0 = time()
+    x = xa
+    for i in range(1):
+        ya = ((x - 1.35) * (x - 4.45) * (x - 8.5)).eval()
+    print("Block evaluate via iarray.LazyExpr.eval:", round(time() - t0, 3))
+    y1 = ia.iarray2numpy(ctx, ya)
+    np.testing.assert_almost_equal(y0, y1)
 
 
 if __name__ == "__main__":

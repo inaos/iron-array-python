@@ -117,6 +117,7 @@ class LazyExpr:
 
 
     def eval(self):
+        # TODO: see if ctx, shape and pshape can be instance variables, or better stay like this
         o0 = self.operands['o0']
         if self.ctx is None:
             # Choose the context of the first operand
