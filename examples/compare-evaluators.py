@@ -67,50 +67,50 @@ def do_regular_evaluation():
 
     t0 = time()
     y1 = poly_python(x)
-    print("Regular evaluate via python:", round(time() - t0, 3))
+    print("Regular evaluate via python:", round(time() - t0, 4))
     np.testing.assert_almost_equal(y0, y1)
 
     t0 = time()
     y1 = (x - 1.35) * (x - 4.45) * (x - 8.5)
-    print("Regular evaluate via numpy:", round(time() - t0, 3))
+    print("Regular evaluate via numpy:", round(time() - t0, 4))
     np.testing.assert_almost_equal(y0, y1)
 
     t0 = time()
     nthreads = ne.set_num_threads(1)
     y1 = ne.evaluate(expression, local_dict={'x': x})
-    print("Regular evaluate via numexpr:", round(time() - t0, 3))
+    print("Regular evaluate via numexpr:", round(time() - t0, 4))
     np.testing.assert_almost_equal(y0, y1)
 
     t0 = time()
     ne.set_num_threads(nthreads)
     y1 = ne.evaluate(expression, local_dict={'x': x})
-    print("Regular evaluate via numexpr (multi-thread):", round(time() - t0, 3))
+    print("Regular evaluate via numexpr (multi-thread):", round(time() - t0, 4))
     np.testing.assert_almost_equal(y0, y1)
 
     t0 = time()
     y1 = poly_numba(x)
-    print("Regular evaluate via numba:", round(time() - t0, 3))
+    print("Regular evaluate via numba:", round(time() - t0, 4))
     np.testing.assert_almost_equal(y0, y1)
 
     t0 = time()
     y1 = poly_numba(x)
-    print("Regular evaluate via numba (II):", round(time() - t0, 3))
+    print("Regular evaluate via numba (II):", round(time() - t0, 4))
     np.testing.assert_almost_equal(y0, y1)
 
     if NUMBA_PRECOMP:
         t0 = time()
         y1 = numba_prec.poly_double(x)
-        print("Regular evaluate via pre-compiled numba:", round(time() - t0, 3))
+        print("Regular evaluate via pre-compiled numba:", round(time() - t0, 4))
         np.testing.assert_almost_equal(y0, y1)
 
     t0 = time()
     y1 = ia.poly_cython(x)
-    print("Regular evaluate via cython:", round(time() - t0, 3))
+    print("Regular evaluate via cython:", round(time() - t0, 4))
     np.testing.assert_almost_equal(y0, y1)
 
     t0 = time()
     y1 = ia.poly_cython_nogil(x)
-    print("Regular evaluate via cython (nogil):", round(time() - t0, 3))
+    print("Regular evaluate via cython (nogil):", round(time() - t0, 4))
     np.testing.assert_almost_equal(y0, y1)
 
 
@@ -130,7 +130,7 @@ def do_block_evaluation():
     ya = ia.empty(ctx, shape=shape, pshape=pshape)
     for ((i, x), (j, y)) in zip(xa.iter_block(block_size), ya.iter_write()):
         y[:] = (x - 1.35) * (x - 4.45) * (x - 8.5)
-    print("Block evaluate via numpy:", round(time() - t0, 3))
+    print("Block evaluate via numpy:", round(time() - t0, 4))
     y1 = ia.iarray2numpy(ctx, ya)
     np.testing.assert_almost_equal(y0, y1)
 
@@ -141,7 +141,7 @@ def do_block_evaluation():
         # y[:] = ne.evaluate(expression, local_dict={'x': x})
         ne.evaluate(expression, local_dict={'x': x}, out=y)
         # ne.evaluate(expression, out=y)
-    print("Block evaluate via numexpr:", round(time() - t0, 3))
+    print("Block evaluate via numexpr:", round(time() - t0, 4))
     y1 = ia.iarray2numpy(ctx, ya)
     np.testing.assert_almost_equal(y0, y1)
 
@@ -150,7 +150,7 @@ def do_block_evaluation():
     for ((i, x), (j, y)) in zip(xa.iter_block(block_size), ya.iter_write()):
         # y[:] = poly_numba(x)
         poly_numba2(x, y)
-    print("Block evaluate via numba:", round(time() - t0, 3))
+    print("Block evaluate via numba:", round(time() - t0, 4))
     y1 = ia.iarray2numpy(ctx, ya)
     np.testing.assert_almost_equal(y0, y1)
 
@@ -159,7 +159,7 @@ def do_block_evaluation():
     for ((i, x), (j, y)) in zip(xa.iter_block(block_size), ya.iter_write()):
         # y[:] = poly_numba(x)
         poly_numba2(x, y)
-    print("Block evaluate via numba (II):", round(time() - t0, 3))
+    print("Block evaluate via numba (II):", round(time() - t0, 4))
     y1 = ia.iarray2numpy(ctx, ya)
     np.testing.assert_almost_equal(y0, y1)
 
@@ -168,7 +168,7 @@ def do_block_evaluation():
         ya = ia.empty(ctx, shape=shape, pshape=pshape)
         for ((i, x), (j, y)) in zip(xa.iter_block(block_size), ya.iter_write()):
             y[:] = numba_prec.poly_double(x)
-        print("Block evaluate via pre-compiled numba:", round(time() - t0, 3))
+        print("Block evaluate via pre-compiled numba:", round(time() - t0, 4))
         y1 = ia.iarray2numpy(ctx, ya)
         np.testing.assert_almost_equal(y0, y1)
 
@@ -176,7 +176,7 @@ def do_block_evaluation():
     ya = ia.empty(ctx, shape=shape, pshape=pshape)
     for ((i, x), (j, y)) in zip(xa.iter_block(block_size), ya.iter_write()):
         y[:] = ia.poly_cython(x)
-    print("Block evaluate via cython:", round(time() - t0, 3))
+    print("Block evaluate via cython:", round(time() - t0, 4))
     y1 = ia.iarray2numpy(ctx, ya)
     np.testing.assert_almost_equal(y0, y1)
 
@@ -184,7 +184,7 @@ def do_block_evaluation():
     ya = ia.empty(ctx, shape=shape, pshape=pshape)
     for ((i, x), (j, y)) in zip(xa.iter_block(block_size), ya.iter_write()):
         y[:] = ia.poly_cython_nogil(x)
-    print("Block evaluate via cython (nogil):", round(time() - t0, 3))
+    print("Block evaluate via cython (nogil):", round(time() - t0, 4))
     y1 = ia.iarray2numpy(ctx, ya)
     np.testing.assert_almost_equal(y0, y1)
 
@@ -194,7 +194,7 @@ def do_block_evaluation():
     expr.compile(b'(x - 1.35) * (x - 4.45) * (x - 8.5)')
     for i in range(1):   # TODO: setting this to a number larger than 1, makes it crash, at least on Linux
         ya = expr.eval(shape, pshape, "double")
-    print("Block evaluate via iarray.eval:", round(time() - t0, 3))
+    print("Block evaluate via iarray.eval:", round(time() - t0, 4))
     y1 = ia.iarray2numpy(ctx, ya)
     np.testing.assert_almost_equal(y0, y1)
 
@@ -202,7 +202,7 @@ def do_block_evaluation():
     x = xa
     for i in range(1):
         ya = ((x - 1.35) * (x - 4.45) * (x - 8.5)).eval()
-    print("Block evaluate via iarray.LazyExpr.eval:", round(time() - t0, 3))
+    print("Block evaluate via iarray.LazyExpr.eval:", round(time() - t0, 4))
     y1 = ia.iarray2numpy(ctx, ya)
     np.testing.assert_almost_equal(y0, y1)
 
