@@ -21,7 +21,6 @@ class LazyIArray:
         self.ctx = ctx
         self.shape = value1.shape
         self.pshape = value1.pshape
-        print("shape ->", self.shape, self.pshape)
         self.expression = f"(o0 {op} o1)"
         self.operands = {"o0": value1, "o1": value2}
 
@@ -34,10 +33,9 @@ class LazyIArray:
         for block in zip(*all_iters):
             block_operands = {o: block[i][1] for (i, o) in enumerate(self.operands.keys())}
             out_block = block[-1][1]  # the block for output is at the end, by construction
-            out_block[:] = ne.evaluate(self.expression, local_dict=block_operands)
-        del all_iters  # TODO: fix the iterators so that we don't have to do this manually to make them go
-        print("despres d'esborrar els iteradors...")
-        return IArray(self.ctx, c=out.to_capsule())
+            # out_block[:] = ne.evaluate(self.expression, local_dict=block_operands)
+            ne.evaluate(self.expression, local_dict=block_operands, out=out_block)
+        return out
 
 
     def __str__(self):
@@ -82,7 +80,7 @@ if __name__ == "__main__":
 
     # Define array params
     shape = [100]
-    pshape = [20]
+    pshape = [50]
     size = int(np.prod(shape))
 
     # Create initial containers
