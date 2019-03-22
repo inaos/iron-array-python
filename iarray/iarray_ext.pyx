@@ -297,7 +297,6 @@ cdef class WritePartIter:
         # TODO: look if this workaround for forcing a flush when no StopIteration happens can be improved
         # TODO: study if this should be used for read iterators or it is not necessary
         # TODO: setup tests where zip(iter1, iter2) with different combinations of read/write iters are used
-        print("Tancant writepart iter!")
         if self.flag:
             ciarray.iarray_iter_write_part_next(self._iter)
         ciarray.iarray_iter_write_part_free(self._iter)
