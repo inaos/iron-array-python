@@ -50,6 +50,12 @@ def poly_numba(x):
     return y
 
 
+@jit(nopython=True, cache=True)
+def poly_numba2(x, y):
+    for i in range(len(x)):
+        y[i] = (x[i] - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
+
+
 def do_regular_evaluation():
     print("Regular evaluation of the expression:", expression, "with %d elements" % N)
 
@@ -130,8 +136,11 @@ def do_block_evaluation():
 
     t0 = time()
     ya = ia.empty(ctx, shape=shape, pshape=pshape)
+    local_dict = {}
     for ((i, x), (j, y)) in zip(xa.iter_block(block_size), ya.iter_write()):
-        y[:] = ne.evaluate(expression, local_dict={'x': x})
+        # y[:] = ne.evaluate(expression, local_dict={'x': x})
+        ne.evaluate(expression, local_dict={'x': x}, out=y)
+        # ne.evaluate(expression, out=y)
     print("Block evaluate via numexpr:", round(time() - t0, 3))
     y1 = ia.iarray2numpy(ctx, ya)
     np.testing.assert_almost_equal(y0, y1)
@@ -139,8 +148,18 @@ def do_block_evaluation():
     t0 = time()
     ya = ia.empty(ctx, shape=shape, pshape=pshape)
     for ((i, x), (j, y)) in zip(xa.iter_block(block_size), ya.iter_write()):
-        y[:] = poly_numba(x)
+        # y[:] = poly_numba(x)
+        poly_numba2(x, y)
     print("Block evaluate via numba:", round(time() - t0, 3))
+    y1 = ia.iarray2numpy(ctx, ya)
+    np.testing.assert_almost_equal(y0, y1)
+
+    t0 = time()
+    ya = ia.empty(ctx, shape=shape, pshape=pshape)
+    for ((i, x), (j, y)) in zip(xa.iter_block(block_size), ya.iter_write()):
+        # y[:] = poly_numba(x)
+        poly_numba2(x, y)
+    print("Block evaluate via numba (II):", round(time() - t0, 3))
     y1 = ia.iarray2numpy(ctx, ya)
     np.testing.assert_almost_equal(y0, y1)
 
