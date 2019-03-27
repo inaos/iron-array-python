@@ -202,7 +202,15 @@ def do_block_evaluation():
     x = xa
     for i in range(1):
         ya = ((x - 1.35) * (x - 4.45) * (x - 8.5)).eval()
-    print("Block evaluate via iarray.LazyExpr.eval:", round(time() - t0, 4))
+    print("Block evaluate via iarray.LazyExpr.eval('numexpr'):", round(time() - t0, 4))
+    y1 = ia.iarray2numpy(ctx, ya)
+    np.testing.assert_almost_equal(y0, y1)
+
+    t0 = time()
+    x = xa
+    for i in range(1):
+        ya = ((x - 1.35) * (x - 4.45) * (x - 8.5)).eval(method="iarray.eval")
+    print("Block evaluate via iarray.LazyExpr.eval('iarray.eval')):", round(time() - t0, 4))
     y1 = ia.iarray2numpy(ctx, ya)
     np.testing.assert_almost_equal(y0, y1)
 

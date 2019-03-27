@@ -137,7 +137,7 @@ class LazyExpr:
         return self.update_expr(new_op=(value, '/', self))
 
 
-    def eval(self):
+    def eval(self, method="numexpr"):
         # TODO: see if ctx, shape and pshape can be instance variables, or better stay like this
         o0 = self.operands['o0']
         if self.ctx is None:
@@ -145,16 +145,27 @@ class LazyExpr:
             self.ctx = o0.ctx
         shape_ = o0.shape
         pshape_ = o0.pshape
-        out = ia.empty(self.ctx, shape=shape_, pshape=pshape_)
-        operand_iters = tuple(o.iter_block(pshape_) for o in self.operands.values() if isinstance(o, IArray))
-        all_iters = operand_iters + (out.iter_write(),)   # put the iterator for the output at the end
-        # all_iters =  (out.iter_write(),) + operand_iters  # put the iterator for the output at the front
-        for block in zip(*all_iters):
-            block_operands = {o: block[i][1] for (i, o) in enumerate(self.operands.keys(), start=0)}
-            out_block = block[-1][1]  # the block for output is at the end, by construction
-            # block_operands = {o: block[i][1] for (i, o) in enumerate(self.operands.keys(), start=1)}
-            # out_block = block[0][1]  # the block for output is at the front, by construction
-            ne.evaluate(self.expression, local_dict=block_operands, out=out_block)
+        if method == "numexpr":
+            out = ia.empty(self.ctx, shape=shape_, pshape=pshape_)
+            operand_iters = tuple(o.iter_block(pshape_) for o in self.operands.values() if isinstance(o, IArray))
+            all_iters = operand_iters + (out.iter_write(),)   # put the iterator for the output at the end
+            # all_iters =  (out.iter_write(),) + operand_iters  # put the iterator for the output at the front
+            for block in zip(*all_iters):
+                block_operands = {o: block[i][1] for (i, o) in enumerate(self.operands.keys(), start=0)}
+                out_block = block[-1][1]  # the block for output is at the end, by construction
+                # block_operands = {o: block[i][1] for (i, o) in enumerate(self.operands.keys(), start=1)}
+                # out_block = block[0][1]  # the block for output is at the front, by construction
+                ne.evaluate(self.expression, local_dict=block_operands, out=out_block)
+        elif method == "iarray.eval":
+            expr = ia.Expression(self.ctx)
+            for k, v in self.operands.items():
+                if isinstance(v, IArray):
+                    expr.bind(k.encode(), v)
+            expr.compile(self.expression.encode())
+            out = expr.eval(shape_, pshape_, "double")
+        else:
+            out = None
+
         return out
 
 
