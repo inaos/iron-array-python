@@ -15,31 +15,41 @@ from iarray import iarray_ext as ext
 import iarray as ia
 
 
-def rebase_operands(operands, new_base):
+def fuse_operands(operands1, operands2):
     new_operands = {}
-    for old_op in operands.keys():
-        old_pos = int(old_op[1:])
-        new_pos = old_pos + new_base
-        new_op = f"o{new_pos}"
-        new_operands[new_op] = operands[old_op]
-    return new_operands
+    dup_operands = {}
+    for k2, v2 in operands2.items():
+        try:
+            k1 = list(operands1.keys())[list(operands1.values()).index(v2)]
+            # The operand is duplicated; keep track of it
+            dup_operands[k2] = k1
+        except ValueError:
+            # The value is not among operands1, so rebase it
+            prev_pos = int(k2[1:])
+            new_pos = prev_pos + len(new_operands)
+            new_op = f"o{new_pos}"
+            new_operands[new_op] = operands2[k2]
+    return new_operands, dup_operands
 
 
-def rebase_expression(expr, new_base):
+def fuse_expressions(expr, new_base, dup_op):
     new_expr = ""
     skip_to_char = 0
     for i in range(len(expr)):
         if i < skip_to_char:
             continue
         if expr[i] == 'o':
-            new_expr += 'o'
             try:
                 j = expr[i+1:].index(' ')
             except ValueError:
                 j = expr[i + 1:].index(')')
             old_pos = int(expr[i+1:i+j+1])
-            new_pos = old_pos + new_base
-            new_expr += f"{new_pos}"
+            old_op = f"o{old_pos}"
+            if old_op not in dup_op:
+                new_pos = old_pos + new_base
+                new_expr += f"o{new_pos}"
+            else:
+                new_expr += dup_op[old_op]
             skip_to_char = i + j + 1
         else:
             new_expr += expr[i]
@@ -61,32 +71,43 @@ class LazyExpr:
             self.operands = {"o0": value2}
             self.expression = f"({value1} {op} o0)"
         else:
-            self.operands = {"o0": value1, "o1": value2}
-            self.expression = f"(o0 {op} o1)"
+            if value1 == value2:
+                self.operands = {"o0": value1}
+                self.expression = f"(o0 {op} o0)"
+            else:
+                self.operands = {"o0": value1, "o1": value2}
+                self.expression = f"(o0 {op} o1)"
 
     def update_expr(self, new_op):
         # One of the two operands are LazyExpr instances
         value1, op, value2 = new_op
         if isinstance(value1, LazyExpr) and isinstance(value2, LazyExpr):
             # Expression fusion
-            total_ops1 = len(value1.operands)
-            # Take expression 2 and rebase the operands
-            new_expr = rebase_expression(value2.expression, total_ops1)
+            # Fuse operands in expressions and detect duplicates
+            new_op, dup_op = fuse_operands(value1.operands, value2.operands)
+            self.operands.update(new_op)
+            # Take expression 2 and rebase the operands while removing duplicates
+            new_expr = fuse_expressions(value2.expression, len(value1.operands), dup_op)
             self.expression = f"({self.expression} {op} {new_expr})"
-            self.operands.update(rebase_operands(value2.operands, total_ops1))
         elif isinstance(value1, LazyExpr):
             if isinstance(value2, (int, float)):
                 self.expression = f"({self.expression} {op} {value2})"
             else:
-                op_name = f"o{len(self.operands)}"
-                self.operands[op_name] = value2
+                try:
+                    op_name = list(value1.operands.keys())[list(value1.operands.values()).index(value2)]
+                except ValueError:
+                    op_name = f"o{len(self.operands)}"
+                    self.operands[op_name] = value2
                 self.expression = f"({self.expression} {op} {op_name})"
         else:
             if isinstance(value1, (int, float)):
                 self.expression = f"({value1} {op} {self.expression})"
             else:
-                op_name = f"o{len(self.operands)}"
-                self.operands[op_name] = value1
+                try:
+                    op_name = list(value2.operands.keys())[list(value2.operands.values()).index(value1)]
+                except ValueError:
+                    op_name = f"o{len(self.operands)}"
+                    self.operands[op_name] = value1
                 self.expression = f"(o{op_name} {op} {self.expression})"
         return self
 
