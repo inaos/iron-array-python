@@ -74,6 +74,14 @@ class LazyExpr:
             if value1 == value2:
                 self.operands = {"o0": value1}
                 self.expression = f"(o0 {op} o0)"
+            elif isinstance(value1, LazyExpr) or isinstance(value2, LazyExpr):
+                if isinstance(value1, LazyExpr):
+                    self.expression = value1.expression
+                    self.operands = {"o0": value2}
+                else:
+                    self.expression = value2.expression
+                    self.operands = {"o0": value1}
+                self.update_expr(new_op)
             else:
                 self.operands = {"o0": value1, "o1": value2}
                 self.expression = f"(o0 {op} o1)"
@@ -108,7 +116,7 @@ class LazyExpr:
                 except ValueError:
                     op_name = f"o{len(self.operands)}"
                     self.operands[op_name] = value1
-                self.expression = f"(o{op_name} {op} {self.expression})"
+                self.expression = f"({op_name} {op} {self.expression})"
         return self
 
 
@@ -214,7 +222,7 @@ class IArray(ext.Container):
 
 if __name__ == "__main__":
     # Create iarray context
-    cfg_ = ia.Config()
+    cfg_ = ia.Config(eval_flags="iterchunk")
     ctx_ = ia.Context(cfg_)
 
     # Define array params
@@ -225,10 +233,12 @@ if __name__ == "__main__":
     # Create initial containers
     a1 = ia.linspace(ctx_, size, 0, 10, shape, pshape, "double")
     a2 = ia.linspace(ctx_, size, 0, 20, shape, pshape, "double")
-    a3 = a1 + a2 + a1 - 2 * a1 + 1
+    # a3 = a1 + a2 + a1 - 2 * a1 + 1
+    a3 = a1 + 2 * a1 + 1
     print(a3)
     a3 += 2
     print(a3)
-    a4 = a3.eval()
+    # a4 = a3.eval(method="numexpr")
+    a4 = a3.eval(method="iarray.eval")
     a4_np = ia.iarray2numpy(a4.ctx, a4)
     print(a4_np)
