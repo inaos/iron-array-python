@@ -168,8 +168,8 @@ class LazyExpr:
             expr = ia.Expression(self.ctx)
             for k, v in self.operands.items():
                 if isinstance(v, IArray):
-                    expr.bind(k.encode(), v)
-            expr.compile(self.expression.encode())
+                    expr.bind(k, v)
+            expr.compile(self.expression)
             out = expr.eval(shape_, pshape_, "double")
         else:
             out = None
@@ -222,7 +222,7 @@ class IArray(ext.Container):
 
 if __name__ == "__main__":
     # Create iarray context
-    cfg_ = ia.Config(eval_flags="iterchunk")
+    cfg_ = ia.Config(eval_flags="iterblock")
     ctx_ = ia.Context(cfg_)
 
     # Define array params
@@ -235,6 +235,7 @@ if __name__ == "__main__":
     a2 = ia.linspace(ctx_, size, 0, 20, shape, pshape, "double")
     # a3 = a1 + a2 + a1 - 2 * a1 + 1
     a3 = a1 + 2 * a1 + 1
+    # a3 = a1 + a2
     print(a3)
     a3 += 2
     print(a3)

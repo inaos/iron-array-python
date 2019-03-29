@@ -192,7 +192,7 @@ def do_block_evaluation():
     expr = ia.Expression(ctx)
     expr.bind(b'x', xa)
     expr.compile(b'(x - 1.35) * (x - 4.45) * (x - 8.5)')
-    for i in range(1):   # TODO: setting this to a number larger than 1, makes it crash, at least on Linux
+    for i in range(1):
         ya = expr.eval(shape, pshape, "double")
     print("Block evaluate via iarray.eval:", round(time() - t0, 4))
     y1 = ia.iarray2numpy(ctx, ya)

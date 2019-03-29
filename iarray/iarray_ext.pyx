@@ -408,6 +408,7 @@ cdef class Container:
 
 
 cdef class Expression:
+    cdef object expression
     cdef ciarray.iarray_expression_t *_e
     cdef Context _ctx
 
@@ -416,6 +417,7 @@ cdef class Expression:
         cdef ciarray.iarray_expression_t* e
         ciarray.iarray_expr_new(self._ctx._ctx, &e)
         self._e = e
+        self.expression = None
 
     def __dealloc__(self):
         ciarray.iarray_expr_free(self._ctx._ctx, &self._e)
@@ -427,7 +429,9 @@ cdef class Expression:
 
     def compile(self, expr):
         expr2 = expr.encode("utf-8") if isinstance(expr, str) else expr
-        ciarray.iarray_expr_compile(self._e, expr2)
+        if ciarray.iarray_expr_compile(self._e, expr2) != 0:
+            raise ValueError(f"Error in compiling expr: {expr}")
+        self.expression = expr2
 
     def eval(self, shape, pshape, dtype, filename=None):
 
@@ -436,7 +440,8 @@ cdef class Expression:
 
         cdef ciarray.iarray_container_t *c
         ciarray.iarray_container_new(self._ctx._ctx, &dtshape_, NULL, 0, &c)
-        ciarray.iarray_eval(self._e, c)
+        if ciarray.iarray_eval(self._e, c) != 0:
+            raise ValueError(f"Error in evaluating expr: {self.expression}")
 
         c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
 
