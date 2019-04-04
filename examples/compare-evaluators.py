@@ -9,12 +9,12 @@ from numba import jit
 NITER = 10
 
 # Vector sizes and partitions
-N = 20 * 1000 * 1000
+N = 10 * 1000 * 1000
 shape = [N]
-pshape = [100 * 1000]
+pshape = [16 * 1024]
 block_size = pshape
 expression = '(x - 1.35) * (x - 4.45) * (x - 8.5)'
-clevel = 0   # compression level
+clevel = 1   # compression level
 clib = ia.IARRAY_LZ4  # compression codec
 
 # Make this True if you want to test the pre-compilation in Numba (not necessary, really)
@@ -128,7 +128,9 @@ def do_regular_evaluation():
 
 def do_block_evaluation():
     print("Block evaluation of the expression:", expression, "with %d elements" % N)
-    cfg = ia.Config(eval_flags="iterblock", compression_codec=clib, compression_level=clevel, blocksize=0)
+    cfg = ia.Config(eval_flags="iterblock", compression_codec=clib, compression_level=clevel,
+                    blocksize=0, # block_size[0],
+                    max_num_threads=1)
     ctx = ia.Context(cfg)
 
     x = np.linspace(0, 10, N, dtype=np.double)

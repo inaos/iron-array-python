@@ -43,8 +43,10 @@ cdef class Config:
             self._cfg.eval_flags = ciarray.IARRAY_EXPR_EVAL_ITERCHUNK
         elif eval_flags == "chunk":
             self._cfg.eval_flags = ciarray.IARRAY_EXPR_EVAL_CHUNK
-        else:
+        elif eval_flags == "block":
             self._cfg.eval_flags = ciarray.IARRAY_EXPR_EVAL_BLOCK
+        else:
+            self._cfg.eval_flags = ciarray.IARRAY_EXPR_EVAL_ITERCHUNKPARA
         self._cfg.max_num_threads = max_num_threads
         self._cfg.fp_mantissa_bits = fp_mantissa_bits
         self._cfg.blocksize = blocksize
@@ -68,7 +70,7 @@ cdef class Config:
 
     @property
     def eval_flags(self):
-        flags = {1: "Block", 2: "Chunk", 4: "Block (iter)", 8: "Chunk (iter)"}
+        flags = {1: "Block", 2: "Chunk", 4: "Block (iter)", 8: "Chunk (iter)", 16: "Chunk (iterpara)"}
         return flags[self._cfg.eval_flags]
 
     @property
