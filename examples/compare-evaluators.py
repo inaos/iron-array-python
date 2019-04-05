@@ -14,7 +14,7 @@ shape = [N]
 pshape = [16 * 1024]
 block_size = pshape
 expression = '(x - 1.35) * (x - 4.45) * (x - 8.5)'
-clevel = 1   # compression level
+clevel = 0   # compression level
 clib = ia.IARRAY_LZ4  # compression codec
 
 # Make this True if you want to test the pre-compilation in Numba (not necessary, really)
