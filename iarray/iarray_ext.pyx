@@ -13,6 +13,7 @@ cdef class ReadElemIter:
     cdef ciarray.iarray_iter_read_t *_iter
     cdef Container _c
     cdef dtype
+    cdef start
 
     def __cinit__(self, c):
         self._c = c
@@ -21,16 +22,22 @@ cdef class ReadElemIter:
             self.dtype = 0
         else:
             self.dtype = 1
+        self.start = False
 
     def __dealloc__(self):
         ciarray.iarray_iter_read_free(self._iter)
 
     def __iter__(self):
-        ciarray.iarray_iter_read_init(self._iter)
         return self
 
     def __next__(self):
         cdef ciarray.iarray_iter_read_value_t value
+
+        if self.start is False:
+            ciarray.iarray_iter_read_init(self._iter)
+            self.start = True
+        else:
+            ciarray.iarray_iter_read_next(self._iter)
 
         if ciarray.iarray_iter_read_finished(self._iter):
             raise StopIteration
@@ -41,7 +48,6 @@ cdef class ReadElemIter:
                 elem = (<double*> value.pointer)[0]
             else:
                 elem = (<float*> value.pointer)[0]
-            ciarray.iarray_iter_read_next(self._iter)
             return tuple(index), elem
 
 
@@ -68,6 +74,7 @@ cdef class ReadBlockIter:
         # if self.flag:
         #     ciarray.iarray_iter_read_block_next(self._iter)
         ciarray.iarray_iter_read_block_free(self._iter)
+
 
     def __iter__(self):
         ciarray.iarray_iter_read_block_init(self._iter)
@@ -105,9 +112,15 @@ cdef class WritePartIter:
     cdef int dtype
     cdef int flag
 
-    def __cinit__(self, c):
+    def __cinit__(self, c, block=None):
         self._c = c
-        ciarray.iarray_iter_write_part_new(self._c._ctx._ctx, self._c._c, &self._iter)
+        cdef ciarray.int64_t block_[ciarray.IARRAY_DIMENSION_MAX]
+        if block is None:
+            ciarray.iarray_iter_write_part_new(self._c._ctx._ctx, self._c._c, &self._iter, NULL)
+        else:
+            for i in range(len(block)):
+                block_[i] = block[i]
+            ciarray.iarray_iter_write_part_new(self._c._ctx._ctx, self._c._c, &self._iter, block_)
         if self._c.dtype == "double":
             self.dtype = 0
         else:
@@ -240,7 +253,7 @@ cdef class _Dtshape:
             if pshape is not None:
                self._dtshape.pshape[i] = pshape[i]
             else:
-                self._dtshape.pshape[i] = shape[i]
+                self._dtshape.pshape[i] = 0
 
     cdef to_dict(self):
         return <object> self._dtshape
@@ -281,7 +294,7 @@ cdef class _Dtshape:
 cdef class Context:
     cdef ciarray.iarray_context_t *_ctx
 
-    def __init__(self, cfg):
+    def __cinit__(self, cfg):
         cdef ciarray.iarray_config_t cfg_ = cfg.to_dict()
         ciarray.iarray_context_new(&cfg_, &self._ctx)
 
@@ -336,8 +349,8 @@ cdef class Container:
     def iter_block(self, block):
         return ReadBlockIter(self, block)
 
-    def iter_write(self):
-        return WritePartIter(self)
+    def iter_write(self, block):
+        return WritePartIter(self, block)
 
     def to_capsule(self):
         return PyCapsule_New(self._c, "iarray_container_t*", NULL)
@@ -415,7 +428,7 @@ cdef class Expression:
         expr2 = expr.encode("utf-8") if isinstance(expr, str) else expr
         ciarray.iarray_expr_compile(self._e, expr2)
 
-    def eval(self, shape, pshape, dtype, filename=None):
+    def eval(self, shape, pshape=None, dtype="double", filename=None):
 
         dtshape = _Dtshape(shape, pshape, dtype).to_dict()
         cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape

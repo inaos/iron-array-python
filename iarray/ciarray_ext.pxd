@@ -178,7 +178,7 @@ cdef extern from "libiarray/iarray.h":
         int64_t* part_shape
 
     ina_rc_t iarray_iter_write_part_new(iarray_context_t *ctx, iarray_container_t *container,
-                                             iarray_iter_write_part_t **itr)
+                                             iarray_iter_write_part_t **itr, int64_t *blockshape)
     void iarray_iter_write_part_free(iarray_iter_write_part_t *itr)
     void iarray_iter_write_part_init(iarray_iter_write_part_t *itr)
     ina_rc_t iarray_iter_write_part_next(iarray_iter_write_part_t *itr)
