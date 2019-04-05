@@ -209,16 +209,16 @@ def do_block_evaluation(pshape_):
     y1 = ia.iarray2numpy(ctx, ya)
     np.testing.assert_almost_equal(y0, y1)
 
-    if (pshape_ is not None)
-    t0 = time()
-    expr = ia.Expression(ctx)
-    expr.bind(b'x', xa)
-    expr.compile(b'(x - 1.35) * (x - 4.45) * (x - 8.5)')
-    for i in range(NITER):
-        ya = expr.eval(shape, pshape_, "double")
-    print("Block evaluate via iarray.eval:", round((time() - t0) / NITER, 4))
-    y1 = ia.iarray2numpy(ctx, ya)
-    np.testing.assert_almost_equal(y0, y1)
+    if pshape_ is not None:
+        t0 = time()
+        expr = ia.Expression(ctx)
+        expr.bind(b'x', xa)
+        expr.compile(b'(x - 1.35) * (x - 4.45) * (x - 8.5)')
+        for i in range(NITER):
+            ya = expr.eval(shape, pshape_, "double")
+        print("Block evaluate via iarray.eval:", round((time() - t0) / NITER, 4))
+        y1 = ia.iarray2numpy(ctx, ya)
+        np.testing.assert_almost_equal(y0, y1)
 
 
 if __name__ == "__main__":
