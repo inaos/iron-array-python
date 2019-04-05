@@ -28,4 +28,3 @@ print(b2_n)
 # Numexpr
 b2 = ne.evaluate("(x - 1.35) * (x - 4.45) * (x - 8.5)", local_dict={"x": a2})
 print(b2)
-

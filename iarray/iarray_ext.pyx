@@ -1,12 +1,24 @@
 # Hey Cython, this is Python 3!
 # cython: language_level=3
 
-cimport iarray.ciarray_ext as ciarray
+###########################################################################################
+# Copyright INAOS GmbH, Thalwil, 2018.
+# Copyright Francesc Alted, 2018.
+#
+# All rights reserved.
+#
+# This software is the confidential and proprietary information of INAOS GmbH
+# and Francesc Alted ("Confidential Information"). You shall not disclose such Confidential
+# Information and shall use it only in accordance with the terms of the license agreement.
+###########################################################################################
+
+from . cimport ciarray_ext as ciarray
 import numpy as np
 cimport numpy as np
 import cython
 from cpython.pycapsule cimport PyCapsule_New, PyCapsule_GetPointer
 from math import ceil
+from iarray.container import IArray
 
 
 cdef class ReadElemIter:
@@ -176,7 +188,7 @@ cdef class Config:
     cdef ciarray.iarray_config_t _cfg
 
     def __init__(self, compression_codec=1, compression_level=5, filter_flags=0, eval_flags="iterblock",
-                max_num_threads=1, fp_mantissa_bits=0, blocksize=0):
+                 max_num_threads=1, fp_mantissa_bits=0, blocksize=0):
         self._cfg.compression_codec = compression_codec
         self._cfg.compression_level = compression_level
         self._cfg.filter_flags = filter_flags
@@ -186,8 +198,10 @@ cdef class Config:
             self._cfg.eval_flags = ciarray.IARRAY_EXPR_EVAL_ITERCHUNK
         elif eval_flags == "chunk":
             self._cfg.eval_flags = ciarray.IARRAY_EXPR_EVAL_CHUNK
-        else:
+        elif eval_flags == "block":
             self._cfg.eval_flags = ciarray.IARRAY_EXPR_EVAL_BLOCK
+        # else:     // Uncomment this when ITERCHUNKPARA would be in IronArray master
+        #     self._cfg.eval_flags = ciarray.IARRAY_EXPR_EVAL_ITERCHUNKPARA
         self._cfg.max_num_threads = max_num_threads
         self._cfg.fp_mantissa_bits = fp_mantissa_bits
         self._cfg.blocksize = blocksize
@@ -211,7 +225,7 @@ cdef class Config:
 
     @property
     def eval_flags(self):
-        flags = {1: "Block", 2: "Chunk", 4: "Block (iter)", 8: "Chunk (iter)"}
+        flags = {1: "Block", 2: "Chunk", 4: "Block (iter)", 8: "Chunk (iter)", 16: "Chunk (iterpara)"}
         return flags[self._cfg.eval_flags]
 
     @property
@@ -312,7 +326,7 @@ cdef class RandomContext:
     cdef ciarray.iarray_random_ctx_t *_r_ctx
     cdef Context _ctx
 
-    def __cinit__(self, ctx, seed=0, rng="MERSENNE_TWISTER"):
+    def __init__(self, ctx, seed=0, rng="MERSENNE_TWISTER"):
         self._ctx = ctx
         cdef ciarray.iarray_random_ctx_t* r_ctx
         if rng == "MERSENNE_TWISTER":
@@ -330,12 +344,13 @@ cdef class RandomContext:
     def __str__(self):
         return "IARRAY RANDOM CONTEXT OBJECT"
 
+
 cdef class Container:
     cdef ciarray.iarray_container_t *_c
     cdef ciarray.iarray_iter_read_t *_iter
     cdef Context _ctx
 
-    def __cinit__(self, ctx, c):
+    def __init__(self, ctx, c):
         self._ctx = ctx
         cdef ciarray.iarray_container_t* c_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(c, "iarray_container_t*")
         self._c = c_
@@ -396,7 +411,6 @@ cdef class Container:
         return res + ndim + shape + pshape + dtype
 
     def __getitem__(self, item):
-
         if self.ndim == 1:
             item = [item]
 
@@ -407,14 +421,16 @@ cdef class Container:
 
 
 cdef class Expression:
+    cdef object expression
     cdef ciarray.iarray_expression_t *_e
     cdef Context _ctx
 
-    def __cinit__(self, ctx):
+    def __init__(self, ctx):
         self._ctx = ctx
         cdef ciarray.iarray_expression_t* e
         ciarray.iarray_expr_new(self._ctx._ctx, &e)
         self._e = e
+        self.expression = None
 
     def __dealloc__(self):
         ciarray.iarray_expr_free(self._ctx._ctx, &self._e)
@@ -426,7 +442,9 @@ cdef class Expression:
 
     def compile(self, expr):
         expr2 = expr.encode("utf-8") if isinstance(expr, str) else expr
-        ciarray.iarray_expr_compile(self._e, expr2)
+        if ciarray.iarray_expr_compile(self._e, expr2) != 0:
+            raise ValueError(f"Error in compiling expr: {expr}")
+        self.expression = expr2
 
     def eval(self, shape, pshape=None, dtype="double", filename=None):
 
@@ -435,18 +453,19 @@ cdef class Expression:
 
         cdef ciarray.iarray_container_t *c
         ciarray.iarray_container_new(self._ctx._ctx, &dtshape_, NULL, 0, &c)
-        ciarray.iarray_eval(self._e, c)
+        if ciarray.iarray_eval(self._e, c) != 0:
+            raise ValueError(f"Error in evaluating expr: {self.expression}")
 
         c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
 
-        return Container(self._ctx, c_c)
+        return IArray(self._ctx, c_c)
 
+#
 # Iarray container creators
+#
 
 def empty(ctx, shape, pshape=None, dtype="double", filename=None):
-
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
-
 
     dtshape = _Dtshape(shape, pshape, dtype).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
@@ -466,10 +485,10 @@ def empty(ctx, shape, pshape=None, dtype="double", filename=None):
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
 
-    return Container(ctx, c_c)
+    return IArray(ctx, c_c)
+
 
 def arange(ctx, *args, shape=None, pshape=None, dtype="double", filename=None):
-
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
 
     s = slice(*args)
@@ -498,7 +517,7 @@ def arange(ctx, *args, shape=None, pshape=None, dtype="double", filename=None):
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
 
-    return Container(ctx, c_c)
+    return IArray(ctx, c_c)
 
 
 def linspace(ctx, nelem, start, stop, shape=None, pshape=None, dtype="double", filename=None):
@@ -524,7 +543,7 @@ def linspace(ctx, nelem, start, stop, shape=None, pshape=None, dtype="double", f
         ciarray.iarray_linspace(ctx_, &dtshape_, nelem, start, stop, NULL, flags, &c)
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
-    return Container(ctx, c_c)
+    return IArray(ctx, c_c)
 
 
 def zeros(ctx, shape, pshape=None, dtype="double", filename=None):
@@ -547,7 +566,7 @@ def zeros(ctx, shape, pshape=None, dtype="double", filename=None):
         ciarray.iarray_zeros(ctx_, &dtshape_, NULL, flags, &c)
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
-    return Container(ctx, c_c)
+    return IArray(ctx, c_c)
 
 
 def ones(ctx, shape, pshape=None, dtype="double", filename=None):
@@ -570,7 +589,7 @@ def ones(ctx, shape, pshape=None, dtype="double", filename=None):
         ciarray.iarray_ones(ctx_, &dtshape_, NULL, flags, &c)
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
-    return Container(ctx, c_c)
+    return IArray(ctx, c_c)
 
 
 def full(ctx, fill_value, shape, pshape=None, dtype="double", filename=None):
@@ -599,7 +618,7 @@ def full(ctx, fill_value, shape, pshape=None, dtype="double", filename=None):
             ciarray.iarray_fill_float(ctx_, &dtshape_, fill_value, NULL, flags, &c)
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
-    return Container(ctx, c_c)
+    return IArray(ctx, c_c)
 
 
 def _get_slice(ctx, data, start, stop, pshape=None, filename=None, view=True):
@@ -633,7 +652,7 @@ def _get_slice(ctx, data, start, stop, pshape=None, filename=None, view=True):
         ciarray.iarray_get_slice(ctx_, data_, start_, stop_, pshape_, NULL, flags, view, &c)
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
-    return Container(ctx, c_c)
+    return IArray(ctx, c_c)
 
 
 def numpy2iarray(ctx, a, pshape=None, filename=None):
@@ -642,6 +661,7 @@ def numpy2iarray(ctx, a, pshape=None, filename=None):
     :rtype: object
     """
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
+
     dtype = None
     if a.dtype == np.float64:
         dtype = "double"
@@ -669,11 +689,10 @@ def numpy2iarray(ctx, a, pshape=None, filename=None):
         ciarray.iarray_from_buffer(ctx_, &dtshape_, np.PyArray_DATA(a), buffer_size, NULL, flags, &c)
 
     c_c =  PyCapsule_New(c, "iarray_container_t*", NULL)
-    return Container(ctx, c_c)
+    return IArray(ctx, c_c)
 
 
 def iarray2numpy(ctx, c):
-
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
     cdef ciarray.iarray_container_t *c_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(c.to_capsule(), "iarray_container_t*")
 
@@ -694,7 +713,6 @@ def iarray2numpy(ctx, c):
 
 
 def from_file(ctx, filename):
-
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
 
     cdef ciarray.iarray_store_properties_t store
@@ -705,9 +723,11 @@ def from_file(ctx, filename):
     ciarray.iarray_from_file(ctx_, &store, &c)
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
-    return Container(ctx, c_c)
+    return IArray(ctx, c_c)
 
+#
 # Expression functions
+#
 
 def expr_bind(e, var, c):
     cdef ciarray.iarray_expression_t* e_= <ciarray.iarray_expression_t*> PyCapsule_GetPointer(e, "iarray_expression_t*")
@@ -723,7 +743,9 @@ def expr_eval(e, c):
     cdef ciarray.iarray_container_t *c_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(c.to_capsule(), "iarray_container_t*")
     ciarray.iarray_eval(e_, c_)
 
+#
 # Random functions
+#
 
 def random_rand(ctx, r_ctx, shape, pshape=None, dtype="double", filename=None):
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
@@ -746,7 +768,8 @@ def random_rand(ctx, r_ctx, shape, pshape=None, dtype="double", filename=None):
         ciarray.iarray_random_rand(ctx_, &dtshape_, r_ctx_, NULL, flags, &c)
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
-    return Container(ctx, c_c)
+    return IArray(ctx, c_c)
+
 
 def random_randn(ctx, r_ctx, shape, pshape=None, dtype="double", filename=None):
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
@@ -769,7 +792,7 @@ def random_randn(ctx, r_ctx, shape, pshape=None, dtype="double", filename=None):
         ciarray.iarray_random_randn(ctx_, &dtshape_, r_ctx_, NULL, flags, &c)
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
-    return Container(ctx, c_c)
+    return IArray(ctx, c_c)
 
 
 def random_beta(ctx, r_ctx, alpha, beta, shape, pshape=None, dtype="double", filename=None):
@@ -800,7 +823,8 @@ def random_beta(ctx, r_ctx, alpha, beta, shape, pshape=None, dtype="double", fil
         ciarray.iarray_random_beta(ctx_, &dtshape_, r_ctx_, NULL, flags, &c)
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
-    return Container(ctx, c_c)
+    return IArray(ctx, c_c)
+
 
 def random_lognormal(ctx, r_ctx, mu, sigma, shape, pshape=None, dtype="double", filename=None):
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
@@ -830,7 +854,8 @@ def random_lognormal(ctx, r_ctx, mu, sigma, shape, pshape=None, dtype="double", 
         ciarray.iarray_random_lognormal(ctx_, &dtshape_, r_ctx_, NULL, flags, &c)
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
-    return Container(ctx, c_c)
+    return IArray(ctx, c_c)
+
 
 def random_exponential(ctx, r_ctx, beta, shape, pshape=None, dtype="double", filename=None):
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
@@ -858,7 +883,8 @@ def random_exponential(ctx, r_ctx, beta, shape, pshape=None, dtype="double", fil
         ciarray.iarray_random_exponential(ctx_, &dtshape_, r_ctx_, NULL, flags, &c)
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
-    return Container(ctx, c_c)
+    return IArray(ctx, c_c)
+
 
 def random_uniform(ctx, r_ctx, a, b, shape, pshape=None, dtype="double", filename=None):
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
@@ -888,7 +914,7 @@ def random_uniform(ctx, r_ctx, a, b, shape, pshape=None, dtype="double", filenam
         ciarray.iarray_random_uniform(ctx_, &dtshape_, r_ctx_, NULL, flags, &c)
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
-    return Container(ctx, c_c)
+    return IArray(ctx, c_c)
 
 
 def random_kstest(ctx, a, b):
@@ -899,8 +925,9 @@ def random_kstest(ctx, a, b):
     ciarray.iarray_random_kstest(ctx_, a_, b_, &res)
     return res
 
-
+#
 # TODO: the next functions are just for benchmarking purposes and should be moved to its own extension
+#
 
 @cython.boundscheck(False) # turn off bounds-checking for entire function
 @cython.wraparound(False)  # turn off negative index wrapping for entire function
@@ -912,13 +939,13 @@ def poly_cython(xa):
     return y
 
 
-from cython.parallel import prange
+# from cython.parallel import prange
 @cython.boundscheck(False) # turn off bounds-checking for entire function
 @cython.wraparound(False)  # turn off negative index wrapping for entire function
 cdef void poly_nogil(double *x, double *y, int n) nogil:
     cdef int i
-    for i in prange(n):
-    # for i in range(n):
+    # for i in prange(n):
+    for i in range(n):
         y[i] = (x[i] - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
 
 

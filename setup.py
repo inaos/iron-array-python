@@ -65,6 +65,8 @@ setup(
     python_requires=">=3.6",
     install_requires=[
         'numpy>=1.15',
+        'numexpr>=2.6',
+        'numba>=0.42',
         'pytest',
     ],
     package_dir={'': '.'},
