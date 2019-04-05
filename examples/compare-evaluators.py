@@ -126,8 +126,9 @@ def do_regular_evaluation():
     np.testing.assert_almost_equal(y0, y1)
 
 
-def do_block_evaluation():
-    print("Block evaluation of the expression:", expression, "with %d elements" % N)
+def do_block_evaluation(pshape_):
+    storage = "sperchunk" if pshape_ is not None else "plain buffer"
+    print(f"Block ({storage}) evaluation of the expression:", expression, "with %d elements" % N)
     cfg = ia.Config(eval_flags="iterblock", compression_codec=clib, compression_level=clevel,
                     blocksize=0, # block_size[0],
                     max_num_threads=1)
@@ -135,33 +136,35 @@ def do_block_evaluation():
 
     x = np.linspace(0, 10, N, dtype=np.double)
     # TODO: looks like nelem is not in the same position than numpy
-    xa = ia.linspace(ctx, N, 0., 10., shape=shape, pshape=pshape)
+    xa = ia.linspace(ctx, N, 0., 10., shape=shape, pshape=pshape_)
 
     # Reference to compare to
     y0 = (x - 1.35) * (x - 4.45) * (x - 8.5)
 
+    block_write = None if pshape_ == pshape else block_size
+
     t0 = time()
-    ya = ia.empty(ctx, shape=shape, pshape=pshape)
+    ya = ia.empty(ctx, shape=shape, pshape=pshape_)
     for i in range(NITER):
-        for ((i, x), (j, y)) in zip(xa.iter_block(block_size), ya.iter_write()):
+        for ((i, x), (j, y)) in zip(xa.iter_block(block_size), ya.iter_write(block_write)):
             y[:] = (x - 1.35) * (x - 4.45) * (x - 8.5)
     print("Block evaluate via numpy:", round((time() - t0) / NITER, 4))
     y1 = ia.iarray2numpy(ctx, ya)
     np.testing.assert_almost_equal(y0, y1)
 
     t0 = time()
-    ya = ia.empty(ctx, shape=shape, pshape=pshape)
+    ya = ia.empty(ctx, shape=shape, pshape=pshape_)
     for i in range(NITER):
-        for ((i, x), (j, y)) in zip(xa.iter_block(block_size), ya.iter_write()):
+        for ((i, x), (j, y)) in zip(xa.iter_block(block_size), ya.iter_write(block_write)):
             ne.evaluate(expression, local_dict={'x': x}, out=y)
     print("Block evaluate via numexpr:", round((time() - t0) / NITER, 4))
     y1 = ia.iarray2numpy(ctx, ya)
     np.testing.assert_almost_equal(y0, y1)
 
     t0 = time()
-    ya = ia.empty(ctx, shape=shape, pshape=pshape)
+    ya = ia.empty(ctx, shape=shape, pshape=pshape_)
     for i in range(NITER):
-        for ((i, x), (j, y)) in zip(xa.iter_block(block_size), ya.iter_write()):
+        for ((i, x), (j, y)) in zip(xa.iter_block(block_size), ya.iter_write(block_write)):
             # y[:] = poly_numba(x)
             poly_numba2(x, y)
     print("Block evaluate via numba:", round((time() - t0) / NITER, 4))
@@ -169,9 +172,9 @@ def do_block_evaluation():
     np.testing.assert_almost_equal(y0, y1)
 
     t0 = time()
-    ya = ia.empty(ctx, shape=shape, pshape=pshape)
+    ya = ia.empty(ctx, shape=shape, pshape=pshape_)
     for i in range(NITER):
-        for ((i, x), (j, y)) in zip(xa.iter_block(block_size), ya.iter_write()):
+        for ((i, x), (j, y)) in zip(xa.iter_block(block_size), ya.iter_write(block_write)):
             # y[:] = poly_numba(x)
             poly_numba2(x, y)
     print("Block evaluate via numba (II):", round((time() - t0) / NITER, 4))
@@ -180,60 +183,47 @@ def do_block_evaluation():
 
     if NUMBA_PRECOMP:
         t0 = time()
-        ya = ia.empty(ctx, shape=shape, pshape=pshape)
+        ya = ia.empty(ctx, shape=shape, pshape=pshape_)
         for i in range(NITER):
-            for ((i, x), (j, y)) in zip(xa.iter_block(block_size), ya.iter_write()):
+            for ((i, x), (j, y)) in zip(xa.iter_block(block_size), ya.iter_write(block_write)):
                 y[:] = numba_prec.poly_double(x)
         print("Block evaluate via pre-compiled numba:", round((time() - t0) / NITER, 4))
         y1 = ia.iarray2numpy(ctx, ya)
         np.testing.assert_almost_equal(y0, y1)
 
     t0 = time()
-    ya = ia.empty(ctx, shape=shape, pshape=pshape)
+    ya = ia.empty(ctx, shape=shape, pshape=pshape_)
     for i in range(NITER):
-        for ((i, x), (j, y)) in zip(xa.iter_block(block_size), ya.iter_write()):
+        for ((i, x), (j, y)) in zip(xa.iter_block(block_size), ya.iter_write(block_write)):
             y[:] = ia.poly_cython(x)
     print("Block evaluate via cython:", round((time() - t0) / NITER, 4))
     y1 = ia.iarray2numpy(ctx, ya)
     np.testing.assert_almost_equal(y0, y1)
 
     t0 = time()
-    ya = ia.empty(ctx, shape=shape, pshape=pshape)
+    ya = ia.empty(ctx, shape=shape, pshape=pshape_)
     for i in range(NITER):
-        for ((i, x), (j, y)) in zip(xa.iter_block(block_size), ya.iter_write()):
+        for ((i, x), (j, y)) in zip(xa.iter_block(block_size), ya.iter_write(block_write)):
             y[:] = ia.poly_cython_nogil(x)
     print("Block evaluate via cython (nogil):", round((time() - t0) / NITER, 4))
     y1 = ia.iarray2numpy(ctx, ya)
     np.testing.assert_almost_equal(y0, y1)
 
-    t0 = time()
-    expr = ia.Expression(ctx)
-    expr.bind(b'x', xa)
-    expr.compile(b'(x - 1.35) * (x - 4.45) * (x - 8.5)')
-    for i in range(NITER):
-        ya = expr.eval(shape, pshape, "double")
-    print("Block evaluate via iarray.eval:", round((time() - t0) / NITER, 4))
-    y1 = ia.iarray2numpy(ctx, ya)
-    np.testing.assert_almost_equal(y0, y1)
-
-    t0 = time()
-    x = xa
-    for i in range(NITER):
-        ya = ((x - 1.35) * (x - 4.45) * (x - 8.5)).eval()
-    print("Block evaluate via iarray.LazyExpr.eval('numexpr'):", round((time() - t0) / NITER, 4))
-    y1 = ia.iarray2numpy(ctx, ya)
-    np.testing.assert_almost_equal(y0, y1)
-
-    t0 = time()
-    x = xa
-    for i in range(NITER):
-        ya = ((x - 1.35) * (x - 4.45) * (x - 8.5)).eval(method="iarray.eval")
-    print("Block evaluate via iarray.LazyExpr.eval('iarray.eval')):", round((time() - t0) / NITER, 4))
-    y1 = ia.iarray2numpy(ctx, ya)
-    np.testing.assert_almost_equal(y0, y1)
+    if pshape_ is not None:
+        t0 = time()
+        expr = ia.Expression(ctx)
+        expr.bind(b'x', xa)
+        expr.compile(b'(x - 1.35) * (x - 4.45) * (x - 8.5)')
+        for i in range(NITER):
+            ya = expr.eval(shape, pshape_, "double")
+        print("Block evaluate via iarray.eval:", round((time() - t0) / NITER, 4))
+        y1 = ia.iarray2numpy(ctx, ya)
+        np.testing.assert_almost_equal(y0, y1)
 
 
 if __name__ == "__main__":
     do_regular_evaluation()
     print("-*-"*10)
-    do_block_evaluation()
+    do_block_evaluation(pshape)
+    print("-*-" * 10)
+    do_block_evaluation(None)
