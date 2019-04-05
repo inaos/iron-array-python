@@ -39,7 +39,7 @@ cdef extern from "libiarray/iarray.h":
         IARRAY_EXPR_EVAL_CHUNK = 0x2
         IARRAY_EXPR_EVAL_ITERBLOCK = 0x4
         IARRAY_EXPR_EVAL_ITERCHUNK = 0x8
-        IARRAY_EXPR_EVAL_ITERCHUNKPARA = 0x10
+#        IARRAY_EXPR_EVAL_ITERCHUNKPARA = 0x10   // Uncomment this when ITERCHUNKPARA would be in IronArray master
 
     ctypedef struct iarray_config_t:
         iarray_compression_codec_t compression_codec
