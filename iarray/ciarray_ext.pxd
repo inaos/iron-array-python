@@ -169,37 +169,25 @@ cdef extern from "libiarray/iarray.h":
 
     # Iterators
 
-    ctypedef struct  iarray_iter_write_part_t
+    ctypedef struct  iarray_iter_write_block_t
 
-    ctypedef struct iarray_iter_write_part_value_t:
+    ctypedef struct iarray_iter_write_block_value_t:
         void *pointer
-        int64_t *part_index
+        int64_t *block_index
         int64_t *elem_index
         int64_t nelem
-        int64_t* part_shape
+        int64_t* block_shape
+        int64_t block_size
 
-    ina_rc_t iarray_iter_write_part_new(iarray_context_t *ctx, iarray_container_t *container,
-                                             iarray_iter_write_part_t **itr, int64_t *blockshape)
-    void iarray_iter_write_part_free(iarray_iter_write_part_t *itr)
-    void iarray_iter_write_part_init(iarray_iter_write_part_t *itr)
-    ina_rc_t iarray_iter_write_part_next(iarray_iter_write_part_t *itr)
-    int iarray_iter_write_part_finished(iarray_iter_write_part_t *itr)
-    void iarray_iter_write_part_value(iarray_iter_write_part_t *itr, iarray_iter_write_part_value_t *value)
+    ina_rc_t iarray_iter_write_block_new(iarray_context_t *ctx,
+                                         iarray_iter_write_block_t **itr,
+                                         iarray_container_t *container,
+                                         const int64_t *blockshape,
+                                         iarray_iter_write_block_value_t *value)
+    void iarray_iter_write_block_free(iarray_iter_write_block_t *itr)
+    ina_rc_t iarray_iter_write_block_next(iarray_iter_write_block_t *itr)
+    int iarray_iter_write_block_has_next(iarray_iter_write_block_t *itr)
 
-    ctypedef struct iarray_iter_read_t
-
-    ctypedef struct iarray_iter_read_value_t:
-        void *pointer
-        int64_t *index
-        int64_t nelem
-
-    ina_rc_t iarray_iter_read_new(iarray_context_t *ctx, iarray_container_t *container,
-                                       iarray_iter_read_t **itr);
-    void iarray_iter_read_free(iarray_iter_read_t *itr);
-    void iarray_iter_read_init(iarray_iter_read_t *itr);
-    ina_rc_t iarray_iter_read_next(iarray_iter_read_t *itr);
-    int iarray_iter_read_finished(iarray_iter_read_t *itr);
-    void iarray_iter_read_value(iarray_iter_read_t *itr, iarray_iter_read_value_t *val);
 
     ctypedef struct iarray_iter_read_block_t
 
@@ -207,16 +195,19 @@ cdef extern from "libiarray/iarray.h":
         void *pointer
         int64_t *block_index
         int64_t *elem_index
-        int64_t nelem
+        int64_t nblock
         int64_t* block_shape
+        int64_t block_size
 
-    ina_rc_t iarray_iter_read_block_new(iarray_context_t *ctx, iarray_container_t *container,
-                                                 iarray_iter_read_block_t **itr, int64_t *blockshape)
+
+    ina_rc_t iarray_iter_read_block_new(iarray_context_t *ctx,
+                                        iarray_iter_read_block_t **itr,
+                                        iarray_container_t *cont,
+                                        const int64_t *blockshape,
+                                        iarray_iter_read_block_value_t *value)
     void iarray_iter_read_block_free(iarray_iter_read_block_t *itr)
-    void iarray_iter_read_block_init(iarray_iter_read_block_t *itr)
     ina_rc_t iarray_iter_read_block_next(iarray_iter_read_block_t *itr)
-    int iarray_iter_read_block_finished(iarray_iter_read_block_t *itr)
-    void iarray_iter_read_block_value(iarray_iter_read_block_t *itr, iarray_iter_read_block_value_t *value)
+    int iarray_iter_read_block_has_next(iarray_iter_read_block_t *itr)
 
     # Random
 

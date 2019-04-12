@@ -21,50 +21,9 @@ from math import ceil
 from iarray.container import IArray
 
 
-cdef class ReadElemIter:
-    cdef ciarray.iarray_iter_read_t *_iter
-    cdef Container _c
-    cdef dtype
-    cdef start
-
-    def __cinit__(self, c):
-        self._c = c
-        ciarray.iarray_iter_read_new(self._c._ctx._ctx, self._c._c, &self._iter)
-        if self._c.dtype == "double":
-            self.dtype = 0
-        else:
-            self.dtype = 1
-        self.start = False
-
-    def __dealloc__(self):
-        ciarray.iarray_iter_read_free(self._iter)
-
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        cdef ciarray.iarray_iter_read_value_t value
-
-        if self.start is False:
-            ciarray.iarray_iter_read_init(self._iter)
-            self.start = True
-        else:
-            ciarray.iarray_iter_read_next(self._iter)
-
-        if ciarray.iarray_iter_read_finished(self._iter):
-            raise StopIteration
-        else:
-            ciarray.iarray_iter_read_value(self._iter, &value)
-            index = [value.index[i] for i in range(self._c.ndim)]
-            if self.dtype == 0:
-                elem = (<double*> value.pointer)[0]
-            else:
-                elem = (<float*> value.pointer)[0]
-            return tuple(index), elem
-
-
 cdef class ReadBlockIter:
     cdef ciarray.iarray_iter_read_block_t *_iter
+    cdef ciarray.iarray_iter_read_block_value_t _val
     cdef Container _c
     cdef int dtype
     cdef int flag
@@ -75,51 +34,41 @@ cdef class ReadBlockIter:
         for i in range(len(block)):
             block_[i] = block[i]
 
-        ciarray.iarray_iter_read_block_new(self._c._ctx._ctx, self._c._c, &self._iter, block_)
+        ciarray.iarray_iter_read_block_new(self._c._ctx._ctx, &self._iter, self._c._c, block_, &self._val)
         if self._c.dtype == "double":
             self.dtype = 0
         else:
             self.dtype = 1
 
     def __dealloc__(self):
-        # TODO: contrarily to a write iter, it looks like a next is not necessary here
-        # if self.flag:
-        #     ciarray.iarray_iter_read_block_next(self._iter)
         ciarray.iarray_iter_read_block_free(self._iter)
 
 
     def __iter__(self):
-        ciarray.iarray_iter_read_block_init(self._iter)
-        self.flag = False
         return self
 
     def __next__(self):
-        if ciarray.iarray_iter_read_block_finished(self._iter):
-            self.flag = False
+        if not ciarray.iarray_iter_read_block_has_next(self._iter):
             raise StopIteration
 
-        if self.flag:
-            ciarray.iarray_iter_read_block_next(self._iter)
-        self.flag = True
+        ciarray.iarray_iter_read_block_next(self._iter)
 
-        cdef ciarray.iarray_iter_read_block_value_t value
-        ciarray.iarray_iter_read_block_value(self._iter, &value)
-
-        shape = tuple(value.block_shape[i] for i in range(self._c.ndim))
+        shape = tuple(self._val.block_shape[i] for i in range(self._c.ndim))
         size = np.prod(shape)
 
         if self.dtype == 0:
-            view = <np.float64_t[:size]> value.pointer
+            view = <np.float64_t[:size]> self._val.pointer
         else:
-            view = <np.float32_t[:size]> value.pointer
+            view = <np.float32_t[:size]> self._val.pointer
         a = np.asarray(view)
 
-        index = tuple(value.elem_index[i] for i in range(self._c.ndim))
+        index = tuple(self._val.elem_index[i] for i in range(self._c.ndim))
 
         return index, a.reshape(shape)
 
-cdef class WritePartIter:
-    cdef ciarray.iarray_iter_write_part_t *_iter
+cdef class WriteBlockIter:
+    cdef ciarray.iarray_iter_write_block_t *_iter
+    cdef ciarray.iarray_iter_write_block_value_t _val
     cdef Container _c
     cdef int dtype
     cdef int flag
@@ -128,51 +77,38 @@ cdef class WritePartIter:
         self._c = c
         cdef ciarray.int64_t block_[ciarray.IARRAY_DIMENSION_MAX]
         if block is None:
-            ciarray.iarray_iter_write_part_new(self._c._ctx._ctx, self._c._c, &self._iter, NULL)
+            ciarray.iarray_iter_write_block_new(self._c._ctx._ctx,  &self._iter,self._c._c, NULL, &self._val)
         else:
             for i in range(len(block)):
                 block_[i] = block[i]
-            ciarray.iarray_iter_write_part_new(self._c._ctx._ctx, self._c._c, &self._iter, block_)
+            ciarray.iarray_iter_write_block_new(self._c._ctx._ctx, &self._iter, self._c._c, block_, &self._val)
         if self._c.dtype == "double":
             self.dtype = 0
         else:
             self.dtype = 1
 
     def __dealloc__(self):
-        # TODO: look if this workaround for forcing a flush when no StopIteration happens can be improved
-        # TODO: study if this should be used for read iterators or it is not necessary
-        # TODO: setup tests where zip(iter1, iter2) with different combinations of read/write iters are used
-        if self.flag:
-            ciarray.iarray_iter_write_part_next(self._iter)
-        ciarray.iarray_iter_write_part_free(self._iter)
+        ciarray.iarray_iter_write_block_free(self._iter)
 
     def __iter__(self):
-        ciarray.iarray_iter_write_part_init(self._iter)
-        self.flag = False
         return self
 
     def __next__(self):
-        if ciarray.iarray_iter_write_part_finished(self._iter):
-            self.flag = False  # means that everything has been flushed
+        if not ciarray.iarray_iter_write_block_has_next(self._iter):
             raise StopIteration
 
-        if self.flag:
-            ciarray.iarray_iter_write_part_next(self._iter)
-        self.flag = True
+        ciarray.iarray_iter_write_block_next(self._iter)
 
-        cdef ciarray.iarray_iter_write_part_value_t value
-        ciarray.iarray_iter_write_part_value(self._iter, &value)
-
-        shape = tuple(value.part_shape[i] for i in range(self._c.ndim))
+        shape = tuple(self._val.block_shape[i] for i in range(self._c.ndim))
         size = np.prod(shape)
 
         if self.dtype == 0:
-            view = <np.float64_t[:size]> value.pointer
+            view = <np.float64_t[:size]> self._val.pointer
         else:
-            view = <np.float32_t[:size]> value.pointer
+            view = <np.float32_t[:size]> self._val.pointer
         a = np.asarray(view)
 
-        index = tuple(value.elem_index[i] for i in range(self._c.ndim))
+        index = tuple(self._val.elem_index[i] for i in range(self._c.ndim))
 
         return index, a.reshape(shape)
 
@@ -347,7 +283,6 @@ cdef class RandomContext:
 
 cdef class Container:
     cdef ciarray.iarray_container_t *_c
-    cdef ciarray.iarray_iter_read_t *_iter
     cdef Context _ctx
 
     def __init__(self, ctx, c):
@@ -358,14 +293,11 @@ cdef class Container:
     def __dealloc__(self):
         ciarray.iarray_container_free(self._ctx._ctx, &self._c)
 
-    def iter_elem(self):
-        return ReadElemIter(self)
-
-    def iter_block(self, block):
+    def iter_read_block(self, block=None):
         return ReadBlockIter(self, block)
 
-    def iter_write(self, block):
-        return WritePartIter(self, block)
+    def iter_write_block(self, block=None):
+        return WriteBlockIter(self, block)
 
     def to_capsule(self):
         return PyCapsule_New(self._c, "iarray_container_t*", NULL)

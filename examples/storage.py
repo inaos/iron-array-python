@@ -24,7 +24,7 @@ t1 = time()
 print(f"Time for creating blosc container: {round(t1 - t0, 3)}")
 
 t0 = time()
-for (i, x) in c.iter_block(blockshape):
+for (i, x) in c.iter_read_block(blockshape):
     print(x)
 t1 = time()
 

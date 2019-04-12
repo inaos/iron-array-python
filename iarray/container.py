@@ -155,8 +155,8 @@ class LazyExpr:
         pshape_ = o0.pshape
         if method == "numexpr":
             out = ia.empty(self.ctx, shape=shape_, pshape=pshape_)
-            operand_iters = tuple(o.iter_block(pshape_) for o in self.operands.values() if isinstance(o, IArray))
-            all_iters = operand_iters + (out.iter_write(pshape_),)   # put the iterator for the output at the end
+            operand_iters = tuple(o.iter_read_block(pshape_) for o in self.operands.values() if isinstance(o, IArray))
+            all_iters = operand_iters + (out.iter_write_bock(pshape_),)   # put the iterator for the output at the end
             # all_iters =  (out.iter_write(pshape_),) + operand_iters  # put the iterator for the output at the front
             for block in zip(*all_iters):
                 block_operands = {o: block[i][1] for (i, o) in enumerate(self.operands.keys(), start=0)}

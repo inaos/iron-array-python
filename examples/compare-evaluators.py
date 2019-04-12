@@ -3,6 +3,7 @@ from time import time
 import numpy as np
 import numexpr as ne
 from numba import jit
+from itertools import zip_longest as izip
 
 
 # Number of iterations per benchmark
@@ -12,6 +13,7 @@ NITER = 10
 N = 10 * 1000 * 1000
 shape = [N]
 pshape = [32 * 1024]
+
 block_size = pshape
 expression = '(x - 1.35) * (x - 4.45) * (x - 8.5)'
 clevel = 0   # compression level
@@ -146,7 +148,7 @@ def do_block_evaluation(pshape_):
     t0 = time()
     ya = ia.empty(ctx, shape=shape, pshape=pshape_)
     for i in range(NITER):
-        for ((i, x), (j, y)) in zip(xa.iter_block(block_size), ya.iter_write(block_write)):
+        for ((i, x), (j, y)) in izip(xa.iter_read_block(block_size), ya.iter_write_block(block_write)):
             y[:] = (x - 1.35) * (x - 4.45) * (x - 8.5)
     print("Block evaluate via numpy:", round((time() - t0) / NITER, 4))
     y1 = ia.iarray2numpy(ctx, ya)
@@ -155,7 +157,7 @@ def do_block_evaluation(pshape_):
     t0 = time()
     ya = ia.empty(ctx, shape=shape, pshape=pshape_)
     for i in range(NITER):
-        for ((i, x), (j, y)) in zip(xa.iter_block(block_size), ya.iter_write(block_write)):
+        for ((i, x), (j, y)) in izip(xa.iter_read_block(block_size), ya.iter_write_block(block_write)):
             ne.evaluate(expression, local_dict={'x': x}, out=y)
     print("Block evaluate via numexpr:", round((time() - t0) / NITER, 4))
     y1 = ia.iarray2numpy(ctx, ya)
@@ -164,7 +166,7 @@ def do_block_evaluation(pshape_):
     t0 = time()
     ya = ia.empty(ctx, shape=shape, pshape=pshape_)
     for i in range(NITER):
-        for ((i, x), (j, y)) in zip(xa.iter_block(block_size), ya.iter_write(block_write)):
+        for ((i, x), (j, y)) in izip(xa.iter_read_block(block_size), ya.iter_write_block(block_write)):
             # y[:] = poly_numba(x)
             poly_numba2(x, y)
     print("Block evaluate via numba:", round((time() - t0) / NITER, 4))
@@ -174,7 +176,7 @@ def do_block_evaluation(pshape_):
     t0 = time()
     ya = ia.empty(ctx, shape=shape, pshape=pshape_)
     for i in range(NITER):
-        for ((i, x), (j, y)) in zip(xa.iter_block(block_size), ya.iter_write(block_write)):
+        for ((i, x), (j, y)) in izip(xa.iter_read_block(block_size), ya.iter_write_block(block_write)):
             # y[:] = poly_numba(x)
             poly_numba2(x, y)
     print("Block evaluate via numba (II):", round((time() - t0) / NITER, 4))
@@ -185,7 +187,7 @@ def do_block_evaluation(pshape_):
         t0 = time()
         ya = ia.empty(ctx, shape=shape, pshape=pshape_)
         for i in range(NITER):
-            for ((i, x), (j, y)) in zip(xa.iter_block(block_size), ya.iter_write(block_write)):
+            for ((i, x), (j, y)) in izip(xa.iter_read_block(block_size), ya.iter_write_block(block_write)):
                 y[:] = numba_prec.poly_double(x)
         print("Block evaluate via pre-compiled numba:", round((time() - t0) / NITER, 4))
         y1 = ia.iarray2numpy(ctx, ya)
@@ -194,7 +196,7 @@ def do_block_evaluation(pshape_):
     t0 = time()
     ya = ia.empty(ctx, shape=shape, pshape=pshape_)
     for i in range(NITER):
-        for ((i, x), (j, y)) in zip(xa.iter_block(block_size), ya.iter_write(block_write)):
+        for ((i, x), (j, y)) in izip(xa.iter_read_block(block_size), ya.iter_write_block(block_write)):
             y[:] = ia.poly_cython(x)
     print("Block evaluate via cython:", round((time() - t0) / NITER, 4))
     y1 = ia.iarray2numpy(ctx, ya)
@@ -203,7 +205,7 @@ def do_block_evaluation(pshape_):
     t0 = time()
     ya = ia.empty(ctx, shape=shape, pshape=pshape_)
     for i in range(NITER):
-        for ((i, x), (j, y)) in zip(xa.iter_block(block_size), ya.iter_write(block_write)):
+        for ((i, x), (j, y)) in izip(xa.iter_read_block(block_size), ya.iter_write_block(block_write)):
             y[:] = ia.poly_cython_nogil(x)
     print("Block evaluate via cython (nogil):", round((time() - t0) / NITER, 4))
     y1 = ia.iarray2numpy(ctx, ya)
