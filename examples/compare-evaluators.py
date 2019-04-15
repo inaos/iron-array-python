@@ -12,10 +12,10 @@ NITER = 10
 # Vector sizes and partitions
 N = 10 * 1000 * 1000
 shape = [N]
-pshape = [32 * 1024]
+pshape = [100 * 1000]
 
 block_size = pshape
-expression = '(x - 1.35) * (x - 4.45) * (x - 8.5)'
+expression = '(x - 1.35) * (x - 4.45) * (x - 8.5) * (x + 1.5) * (x + 4.6)'
 clevel = 0   # compression level
 clib = ia.IARRAY_LZ4  # compression codec
 
@@ -32,7 +32,7 @@ if NUMBA_PRECOMP:
     def poly_numba_prec(x):
         y = np.empty(x.shape, x.dtype)
         for i in range(len(x)):
-            y[i] = (x[i] - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
+            y[i] = (x[i] - 1.35) * (x[i] - 4.45) * (x[i] - 8.5) * (x[i] + 1.5) * (x[i] + 4.6)
         return y
 
     cc.compile()
@@ -42,7 +42,7 @@ if NUMBA_PRECOMP:
 def poly_python(x):
     y = np.empty(x.shape, x.dtype)
     for i in range(len(x)):
-        y[i] = (x[i] - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
+        y[i] = (x[i] - 1.35) * (x[i] - 4.45) * (x[i] - 8.5) * (x[i] + 1.5) * (x[i] + 4.6)
     return y
 
 
@@ -51,14 +51,14 @@ def poly_python(x):
 def poly_numba(x):
     y = np.empty(x.shape, x.dtype)
     for i in range(len(x)):
-        y[i] = (x[i] - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
+        y[i] = (x[i] - 1.35) * (x[i] - 4.45) * (x[i] - 8.5) * (x[i] + 1.5) * (x[i] + 4.6)
     return y
 
 
 @jit(nopython=True, cache=True)
 def poly_numba2(x, y):
     for i in range(len(x)):
-        y[i] = (x[i] - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
+        y[i] = (x[i] - 1.35) * (x[i] - 4.45) * (x[i] - 8.5) * (x[i] + 1.5) * (x[i] + 4.6)
 
 
 def do_regular_evaluation():
@@ -67,7 +67,7 @@ def do_regular_evaluation():
     x = np.linspace(0, 10, N, dtype=np.double)
 
     # Reference to compare to
-    y0 = (x - 1.35) * (x - 4.45) * (x - 8.5)
+    y0 = (x - 1.35) * (x - 4.45) * (x - 8.5) * (x + 1.5) * (x + 4.6)
     # print(y0, y0.shape)
 
     if N <= 2e6:
@@ -78,7 +78,7 @@ def do_regular_evaluation():
 
     t0 = time()
     for i in range(NITER):
-        y1 = (x - 1.35) * (x - 4.45) * (x - 8.5)
+        y1 = (x - 1.35) * (x - 4.45) * (x - 8.5) * (x + 1.5) * (x + 4.6)
     print("Regular evaluate via numpy:", round((time() - t0) / NITER, 4))
     np.testing.assert_almost_equal(y0, y1)
 
@@ -141,7 +141,7 @@ def do_block_evaluation(pshape_):
     xa = ia.linspace(ctx, N, 0., 10., shape=shape, pshape=pshape_)
 
     # Reference to compare to
-    y0 = (x - 1.35) * (x - 4.45) * (x - 8.5)
+    y0 = (x - 1.35) * (x - 4.45) * (x - 8.5) * (x + 1.5) * (x + 4.6)
 
     block_write = None if pshape_ == pshape else block_size
 
@@ -149,7 +149,7 @@ def do_block_evaluation(pshape_):
     ya = ia.empty(ctx, shape=shape, pshape=pshape_)
     for i in range(NITER):
         for ((i, x), (j, y)) in izip(xa.iter_read_block(block_size), ya.iter_write_block(block_write)):
-            y[:] = (x - 1.35) * (x - 4.45) * (x - 8.5)
+            y[:] = (x - 1.35) * (x - 4.45) * (x - 8.5) * (x + 1.5) * (x + 4.6)
     print("Block evaluate via numpy:", round((time() - t0) / NITER, 4))
     y1 = ia.iarray2numpy(ctx, ya)
     np.testing.assert_almost_equal(y0, y1)
@@ -215,7 +215,7 @@ def do_block_evaluation(pshape_):
         t0 = time()
         expr = ia.Expression(ctx)
         expr.bind(b'x', xa)
-        expr.compile(b'(x - 1.35) * (x - 4.45) * (x - 8.5)')
+        expr.compile(b'(x - 1.35) * (x - 4.45) * (x - 8.5) * (x + 1.5) * (x + 4.6)')
         for i in range(NITER):
             ya = expr.eval(shape, pshape_, "double")
         print("Block evaluate via iarray.eval:", round((time() - t0) / NITER, 4))
@@ -234,7 +234,7 @@ def do_block_evaluation(pshape_):
         t0 = time()
         x = xa
         for i in range(NITER):
-            ya = ((x - 1.35) * (x - 4.45) * (x - 8.5)).eval(method="iarray.eval")
+            ya = ((x - 1.35) * (x - 4.45) * (x - 8.5) * (x + 1.5) * (x + 4.6)).eval(method="iarray.eval")
         print("Block evaluate via iarray.LazyExpr.eval('iarray.eval')):", round((time() - t0) / NITER, 4))
         y1 = ia.iarray2numpy(ctx, ya)
         np.testing.assert_almost_equal(y0, y1)
@@ -243,6 +243,6 @@ def do_block_evaluation(pshape_):
 if __name__ == "__main__":
     do_regular_evaluation()
     print("-*-"*10)
-    #do_block_evaluation(pshape)
+    do_block_evaluation(pshape)
     print("-*-" * 10)
     do_block_evaluation(None)
