@@ -175,8 +175,8 @@ cdef extern from "libiarray/iarray.h":
         void *pointer
         int64_t *block_index
         int64_t *elem_index
-        int64_t nelem
-        int64_t* block_shape
+        int64_t nblock
+        int64_t *block_shape
         int64_t block_size
 
     ina_rc_t iarray_iter_write_block_new(iarray_context_t *ctx,
