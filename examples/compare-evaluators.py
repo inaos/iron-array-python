@@ -146,8 +146,8 @@ def do_block_evaluation(pshape_):
     block_write = None if pshape_ == pshape else block_size
 
     t0 = time()
-    ya = ia.empty(ctx, shape=shape, pshape=pshape_)
     for i in range(NITER):
+        ya = ia.empty(ctx, shape=shape, pshape=pshape_)
         for ((i, x), (j, y)) in zip(xa.iter_read_block(block_size), ya.iter_write_block(block_write)):
             y[:] = (x - 1.35) * (x - 4.45) * (x - 8.5) * (x + 1.5) * (x + 4.6)
     print("Block evaluate via numpy:", round((time() - t0) / NITER, 4))
@@ -155,8 +155,8 @@ def do_block_evaluation(pshape_):
     np.testing.assert_almost_equal(y0, y1)
 
     t0 = time()
-    ya = ia.empty(ctx, shape=shape, pshape=pshape_)
     for i in range(NITER):
+        ya = ia.empty(ctx, shape=shape, pshape=pshape_)
         for ((i, x), (j, y)) in zip(xa.iter_read_block(block_size), ya.iter_write_block(block_write)):
             ne.evaluate(expression, local_dict={'x': x}, out=y)
     print("Block evaluate via numexpr:", round((time() - t0) / NITER, 4))
@@ -164,8 +164,8 @@ def do_block_evaluation(pshape_):
     np.testing.assert_almost_equal(y0, y1)
 
     t0 = time()
-    ya = ia.empty(ctx, shape=shape, pshape=pshape_)
     for i in range(NITER):
+        ya = ia.empty(ctx, shape=shape, pshape=pshape_)
         for ((i, x), (j, y)) in zip(xa.iter_read_block(block_size), ya.iter_write_block(block_write)):
             # y[:] = poly_numba(x)
             poly_numba2(x, y)
@@ -174,8 +174,8 @@ def do_block_evaluation(pshape_):
     np.testing.assert_almost_equal(y0, y1)
 
     t0 = time()
-    ya = ia.empty(ctx, shape=shape, pshape=pshape_)
     for i in range(NITER):
+        ya = ia.empty(ctx, shape=shape, pshape=pshape_)
         for ((i, x), (j, y)) in zip(xa.iter_read_block(block_size), ya.iter_write_block(block_write)):
             # y[:] = poly_numba(x)
             poly_numba2(x, y)
@@ -185,8 +185,8 @@ def do_block_evaluation(pshape_):
 
     if NUMBA_PRECOMP:
         t0 = time()
-        ya = ia.empty(ctx, shape=shape, pshape=pshape_)
         for i in range(NITER):
+            ya = ia.empty(ctx, shape=shape, pshape=pshape_)
             for ((i, x), (j, y)) in zip(xa.iter_read_block(block_size), ya.iter_write_block(block_write)):
                 y[:] = numba_prec.poly_double(x)
         print("Block evaluate via pre-compiled numba:", round((time() - t0) / NITER, 4))
@@ -194,8 +194,8 @@ def do_block_evaluation(pshape_):
         np.testing.assert_almost_equal(y0, y1)
 
     t0 = time()
-    ya = ia.empty(ctx, shape=shape, pshape=pshape_)
     for i in range(NITER):
+        ya = ia.empty(ctx, shape=shape, pshape=pshape_)
         for ((i, x), (j, y)) in zip(xa.iter_read_block(block_size), ya.iter_write_block(block_write)):
             y[:] = ia.poly_cython(x)
     print("Block evaluate via cython:", round((time() - t0) / NITER, 4))
@@ -203,8 +203,8 @@ def do_block_evaluation(pshape_):
     np.testing.assert_almost_equal(y0, y1)
 
     t0 = time()
-    ya = ia.empty(ctx, shape=shape, pshape=pshape_)
     for i in range(NITER):
+        ya = ia.empty(ctx, shape=shape, pshape=pshape_)
         for ((i, x), (j, y)) in zip(xa.iter_read_block(block_size), ya.iter_write_block(block_write)):
             y[:] = ia.poly_cython_nogil(x)
     print("Block evaluate via cython (nogil):", round((time() - t0) / NITER, 4))
@@ -241,8 +241,8 @@ def do_block_evaluation(pshape_):
 
 
 if __name__ == "__main__":
-    do_regular_evaluation()
+    #do_regular_evaluation()
     print("-*-"*10)
     do_block_evaluation(pshape)
     print("-*-" * 10)
-    do_block_evaluation(None)
+    #do_block_evaluation(None)
