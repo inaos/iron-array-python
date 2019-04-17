@@ -241,8 +241,8 @@ def do_block_evaluation(pshape_):
 
 
 if __name__ == "__main__":
-    #do_regular_evaluation()
+    do_regular_evaluation()
     print("-*-"*10)
     do_block_evaluation(pshape)
     print("-*-" * 10)
-    #do_block_evaluation(None)
+    do_block_evaluation(None)
