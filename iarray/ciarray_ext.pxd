@@ -44,6 +44,7 @@ cdef extern from "libiarray/iarray.h":
     ctypedef struct iarray_config_t:
         iarray_compression_codec_t compression_codec
         int compression_level
+        int use_dict
         int filter_flags
         int eval_flags
         int max_num_threads

@@ -123,10 +123,11 @@ cdef class IarrayInit:
 cdef class Config:
     cdef ciarray.iarray_config_t _cfg
 
-    def __init__(self, compression_codec=1, compression_level=5, filter_flags=0, eval_flags="iterblock",
-                 max_num_threads=1, fp_mantissa_bits=0, blocksize=0):
+    def __init__(self, compression_codec=1, compression_level=5, use_dict=0, filter_flags=0,
+                 eval_flags="iterblock", max_num_threads=1, fp_mantissa_bits=0, blocksize=0):
         self._cfg.compression_codec = compression_codec
         self._cfg.compression_level = compression_level
+        self._cfg.use_dict = use_dict
         self._cfg.filter_flags = filter_flags
         if eval_flags == "iterblock":
             self._cfg.eval_flags = ciarray.IARRAY_EXPR_EVAL_ITERBLOCK
