@@ -44,6 +44,7 @@ cdef extern from "libiarray/iarray.h":
     ctypedef struct iarray_config_t:
         iarray_compression_codec_t compression_codec
         int compression_level
+        int use_dict
         int filter_flags
         int eval_flags
         int max_num_threads
@@ -220,8 +221,11 @@ cdef extern from "libiarray/iarray.h":
         IARRAY_RANDOM_DIST_PARAM_SIGMA
         IARRAY_RANDOM_DIST_PARAM_ALPHA
         IARRAY_RANDOM_DIST_PARAM_BETA
+        IARRAY_RANDOM_DIST_PARAM_LAMBDA
         IARRAY_RANDOM_DIST_PARAM_A
         IARRAY_RANDOM_DIST_PARAM_B
+        IARRAY_RANDOM_DIST_PARAM_P
+        IARRAY_RANDOM_DIST_PARAM_M
         IARRAY_RANDOM_DIST_PARAM_SENTINEL
 
     ctypedef struct iarray_random_ctx_t
@@ -278,6 +282,34 @@ cdef extern from "libiarray/iarray.h":
 
 
     ina_rc_t iarray_random_uniform(iarray_context_t *ctx,
+                                   iarray_dtshape_t *dtshape,
+                                   iarray_random_ctx_t *random_ctx,
+                                   iarray_store_properties_t *store,
+                                   int flags,
+                                   iarray_container_t **container)
+
+    ina_rc_t iarray_random_normal(iarray_context_t *ctx,
+                                  iarray_dtshape_t *dtshape,
+                                  iarray_random_ctx_t *random_ctx,
+                                  iarray_store_properties_t *store,
+                                  int flags,
+                                  iarray_container_t **container)
+
+    ina_rc_t iarray_random_bernoulli(iarray_context_t *ctx,
+                                     iarray_dtshape_t *dtshape,
+                                     iarray_random_ctx_t *random_ctx,
+                                     iarray_store_properties_t *store,
+                                     int flags,
+                                     iarray_container_t **container)
+
+    ina_rc_t iarray_random_binomial(iarray_context_t *ctx,
+                                    iarray_dtshape_t *dtshape,
+                                    iarray_random_ctx_t *random_ctx,
+                                    iarray_store_properties_t *store,
+                                    int flags,
+                                    iarray_container_t **container)
+
+    ina_rc_t iarray_random_poisson(iarray_context_t *ctx,
                                    iarray_dtshape_t *dtshape,
                                    iarray_random_ctx_t *random_ctx,
                                    iarray_store_properties_t *store,
