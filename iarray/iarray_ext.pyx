@@ -18,6 +18,7 @@ cimport numpy as np
 import cython
 from cpython.pycapsule cimport PyCapsule_New, PyCapsule_GetPointer
 from math import ceil
+from libc.stdlib cimport malloc, free
 from iarray.container import IArray
 
 
@@ -944,6 +945,28 @@ def random_kstest(ctx, a, b):
     ciarray.iarray_random_kstest(ctx_, a_, b_, &res)
     return res
 
+
+def matmul(ctx, a, b, block_a, block_b):
+    cdef ciarray.iarray_container_t *a_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(a.to_capsule(), "iarray_container_t*")
+    cdef ciarray.iarray_container_t *b_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(b.to_capsule(), "iarray_container_t*")
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
+    cdef ciarray.iarray_container_t *c
+    dtshape = _Dtshape((a.shape[1], b.shape[0]), (block_a[1], block_b[0]), a.dtype).to_dict()
+    cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
+    ciarray.iarray_container_new(ctx_, &dtshape_, NULL, 0, &c)
+
+    cdef ciarray.int64_t *block_a_ = <ciarray.int64_t*> malloc(a.ndim * sizeof(ciarray.int64_t))
+    cdef ciarray.int64_t *block_b_ = <ciarray.int64_t*> malloc(b.ndim * sizeof(ciarray.int64_t))
+    for i in range(a.ndim):
+        block_a_[i] = block_a[i]
+    for i in range(b.ndim):
+        block_b_[i] = block_b[i]
+    ciarray.iarray_linalg_matmul(ctx_, a_, b_, c, block_a_, block_b_,ciarray.IARRAY_OPERATOR_GENERAL)
+    free(block_a_)
+    free(block_b_)
+
+    c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
+    return IArray(ctx, c_c)
 #
 # TODO: the next functions are just for benchmarking purposes and should be moved to its own extension
 #

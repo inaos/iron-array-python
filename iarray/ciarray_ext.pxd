@@ -168,6 +168,23 @@ cdef extern from "libiarray/iarray.h":
 
     ina_rc_t iarray_eval(iarray_expression_t *e, iarray_container_t *ret)
 
+
+    # Linear algebra
+
+    ctypedef enum iarray_operator_hint_t:
+        IARRAY_OPERATOR_GENERAL = 0
+        IARRAY_OPERATOR_SYMMETRIC
+        IARRAY_OPERATOR_TRIANGULAR
+
+
+    ina_rc_t iarray_linalg_matmul(iarray_context_t *ctx,
+                                  iarray_container_t *a,
+                                  iarray_container_t *b,
+                                  iarray_container_t *result,
+                                  int64_t *bshape_a,
+                                  int64_t *bshape_b,
+                                  iarray_operator_hint_t hint)
+
     # Iterators
 
     ctypedef struct  iarray_iter_write_block_t
