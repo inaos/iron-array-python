@@ -140,6 +140,12 @@ def do_regular_evaluation():
     print("Regular evaluate via cython (nogil):", round((time() - t0) / NITER, 4))
     np.testing.assert_almost_equal(y0, y1)
 
+    t0 = time()
+    for i in range(NITER):
+        poly_llvmc(x, y1)
+    print("Regular evaluate via py2llvm:", round((time() - t0) / NITER, 4))
+    np.testing.assert_almost_equal(y0, y1)
+
 
 def do_block_evaluation(pshape_):
     storage = "superchunk" if pshape_ is not None else "plain buffer"
