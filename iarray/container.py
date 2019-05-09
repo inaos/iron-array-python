@@ -13,6 +13,7 @@ import numpy as np
 import numexpr as ne
 from iarray import iarray_ext as ext
 import iarray as ia
+from itertools import zip_longest as zip
 
 
 def fuse_operands(operands1, operands2):
@@ -156,8 +157,8 @@ class LazyExpr:
         if method == "numexpr":
             out = ia.empty(self.ctx, shape=shape_, pshape=pshape_)
             operand_iters = tuple(o.iter_read_block(pshape_) for o in self.operands.values() if isinstance(o, IArray))
-            all_iters = operand_iters + (out.iter_write_bock(pshape_),)   # put the iterator for the output at the end
-            # all_iters =  (out.iter_write(pshape_),) + operand_iters  # put the iterator for the output at the front
+            all_iters = operand_iters + (out.iter_write_block(pshape_),)   # put the iterator for the output at the end
+            # all_iters =  (out.iter_write_block(pshape_),) + operand_iters  # put the iterator for the output at the front
             for block in zip(*all_iters):
                 block_operands = {o: block[i][1] for (i, o) in enumerate(self.operands.keys(), start=0)}
                 out_block = block[-1][1]  # the block for output is at the end, by construction

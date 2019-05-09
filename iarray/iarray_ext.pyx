@@ -44,7 +44,6 @@ cdef class ReadBlockIter:
     def __dealloc__(self):
         ciarray.iarray_iter_read_block_free(self._iter)
 
-
     def __iter__(self):
         return self
 
@@ -78,11 +77,12 @@ cdef class WriteBlockIter:
         self._c = c
         cdef ciarray.int64_t block_[ciarray.IARRAY_DIMENSION_MAX]
         if block is None:
-            ciarray.iarray_iter_write_block_new(self._c._ctx._ctx,  &self._iter,self._c._c, NULL, &self._val)
-        else:
-            for i in range(len(block)):
-                block_[i] = block[i]
-            ciarray.iarray_iter_write_block_new(self._c._ctx._ctx, &self._iter, self._c._c, block_, &self._val)
+            # The block for iteration has always be provided
+            block = c.pshape
+        for i in range(len(block)):
+            block_[i] = block[i]
+        retcode = ciarray.iarray_iter_write_block_new(self._c._ctx._ctx, &self._iter, self._c._c, block_, &self._val)
+        assert(retcode == 0)
         if self._c.dtype == "double":
             self.dtype = 0
         else:
@@ -597,7 +597,7 @@ def numpy2iarray(ctx, a, pshape=None, filename=None):
     elif a.dtype == np.float32:
         dtype = "float"
     else:
-        print("ERROR")
+        raise NotImplementedError("Only float32 and float64 types are supported for now")
 
     dtshape = _Dtshape(a.shape, pshape, dtype).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape

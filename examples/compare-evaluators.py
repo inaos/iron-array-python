@@ -211,26 +211,27 @@ def do_block_evaluation(pshape_):
     y1 = ia.iarray2numpy(ctx, ya)
     np.testing.assert_almost_equal(y0, y1)
 
+    t0 = time()
+    expr = ia.Expression(ctx)
+    expr.bind(b'x', xa)
+    expr.compile(b'(x - 1.35) * (x - 4.45) * (x - 8.5) * (x + 1.5) * (x + 4.6)')
+    for i in range(NITER):
+        ya = expr.eval(shape, pshape_, "double")
+    print("Block evaluate via iarray.eval:", round((time() - t0) / NITER, 4))
+    y1 = ia.iarray2numpy(ctx, ya)
+    np.testing.assert_almost_equal(y0, y1)
+
+    # TODO: This currently crashes.  Investigate...
+    # t0 = time()
+    # x = xa
+    # for i in range(NITER):
+    #     ya = ((x - 1.35) * (x - 4.45) * (x - 8.5)).eval()
+    # print("Block evaluate via iarray.LazyExpr.eval('numexpr'):", round((time() - t0) / NITER, 4))
+    # y1 = ia.iarray2numpy(ctx, ya)
+    # np.testing.assert_almost_equal(y0, y1)
+
     if pshape_ is not None:
-        t0 = time()
-        expr = ia.Expression(ctx)
-        expr.bind(b'x', xa)
-        expr.compile(b'(x - 1.35) * (x - 4.45) * (x - 8.5) * (x + 1.5) * (x + 4.6)')
-        for i in range(NITER):
-            ya = expr.eval(shape, pshape_, "double")
-        print("Block evaluate via iarray.eval:", round((time() - t0) / NITER, 4))
-        y1 = ia.iarray2numpy(ctx, ya)
-        np.testing.assert_almost_equal(y0, y1)
-
         # TODO: This currently crashes.  Investigate...
-        # t0 = time()
-        # x = xa
-        # for i in range(NITER):
-        #     ya = ((x - 1.35) * (x - 4.45) * (x - 8.5)).eval()
-        # print("Block evaluate via iarray.LazyExpr.eval('numexpr'):", round((time() - t0) / NITER, 4))
-        # y1 = ia.iarray2numpy(ctx, ya)
-        # np.testing.assert_almost_equal(y0, y1)
-
         t0 = time()
         x = xa
         for i in range(NITER):
@@ -241,7 +242,7 @@ def do_block_evaluation(pshape_):
 
 
 if __name__ == "__main__":
-    do_regular_evaluation()
+    # do_regular_evaluation()
     print("-*-"*10)
     do_block_evaluation(pshape)
     print("-*-" * 10)
