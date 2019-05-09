@@ -113,6 +113,7 @@ cdef class WriteBlockIter:
 
         return index, a.reshape(shape)
 
+
 cdef class IarrayInit:
     def __cinit__(self):
         ciarray.iarray_init()
@@ -134,12 +135,6 @@ cdef class Config:
             self._cfg.eval_flags = ciarray.IARRAY_EXPR_EVAL_ITERBLOCK
         elif eval_flags == "iterchunk":
             self._cfg.eval_flags = ciarray.IARRAY_EXPR_EVAL_ITERCHUNK
-        elif eval_flags == "chunk":
-            self._cfg.eval_flags = ciarray.IARRAY_EXPR_EVAL_CHUNK
-        elif eval_flags == "block":
-            self._cfg.eval_flags = ciarray.IARRAY_EXPR_EVAL_BLOCK
-        # else:     // Uncomment this when ITERCHUNKPARA would be in IronArray master
-        #     self._cfg.eval_flags = ciarray.IARRAY_EXPR_EVAL_ITERCHUNKPARA
         self._cfg.max_num_threads = max_num_threads
         self._cfg.fp_mantissa_bits = fp_mantissa_bits
         self._cfg.blocksize = blocksize
