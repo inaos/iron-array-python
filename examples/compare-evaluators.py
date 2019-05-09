@@ -4,6 +4,8 @@ import numpy as np
 import numexpr as ne
 from numba import jit
 from itertools import zip_longest as zip
+import py2llvm as llvm
+from py2llvm import float64, int32, Array
 
 
 # Number of iterations per benchmark
@@ -59,6 +61,17 @@ def poly_numba(x):
 def poly_numba2(x, y):
     for i in range(len(x)):
         y[i] = (x[i] - 1.35) * (x[i] - 4.45) * (x[i] - 8.5) * (x[i] + 1.5) * (x[i] + 4.6)
+
+
+def poly_llvm(x, y):
+    i = 0
+    while i < x.shape[0]:
+        y[i] = (x[i] - 1.35) * (x[i] - 4.45) * (x[i] - 8.5) * (x[i] + 1.5) * (x[i] + 4.6)
+        i = i + 1
+    return 0
+
+signature = Array(float64, 1), Array(float64, 1), int32
+poly_llvmc = llvm.compile(poly_llvm, signature, verbose=0)
 
 
 def do_regular_evaluation():
@@ -212,6 +225,15 @@ def do_block_evaluation(pshape_):
     np.testing.assert_almost_equal(y0, y1)
 
     t0 = time()
+    for i in range(NITER):
+        ya = ia.empty(ctx, shape=shape, pshape=pshape_)
+        for ((i, x), (j, y)) in zip(xa.iter_read_block(block_size), ya.iter_write_block(block_write)):
+            poly_llvmc(x, y)
+    print("Block evaluate via py2llvm:", round((time() - t0) / NITER, 4))
+    y1 = ia.iarray2numpy(ctx, ya)
+    np.testing.assert_almost_equal(y0, y1)
+
+    t0 = time()
     expr = ia.Expression(ctx)
     expr.bind(b'x', xa)
     expr.compile(b'(x - 1.35) * (x - 4.45) * (x - 8.5) * (x + 1.5) * (x + 4.6)')
@@ -231,7 +253,7 @@ def do_block_evaluation(pshape_):
     # np.testing.assert_almost_equal(y0, y1)
 
     if pshape_ is not None:
-        # TODO: This currently crashes.  Investigate...
+        # TODO: This currently crashes when pshape_ is None.  Investigate...
         t0 = time()
         x = xa
         for i in range(NITER):
@@ -242,7 +264,7 @@ def do_block_evaluation(pshape_):
 
 
 if __name__ == "__main__":
-    # do_regular_evaluation()
+    do_regular_evaluation()
     print("-*-"*10)
     do_block_evaluation(pshape)
     print("-*-" * 10)
