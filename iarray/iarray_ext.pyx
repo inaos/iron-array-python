@@ -18,6 +18,7 @@ cimport numpy as np
 import cython
 from cpython.pycapsule cimport PyCapsule_New, PyCapsule_GetPointer
 from math import ceil
+from libc.stdlib cimport malloc, free
 from iarray.container import IArray
 
 
@@ -123,8 +124,8 @@ cdef class IarrayInit:
 cdef class Config:
     cdef ciarray.iarray_config_t _cfg
 
-    def __init__(self, compression_codec=1, compression_level=5, use_dict=0, filter_flags=0,
-                 eval_flags="iterblock", max_num_threads=1, fp_mantissa_bits=0, blocksize=0):
+    def __init__(self, compression_codec=1, compression_level=5, use_dict=0, filter_flags=0, eval_flags="iterblock",
+                 max_num_threads=1, fp_mantissa_bits=0, blocksize=0):
         self._cfg.compression_codec = compression_codec
         self._cfg.compression_level = compression_level
         self._cfg.use_dict = use_dict
@@ -850,6 +851,92 @@ def random_uniform(ctx, r_ctx, a, b, shape, pshape=None, dtype="double", filenam
     return IArray(ctx, c_c)
 
 
+def random_bernoulli(ctx, r_ctx, p, shape, pshape=None, dtype="double", filename=None):
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
+    cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(), "iarray_random_ctx_t*")
+
+    if dtype == "double":
+        ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_P, p)
+    else:
+        ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_P, p)
+
+    dtshape = _Dtshape(shape, pshape, dtype).to_dict()
+    cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
+
+    cdef ciarray.iarray_store_properties_t store
+    if filename is not None:
+        filename = filename.encode("utf-8") if isinstance(filename, str) else filename
+        store.id = filename
+
+    flags = 0 if filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+
+    cdef ciarray.iarray_container_t *c
+    if flags == ciarray.IARRAY_CONTAINER_PERSIST:
+        ciarray.iarray_random_bernoulli(ctx_, &dtshape_, r_ctx_, &store, flags, &c)
+    else:
+        ciarray.iarray_random_bernoulli(ctx_, &dtshape_, r_ctx_, NULL, flags, &c)
+
+    c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
+    return IArray(ctx, c_c)
+
+def random_binomial(ctx, r_ctx, m, p, shape, pshape=None, dtype="double", filename=None):
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
+    cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(), "iarray_random_ctx_t*")
+
+    if dtype == "double":
+        ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_P, p)
+        ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_M, m)
+    else:
+        ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_P, p)
+        ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_M, m)
+
+    dtshape = _Dtshape(shape, pshape, dtype).to_dict()
+    cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
+
+    cdef ciarray.iarray_store_properties_t store
+    if filename is not None:
+        filename = filename.encode("utf-8") if isinstance(filename, str) else filename
+        store.id = filename
+
+    flags = 0 if filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+
+    cdef ciarray.iarray_container_t *c
+    if flags == ciarray.IARRAY_CONTAINER_PERSIST:
+        ciarray.iarray_random_binomial(ctx_, &dtshape_, r_ctx_, &store, flags, &c)
+    else:
+        ciarray.iarray_random_binomial(ctx_, &dtshape_, r_ctx_, NULL, flags, &c)
+
+    c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
+    return IArray(ctx, c_c)
+
+def random_poisson(ctx, r_ctx, l, shape, pshape=None, dtype="double", filename=None):
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
+    cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(), "iarray_random_ctx_t*")
+
+    if dtype == "double":
+        ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_LAMBDA, l)
+    else:
+        ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_LAMBDA, l)
+
+    dtshape = _Dtshape(shape, pshape, dtype).to_dict()
+    cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
+
+    cdef ciarray.iarray_store_properties_t store
+    if filename is not None:
+        filename = filename.encode("utf-8") if isinstance(filename, str) else filename
+        store.id = filename
+
+    flags = 0 if filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+
+    cdef ciarray.iarray_container_t *c
+    if flags == ciarray.IARRAY_CONTAINER_PERSIST:
+        ciarray.iarray_random_poisson(ctx_, &dtshape_, r_ctx_, &store, flags, &c)
+    else:
+        ciarray.iarray_random_poisson(ctx_, &dtshape_, r_ctx_, NULL, flags, &c)
+
+    c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
+    return IArray(ctx, c_c)
+
 def random_kstest(ctx, a, b):
     cdef ciarray.iarray_container_t *a_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(a.to_capsule(), "iarray_container_t*")
     cdef ciarray.iarray_container_t *b_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(b.to_capsule(), "iarray_container_t*")
@@ -858,6 +945,46 @@ def random_kstest(ctx, a, b):
     ciarray.iarray_random_kstest(ctx_, a_, b_, &res)
     return res
 
+
+def matmul(ctx, a, b, block_a, block_b):
+    cdef ciarray.iarray_container_t *a_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(a.to_capsule(), "iarray_container_t*")
+    cdef ciarray.iarray_container_t *b_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(b.to_capsule(), "iarray_container_t*")
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
+    cdef ciarray.iarray_container_t *c
+    if block_a == None and block_b == None:
+        if len(b.shape) == 1:
+            dtshape = _Dtshape(tuple([a.shape[0]]), None, a.dtype).to_dict()
+        else:
+            dtshape = _Dtshape((a.shape[0], b.shape[1]), None, a.dtype).to_dict()
+    else:
+        if len(b.shape) == 1:
+            dtshape = _Dtshape(tuple([a.shape[0]]), tuple([block_a[0]]), a.dtype).to_dict()
+        else:
+            dtshape = _Dtshape((a.shape[0], b.shape[1]), (block_a[0], block_b[1]), a.dtype).to_dict()
+    cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
+    ciarray.iarray_container_new(ctx_, &dtshape_, NULL, 0, &c)
+
+    cdef ciarray.int64_t *block_a_
+    cdef ciarray.int64_t *block_b_
+    if block_a is not None:
+        block_a_ = <ciarray.int64_t*> malloc(a.ndim * sizeof(ciarray.int64_t))
+        block_b_ = <ciarray.int64_t*> malloc(b.ndim * sizeof(ciarray.int64_t))
+        for i in range(a.ndim):
+            block_a_[i] = block_a[i]
+        for i in range(b.ndim):
+            block_b_[i] = block_b[i]
+        err = ciarray.iarray_linalg_matmul(ctx_, a_, b_, c, block_a_, block_b_, ciarray.IARRAY_OPERATOR_GENERAL)
+        if err != 0:
+            raise AttributeError
+        free(block_a_)
+        free(block_b_)
+    else:
+        err = ciarray.iarray_linalg_matmul(ctx_, a_, b_, c, NULL, NULL, ciarray.IARRAY_OPERATOR_GENERAL)
+        if err != 0:
+            raise AttributeError
+
+    c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
+    return IArray(ctx, c_c)
 #
 # TODO: the next functions are just for benchmarking purposes and should be moved to its own extension
 #
