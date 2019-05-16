@@ -946,16 +946,30 @@ def matmul(ctx, a, b, block_a, block_b):
     cdef ciarray.iarray_container_t *b_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(b.to_capsule(), "iarray_container_t*")
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
     cdef ciarray.iarray_container_t *c
-    if block_a == None and block_b == None:
+
+    if block_a is None and block_b is None:
         if len(b.shape) == 1:
             dtshape = _Dtshape(tuple([a.shape[0]]), None, a.dtype).to_dict()
         else:
             dtshape = _Dtshape((a.shape[0], b.shape[1]), None, a.dtype).to_dict()
+
+    elif block_a is None and block_b is not None:
+        if len(b.shape) == 1:
+            dtshape = _Dtshape(tuple([a.shape[0]]), tuple([a.shape[0]]), a.dtype).to_dict()
+        else:
+            dtshape = _Dtshape((a.shape[0], b.shape[1]), (a.shape[0], block_b[1]), a.dtype).to_dict()
+    elif block_a is not None and block_b is None:
+        if len(b.shape) == 1:
+            dtshape = _Dtshape(tuple([a.shape[0]]), tuple([block_a[0]]), a.dtype).to_dict()
+        else:
+            dtshape = _Dtshape((a.shape[0], b.shape[1]), (block_a[0], b.shape[1]), a.dtype).to_dict()
     else:
         if len(b.shape) == 1:
             dtshape = _Dtshape(tuple([a.shape[0]]), tuple([block_a[0]]), a.dtype).to_dict()
         else:
             dtshape = _Dtshape((a.shape[0], b.shape[1]), (block_a[0], block_b[1]), a.dtype).to_dict()
+
+
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
     ciarray.iarray_container_new(ctx_, &dtshape_, NULL, 0, &c)
 

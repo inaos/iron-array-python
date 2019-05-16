@@ -16,15 +16,20 @@ ctx = ia.Context(cfg)
 
 shape_a = [2000, 2000]
 size_a = np.prod(shape_a)
+pshape_a = None
+bshape_a = None
 shape_b = [2000]
 size_b = np.prod(shape_b)
+pshape_b = [None]
+bshape_b = [2000]
+
 
 pshape = None
 
-a = ia.arange(ctx, size_a, shape=shape_a, pshape=pshape)
+a = ia.arange(ctx, size_a, shape=shape_a, pshape=pshape_a)
 an = ia.iarray2numpy(ctx, a)
 
-b = ia.arange(ctx, size_b, shape=shape_b, pshape=pshape)
+b = ia.arange(ctx, size_b, shape=shape_b, pshape=pshape_b)
 bn = ia.iarray2numpy(ctx, b)
 
 nrep = 10
@@ -41,7 +46,7 @@ print(f"Time to compute matmul with numpy: {(t1-t0)/nrep} s")
 
 t0 = time()
 for i in range(nrep):
-    c = ia.matmul(ctx, a, b, pshape, pshape)
+    c = ia.matmul(ctx, a, b, bshape_a, bshape_b)
 t1 = time()
 print(f"Time to compute matmul with iarray: {(t1-t0)/nrep} s")
 

@@ -14,7 +14,7 @@ import numexpr as ne
                              ("block", [1000], None, "double", "(x - 1.35) * (x - 4.45) * (x - 8.5)"),
                              ("iterchunk", [1000], None, "float", "(x - 1) * (x - 1) + 2 * x"),
                              ("block", [100, 100], None, "double", "(x - 1) * 2"),
-                             ("iterchunk", [8, 6, 7, 4, 5], None, "float", "(x - 1) * (x - 1) + 2 * x"),
+                             ("iterchunk", [8, 6, 7, 4, 5], None, "float", "(x - 1) * (x - 1) + 2 * x")
                          ])
 def test_expression(eval_flags, shape, pshape, dtype, expression):
     cfg = ia.Config(eval_flags=eval_flags)
