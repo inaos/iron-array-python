@@ -3,9 +3,12 @@ import iarray as ia
 import numpy as np
 
 
+# Linspace
 @pytest.mark.parametrize("start, stop, shape, pshape, dtype",
                          [
                              (0, 10, [10, 12, 5], [2, 3, 2], "double"),
+                             (-0.1, -0.2, [4, 3, 5, 2], [2, 2, 2, 2], "float"),
+                             (0, 10, [10, 12, 5], None, "double"),
                              (-0.1, -0.2, [4, 3, 5, 2], None, "float")
                          ])
 def test_linspace(start, stop, shape, pshape, dtype):
@@ -19,10 +22,13 @@ def test_linspace(start, stop, shape, pshape, dtype):
     np.testing.assert_almost_equal(b, c)
 
 
+# Arange
 @pytest.mark.parametrize("start, stop, shape, pshape, dtype",
                          [
                              (0, 10, [10, 12, 5], [2, 3, 2], "double"),
-                             (-0.1, -0.2, [4, 3, 5, 2], [2, 3, 2, 2], "float")
+                             (-0.1, -0.2, [4, 3, 5, 2], [2, 3, 2, 2], "float"),
+                             (0, 10, [10, 12, 5], None, "double"),
+                             (-0.1, -0.2, [4, 3, 5, 2], None, "float")
                          ])
 def test_arange(start, stop, shape, pshape, dtype):
     cfg = ia.Config()
@@ -36,6 +42,7 @@ def test_arange(start, stop, shape, pshape, dtype):
     np.testing.assert_almost_equal(b, c)
 
 
+# From file
 @pytest.mark.parametrize("start, stop, shape, pshape, dtype, filename",
                          [
                              (0, 10, [9], [2], "double", "test.fromfile0.iarray"),
@@ -53,10 +60,13 @@ def test_from_file(start, stop, shape, pshape, dtype, filename):
     np.testing.assert_almost_equal(a, d)
 
 
+# Slice
 @pytest.mark.parametrize("start, stop, slice, shape, pshape, dtype",
                          [
                              (0, 10, (slice(2, 4), slice(5, 10), slice(1, 2)), [10, 12, 5], [2, 3, 2], "double"),
-                             (-0.1, -0.2, (slice(2, 4), slice(7, 12)), [12, 16], [2, 7], "float")
+                             (-0.1, -0.2, (slice(2, 4), slice(7, 12)), [12, 16], [2, 7], "float"),
+                             (0, 10, (slice(2, 4), slice(5, 10), slice(1, 2)), [10, 12, 5], None, "double"),
+                             (-0.1, -0.2, (slice(2, 4), slice(7, 12)), [12, 16], None, "float")
                          ])
 def test_slice(start, stop, slice, shape, pshape, dtype):
     cfg = ia.Config()
@@ -71,10 +81,13 @@ def test_slice(start, stop, slice, shape, pshape, dtype):
     np.testing.assert_almost_equal(c, d)
 
 
+# Zeros
 @pytest.mark.parametrize("shape, pshape, dtype",
                          [
                              ([10, 12, 5], [2, 3, 2], "double"),
-                             ([12, 16], [2, 7], "float")
+                             ([12, 16], [2, 7], "float"),
+                             ([10, 12, 5], None, "double"),
+                             ([12, 16], None, "float")
                          ])
 def test_zeros(shape, pshape, dtype):
     cfg = ia.Config()
@@ -87,10 +100,13 @@ def test_zeros(shape, pshape, dtype):
     np.testing.assert_almost_equal(b, c)
 
 
+# Ones
 @pytest.mark.parametrize("shape, pshape, dtype",
                          [
                              ([10, 12, 5], [2, 3, 2], "double"),
-                             ([12, 16], [2, 7], "float")
+                             ([12, 16], [2, 7], "float"),
+                             ([10, 12, 5], None, "double"),
+                             ([12, 16], None, "float")
                          ])
 def test_ones(shape, pshape, dtype):
     cfg = ia.Config()
@@ -103,10 +119,13 @@ def test_ones(shape, pshape, dtype):
     np.testing.assert_almost_equal(b, c)
 
 
+# Full
 @pytest.mark.parametrize("fill_value, shape, pshape, dtype",
                          [
                              (8.34, [10, 12, 5], [2, 3, 2], "double"),
-                             (2.00001, [12, 16], [2, 7], "float")
+                             (2.00001, [12, 16], [2, 7], "float"),
+                             (8.34, [10, 12, 5], None, "double"),
+                             (2.00001, [12, 16], None, "float")
                          ])
 def test_full(fill_value, shape, pshape, dtype):
     cfg = ia.Config()

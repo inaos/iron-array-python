@@ -12,9 +12,9 @@ from py2llvm import float64, int32, Array
 NITER = 10
 
 # Vector sizes and partitions
-N = 10 * 1000 * 1000
-shape = [N]
-pshape = [100 * 1000]
+shape = [1000, 10000]
+N = int(np.prod(shape))
+pshape = [100, 1000]
 
 block_size = pshape
 expression = '(x - 1.35) * (x - 4.45) * (x - 8.5) * (x + 1.5) * (x + 4.6)'
@@ -77,7 +77,7 @@ poly_llvmc = llvm.compile(poly_llvm, signature, verbose=0)
 def do_regular_evaluation():
     print("Regular evaluation of the expression:", expression, "with %d elements" % N)
 
-    x = np.linspace(0, 10, N, dtype=np.double)
+    x = np.linspace(0, 10, N, dtype=np.double).reshape(shape)
 
     # Reference to compare to
     y0 = (x - 1.35) * (x - 4.45) * (x - 8.5) * (x + 1.5) * (x + 4.6)
@@ -140,11 +140,11 @@ def do_regular_evaluation():
     print("Regular evaluate via cython (nogil):", round((time() - t0) / NITER, 4))
     np.testing.assert_almost_equal(y0, y1)
 
-    t0 = time()
-    for i in range(NITER):
-        poly_llvmc(x, y1)
-    print("Regular evaluate via py2llvm:", round((time() - t0) / NITER, 4))
-    np.testing.assert_almost_equal(y0, y1)
+    # t0 = time()
+    # for i in range(NITER):
+    #     poly_llvmc(x, y1)
+    # print("Regular evaluate via py2llvm:", round((time() - t0) / NITER, 4))
+    # np.testing.assert_almost_equal(y0, y1)
 
 
 def do_block_evaluation(pshape_):
@@ -155,7 +155,7 @@ def do_block_evaluation(pshape_):
                     max_num_threads=1)
     ctx = ia.Context(cfg)
 
-    x = np.linspace(0, 10, N, dtype=np.double)
+    x = np.linspace(0, 10, N, dtype=np.double).reshape(shape)
     # TODO: looks like nelem is not in the same position than numpy
     xa = ia.linspace(ctx, N, 0., 10., shape=shape, pshape=pshape_)
 
@@ -230,14 +230,14 @@ def do_block_evaluation(pshape_):
     y1 = ia.iarray2numpy(ctx, ya)
     np.testing.assert_almost_equal(y0, y1)
 
-    t0 = time()
-    for i in range(NITER):
-        ya = ia.empty(ctx, shape=shape, pshape=pshape_)
-        for ((i, x), (j, y)) in zip(xa.iter_read_block(block_size), ya.iter_write_block(block_write)):
-            poly_llvmc(x, y)
-    print("Block evaluate via py2llvm:", round((time() - t0) / NITER, 4))
-    y1 = ia.iarray2numpy(ctx, ya)
-    np.testing.assert_almost_equal(y0, y1)
+    # t0 = time()
+    # for i in range(NITER):
+    #     ya = ia.empty(ctx, shape=shape, pshape=pshape_)
+    #     for ((i, x), (j, y)) in zip(xa.iter_read_block(block_size), ya.iter_write_block(block_write)):
+    #         poly_llvmc(x, y)
+    # print("Block evaluate via py2llvm:", round((time() - t0) / NITER, 4))
+    # y1 = ia.iarray2numpy(ctx, ya)
+    # np.testing.assert_almost_equal(y0, y1)
 
     t0 = time()
     expr = ia.Expression(ctx)
@@ -249,29 +249,18 @@ def do_block_evaluation(pshape_):
     y1 = ia.iarray2numpy(ctx, ya)
     np.testing.assert_almost_equal(y0, y1)
 
-    # TODO: This currently crashes.  Investigate...
-    # t0 = time()
-    # x = xa
-    # for i in range(NITER):
-    #     ya = ((x - 1.35) * (x - 4.45) * (x - 8.5)).eval()
-    # print("Block evaluate via iarray.LazyExpr.eval('numexpr'):", round((time() - t0) / NITER, 4))
-    # y1 = ia.iarray2numpy(ctx, ya)
-    # np.testing.assert_almost_equal(y0, y1)
-
-    if pshape_ is not None:
-        # TODO: This currently crashes when pshape_ is None.  Investigate...
-        t0 = time()
-        x = xa
-        for i in range(NITER):
-            ya = ((x - 1.35) * (x - 4.45) * (x - 8.5) * (x + 1.5) * (x + 4.6)).eval(method="iarray.eval")
-        print("Block evaluate via iarray.LazyExpr.eval('iarray.eval')):", round((time() - t0) / NITER, 4))
-        y1 = ia.iarray2numpy(ctx, ya)
-        np.testing.assert_almost_equal(y0, y1)
+    t0 = time()
+    x = xa
+    for i in range(NITER):
+        ya = ((x - 1.35) * (x - 4.45) * (x - 8.5) * (x + 1.5) * (x + 4.6)).eval(method="iarray.eval")
+    print("Block evaluate via iarray.LazyExpr.eval('iarray.eval')):", round((time() - t0) / NITER, 4))
+    y1 = ia.iarray2numpy(ctx, ya)
+    np.testing.assert_almost_equal(y0, y1)
 
 
 if __name__ == "__main__":
     do_regular_evaluation()
-    print("-*-"*10)
+    print("-*-" * 10)
     do_block_evaluation(pshape)
     print("-*-" * 10)
     do_block_evaluation(None)

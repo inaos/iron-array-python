@@ -987,11 +987,12 @@ def matmul(ctx, a, b, block_a, block_b):
 @cython.boundscheck(False) # turn off bounds-checking for entire function
 @cython.wraparound(False)  # turn off negative index wrapping for entire function
 def poly_cython(xa):
-    cdef np.ndarray[np.npy_float64] y = np.empty(xa.shape, xa.dtype)
-    cdef np.ndarray[np.npy_float64] x = xa
+    shape = xa.shape
+    cdef np.ndarray[np.npy_float64] y = np.empty(xa.shape, xa.dtype).flatten()
+    cdef np.ndarray[np.npy_float64] x = xa.flatten()
     for i in range(len(x)):
         y[i] = (x[i] - 1.35) * (x[i] - 4.45) * (x[i] - 8.5) * (x[i] + 1.5) * (x[i] + 4.6)
-    return y
+    return y.reshape(shape)
 
 
 # from cython.parallel import prange
@@ -1005,9 +1006,10 @@ cdef void poly_nogil(double *x, double *y, int n) nogil:
 
 
 def poly_cython_nogil(xa):
-    cdef np.ndarray[np.npy_float64] y = np.empty(xa.shape, xa.dtype)
-    cdef np.ndarray[np.npy_float64] x = xa
+    shape = xa.shape
+    cdef np.ndarray[np.npy_float64] y = np.empty(xa.shape, xa.dtype).flatten()
+    cdef np.ndarray[np.npy_float64] x = xa.flatten()
     poly_nogil(&x[0], &y[0], len(x))
-    return y
+    return y.reshape(shape)
 
 # TODO: End of the benchmarking code
