@@ -20,7 +20,7 @@ from cpython.pycapsule cimport PyCapsule_New, PyCapsule_GetPointer
 from math import ceil
 from libc.stdlib cimport malloc, free
 from iarray.container import IArray
-
+from collections import namedtuple
 
 cdef class ReadBlockIter:
     cdef ciarray.iarray_iter_read_block_t *_iter
@@ -62,9 +62,15 @@ cdef class ReadBlockIter:
             view = <np.float32_t[:size]> self._val.pointer
         a = np.asarray(view)
 
-        index = tuple(self._val.elem_index[i] for i in range(self._c.ndim))
+        elem_index = tuple(self._val.elem_index[i] for i in range(self._c.ndim))
+        index = tuple(self._val.block_index[i] for i in range(self._c.ndim))
+        nblock = self._val.nblock
 
-        return index, a.reshape(shape)
+        Info = namedtuple('Info', 'index elemindex nblock shape size')
+
+        info = Info(index=index, elemindex=elem_index, nblock=nblock, shape=shape, size=size)
+
+        return info, a.reshape(shape)
 
 cdef class WriteBlockIter:
     cdef ciarray.iarray_iter_write_block_t *_iter
@@ -109,9 +115,15 @@ cdef class WriteBlockIter:
             view = <np.float32_t[:size]> self._val.pointer
         a = np.asarray(view)
 
-        index = tuple(self._val.elem_index[i] for i in range(self._c.ndim))
+        elem_index = tuple(self._val.elem_index[i] for i in range(self._c.ndim))
+        index = tuple(self._val.block_index[i] for i in range(self._c.ndim))
+        nblock = self._val.nblock
 
-        return index, a.reshape(shape)
+        Info = namedtuple('Info', 'index elemindex nblock shape size')
+
+        info = Info(index=index, elemindex=elem_index, nblock=nblock, shape=shape, size=size)
+
+        return info, a.reshape(shape)
 
 
 cdef class IarrayInit:
@@ -947,50 +959,38 @@ def matmul(ctx, a, b, block_a, block_b):
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
     cdef ciarray.iarray_container_t *c
 
-    if block_a is None and block_b is None:
+    if a.pshape is None and b.pshape is None:
         if len(b.shape) == 1:
             dtshape = _Dtshape(tuple([a.shape[0]]), None, a.dtype).to_dict()
         else:
             dtshape = _Dtshape((a.shape[0], b.shape[1]), None, a.dtype).to_dict()
-
-    elif block_a is None and block_b is not None:
-        if len(b.shape) == 1:
-            dtshape = _Dtshape(tuple([a.shape[0]]), tuple([a.shape[0]]), a.dtype).to_dict()
-        else:
-            dtshape = _Dtshape((a.shape[0], b.shape[1]), (a.shape[0], block_b[1]), a.dtype).to_dict()
-    elif block_a is not None and block_b is None:
-        if len(b.shape) == 1:
-            dtshape = _Dtshape(tuple([a.shape[0]]), tuple([block_a[0]]), a.dtype).to_dict()
-        else:
-            dtshape = _Dtshape((a.shape[0], b.shape[1]), (block_a[0], b.shape[1]), a.dtype).to_dict()
     else:
         if len(b.shape) == 1:
             dtshape = _Dtshape(tuple([a.shape[0]]), tuple([block_a[0]]), a.dtype).to_dict()
         else:
             dtshape = _Dtshape((a.shape[0], b.shape[1]), (block_a[0], block_b[1]), a.dtype).to_dict()
 
-
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
     ciarray.iarray_container_new(ctx_, &dtshape_, NULL, 0, &c)
 
     cdef ciarray.int64_t *block_a_
     cdef ciarray.int64_t *block_b_
-    if block_a is not None:
-        block_a_ = <ciarray.int64_t*> malloc(a.ndim * sizeof(ciarray.int64_t))
-        block_b_ = <ciarray.int64_t*> malloc(b.ndim * sizeof(ciarray.int64_t))
-        for i in range(a.ndim):
-            block_a_[i] = block_a[i]
-        for i in range(b.ndim):
-            block_b_[i] = block_b[i]
-        err = ciarray.iarray_linalg_matmul(ctx_, a_, b_, c, block_a_, block_b_, ciarray.IARRAY_OPERATOR_GENERAL)
-        if err != 0:
-            raise AttributeError
-        free(block_a_)
-        free(block_b_)
-    else:
-        err = ciarray.iarray_linalg_matmul(ctx_, a_, b_, c, NULL, NULL, ciarray.IARRAY_OPERATOR_GENERAL)
-        if err != 0:
-            raise AttributeError
+
+    block_a_ = <ciarray.int64_t*> malloc(a.ndim * sizeof(ciarray.int64_t))
+    for i in range(a.ndim):
+        block_a_[i] = block_a[i]
+
+    block_b_ = <ciarray.int64_t*> malloc(a.ndim * sizeof(ciarray.int64_t))
+    for i in range(b.ndim):
+        block_b_[i] = block_b[i]
+
+
+    err = ciarray.iarray_linalg_matmul(ctx_, a_, b_, c, block_a_, block_b_, ciarray.IARRAY_OPERATOR_GENERAL)
+    if err != 0:
+        raise AttributeError
+
+    free(block_a_)
+    free(block_b_)
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     return IArray(ctx, c_c)

@@ -14,14 +14,15 @@ print(f"Numpy max threads: {mkl_get_max_threads()}")
 cfg = ia.Config()
 ctx = ia.Context(cfg)
 
-shape_a = [2000, 2000]
+shape_a = [100, 100]
 size_a = np.prod(shape_a)
 pshape_a = None
-bshape_a = None
-shape_b = [2000]
+bshape_a = [100, 100]
+
+shape_b = [100, 100]
 size_b = np.prod(shape_b)
-pshape_b = [None]
-bshape_b = [2000]
+pshape_b = None
+bshape_b = [100, 100]
 
 
 pshape = None
