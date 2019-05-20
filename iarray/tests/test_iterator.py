@@ -12,7 +12,7 @@ from itertools import zip_longest as izip
                              ([100, 100], [15, 15], [15, 15], "float"),
                              ([10, 10, 10], [4, 5, 6], [4, 5, 6], "double"),
                              ([10, 10, 10, 10], [3, 4, 3, 4], [3, 4, 3, 4], "float"),
-                             ([100, 100], None, [2, 2], "double"),
+                             ([100, 100], None, [30, 30], "double"),
                              ([100, 100], None, [15, 15], "float"),
                              ([10, 10, 10], None, [4, 5, 6], "double"),
                              ([10, 10, 10, 10], None, [3, 4, 3, 4], "float")
@@ -37,4 +37,3 @@ def test_iterator(shape, pshape, bshape, dtype):
     bn = ia.iarray2numpy(ctx, b)
 
     np.testing.assert_almost_equal(bn, an)
-
