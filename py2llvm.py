@@ -16,10 +16,14 @@ import numpy as np
 # Types and constants
 #
 
+void = ir.VoidType()
 float32 = ir.FloatType()
 float64 = ir.DoubleType()
 int32 = ir.IntType(32)
 int64 = ir.IntType(64)
+
+zero = ir.Constant(int64, 0)
+one = ir.Constant(int64, 1)
 
 
 class ArrayShape:
@@ -39,8 +43,28 @@ class ArrayType:
 def Array(dtype, ndim):
     return type(f'Array[{dtype}, {ndim}]', (ArrayType,), dict(dtype=dtype, ndim=ndim))
 
-zero = ir.Constant(int64, 0)
-one = ir.Constant(int64, 1)
+
+class Range:
+
+    def __init__(self, *args):
+        # Defaults
+        start = zero
+        stop = None
+        step = one
+
+        # Unpack
+        n = len(args)
+        if n == 1:
+            stop, = args
+        elif n == 2:
+            start, stop = args
+        else:
+            start, stop, step = args
+
+        # Keep IR values
+        self.start = value_to_ir_value(start)
+        self.stop = value_to_ir_value(stop)
+        self.step = value_to_ir_value(step)
 
 
 def value_to_type(value):
@@ -57,8 +81,22 @@ def type_to_ir_type(type_):
     if isinstance(type_, ir.Type):
         return type_
 
+    # None is a special case
+    # https://docs.python.org/3/library/typing.html#type-aliases
+    if type_ is None:
+        type_ = type(None)
+
     # Basic types
-    basic_types = {float: float64, int: int64}
+    basic_types = {
+        float: float64,
+        int: int64,
+        type(None): void,
+        # Numpy
+        np.float32: float32,
+        np.float64: float64,
+        np.int32: int32,
+        np.int32: int64,
+    }
     ir_type = basic_types.get(type_)
     if ir_type is not None:
         return ir_type
@@ -125,11 +163,11 @@ def get_c_type(ir_type):
         float64: ctypes.c_double,
         int32: ctypes.c_int32,
         int64: ctypes.c_int64,
+        void: None,
     }
 
-    c_type = basic_types.get(ir_type)
-    if c_type is not None:
-        return c_type
+    if ir_type in basic_types:
+        return basic_types[ir_type]
 
     assert ir_type.is_pointer
     return ctypes.POINTER(basic_types[ir_type.pointee])
@@ -140,7 +178,7 @@ def get_c_type(ir_type):
 #
 
 LEAFS = {
-    ast.Name, ast.Num,
+    ast.Name, ast.NameConstant, ast.Num,
     # boolop
     ast.And, ast.Or,
     # operator
@@ -192,17 +230,16 @@ class BaseNodeVisitor:
         NodeVisitor().traverse(node)
     """
 
-    def __init__(self, debug):
-        self.debug = debug
+    def __init__(self, verbose):
+        self.verbose = verbose
         self.depth = 0
 
     @classmethod
     def get_fields(cls, node):
         fields = {
-            # returns before body (and after args)
-            ast.FunctionDef: ('name', 'args', 'returns', 'body', 'decorator_list'),
-            # Do not traverse ctx
-            ast.Name: (),
+            # Skip "decorator_list", and traverse "returns" before "body"
+            # ('name', 'args', 'body', 'decorator_list', 'returns')
+            ast.FunctionDef: ('name', 'args', 'returns', 'body'),
         }
 
         return fields.get(type(node), node._fields)
@@ -254,7 +291,7 @@ class BaseNodeVisitor:
         value = cb(node, parent, *args) if cb is not None else None
 
         # Debug
-        if self.debug:
+        if self.verbose > 1:
             name = node.__class__.__name__
             line = None
             if event == 'enter':
@@ -312,6 +349,17 @@ class NodeVisitor(BaseNodeVisitor):
         """
         self.root = node
 
+    def FunctionDef_enter(self, node, parent):
+        """
+        FunctionDef(identifier name, arguments args,
+                    stmt* body, expr* decorator_list, expr? returns)
+        """
+        assert type(parent) is ast.Module, 'nested functions not implemented'
+
+        # Initialize function context
+        node.locals = {}
+        self.locals = node.locals
+
     def arguments_enter(self, node, parent):
         """
         arguments = (arg* args, arg? vararg, arg* kwonlyargs, expr* kw_defaults,
@@ -319,6 +367,76 @@ class NodeVisitor(BaseNodeVisitor):
         """
         # We don't parse arguments because arguments are handled in compile
         return False
+
+    def Assign_enter(self, node, parent):
+        """
+        Assign(expr* targets, expr value)
+        """
+        assert len(node.targets) == 1, 'Unpacking not supported'
+
+    #
+    # Leaf nodes
+    #
+    def NameConstant_visit(self, node, parent):
+        """
+        NameConstant(singleton value)
+        """
+        return node.value
+
+    def Num_visit(self, node, parent):
+        """
+        Num(object n)
+        """
+        return node.n
+
+    def expr_context_visit(self, node, parent):
+        return type(node)
+
+    def Name_visit(self, node, parent):
+        """
+        Name(identifier id, expr_context ctx)
+        """
+        name = node.id
+        ctx = type(node.ctx)
+
+        if ctx is ast.Load:
+            try:
+                return self.lookup(name)
+            except AttributeError:
+                return None
+
+        elif ctx is ast.Store:
+            return name
+
+        raise NotImplementedError(f'unexpected ctx={ctx}')
+
+
+class InferVisitor(NodeVisitor):
+    """
+    This optional pass is to infer the return type of the function if not given
+    explicitely.
+    """
+
+    def Assign_exit(self, node, parent, targets, value):
+        target = targets[0]
+        if type(target) is str:
+            # x =
+            self.locals[target] = value
+
+    def Return_exit(self, node, parent, value):
+        return_type = type(value)
+
+        root = self.root
+        if root.return_type is inspect._empty:
+            root.return_type = return_type
+            return
+
+        assert root.return_type is return_type
+
+    def FunctionDef_exit(self, node, parent, *args):
+        root = self.root
+        if root.return_type is inspect._empty:
+            root.return_type = None
 
 
 class BlockVisitor(NodeVisitor):
@@ -328,35 +446,7 @@ class BlockVisitor(NodeVisitor):
     - We fail early for features we don't support.
     - We populate the AST attaching structure IR objects (module, functions,
       blocks). These will be used in the 2nd pass.
-
-    In general we should do here as much as we can.
     """
-
-    def Name_visit(self, node, parent):
-        """
-        Name(identifier id, expr_context ctx)
-        """
-        name = node.id
-        if type(node.ctx) is ast.Load:
-            try:
-                return self.lookup(name)
-            except AttributeError:
-                pass
-
-        return None
-
-    def FunctionDef_enter(self, node, parent):
-
-        """
-        FunctionDef(identifier name, arguments args,
-                    stmt* body, expr* decorator_list, expr? returns)
-        """
-        assert type(parent) is ast.Module, 'nested functions not implemented'
-        assert not node.decorator_list, 'decorators not implemented'
-
-        # Initialize function context
-        node.locals = {}
-        self.locals = node.locals
 
     def FunctionDef_returns(self, node, parent, returns):
         """
@@ -519,15 +609,10 @@ class GenVisitor(NodeVisitor):
                     return self.builder.load(value)
             return value
 
-        if ctx is ast.Store:
+        elif ctx is ast.Store:
             return name
-        raise NotImplementedError(f'unexpected ctx={ctx}')
 
-    def Num_visit(self, node, parent):
-        """
-        Num(object n)
-        """
-        return node.n
+        raise NotImplementedError(f'unexpected ctx={ctx}')
 
     def boolop_visit(self, node, parent):
         return type(node)
@@ -555,9 +640,6 @@ class GenVisitor(NodeVisitor):
 
     def GtE_visit(self, node, parent):
         return '>='
-
-    def expr_context_visit(self, node, parent):
-        return type(node)
 
     #
     # Literals
@@ -591,6 +673,10 @@ class GenVisitor(NodeVisitor):
         self.block_vars = node.block_vars
 
     def FunctionDef_exit(self, node, parent, *args):
+        if self.root.py_signature.return_type is None:
+            if not self.builder.block.is_terminated:
+                node.builder.ret_void()
+
         node.builder.position_at_end(node.block_vars)
         node.builder.branch(node.block_start)
 
@@ -774,29 +860,53 @@ class GenVisitor(NodeVisitor):
     # for ...
     #
     def For_iter(self, node, parent, expr):
-        node.i = self.builder.alloca(int64, name='i')       # i
-        self.builder.store(zero, node.i)                    # i = 0
-        arr = self.builder.alloca(expr.type)                # arr
-        self.builder.store(expr, arr)                       # arr = expr
-        n = ir.Constant(int64, expr.type.count)             # n = len(expr)
-        self.builder.branch(node.block_for)                 # br %for
+        """
+        For(expr target, expr iter, stmt* body, stmt* orelse)
+        """
+        target = node.target.id
+        if isinstance(expr, Range):
+            start = expr.start
+            stop = expr.stop
+            node.step = expr.step
+            name = target
+        else:
+            start = zero
+            stop = ir.Constant(int64, expr.type.count)
+            node.step = one
+            name = 'i'
+            # Allocate and store the literal array to iterate
+            arr = self.builder.alloca(expr.type)
+            self.builder.store(expr, arr)
 
-        self.builder.position_at_end(node.block_for)         # %for
-        idx = self.builder.load(node.i)                      # %idx = i
-        test = self.builder.icmp_unsigned('<', idx, n)       # %idx < n
+        # Allocate and initialize the index variable
+        node.i = self.builder.alloca(int64, name=name)
+        self.builder.store(start, node.i)                         # i = start
+        self.builder.branch(node.block_for)                       # br %for
+
+        # Stop condition
+        self.builder.position_at_end(node.block_for)              # %for
+        idx = self.builder.load(node.i)                           # %idx = i
+        test = self.builder.icmp_unsigned('<', idx, stop)         # %idx < stop
         self.builder.cbranch(test, node.block_body, node.block_next) # br %test %body %next
+        self.builder.position_at_end(node.block_body)             # %body
 
-        self.builder.position_at_end(node.block_body)        # %body
-        ptr = self.builder.gep(arr, [zero, idx])             # expr[idx]
-        x = self.builder.load(ptr)                           # % = expr[i]
-        self.locals[node.target.id] = x
+        # Keep variable to use within the loop
+        if isinstance(expr, Range):
+            self.locals[target] = idx
+        else:
+            ptr = self.builder.gep(arr, [zero, idx])              # expr[idx]
+            x = self.builder.load(ptr)                            # % = expr[i]
+            self.locals[target] = x
 
     def For_exit(self, node, parent, *args):
-        a = self.builder.load(node.i)                        # % = i
-        b = self.builder.add(a, one)                         # % = % + 1
-        self.builder.store(b, node.i)                        # i = %
-        self.builder.branch(node.block_for)                  # br %for
-        self.builder.position_at_end(node.block_next)        # %next
+        # Increment index variable
+        a = self.builder.load(node.i)                             # % = i
+        b = self.builder.add(a, node.step)                        # % = % + step
+        self.builder.store(b, node.i)                             # i = %
+        # Continue
+        self.builder.branch(node.block_for)                       # br %for
+        self.builder.position_at_end(node.block_next)             # %next
+
     #
     # while ...
     #
@@ -848,12 +958,6 @@ class GenVisitor(NodeVisitor):
 
         return self.builder.store(value, ptr)
 
-    def Assign_enter(self, node, parent):
-        """
-        Assign(expr* targets, expr value)
-        """
-        assert len(node.targets) == 1, 'Unpacking not supported'
-
     def Assign_exit(self, node, parent, targets, value):
         target = targets[0]
         value = value_to_ir_value(value)
@@ -882,6 +986,10 @@ class GenVisitor(NodeVisitor):
         """
         Return(expr? value)
         """
+        if value is None:
+            assert self.f_rtype is void
+            return self.builder.ret_void()
+
         value = self.convert(value, self.f_rtype)
         self.ltype = None
         return self.builder.ret(value)
@@ -891,10 +999,20 @@ class GenVisitor(NodeVisitor):
         Call(expr func, expr* args, keyword* keywords)
         """
         assert not keywords
+        if func is range:
+            return Range(*args)
+
         return self.builder.call(func, args)
 
 
-class LLVMFunction:
+Parameter = collections.namedtuple('Parameter', ['name', 'type'])
+
+class Signature:
+    def __init__(self, parameters, return_type):
+        self.parameters = parameters
+        self.return_type = return_type
+
+class Function:
     """
     Wraps a Python function. Compiled to IR, it can be executed with ctypes:
 
@@ -910,22 +1028,138 @@ class LLVMFunction:
     cfunction   -- the C function (only this one is needed to make the call)
     """
 
-    def __init__(self, func_ptr, c_signature, py_signature=None,
-                 py_function=None, py_source=None, ir=None):
+    def __init__(self, llvm, py_function, signature):
+        assert type(py_function) is types.FunctionType
+        self.llvm = llvm
+        self.py_function = py_function
+        self.name = py_function.__name__
 
-        # Get the function
+        self.signature = self.__get_signature(signature)
+        self.compiled = False
+
+    def __get_signature(self, signature):
+        inspect_signature = inspect.signature(self.py_function)
+        if signature is not None:
+            assert len(signature) == len(inspect_signature.parameters) + 1
+
+        # Parameters
+        params = []
+        for i, name in enumerate(inspect_signature.parameters):
+            param = inspect_signature.parameters[name]
+            assert param.kind <= inspect.Parameter.POSITIONAL_OR_KEYWORD, \
+                   'only positional arguments are supported'
+
+            type_ = param.annotation if signature is None else signature[i]
+            params.append(Parameter(name, type_))
+
+        # The return type
+        if signature is None:
+            return_type = inspect_signature.return_annotation
+        else:
+            return_type = signature[-1]
+
+        return Signature(params, return_type)
+
+
+    def compile(self, verbose=0, *args):
+        # (1) Python AST
+        self.py_source = inspect.getsource(self.py_function)
+        if verbose:
+            print('====== Source ======')
+            print(self.py_source)
+
+        node = ast.parse(self.py_source)
+
+        # (2) Infer return type if not given
+        return_type = self.signature.return_type
+        if return_type is inspect._empty:
+            node.return_type = return_type
+            InferVisitor(verbose).traverse(node)
+            return_type = node.return_type
+            self.signature.return_type = return_type
+
+        # (3) The IR signature
+        nargs = len(args)
+        params = []
+        for i, (name, type_) in enumerate(self.signature.parameters):
+            # Get type from argument if not given explicitely
+            arg = args[i] if i < nargs else None
+            if type_ is inspect._empty:
+                assert arg is not None
+                if isinstance(arg, np.ndarray):
+                    type_ = Array(arg.dtype.type, arg.ndim)
+                else:
+                    raise NotImplementedError(f'unexpected {arg}')
+                self.signature.parameters[i] = Parameter(name, type_)
+
+            # IR signature
+            if issubclass(type_, ArrayType):
+                dtype = type_.dtype
+                dtype = type_to_ir_type(dtype).as_pointer()
+                params.append(Parameter(name, dtype))
+                for n in range(type_.ndim):
+                    params.append(Parameter(f'{name}_{n}', int64))
+            elif getattr(type_, '__origin__', None) is typing.List:
+                dtype = type_.__args__[0]
+                dtype = type_to_ir_type(dtype).as_pointer()
+                params.append(Parameter(name, dtype))
+                params.append(Parameter(f'{name}_0', int64))
+            else:
+                dtype = type_to_ir_type(type_)
+                params.append(Parameter(name, dtype))
+
+        return_type = type_to_ir_type(return_type)
+        ir_signature = Signature(params, return_type)
+
+        # (4) The ctypes signature (needed to call the compiled function)
+        c_signature = []
+        c_signature.append(get_c_type(ir_signature.return_type))
+        for param in ir_signature.parameters:
+            c_signature.append(get_c_type(param.type))
+
+        # (5) The IR module and function
+        ir_module = ir.Module()
+        f_type = ir.FunctionType(
+            ir_signature.return_type,
+            tuple(type_ for name, type_ in ir_signature.parameters)
+        )
+        ir_function = ir.Function(ir_module, f_type, self.name)
+
+        # (6) AST pass: structure
+        node.globals = inspect.stack()[1].frame.f_globals
+        node.compiled = {}
+        node.py_signature = self.signature
+        node.ir_signature = ir_signature
+        node.ir_function = ir_function
+
+        if verbose > 1: print('====== Debug: 1st pass ======')
+        BlockVisitor(verbose).traverse(node)
+
+        # (7) AST pass: generate
+        if verbose > 1: print('====== Debug: 2nd pass ======')
+        GenVisitor(verbose).traverse(node)
+
+        # (8) IR code
+        self.ir = str(ir_module)
+        if verbose:
+            print('====== IR ======')
+            print(self.ir)
+        self.llvm.compile_ir(self.ir, self.name, verbose) # Compile
+
+        # (9) C function
+        func_ptr = self.llvm.engine.get_function_address(self.name)
         self.c_signature = c_signature
         self.cfunctype = ctypes.CFUNCTYPE(*c_signature)
         self.cfunction = self.cfunctype(func_ptr)
 
-        # Keep stuff for introspection
-        self.name = py_function.__name__
-        self.py_signature = py_signature
-        self.py_function = py_function
-        self.py_source = py_source
-        self.ir = ir
+        # (10) Done
+        self.compiled = True
 
-    def __call__(self, *args, debug=False):
+
+    def __call__(self, *args, verbose=0):
+        if self.compiled is False:
+            self.compile(verbose, *args)
+
         c_args = []
         for py_arg in args:
             if isinstance(py_arg, np.ndarray):
@@ -949,18 +1183,13 @@ class LLVMFunction:
                 c_args.append(py_arg)
 
         value = self.cfunction(*c_args)
-        if debug:
-            print(f'{args} => {value}')
+        if verbose:
+            print('====== Output ======')
+            print(f'args = {args}')
+            print(f'ret  = {value}')
 
         return value
 
-
-Parameter = collections.namedtuple('Parameter', ['name', 'type'])
-
-class Signature:
-    def __init__(self, parameters, return_type):
-        self.parameters = parameters
-        self.return_type = return_type
 
 
 class LLVM:
@@ -968,101 +1197,31 @@ class LLVM:
     def __init__(self):
         self.engine = self.create_execution_engine()
 
+    def lazy(self, py_function, signature=None):
+        if type(py_function) is types.FunctionType:
+            return Function(self, py_function, signature)
+
+        # Called as a decorator
+        signature = py_function
+        def wrapper(py_function):
+            return Function(self, py_function, signature)
+
+        return wrapper
+
     def compile(self, py_function, signature=None, verbose=0):
-        assert type(py_function) is types.FunctionType
+        if type(py_function) is types.FunctionType:
+            function = self.lazy(py_function, signature)
+            function.compile(verbose)
+            return function
 
-        # (1) The Python signature
-        py_signature = inspect.signature(py_function)
-        if signature is not None:
-            assert len(signature) == len(py_signature.parameters) + 1
+        # Called as a decorator with parameters
+        signature = py_function
+        def wrapper(py_function):
+            function = self.lazy(py_function, signature)
+            function.compile(verbose)
+            return function
 
-        # Parameters
-        params = []
-        for i, name in enumerate(py_signature.parameters):
-            param = py_signature.parameters[name]
-            assert param.kind <= inspect.Parameter.POSITIONAL_OR_KEYWORD, \
-                   'only positional arguments are supported'
-
-            type_ = param.annotation if signature is None else signature[i]
-            params.append(Parameter(name, type_))
-
-        # The return type
-        if signature is None:
-            return_type = py_signature.return_annotation
-        else:
-            return_type = signature[-1]
-
-        py_signature = Signature(params, return_type)
-
-        # (2) The IR signature
-        params = []
-        for name, type_ in py_signature.parameters:
-            if issubclass(type_, ArrayType):
-                dtype = type_.dtype
-                dtype = type_to_ir_type(dtype).as_pointer()
-                params.append(Parameter(name, dtype))
-                for n in range(type_.ndim):
-                    params.append(Parameter(f'{name}_{n}', int64))
-            elif getattr(type_, '__origin__', None) is typing.List:
-                dtype = type_.__args__[0]
-                dtype = type_to_ir_type(dtype).as_pointer()
-                params.append(Parameter(name, dtype))
-                params.append(Parameter(f'{name}_0', int64))
-            else:
-                dtype = type_to_ir_type(type_)
-                params.append(Parameter(name, dtype))
-
-        return_type = type_to_ir_type(py_signature.return_type)
-        ir_signature = Signature(params, return_type)
-
-        # (3) The ctypes signature (needed to call the compiled function)
-        c_signature = []
-        c_signature.append(get_c_type(ir_signature.return_type))
-        for param in ir_signature.parameters:
-            c_signature.append(get_c_type(param.type))
-
-        # (4) The IR module and function
-        ir_module = ir.Module()
-        f_type = ir.FunctionType(
-            ir_signature.return_type,
-            tuple(type_ for name, type_ in ir_signature.parameters)
-        )
-        f_name = py_function.__name__
-        ir_function = ir.Function(ir_module, f_type, f_name)
-
-        # Python AST
-        py_source = inspect.getsource(py_function)
-        if verbose:
-            print('====== Source ======')
-            print(py_source)
-
-        node = ast.parse(py_source)
-        node.globals = inspect.stack()[1].frame.f_globals
-        node.compiled = {}
-        node.py_signature = py_signature
-        node.ir_signature = ir_signature
-        node.ir_function = ir_function
-
-        # AST 1st pass: structure
-        debug = verbose > 1
-        if debug: print('====== Debug: 1st pass ======')
-        BlockVisitor(debug).traverse(node)
-
-        # AST 2nd pass: generate
-        if debug: print('====== Debug: 2nd pass ======')
-        GenVisitor(debug).traverse(node)
-
-        # IR code
-        ir_source = str(ir_module)
-        if verbose:
-            print('====== IR ======')
-            print(ir_source)
-        self.compile_ir(ir_source) # Compile
-
-        # Return the function wrapper
-        func_ptr = self.engine.get_function_address(f_name)
-        return LLVMFunction(func_ptr, c_signature,
-                            py_signature, py_function, py_source, ir_source)
+        return wrapper
 
     def create_execution_engine(self):
         """
@@ -1072,13 +1231,23 @@ class LLVM:
         """
         # Create a target machine representing the host
         target = binding.Target.from_default_triple()
-        target_machine = target.create_target_machine()
+        self.triple = target.triple # Keep the triple for later
+        # Passing cpu, freatures and opt has not proved to be faster, but do it
+        # anyway, just to show it.
+        cpu = binding.get_host_cpu_name()
+        features = binding.get_host_cpu_features()
+        target_machine = target.create_target_machine(
+            cpu=cpu,
+            features=features.flatten(),
+            opt=3,
+        )
+
         # And an execution engine with an empty backing module
         backing_mod = binding.parse_assembly("")
         engine = binding.create_mcjit_compiler(backing_mod, target_machine)
         return engine
 
-    def compile_ir(self, llvm_ir):
+    def compile_ir(self, llvm_ir, name, verbose):
         """
         Compile the LLVM IR string with the given engine.
         The compiled module object is returned.
@@ -1088,10 +1257,34 @@ class LLVM:
         # Create a LLVM module object from the IR
         mod = binding.parse_assembly(llvm_ir)
         mod.verify()
+        # Assign triple, so the IR can be saved and compiled with llc
+        mod.triple = self.triple
+        if verbose:
+            print('====== IR (parsed) ======')
+            print(mod)
+
+        # Optimize
+        # With level 1-3 already a number of optimization passes are applied
+        fref = mod.get_function(name)
+        pmb = binding.PassManagerBuilder()
+        pmb.opt_level = 3 # 0-3 (default=2)
+        fpm = binding.FunctionPassManager(mod)
+        #fpm.add_sroa_pass()
+        #fpm.add_mem2reg_pass()
+        pmb.populate(fpm)
+        fpm.initialize()
+        fpm.run(fref)
+        fpm.finalize()
+
         # Now add the module and make sure it is ready for execution
         engine.add_module(mod)
         engine.finalize_object()
         engine.run_static_constructors()
+
+        if verbose:
+            print('====== IR (optimized) ======')
+            print(mod)
+
         return mod
 
 
@@ -1107,6 +1300,11 @@ llvm = LLVM()
 # Public interface
 #
 
+lazy = llvm.lazy
 compile = llvm.compile
 
-__all__ = ['compile', 'Array', 'float32', 'float64', 'int32', 'int64']
+__all__ = [
+    'compile', 'lazy',                      # Functions
+    'float32', 'float64', 'int32', 'int64', # Scalar types
+    'Array',                                # Arrays
+]
