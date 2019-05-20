@@ -190,7 +190,7 @@ def test_bernoulli(p, shape, pshape, dtype):
 # Bernoulli
 @pytest.mark.parametrize("p, shape, pshape, dtype",
                          [
-                             (1, [10, 12, 5], [2, 3, 2], "double"),
+                             (0.7, [10, 12, 5], [2, 3, 2], "double"),
                              (0.01, [4, 3, 5, 2], [2, 2, 2, 2], "float"),
                              (0.15, [10, 12, 5], None, "double"),
                              (0.6, [4, 3, 5, 2], None, "float")
@@ -204,7 +204,53 @@ def test_bernoulli(p, shape, pshape, dtype):
     a = ia.random_bernoulli(ctx, r_ctx, p, shape, pshape, dtype)
 
     npdtype = np.float64 if dtype == "double" else np.float32
-    b = np.random.geometric(p, size).reshape(shape).astype(npdtype)
+    b = np.random.binomial(1, p, size).reshape(shape).astype(npdtype)
+    c = ia.numpy2iarray(ctx, b)
+
+    assert ia.random_kstest(ctx, a, c)
+
+
+# Binomial
+@pytest.mark.parametrize("n, p, shape, pshape, dtype",
+                         [
+                             (3, 0.7, [10, 12, 5], [2, 3, 2], "double"),
+                             (10, 0.01, [4, 3, 5, 2], [2, 2, 2, 2], "float"),
+                             (1000, 0.15, [10, 12, 5], None, "double"),
+                             (5, 0.6, [4, 3, 5, 2], None, "float")
+                         ])
+def test_binomial(n, p, shape, pshape, dtype):
+    cfg = ia.Config()
+    ctx = ia.Context(cfg)
+    r_ctx = ia.RandomContext(ctx)
+
+    size = int(np.prod(shape))
+    a = ia.random_binomial(ctx, r_ctx, n, p, shape, pshape, dtype)
+
+    npdtype = np.float64 if dtype == "double" else np.float32
+    b = np.random.binomial(n, p, size).reshape(shape).astype(npdtype)
+    c = ia.numpy2iarray(ctx, b)
+
+    assert ia.random_kstest(ctx, a, c)
+
+
+# Poisson
+@pytest.mark.parametrize("lamb, shape, pshape, dtype",
+                         [
+                             (3, [10, 12, 5], [2, 3, 2], "double"),
+                             (0.01, [4, 3, 5, 2], [2, 2, 2, 2], "float"),
+                             (0.15, [10, 12, 5], None, "double"),
+                             (5, [4, 3, 5, 2], None, "float")
+                         ])
+def test_poisson(lamb, shape, pshape, dtype):
+    cfg = ia.Config()
+    ctx = ia.Context(cfg)
+    r_ctx = ia.RandomContext(ctx)
+
+    size = int(np.prod(shape))
+    a = ia.random_poisson(ctx, r_ctx, lamb, shape, pshape, dtype)
+
+    npdtype = np.float64 if dtype == "double" else np.float32
+    b = np.random.poisson(lamb, size).reshape(shape).astype(npdtype)
     c = ia.numpy2iarray(ctx, b)
 
     assert ia.random_kstest(ctx, a, c)
