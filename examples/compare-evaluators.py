@@ -12,9 +12,9 @@ from py2llvm import float64, int32, Array
 NITER = 10
 
 # Vector sizes and partitions
-shape = [1000, 10000]
+shape = [1000*10000]
 N = int(np.prod(shape))
-pshape = [100, 1000]
+pshape = [100*1000]
 
 block_size = pshape
 expression = '(x - 1.35) * (x - 4.45) * (x - 8.5) * (x + 1.5) * (x + 4.6)'
@@ -140,11 +140,11 @@ def do_regular_evaluation():
     print("Regular evaluate via cython (nogil):", round((time() - t0) / NITER, 4))
     np.testing.assert_almost_equal(y0, y1)
 
-    # t0 = time()
-    # for i in range(NITER):
-    #     poly_llvmc(x, y1)
-    # print("Regular evaluate via py2llvm:", round((time() - t0) / NITER, 4))
-    # np.testing.assert_almost_equal(y0, y1)
+    t0 = time()
+    for i in range(NITER):
+        poly_llvmc(x, y1)
+    print("Regular evaluate via py2llvm:", round((time() - t0) / NITER, 4))
+    np.testing.assert_almost_equal(y0, y1)
 
 
 def do_block_evaluation(pshape_):
@@ -230,14 +230,14 @@ def do_block_evaluation(pshape_):
     y1 = ia.iarray2numpy(ctx, ya)
     np.testing.assert_almost_equal(y0, y1)
 
-    # t0 = time()
-    # for i in range(NITER):
-    #     ya = ia.empty(ctx, shape=shape, pshape=pshape_)
-    #     for ((i, x), (j, y)) in zip(xa.iter_read_block(block_size), ya.iter_write_block(block_write)):
-    #         poly_llvmc(x, y)
-    # print("Block evaluate via py2llvm:", round((time() - t0) / NITER, 4))
-    # y1 = ia.iarray2numpy(ctx, ya)
-    # np.testing.assert_almost_equal(y0, y1)
+    t0 = time()
+    for i in range(NITER):
+        ya = ia.empty(ctx, shape=shape, pshape=pshape_)
+        for ((i, x), (j, y)) in zip(xa.iter_read_block(block_size), ya.iter_write_block(block_write)):
+            poly_llvmc(x, y)
+    print("Block evaluate via py2llvm:", round((time() - t0) / NITER, 4))
+    y1 = ia.iarray2numpy(ctx, ya)
+    np.testing.assert_almost_equal(y0, y1)
 
     t0 = time()
     expr = ia.Expression(ctx)
