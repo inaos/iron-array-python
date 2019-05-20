@@ -6,14 +6,18 @@ from itertools import zip_longest as izip
 
 
 # Expression
-@pytest.mark.parametrize("shape, pshape, dtype",
+@pytest.mark.parametrize("shape, pshape, bshape, dtype",
                          [
-                             ([100, 100], [20, 20], "double"),
-                             ([100, 100], [15, 15], "float"),
-                             ([10, 10, 10], [4, 5, 6], "double"),
-                             ([10, 10, 10, 10], [3, 4, 3, 4], "float")
+                             ([100, 100], [20, 20], [20, 20], "double"),
+                             ([100, 100], [15, 15], [15, 15], "float"),
+                             ([10, 10, 10], [4, 5, 6], [4, 5, 6], "double"),
+                             ([10, 10, 10, 10], [3, 4, 3, 4], [3, 4, 3, 4], "float"),
+                             ([100, 100], None, [2, 2], "double"),
+                             ([100, 100], None, [15, 15], "float"),
+                             ([10, 10, 10], None, [4, 5, 6], "double"),
+                             ([10, 10, 10, 10], None, [3, 4, 3, 4], "float")
                          ])
-def test_iterator(shape, pshape, dtype):
+def test_iterator(shape, pshape, bshape, dtype):
     cfg = ia.Config()
     ctx = ia.Context(cfg)
 
@@ -23,7 +27,7 @@ def test_iterator(shape, pshape, dtype):
 
     b = ia.empty(ctx, shape, pshape)
 
-    for i, ((ainfo, aslice), (binfo, bslice)) in enumerate(izip(a.iter_read_block(pshape), b.iter_write_block())):
+    for i, ((ainfo, aslice), (binfo, bslice)) in enumerate(izip(a.iter_read_block(bshape), b.iter_write_block(bshape))):
         bslice[:] = aslice
         start = ainfo.elemindex
         stop = tuple(ainfo.elemindex[i] + ainfo.shape[i] for i in range(len(ainfo.elemindex)))
