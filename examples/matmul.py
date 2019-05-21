@@ -11,19 +11,18 @@ mkl_get_max_threads = mkl_rt.MKL_Get_Max_Threads
 mkl_set_num_threads(1)
 print(f"Numpy max threads: {mkl_get_max_threads()}")
 
-cfg = ia.Config()
+cfg = ia.Config(max_num_threads=1, compression_level=0)
 ctx = ia.Context(cfg)
 
-shape_a = [100, 100]
+shape_a = [2000, 2000]
 size_a = np.prod(shape_a)
-pshape_a = None
-bshape_a = [100, 100]
+pshape_a = [200, 200]
+bshape_a = [200, 200]
 
-shape_b = [100, 100]
+shape_b = [2000, 2000]
 size_b = np.prod(shape_b)
-pshape_b = None
-bshape_b = [100, 100]
-
+pshape_b =  [200, 200]
+bshape_b = [200, 200]
 
 pshape = None
 

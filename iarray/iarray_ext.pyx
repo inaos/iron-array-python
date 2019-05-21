@@ -648,7 +648,7 @@ def iarray2numpy(ctx, c):
     npdtype = np.float64 if dtshape.dtype == ciarray.IARRAY_DATA_TYPE_DOUBLE else np.float32
 
     a = np.zeros(size, dtype=npdtype).reshape(shape)
-    ciarray.iarray_to_buffer(ctx_, c_, np.PyArray_DATA(a), size*8)
+    ciarray.iarray_to_buffer(ctx_, c_, np.PyArray_DATA(a), size)
 
     return a
 
