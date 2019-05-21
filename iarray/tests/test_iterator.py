@@ -1,7 +1,6 @@
 import pytest
 import iarray as ia
 import numpy as np
-import numexpr as ne
 from itertools import zip_longest as izip
 
 

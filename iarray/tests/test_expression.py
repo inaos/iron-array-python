@@ -1,7 +1,6 @@
 import pytest
 import iarray as ia
 import numpy as np
-import numexpr as ne
 
 
 # Expression
@@ -30,6 +29,6 @@ def test_expression(eval_flags, shape, pshape, dtype, expression):
     c = e.eval(shape, pshape, dtype)
     d = ia.iarray2numpy(ctx, c)
 
-    f = ne.evaluate(expression, local_dict={"x": b})
+    f = eval(expression, {"x": b})
 
     np.testing.assert_almost_equal(d, f)
