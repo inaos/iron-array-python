@@ -71,3 +71,18 @@ python setup.py install
 ```
 
 The setup.py can be used to produce wheels, where all the libraries are included (see https://pythonwheels.com).
+
+## Jupyter notebooks
+
+To run jupyter notebooks, is need the use of absolute paths:
+
+```
+export PYTHONUNBUFFERED=1
+export CFLAGS=-O0
+export LD_LIBRARY_PATH=/opt/intel/compilers_and_libraries/linux/mkl/lib:/home/aleix/iron-array/build
+export IARRAY_DEVELOP_MODE=True
+export INAC_DIR=/home/aleix/.inaos/cmake/inac-linux-x86_64-relwithdebinfo-1.0.4
+export PYTHONPATH=/home/aleix/iron-array-python/
+export IARRAY_BUILD_DIR=/home/aleix/iron-array/build
+export KMP_DUPLICATE_LIB_OK=TRUE
+```
