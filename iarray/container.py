@@ -221,6 +221,35 @@ class IArray(ext.Container):
         return LazyExpr(new_op=(value, '/', self))
 
 
+#
+# Constructors
+#
+
+def empty2(shape, pshape=None, dtype="double", filename=None, ctx=None):
+    if ctx is None:
+        ctx = ext.Context(ia.Config())
+    return ext.empty(ctx, shape, pshape, dtype, filename)
+
+
+def arange2(start=None, stop=None, step=None, shape=None, pshape=None, dtype="double", filename=None, ctx=None):
+    if ctx is None:
+        ctx = ext.Context(ia.Config())
+    slice_ = slice(start, stop, step)
+    return ext.arange(ctx, slice_, shape, pshape, dtype, filename)
+
+
+def linspace2(nelem, start, stop, shape=None, pshape=None, dtype="double", filename=None, ctx=None):
+    if ctx is None:
+        ctx = ext.Context(ia.Config())
+    return ext.linspace(ctx, nelem, start, stop, shape, pshape, dtype, filename)
+
+
+def iarray2numpy2(c, ctx=None):
+    if ctx is None:
+        ctx = ext.Context(ia.Config())
+    return ext.iarray2numpy(ctx, c)
+
+
 if __name__ == "__main__":
     # Create iarray context
     cfg_ = ia.Config(eval_flags="iterblock")

@@ -429,13 +429,12 @@ def empty(ctx, shape, pshape=None, dtype="double", filename=None):
     return IArray(ctx, c_c)
 
 
-def arange(ctx, *args, shape=None, pshape=None, dtype="double", filename=None):
+def arange(ctx, slice, shape=None, pshape=None, dtype="double", filename=None):
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
 
-    s = slice(*args)
-    start = 0 if s.start is None else s.start
-    stop = s.stop
-    step = 1 if s.step is None else s.step
+    start = 0 if slice.start is None else slice.start
+    stop = slice.stop
+    step = 1 if slice.step is None else slice.step
 
     if shape is None:
         shape = [ceil((stop - start)/step)]

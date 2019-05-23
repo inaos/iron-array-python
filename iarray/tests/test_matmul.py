@@ -15,7 +15,7 @@ import numpy as np
                              ([100, 100], None, [100, 100], [100], [5], [100], "double"),
                              ([100, 100], [30, 30], [12, 100], [100], None, [100], "float")
                          ])
-def test_matmul(ashape, apshape, abshape, bshape, bpshape, bbshape, dtype):
+def _test_matmul1(ashape, apshape, abshape, bshape, bpshape, bbshape, dtype):
     cfg = ia.Config()
     ctx = ia.Context(cfg)
 
@@ -56,7 +56,7 @@ def test_matmul(ashape, apshape, abshape, bshape, bpshape, bbshape, dtype):
                              ([100, 100], [30, 30], [12, 20], [32, 30], [10, 10],
                               [100], None, [25], [35], [10], "float")
                          ])
-def test_matmul(ashape, apshape, astart, astop, abshape, bshape, bpshape, bstart, bstop, bbshape, dtype):
+def _test_matmul2(ashape, apshape, astart, astop, abshape, bshape, bpshape, bstart, bstop, bbshape, dtype):
     cfg = ia.Config()
     ctx = ia.Context(cfg)
 
