@@ -74,15 +74,14 @@ The setup.py can be used to produce wheels, where all the libraries are included
 
 ## Jupyter notebooks
 
-To run jupyter notebooks, is need the use of absolute paths:
+To run jupyter notebooks, you need to make use of absolute paths.  E.g.:
 
 ```
 export PYTHONUNBUFFERED=1
-export CFLAGS=-O0
-export LD_LIBRARY_PATH=/opt/intel/compilers_and_libraries/linux/mkl/lib:/home/aleix/iron-array/build
+export LD_LIBRARY_PATH=/opt/intel/compilers_and_libraries/linux/mkl/lib:$HOME/iron-array/build
 export IARRAY_DEVELOP_MODE=True
-export INAC_DIR=/home/aleix/.inaos/cmake/inac-linux-x86_64-relwithdebinfo-1.0.4
-export PYTHONPATH=/home/aleix/iron-array-python/
-export IARRAY_BUILD_DIR=/home/aleix/iron-array/build
-export KMP_DUPLICATE_LIB_OK=TRUE
+export INAC_DIR=$HOME/.inaos/cmake/inac-linux-x86_64-relwithdebinfo-1.0.4
+export PYTHONPATH=$HOME/iron-array-python/
+export IARRAY_BUILD_DIR=$HOME/iron-array/build
+export KMP_DUPLICATE_LIB_OK=TRUE  # for allowing the MKL in NumPy to run in parallel to the one in IronArray
 ```
