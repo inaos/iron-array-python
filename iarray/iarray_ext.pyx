@@ -253,7 +253,7 @@ cdef class _Dtshape:
 cdef class Context:
     cdef ciarray.iarray_context_t *_ctx
 
-    def __cinit__(self, cfg):
+    def __init__(self, cfg):
         cdef ciarray.iarray_config_t cfg_ = cfg.to_dict()
         ciarray.iarray_context_new(&cfg_, &self._ctx)
 
