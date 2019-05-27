@@ -13,13 +13,24 @@ The two modes are setup and driven by environment variables.  Here are examples 
 
 ### Develop mode
 
+### Linux
 ```bash
+export LD_LIBRARY_PATH=/opt/intel/compilers_and_libraries/linux/mkl/lib:$HOME/iron-array/build
 export IARRAY_DEVELOP_MODE=True
-export INAC_DIR=~/.inaos/cmake/inac-darwin-x86_64-relwithdebinfo-1.0.4
-export IARRAY_DIR=../iron-array  # the default; if your path is this one, no need to set this
-export IARRAY_BUILD_DIR=../iron-array/build  # the default; if your path is this one, no need to set this
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:../iron-array/build  # Linux only
-export PYTHONPATH=.
+export INAC_DIR=$HOME/.inaos/cmake/inac-linux-x86_64-relwithdebinfo-1.0.4
+export PYTHONPATH=$HOME/iron-array-python/
+export IARRAY_BUILD_DIR=$HOME/iron-array/build
+export KMP_DUPLICATE_LIB_OK=TRUE  # for allowing the MKL in NumPy to run in parallel to the one in IronArray
+```
+
+### MacOS
+```bash
+export LD_LIBRARY_PATH=/opt/intel/compilers_and_libraries/linux/mac/lib:$HOME/iron-array/build
+export IARRAY_DEVELOP_MODE=True
+export INAC_DIR=$HOME/.inaos/cmake/inac-darwin-x86_64-relwithdebinfo-1.0.4
+export PYTHONPATH=$HOME/iron-array-python/
+export IARRAY_BUILD_DIR=$HOME/iron-array/build
+export KMP_DUPLICATE_LIB_OK=TRUE  # for allowing the MKL in NumPy to run in parallel to the one in IronArray
 ```
 
 ### Release mode
@@ -71,17 +82,3 @@ python setup.py install
 ```
 
 The setup.py can be used to produce wheels, where all the libraries are included (see https://pythonwheels.com).
-
-## Jupyter notebooks
-
-To run jupyter notebooks, you need to make use of absolute paths.  E.g.:
-
-```
-export PYTHONUNBUFFERED=1
-export LD_LIBRARY_PATH=/opt/intel/compilers_and_libraries/linux/mkl/lib:$HOME/iron-array/build
-export IARRAY_DEVELOP_MODE=True
-export INAC_DIR=$HOME/.inaos/cmake/inac-linux-x86_64-relwithdebinfo-1.0.4
-export PYTHONPATH=$HOME/iron-array-python/
-export IARRAY_BUILD_DIR=$HOME/iron-array/build
-export KMP_DUPLICATE_LIB_OK=TRUE  # for allowing the MKL in NumPy to run in parallel to the one in IronArray
-```

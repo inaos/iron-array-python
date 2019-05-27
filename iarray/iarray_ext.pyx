@@ -591,9 +591,10 @@ def _get_slice(ctx, data, start, stop, pshape=None, filename=None, view=True):
         ciarray.iarray_get_slice(ctx_, data_, start_, stop_, pshape_, &store, flags, view, &c)
     else:
         ciarray.iarray_get_slice(ctx_, data_, start_, stop_, pshape_, NULL, flags, view, &c)
-
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
-    return IArray(ctx, c_c)
+
+    b =  IArray(ctx, c_c)
+    return b
 
 
 def numpy2iarray(ctx, a, pshape=None, filename=None):
@@ -648,8 +649,7 @@ def iarray2numpy(ctx, c):
     npdtype = np.float64 if dtshape.dtype == ciarray.IARRAY_DATA_TYPE_DOUBLE else np.float32
 
     a = np.zeros(size, dtype=npdtype).reshape(shape)
-    ciarray.iarray_to_buffer(ctx_, c_, np.PyArray_DATA(a), size)
-
+    ciarray.iarray_to_buffer(ctx_, c_, np.PyArray_DATA(a), size * sizeof(npdtype))
     return a
 
 
