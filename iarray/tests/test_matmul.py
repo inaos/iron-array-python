@@ -56,7 +56,7 @@ def test_matmul(ashape, apshape, abshape, bshape, bpshape, bbshape, dtype):
                              ([100, 100], [30, 30], [12, 20], [32, 30], [10, 10],
                               [100], None, [25], [35], [10], "float")
                          ])
-def test_matmul(ashape, apshape, astart, astop, abshape, bshape, bpshape, bstart, bstop, bbshape, dtype):
+def test_matmul_slice(ashape, apshape, astart, astop, abshape, bshape, bpshape, bstart, bstop, bbshape, dtype):
     cfg = ia.Config()
     ctx = ia.Context(cfg)
 
