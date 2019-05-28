@@ -12,7 +12,7 @@ import numpy as np
                              ([100, 100, 100], None, [5, 46, 10], [30, 77, 40], "float")
 
                          ])
-def _test_slice(shape, pshape, start, stop, dtype):
+def test_slice(shape, pshape, start, stop, dtype):
     cfg = ia.Config()
     ctx = ia.Context(cfg)
 

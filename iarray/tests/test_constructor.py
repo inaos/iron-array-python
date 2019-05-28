@@ -64,7 +64,7 @@ def test_from_file(start, stop, shape, pshape, dtype, filename):
                              (0, 10, (slice(2, 4), slice(5, 10), slice(1, 2)), [10, 12, 5], None, "double"),
                              (-0.1, -0.2, (slice(2, 4), slice(7, 12)), [12, 16], None, "float")
                          ])
-def _test_slice(start, stop, slice, shape, pshape, dtype):
+def test_slice(start, stop, slice, shape, pshape, dtype):
     size = int(np.prod(shape))
     step = (stop - start) / size
     a = ia.arange2(start, stop, step, shape=shape, pshape=pshape, dtype=dtype)
@@ -75,7 +75,7 @@ def _test_slice(start, stop, slice, shape, pshape, dtype):
     np.testing.assert_almost_equal(c, d)
 
 
-# empty
+# empty  # TODO: make it work properly
 @pytest.mark.parametrize("shape, pshape, dtype",
                          [
                              ([10, 12, 5], [2, 3, 2], "double"),
