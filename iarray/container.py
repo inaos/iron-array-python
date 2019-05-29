@@ -244,10 +244,22 @@ def linspace2(nelem, start, stop, shape=None, pshape=None, dtype="double", filen
     return ext.linspace(ctx, nelem, start, stop, shape, pshape, dtype, filename)
 
 
+def from_file2(filename=None, ctx=None):
+    if ctx is None:
+        ctx = ext.Context(ia.Config())
+    return ext.from_file(ctx, filename)
+
+
 def iarray2numpy2(c, ctx=None):
     if ctx is None:
         ctx = ext.Context(ia.Config())
     return ext.iarray2numpy(ctx, c)
+
+
+def numpy2iarray2(c, pshape=None, filename=None, ctx=None):
+    if ctx is None:
+        ctx = ext.Context(ia.Config())
+    return ext.numpy2iarray(ctx, c, pshape, filename)
 
 
 if __name__ == "__main__":

@@ -1,3 +1,4 @@
+import os
 import pytest
 import iarray as ia
 import numpy as np
@@ -45,15 +46,14 @@ def test_arange(start, stop, shape, pshape, dtype):
                              (-0.1, -0.10, [4, 3, 5, 5, 2], [2, 3, 2, 3, 2], "float", "test.fromfile1.iarray")
                          ])
 def test_from_file(start, stop, shape, pshape, dtype, filename):
-    cfg = ia.Config()
-    ctx = ia.Context(cfg)
     size = int(np.prod(shape))
     npdtype = np.float64 if dtype == "double" else np.float32
     a = np.linspace(start, stop, size, dtype=npdtype).reshape(shape)
-    b = ia.numpy2iarray(ctx, a, pshape, filename)
-    c = ia.from_file(ctx, filename)
-    d = ia.iarray2numpy(ctx, c)
+    b = ia.numpy2iarray2(a, pshape, filename)
+    c = ia.from_file2(filename)
+    d = ia.iarray2numpy2(c)
     np.testing.assert_almost_equal(a, d)
+    os.remove(filename)
 
 
 # get_slice
