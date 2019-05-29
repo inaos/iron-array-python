@@ -646,6 +646,10 @@ def iarray2numpy(ctx, c):
 
     npdtype = np.float64 if dtshape.dtype == ciarray.IARRAY_DATA_TYPE_DOUBLE else np.float32
 
+    if ciarray.iarray_is_empty(c_):
+        # Return an empty array.  Another possibility would be to raise an exception here?  Let's wait for a use case...
+        return np.empty(size, dtype=npdtype).reshape(shape)
+
     a = np.zeros(size, dtype=npdtype).reshape(shape)
     ciarray.iarray_to_buffer(ctx_, c_, np.PyArray_DATA(a), size * sizeof(npdtype))
 

@@ -156,6 +156,8 @@ cdef extern from "libiarray/iarray.h":
                               iarray_store_properties_t *store,
                               iarray_container_t **container)
 
+    bool iarray_is_empty(iarray_container_t *container)
+
     ina_rc_t iarray_expr_new(iarray_context_t *ctx, iarray_expression_t **e)
     void iarray_expr_free(iarray_context_t *ctx, iarray_expression_t **e)
 

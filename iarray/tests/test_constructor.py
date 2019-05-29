@@ -81,13 +81,12 @@ def test_slice(start, stop, slice, shape, pshape, dtype):
                              ([10, 12, 5], [2, 3, 2], "double"),
                              ([10, 12, 5], None, "float"),
                          ])
-def _test_empty(shape, pshape, dtype):
-    size = int(np.prod(shape))
+def test_empty(shape, pshape, dtype):
     a = ia.empty2(shape, pshape, dtype)
     b = ia.iarray2numpy2(a)
     npdtype = np.float64 if dtype == "double" else np.float32
-    c = np.zeros(size, dtype=npdtype).reshape(shape)
-    np.testing.assert_almost_equal(b, c)
+    assert b.dtype == npdtype
+    assert b.shape == tuple(shape)
 
 
 # zeros
