@@ -325,6 +325,61 @@ def numpy2iarray2(c, pshape=None, filename=None, **kwargs):
     return ext.numpy2iarray(cfg, c, pshape, filename)
 
 
+def random_rand2(shape, pshape=None, dtype="double", filename=None, **kwargs):
+    cfg = ia.Config(**kwargs)
+    return ext.random_rand(cfg, shape, pshape, dtype, filename)
+
+
+def random_randn2(shape, pshape=None, dtype="double", filename=None, **kwargs):
+    cfg = ia.Config(**kwargs)
+    return ext.random_randn(cfg, shape, pshape, dtype, filename)
+
+
+def random_beta2(alpha, beta, shape, pshape=None, dtype="double", filename=None, **kwargs):
+    cfg = ia.Config(**kwargs)
+    return ext.random_beta(cfg, alpha, beta, shape, pshape, dtype, filename)
+
+
+def random_lognormal2(mu, sigma, shape, pshape=None, dtype="double", filename=None, **kwargs):
+    cfg = ia.Config(**kwargs)
+    return ext.random_lognormal(cfg, mu, sigma, shape, pshape, dtype, filename)
+
+
+def random_exponential2(beta, shape, pshape=None, dtype="double", filename=None, **kwargs):
+    cfg = ia.Config(**kwargs)
+    return ext.random_exponential(cfg, beta, shape, pshape, dtype, filename)
+
+
+def random_uniform2(a, b, shape, pshape=None, dtype="double", filename=None, **kwargs):
+    cfg = ia.Config(**kwargs)
+    return ext.random_uniform(cfg, a, b, shape, pshape, dtype, filename)
+
+
+def random_normal2(mu, sigma, shape, pshape=None, dtype="double", filename=None, **kwargs):
+    cfg = ia.Config(**kwargs)
+    return ext.random_normal(cfg, mu, sigma, shape, pshape, dtype, filename)
+
+
+def random_bernoulli2(p, shape, pshape=None, dtype="double", filename=None, **kwargs):
+    cfg = ia.Config(**kwargs)
+    return ext.random_bernoulli(cfg, p, shape, pshape, dtype, filename)
+
+
+def random_binomial2(m, p, shape, pshape=None, dtype="double", filename=None, **kwargs):
+    cfg = ia.Config(**kwargs)
+    return ext.random_binomial(cfg, m, p, shape, pshape, dtype, filename)
+
+
+def random_poisson2(l, shape, pshape=None, dtype="double", filename=None, **kwargs):
+    cfg = ia.Config(**kwargs)
+    return ext.random_poisson(cfg, l, shape, pshape, dtype, filename)
+
+
+def random_kstest2(a, b, **kwargs):
+    cfg = ia.Config(**kwargs)
+    return ext.random_kstest(cfg, a, b)
+
+
 def matmul2(a, b, block_a, block_b, **kwargs):
     cfg = ia.Config(**kwargs)
     return ext.matmul(cfg, a, b, block_a, block_b)

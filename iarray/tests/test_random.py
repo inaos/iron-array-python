@@ -12,18 +12,14 @@ import numpy as np
                              ([4, 3, 5, 2], None, "float")
                          ])
 def test_rand(shape, pshape, dtype):
-    cfg = ia.Config()
-    ctx = ia.Context(cfg)
-    r_ctx = ia.RandomContext(ctx)
-
     size = int(np.prod(shape))
-    a = ia.random_rand(ctx, r_ctx, shape, pshape, dtype)
+    a = ia.random_rand2(shape, pshape, dtype)
 
     npdtype = np.float64 if dtype == "double" else np.float32
     b = np.random.rand(size).reshape(shape).astype(npdtype)
     c = ia.numpy2iarray2(b)
 
-    assert ia.random_kstest(ctx, a, c)
+    assert ia.random_kstest2(a, c)
 
 
 # Randn
@@ -35,18 +31,14 @@ def test_rand(shape, pshape, dtype):
                              ([4, 3, 5, 2], None, "float")
                          ])
 def test_randn(shape, pshape, dtype):
-    cfg = ia.Config()
-    ctx = ia.Context(cfg)
-    r_ctx = ia.RandomContext(ctx)
-
     size = int(np.prod(shape))
-    a = ia.random_randn(ctx, r_ctx, shape, pshape, dtype)
+    a = ia.random_randn2(shape, pshape, dtype)
 
     npdtype = np.float64 if dtype == "double" else np.float32
     b = np.random.randn(size).reshape(shape).astype(npdtype)
     c = ia.numpy2iarray2(b)
 
-    assert ia.random_kstest(ctx, a, c)
+    assert ia.random_kstest2(a, c)
 
 
 # Beta
@@ -58,18 +50,14 @@ def test_randn(shape, pshape, dtype):
                              (0.5, 0.05, [4, 3, 5, 2], None, "float")
                          ])
 def test_beta(alpha, beta, shape, pshape, dtype):
-    cfg = ia.Config()
-    ctx = ia.Context(cfg)
-    r_ctx = ia.RandomContext(ctx)
-
     size = int(np.prod(shape))
-    a = ia.random_beta(ctx, r_ctx, alpha, beta, shape, pshape, dtype)
+    a = ia.random_beta2(alpha, beta, shape, pshape, dtype)
 
     npdtype = np.float64 if dtype == "double" else np.float32
     b = np.random.beta(alpha, beta, size).reshape(shape).astype(npdtype)
     c = ia.numpy2iarray2(b)
 
-    assert ia.random_kstest(ctx, a, c)
+    assert ia.random_kstest2(a, c)
 
 
 # Lognormal
@@ -81,18 +69,14 @@ def test_beta(alpha, beta, shape, pshape, dtype):
                              (0.5, 0.05, [4, 3, 5, 2], None, "float")
                          ])
 def test_lognormal(mu, sigma, shape, pshape, dtype):
-    cfg = ia.Config()
-    ctx = ia.Context(cfg)
-    r_ctx = ia.RandomContext(ctx)
-
     size = int(np.prod(shape))
-    a = ia.random_lognormal(ctx, r_ctx, mu, sigma, shape, pshape, dtype)
+    a = ia.random_lognormal2(mu, sigma, shape, pshape, dtype)
 
     npdtype = np.float64 if dtype == "double" else np.float32
     b = np.random.lognormal(mu, sigma, size).reshape(shape).astype(npdtype)
     c = ia.numpy2iarray2(b)
 
-    assert ia.random_kstest(ctx, a, c)
+    assert ia.random_kstest2(a, c)
 
 
 # Exponential
@@ -104,18 +88,14 @@ def test_lognormal(mu, sigma, shape, pshape, dtype):
                              (0.5, [4, 3, 5, 2], None, "float")
                          ])
 def test_exponential(beta, shape, pshape, dtype):
-    cfg = ia.Config()
-    ctx = ia.Context(cfg)
-    r_ctx = ia.RandomContext(ctx)
-
     size = int(np.prod(shape))
-    a = ia.random_exponential(ctx, r_ctx, beta, shape, pshape, dtype)
+    a = ia.random_exponential2(beta, shape, pshape, dtype)
 
     npdtype = np.float64 if dtype == "double" else np.float32
     b = np.random.exponential(beta, size).reshape(shape).astype(npdtype)
     c = ia.numpy2iarray2(b)
 
-    assert ia.random_kstest(ctx, a, c)
+    assert ia.random_kstest2(a, c)
 
 
 # Uniform
@@ -127,18 +107,14 @@ def test_exponential(beta, shape, pshape, dtype):
                              (0.5, 1000, [4, 3, 5, 2], None, "float")
                          ])
 def test_uniform(a_, b_, shape, pshape, dtype):
-    cfg = ia.Config()
-    ctx = ia.Context(cfg)
-    r_ctx = ia.RandomContext(ctx)
-
     size = int(np.prod(shape))
-    a = ia.random_uniform(ctx, r_ctx, a_, b_, shape, pshape, dtype)
+    a = ia.random_uniform2(a_, b_, shape, pshape, dtype)
 
     npdtype = np.float64 if dtype == "double" else np.float32
     b = np.random.uniform(a_, b_, size).reshape(shape).astype(npdtype)
     c = ia.numpy2iarray2(b)
 
-    assert ia.random_kstest(ctx, a, c)
+    assert ia.random_kstest2(a, c)
 
 
 # Normal
@@ -150,44 +126,17 @@ def test_uniform(a_, b_, shape, pshape, dtype):
                              (0.5, 1000, [4, 3, 5, 2], None, "float")
                          ])
 def test_normal(mu, sigma, shape, pshape, dtype):
-    cfg = ia.Config()
-    ctx = ia.Context(cfg)
-    r_ctx = ia.RandomContext(ctx)
-
     size = int(np.prod(shape))
-    a = ia.random_normal(ctx, r_ctx, mu, sigma, shape, pshape, dtype)
+    a = ia.random_normal2(mu, sigma, shape, pshape, dtype)
 
     npdtype = np.float64 if dtype == "double" else np.float32
     b = np.random.normal(mu, sigma, size).reshape(shape).astype(npdtype)
     c = ia.numpy2iarray2(b)
 
-    assert ia.random_kstest(ctx, a, c)
+    assert ia.random_kstest2(a, c)
 
 
-# Bernoulli
-@pytest.mark.parametrize("p, shape, pshape, dtype",
-                         [
-                             (1, [10, 12, 5], [2, 3, 2], "double"),
-                             (0, [4, 3, 5, 2], [2, 2, 2, 2], "float"),
-                             (0.15, [10, 12, 5], None, "double"),
-                             (0.6, [4, 3, 5, 2], None, "float")
-                         ])
-def test_bernoulli(p, shape, pshape, dtype):
-    cfg = ia.Config()
-    ctx = ia.Context(cfg)
-    r_ctx = ia.RandomContext(ctx)
-
-    size = int(np.prod(shape))
-    a = ia.random_bernoulli(ctx, r_ctx, p, shape, pshape, dtype)
-
-    npdtype = np.float64 if dtype == "double" else np.float32
-    b = np.random.geometric(p, size).reshape(shape).astype(npdtype)
-    c = ia.numpy2iarray2(b)
-
-    assert ia.random_kstest(ctx, a, c)
-
-
-# Bernoulli
+# Bernoulli (compare against np.random.binomial)
 @pytest.mark.parametrize("p, shape, pshape, dtype",
                          [
                              (0.7, [10, 12, 5], [2, 3, 2], "double"),
@@ -196,18 +145,14 @@ def test_bernoulli(p, shape, pshape, dtype):
                              (0.6, [4, 3, 5, 2], None, "float")
                          ])
 def test_bernoulli(p, shape, pshape, dtype):
-    cfg = ia.Config()
-    ctx = ia.Context(cfg)
-    r_ctx = ia.RandomContext(ctx)
-
     size = int(np.prod(shape))
-    a = ia.random_bernoulli(ctx, r_ctx, p, shape, pshape, dtype)
+    a = ia.random_bernoulli2(p, shape, pshape, dtype)
 
     npdtype = np.float64 if dtype == "double" else np.float32
     b = np.random.binomial(1, p, size).reshape(shape).astype(npdtype)
     c = ia.numpy2iarray2(b)
 
-    assert ia.random_kstest(ctx, a, c)
+    assert ia.random_kstest2(a, c)
 
 
 # Binomial
@@ -219,18 +164,14 @@ def test_bernoulli(p, shape, pshape, dtype):
                              (5, 0.6, [4, 3, 5, 2], None, "float")
                          ])
 def test_binomial(n, p, shape, pshape, dtype):
-    cfg = ia.Config()
-    ctx = ia.Context(cfg)
-    r_ctx = ia.RandomContext(ctx)
-
     size = int(np.prod(shape))
-    a = ia.random_binomial(ctx, r_ctx, n, p, shape, pshape, dtype)
+    a = ia.random_binomial2(n, p, shape, pshape, dtype)
 
     npdtype = np.float64 if dtype == "double" else np.float32
     b = np.random.binomial(n, p, size).reshape(shape).astype(npdtype)
     c = ia.numpy2iarray2(b)
 
-    assert ia.random_kstest(ctx, a, c)
+    assert ia.random_kstest2(a, c)
 
 
 # Poisson
@@ -242,15 +183,11 @@ def test_binomial(n, p, shape, pshape, dtype):
                              (5, [4, 3, 5, 2], None, "float")
                          ])
 def test_poisson(lamb, shape, pshape, dtype):
-    cfg = ia.Config()
-    ctx = ia.Context(cfg)
-    r_ctx = ia.RandomContext(ctx)
-
     size = int(np.prod(shape))
-    a = ia.random_poisson(ctx, r_ctx, lamb, shape, pshape, dtype)
+    a = ia.random_poisson2(lamb, shape, pshape, dtype)
 
     npdtype = np.float64 if dtype == "double" else np.float32
     b = np.random.poisson(lamb, size).reshape(shape).astype(npdtype)
     c = ia.numpy2iarray2(b)
 
-    assert ia.random_kstest(ctx, a, c)
+    assert ia.random_kstest2(a, c)
