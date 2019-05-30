@@ -134,11 +134,11 @@ cdef class IarrayInit:
         ciarray.iarray_destroy()
 
 
-cdef class Config:
+cdef class _Config:
     cdef ciarray.iarray_config_t _cfg
 
-    def __init__(self, compression_codec=1, compression_level=5, use_dict=0, filter_flags=1, eval_flags="iterblock",
-                 max_num_threads=1, fp_mantissa_bits=0, blocksize=0):
+    def __init__(self, compression_codec=1, compression_level=5, use_dict=0, filter_flags=1,
+                 max_num_threads=1, fp_mantissa_bits=0, blocksize=0, eval_flags="iterblock"):
         self._cfg.compression_codec = compression_codec
         self._cfg.compression_level = compression_level
         self._cfg.use_dict = use_dict
@@ -153,49 +153,6 @@ cdef class Config:
 
     def to_dict(self):
         return <object> self._cfg
-
-    @property
-    def compression_codec(self):
-            codec = ["BloscLZ", "LZ4", "LZ4HC", "Snappy", "Zlib", "Zstd", "Lizard"]
-            return codec[self._cfg.compression_codec]
-
-    @property
-    def compression_level(self):
-        return self._cfg.compression_level
-
-    @property
-    def filter_flags(self):
-        flags = {0: "No filters", 1: "Shuffle", 2: "Bit Shuffle", 4: "Delta", 8: "Trunc. Precision"}
-        return flags[self._cfg.filter_flags]
-
-    @property
-    def eval_flags(self):
-        flags = {1: "Block", 2: "Chunk", 4: "Block (iter)", 8: "Chunk (iter)", 16: "Chunk (iterpara)"}
-        return flags[self._cfg.eval_flags]
-
-    @property
-    def max_num_threads(self):
-        return self._cfg.max_num_threads
-
-    @property
-    def fp_mantissa_bits(self):
-        return self._cfg.fp_mantissa_bits
-
-    @property
-    def blocksize(self):
-        return self._cfg.blocksize
-
-    def __str__(self):
-        res = f"IARRAY CONFIG OBJECT\n"
-        compression_codec = f"    Compression codec: {self.compression_codec}\n"
-        compression_level = f"    Compression level: {self.compression_level}\n"
-        filter_flags = f"    Filter flags: {self.filter_flags}\n"
-        eval_flags = f"    Eval flags: {self.eval_flags}\n"
-        max_num_threads = f"    Max. num. threads: {self.max_num_threads}\n"
-        fp_mantissa_bits = f"    Fp mantissa bits: {self.fp_mantissa_bits}\n"
-        blocksize = f"    Blocksize: {self.blocksize}"
-        return res + compression_codec + compression_level + filter_flags + eval_flags +\
-               max_num_threads + fp_mantissa_bits + blocksize
 
 
 cdef class _Dtshape:
@@ -295,6 +252,10 @@ cdef class Container:
     cdef Context _ctx
 
     def __init__(self, ctx, c):
+        if ctx is None:
+            raise ValueError("You must pass a context to the Container constructor")
+        if c is None:
+            raise ValueError("You must pass a Capsule to the C container struct to the Container constructor")
         self._ctx = ctx
         cdef ciarray.iarray_container_t* c_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(c, "iarray_container_t*")
         self._c = c_

@@ -57,12 +57,70 @@ def fuse_expressions(expr, new_base, dup_op):
     return new_expr
 
 
+class Config(ext._Config):
+
+    def __init__(self, compression_codec=ia.LZ4, compression_level=5, use_dict=0, filter_flags=ia.SHUFFLE,
+                 max_num_threads=1, fp_mantissa_bits=0, blocksize=0, eval_flags="iterblock"):
+        self._compression_codec = compression_codec
+        self._compression_level = compression_level
+        self._use_dict = use_dict
+        self._filter_flags = filter_flags
+        self._eval_flags = eval_flags
+        self._max_num_threads = max_num_threads
+        self._fp_mantissa_bits = fp_mantissa_bits
+        self._blocksize = blocksize
+        self._eval_flags = eval_flags  # TODO: should we move this to its own eval configuration?
+        super(Config, self).__init__(compression_codec, compression_level, use_dict, filter_flags,
+                                     max_num_threads, fp_mantissa_bits, blocksize, eval_flags)
+
+    @property
+    def compression_codec(self):
+        codec = ["BloscLZ", "LZ4", "LZ4HC", "Snappy", "Zlib", "Zstd", "Lizard"]
+        return codec[self._compression_codec]
+
+    @property
+    def compression_level(self):
+        return self._compression_level
+
+    @property
+    def filter_flags(self):
+        flags = {0: "NOFILTER", 1: "SHUFFLE", 2: "BITSHUFFLE", 4: "DELTA", 8: "TRUNC_PREC"}
+        return flags[self._filter_flags]
+
+    @property
+    def max_num_threads(self):
+        return self._max_num_threads
+
+    @property
+    def fp_mantissa_bits(self):
+        return self._fp_mantissa_bits
+
+    @property
+    def blocksize(self):
+        return self._blocksize
+
+    @property
+    def eval_flags(self):
+        return self._eval_flags
+
+    def __str__(self):
+        res = f"IArray Config object:\n"
+        compression_codec = f"    Compression codec: {self.compression_codec}\n"
+        compression_level = f"    Compression level: {self.compression_level}\n"
+        filter_flags = f"    Filter flags: {self.filter_flags}\n"
+        eval_flags = f"    Eval flags: {self.eval_flags}\n"
+        max_num_threads = f"    Max. num. threads: {self.max_num_threads}\n"
+        fp_mantissa_bits = f"    Fp mantissa bits: {self.fp_mantissa_bits}\n"
+        blocksize = f"    Blocksize: {self.blocksize}"
+        return res + compression_codec + compression_level + filter_flags + eval_flags + \
+               max_num_threads + fp_mantissa_bits + blocksize
+
+
 class LazyExpr:
 
-    def __init__(self, new_op, ctx=None):
+    def __init__(self, new_op):
         # This is the very first time that a LazyExpr is formed from two operands that are not LazyExpr themselves
         value1, op, value2 = new_op
-        self.ctx = ctx
         if isinstance(value1, (int, float)) and isinstance(value2, (int, float)):
             self.expression = f"({value1} {op} {value2})"
         elif isinstance(value2, (int, float)):
@@ -146,15 +204,24 @@ class LazyExpr:
         return self.update_expr(new_op=(value, '/', self))
 
 
-    def eval(self, method="numexpr"):
+    def eval(self, method="iarray_eval", cfg=None):
         # TODO: see if ctx, shape and pshape can be instance variables, or better stay like this
         o0 = self.operands['o0']
-        if self.ctx is None:
+        if cfg is None:
             # Choose the context of the first operand
             self.ctx = o0.ctx
+        else:
+            self.ctx = ext.Context(cfg)
         shape_ = o0.shape
         pshape_ = o0.pshape
-        if method == "numexpr":
+        if method == "iarray_eval":
+            expr = ia.Expression(self.ctx)
+            for k, v in self.operands.items():
+                if isinstance(v, IArray):
+                    expr.bind(k, v)
+            expr.compile(self.expression)
+            out = expr.eval(shape_, pshape_, "double")
+        elif method == "numexpr":
             out = ia.empty(self.ctx, shape=shape_, pshape=pshape_)
             operand_iters = tuple(o.iter_read_block(pshape_) for o in self.operands.values() if isinstance(o, IArray))
             all_iters = operand_iters + (out.iter_write_block(pshape_),)   # put the iterator for the output at the end
@@ -165,15 +232,8 @@ class LazyExpr:
                 # block_operands = {o: block[i][1] for (i, o) in enumerate(self.operands.keys(), start=1)}
                 # out_block = block[0][1]  # the block for output is at the front, by construction
                 ne.evaluate(self.expression, local_dict=block_operands, out=out_block)
-        elif method == "iarray.eval":
-            expr = ia.Expression(self.ctx)
-            for k, v in self.operands.items():
-                if isinstance(v, IArray):
-                    expr.bind(k, v)
-            expr.compile(self.expression)
-            out = expr.eval(shape_, pshape_, "double")
         else:
-            out = None
+            raise ValueError(f"Unrecognized '{method}' method")
 
         return out
 
@@ -186,13 +246,7 @@ class LazyExpr:
 class IArray(ext.Container):
 
     def __init__(self, ctx=None, c=None):
-        if ctx is None:
-            # Assign a default context
-            cfg = ia.Config()
-            ctx = ia.Context(cfg)
         self.ctx = ctx
-        if c is None:
-            raise ValueError("You must pass a Capsule to the C container struct in the IArray constructor")
         super(IArray, self).__init__(ctx, c)
 
 
@@ -281,18 +335,14 @@ def numpy2iarray2(c, pshape=None, filename=None, ctx=None):
 
 
 if __name__ == "__main__":
-    # Create iarray context
-    cfg_ = ia.Config(eval_flags="iterblock")
-    ctx_ = ia.Context(cfg_)
-
     # Define array params
     shape = [40]
     pshape = [20]
     size = int(np.prod(shape))
 
     # Create initial containers
-    a1 = ia.linspace(ctx_, size, 0, 10, shape, pshape, "double")
-    a2 = ia.linspace(ctx_, size, 0, 20, shape, pshape, "double")
+    a1 = ia.linspace2(size, 0, 10, shape, pshape, "double")
+    a2 = ia.linspace2(size, 0, 20, shape, pshape, "double")
     # a3 = a1 + a2 + a1 - 2 * a1 + 1
     a3 = a1 + 2 * a1 + 1
     # a3 = a1 + a2
@@ -300,6 +350,6 @@ if __name__ == "__main__":
     a3 += 2
     print(a3)
     # a4 = a3.eval(method="numexpr")
-    a4 = a3.eval(method="iarray.eval")
+    a4 = a3.eval(method="iarray_eval")
     a4_np = ia.iarray2numpy(a4.ctx, a4)
     print(a4_np)
