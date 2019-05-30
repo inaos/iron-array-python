@@ -942,6 +942,7 @@ def random_poisson(ctx, r_ctx, l, shape, pshape=None, dtype="double", filename=N
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     return IArray(ctx, c_c)
 
+
 def random_kstest(ctx, a, b):
     cdef ciarray.iarray_container_t *a_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(a.to_capsule(), "iarray_container_t*")
     cdef ciarray.iarray_container_t *b_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(b.to_capsule(), "iarray_container_t*")
@@ -951,7 +952,8 @@ def random_kstest(ctx, a, b):
     return res
 
 
-def matmul(ctx, a, b, block_a, block_b):
+def matmul(cfg, a, b, block_a, block_b):
+    ctx = Context(cfg)
     cdef ciarray.iarray_container_t *a_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(a.to_capsule(), "iarray_container_t*")
     cdef ciarray.iarray_container_t *b_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(b.to_capsule(), "iarray_container_t*")
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
@@ -992,6 +994,8 @@ def matmul(ctx, a, b, block_a, block_b):
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     return IArray(ctx, c_c)
+
+
 #
 # TODO: the next functions are just for benchmarking purposes and should be moved to its own extension
 #

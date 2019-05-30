@@ -325,6 +325,11 @@ def numpy2iarray2(c, pshape=None, filename=None, **kwargs):
     return ext.numpy2iarray(cfg, c, pshape, filename)
 
 
+def matmul2(a, b, block_a, block_b, **kwargs):
+    cfg = ia.Config(**kwargs)
+    return ext.matmul(cfg, a, b, block_a, block_b)
+
+
 if __name__ == "__main__":
     # Define array params
     shape = [40]

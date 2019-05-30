@@ -16,9 +16,6 @@ import numpy as np
                              ([100, 100], [30, 30], [12, 100], [100], None, [100], "float")
                          ])
 def test_matmul(ashape, apshape, abshape, bshape, bpshape, bbshape, dtype):
-    cfg = ia.Config()
-    ctx = ia.Context(cfg)
-
     asize = int(np.prod(ashape))
     a = ia.linspace2(asize, -10, 10, ashape, apshape, dtype)
     an = ia.iarray2numpy2(a)
@@ -27,7 +24,7 @@ def test_matmul(ashape, apshape, abshape, bshape, bpshape, bbshape, dtype):
     b = ia.linspace2(bsize, -10, 10, bshape, bpshape, dtype)
     bn = ia.iarray2numpy2(b)
 
-    c = ia.matmul(ctx, a, b, abshape, bbshape)
+    c = ia.matmul2(a, b, abshape, bbshape)
     cn = np.matmul(an, bn)
 
     cn_2 = ia.iarray2numpy2(c)
@@ -57,9 +54,6 @@ def test_matmul(ashape, apshape, abshape, bshape, bpshape, bbshape, dtype):
                               [100], None, [25], [35], [10], "float")
                          ])
 def test_matmul_slice(ashape, apshape, astart, astop, abshape, bshape, bpshape, bstart, bstop, bbshape, dtype):
-    cfg = ia.Config()
-    ctx = ia.Context(cfg)
-
     asize = int(np.prod(ashape))
     a = ia.linspace2(asize, -10, 10, ashape, apshape, dtype)
     an = ia.iarray2numpy2(a)
@@ -76,7 +70,7 @@ def test_matmul_slice(ashape, apshape, astart, astop, abshape, bshape, bpshape, 
         bslices = bslices[0]
     bsl = b[bslices]
 
-    c = ia.matmul(ctx, asl, bsl, abshape, bbshape)
+    c = ia.matmul2(asl, bsl, abshape, bbshape)
     cn = np.matmul(an[aslices], bn[bslices])
 
     cn_2 = ia.iarray2numpy2(c)
