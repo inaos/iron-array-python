@@ -20,14 +20,14 @@ def test_expression(eval_flags, shape, pshape, dtype, expression):
     ctx = ia.Context(cfg)
 
     size = int(np.prod(shape))
-    a = ia.linspace(ctx, size, 0, 10, shape, pshape, dtype)
-    b = ia.iarray2numpy(ctx, a)
+    a = ia.linspace2(size, 0, 10, shape, pshape, dtype)
+    b = ia.iarray2numpy2(a)
 
     e = ia.Expression(ctx)
     e.bind("x", a)
     e.compile(expression)
     c = e.eval(shape, pshape, dtype)
-    d = ia.iarray2numpy(ctx, c)
+    d = ia.iarray2numpy2(c)
 
     f = eval(expression, {"x": b})
 

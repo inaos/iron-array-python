@@ -279,59 +279,50 @@ class IArray(ext.Container):
 # Constructors
 #
 
-def empty2(shape, pshape=None, dtype="double", filename=None, ctx=None):
-    if ctx is None:
-        ctx = ext.Context(ia.Config())
-    return ext.empty(ctx, shape, pshape, dtype, filename)
+def empty2(shape, pshape=None, dtype="double", filename=None, **kwargs):
+    cfg = ia.Config(**kwargs)
+    return ext.empty(cfg, shape, pshape, dtype, filename)
 
 
-def arange2(start=None, stop=None, step=None, shape=None, pshape=None, dtype="double", filename=None, ctx=None):
-    if ctx is None:
-        ctx = ext.Context(ia.Config())
+def arange2(start=None, stop=None, step=None, shape=None, pshape=None, dtype="double", filename=None, **kwargs):
+    cfg = ia.Config(**kwargs)
     slice_ = slice(start, stop, step)
-    return ext.arange(ctx, slice_, shape, pshape, dtype, filename)
+    return ext.arange(cfg, slice_, shape, pshape, dtype, filename)
 
 
-def linspace2(nelem, start, stop, shape=None, pshape=None, dtype="double", filename=None, ctx=None):
-    if ctx is None:
-        ctx = ext.Context(ia.Config())
-    return ext.linspace(ctx, nelem, start, stop, shape, pshape, dtype, filename)
+def linspace2(nelem, start, stop, shape=None, pshape=None, dtype="double", filename=None, **kwargs):
+    cfg = ia.Config(**kwargs)
+    return ext.linspace(cfg, nelem, start, stop, shape, pshape, dtype, filename)
 
 
-def zeros2(shape, pshape=None, dtype="double", filename=None, ctx=None):
-    if ctx is None:
-        ctx = ext.Context(ia.Config())
-    return ext.zeros(ctx, shape, pshape, dtype, filename)
+def zeros2(shape, pshape=None, dtype="double", filename=None, **kwargs):
+    cfg = ia.Config(**kwargs)
+    return ext.zeros(cfg, shape, pshape, dtype, filename)
 
 
-def ones2(shape, pshape=None, dtype="double", filename=None, ctx=None):
-    if ctx is None:
-        ctx = ext.Context(ia.Config())
-    return ext.ones(ctx, shape, pshape, dtype, filename)
+def ones2(shape, pshape=None, dtype="double", filename=None, **kwargs):
+    cfg = ia.Config(**kwargs)
+    return ext.ones(cfg, shape, pshape, dtype, filename)
 
 
-def full2(fill_value, shape, pshape=None, dtype="double", filename=None, ctx=None):
-    if ctx is None:
-        ctx = ext.Context(ia.Config())
-    return ext.full(ctx, fill_value, shape, pshape, dtype, filename)
+def full2(fill_value, shape, pshape=None, dtype="double", filename=None, **kwargs):
+    cfg = ia.Config(**kwargs)
+    return ext.full(cfg, fill_value, shape, pshape, dtype, filename)
 
 
-def from_file2(filename=None, ctx=None):
-    if ctx is None:
-        ctx = ext.Context(ia.Config())
-    return ext.from_file(ctx, filename)
+def from_file2(filename=None, **kwargs):
+    cfg = ia.Config(**kwargs)
+    return ext.from_file(cfg, filename)
 
 
-def iarray2numpy2(c, ctx=None):
-    if ctx is None:
-        ctx = ext.Context(ia.Config())
-    return ext.iarray2numpy(ctx, c)
+def iarray2numpy2(c, **kwargs):
+    cfg = ia.Config(**kwargs)
+    return ext.iarray2numpy(cfg, c)
 
 
-def numpy2iarray2(c, pshape=None, filename=None, ctx=None):
-    if ctx is None:
-        ctx = ext.Context(ia.Config())
-    return ext.numpy2iarray(ctx, c, pshape, filename)
+def numpy2iarray2(c, pshape=None, filename=None, **kwargs):
+    cfg = ia.Config(**kwargs)
+    return ext.numpy2iarray(cfg, c, pshape, filename)
 
 
 if __name__ == "__main__":
@@ -351,5 +342,5 @@ if __name__ == "__main__":
     print(a3)
     # a4 = a3.eval(method="numexpr")
     a4 = a3.eval(method="iarray_eval")
-    a4_np = ia.iarray2numpy(a4.ctx, a4)
+    a4_np = ia.iarray2numpy2(a4)
     print(a4_np)

@@ -17,14 +17,11 @@ from itertools import zip_longest as izip
                              ([10, 10, 10, 10], None, [3, 4, 3, 4], "float")
                          ])
 def test_iterator(shape, pshape, bshape, dtype):
-    cfg = ia.Config()
-    ctx = ia.Context(cfg)
-
     size = int(np.prod(shape))
-    a = ia.linspace(ctx, size, -10, 10, shape, pshape, dtype)
-    an = ia.iarray2numpy(ctx, a)
+    a = ia.linspace2(size, -10, 10, shape, pshape, dtype)
+    an = ia.iarray2numpy2(a)
 
-    b = ia.empty(ctx, shape, pshape)
+    b = ia.empty2(shape, pshape)
 
     for i, ((ainfo, aslice), (binfo, bslice)) in enumerate(izip(a.iter_read_block(bshape), b.iter_write_block(bshape))):
         bslice[:] = aslice
@@ -33,6 +30,6 @@ def test_iterator(shape, pshape, bshape, dtype):
         slices = tuple(slice(start[i], stop[i]) for i in range(len(start)))
         np.testing.assert_almost_equal(aslice, an[slices])
 
-    bn = ia.iarray2numpy(ctx, b)
+    bn = ia.iarray2numpy2(b)
 
     np.testing.assert_almost_equal(bn, an)

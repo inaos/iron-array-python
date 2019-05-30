@@ -15,22 +15,22 @@ import numpy as np
                              ([100, 100], None, [100, 100], [100], [5], [100], "double"),
                              ([100, 100], [30, 30], [12, 100], [100], None, [100], "float")
                          ])
-def test_matmul1(ashape, apshape, abshape, bshape, bpshape, bbshape, dtype):
+def test_matmul(ashape, apshape, abshape, bshape, bpshape, bbshape, dtype):
     cfg = ia.Config()
     ctx = ia.Context(cfg)
 
     asize = int(np.prod(ashape))
-    a = ia.linspace(ctx, asize, -10, 10, ashape, apshape, dtype)
-    an = ia.iarray2numpy(ctx, a)
+    a = ia.linspace2(asize, -10, 10, ashape, apshape, dtype)
+    an = ia.iarray2numpy2(a)
 
     bsize = int(np.prod(bshape))
-    b = ia.linspace(ctx, bsize, -10, 10, bshape, bpshape, dtype)
-    bn = ia.iarray2numpy(ctx, b)
+    b = ia.linspace2(bsize, -10, 10, bshape, bpshape, dtype)
+    bn = ia.iarray2numpy2(b)
 
     c = ia.matmul(ctx, a, b, abshape, bbshape)
     cn = np.matmul(an, bn)
 
-    cn_2 = ia.iarray2numpy(ctx, c)
+    cn_2 = ia.iarray2numpy2(c)
 
     np.testing.assert_almost_equal(cn, cn_2)
 
@@ -56,21 +56,21 @@ def test_matmul1(ashape, apshape, abshape, bshape, bpshape, bbshape, dtype):
                              ([100, 100], [30, 30], [12, 20], [32, 30], [10, 10],
                               [100], None, [25], [35], [10], "float")
                          ])
-def test_matmul2(ashape, apshape, astart, astop, abshape, bshape, bpshape, bstart, bstop, bbshape, dtype):
+def test_matmul_slice(ashape, apshape, astart, astop, abshape, bshape, bpshape, bstart, bstop, bbshape, dtype):
     cfg = ia.Config()
     ctx = ia.Context(cfg)
 
     asize = int(np.prod(ashape))
-    a = ia.linspace(ctx, asize, -10, 10, ashape, apshape, dtype)
-    an = ia.iarray2numpy(ctx, a)
+    a = ia.linspace2(asize, -10, 10, ashape, apshape, dtype)
+    an = ia.iarray2numpy2(a)
     aslices = tuple(slice(astart[i], astop[i]) for i in range(len(astart)))
     if len(astart) == 1:
         aslices = aslices[0]
     asl = a[aslices]
 
     bsize = int(np.prod(bshape))
-    b = ia.linspace(ctx, bsize, -10, 10, bshape, bpshape, dtype)
-    bn = ia.iarray2numpy(ctx, b)
+    b = ia.linspace2(bsize, -10, 10, bshape, bpshape, dtype)
+    bn = ia.iarray2numpy2(b)
     bslices = tuple(slice(bstart[i], bstop[i]) for i in range(len(bstart)))
     if len(bstart) == 1:
         bslices = bslices[0]
@@ -79,6 +79,6 @@ def test_matmul2(ashape, apshape, astart, astop, abshape, bshape, bpshape, bstar
     c = ia.matmul(ctx, asl, bsl, abshape, bbshape)
     cn = np.matmul(an[aslices], bn[bslices])
 
-    cn_2 = ia.iarray2numpy(ctx, c)
+    cn_2 = ia.iarray2numpy2(c)
 
     np.testing.assert_almost_equal(cn, cn_2)

@@ -155,6 +155,23 @@ cdef class _Config:
         return <object> self._cfg
 
 
+cdef class Context:
+    cdef ciarray.iarray_context_t *_ctx
+
+    def __init__(self, cfg):
+        cdef ciarray.iarray_config_t cfg_ = cfg.to_dict()
+        ciarray.iarray_context_new(&cfg_, &self._ctx)
+
+    def __dealloc__(self):
+        ciarray.iarray_context_free(&self._ctx)
+
+    def to_capsule(self):
+        return PyCapsule_New(self._ctx, "iarray_context_t*", NULL)
+
+    def __str__(self):
+        return "IARRAY CONTEXT OBJECT"
+
+
 cdef class _Dtshape:
     cdef ciarray.iarray_dtshape_t _dtshape
 
@@ -205,23 +222,6 @@ cdef class _Dtshape:
         dtype = f"    Datatype: {self.dtype}"
 
         return res + ndim + shape + pshape + dtype
-
-
-cdef class Context:
-    cdef ciarray.iarray_context_t *_ctx
-
-    def __init__(self, cfg):
-        cdef ciarray.iarray_config_t cfg_ = cfg.to_dict()
-        ciarray.iarray_context_new(&cfg_, &self._ctx)
-
-    def __dealloc__(self):
-        ciarray.iarray_context_free(&self._ctx)
-
-    def to_capsule(self):
-        return PyCapsule_New(self._ctx, "iarray_context_t*", NULL)
-
-    def __str__(self):
-        return "IARRAY CONTEXT OBJECT"
 
 
 cdef class RandomContext:
@@ -366,7 +366,8 @@ cdef class Expression:
 # Iarray container creators
 #
 
-def empty(ctx, shape, pshape=None, dtype="double", filename=None):
+def empty(cfg, shape, pshape=None, dtype="double", filename=None):
+    ctx = Context(cfg)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
 
     dtshape = _Dtshape(shape, pshape, dtype).to_dict()
@@ -390,7 +391,8 @@ def empty(ctx, shape, pshape=None, dtype="double", filename=None):
     return IArray(ctx, c_c)
 
 
-def arange(ctx, slice, shape=None, pshape=None, dtype="double", filename=None):
+def arange(cfg, slice, shape=None, pshape=None, dtype="double", filename=None):
+    ctx = Context(cfg)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
 
     start = 0 if slice.start is None else slice.start
@@ -421,7 +423,8 @@ def arange(ctx, slice, shape=None, pshape=None, dtype="double", filename=None):
     return IArray(ctx, c_c)
 
 
-def linspace(ctx, nelem, start, stop, shape=None, pshape=None, dtype="double", filename=None):
+def linspace(cfg, nelem, start, stop, shape=None, pshape=None, dtype="double", filename=None):
+    ctx = Context(cfg)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
 
     if shape is None:
@@ -447,7 +450,8 @@ def linspace(ctx, nelem, start, stop, shape=None, pshape=None, dtype="double", f
     return IArray(ctx, c_c)
 
 
-def zeros(ctx, shape, pshape=None, dtype="double", filename=None):
+def zeros(cfg, shape, pshape=None, dtype="double", filename=None):
+    ctx = Context(cfg)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
 
     dtshape = _Dtshape(shape, pshape, dtype).to_dict()
@@ -470,7 +474,8 @@ def zeros(ctx, shape, pshape=None, dtype="double", filename=None):
     return IArray(ctx, c_c)
 
 
-def ones(ctx, shape, pshape=None, dtype="double", filename=None):
+def ones(cfg, shape, pshape=None, dtype="double", filename=None):
+    ctx = Context(cfg)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
 
     dtshape = _Dtshape(shape, pshape, dtype).to_dict()
@@ -493,7 +498,8 @@ def ones(ctx, shape, pshape=None, dtype="double", filename=None):
     return IArray(ctx, c_c)
 
 
-def full(ctx, fill_value, shape, pshape=None, dtype="double", filename=None):
+def full(cfg, fill_value, shape, pshape=None, dtype="double", filename=None):
+    ctx = Context(cfg)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
 
     dtshape = _Dtshape(shape, pshape, dtype).to_dict()
@@ -556,11 +562,8 @@ def _get_slice(ctx, data, start, stop, pshape=None, filename=None, view=True):
     return IArray(ctx, c_c)
 
 
-def numpy2iarray(ctx, a, pshape=None, filename=None):
-    """
-
-    :rtype: object
-    """
+def numpy2iarray(cfg, a, pshape=None, filename=None):
+    ctx = Context(cfg)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
 
     dtype = None
@@ -593,7 +596,8 @@ def numpy2iarray(ctx, a, pshape=None, filename=None):
     return IArray(ctx, c_c)
 
 
-def iarray2numpy(ctx, c):
+def iarray2numpy(cfg, c):
+    ctx = Context(cfg)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
     cdef ciarray.iarray_container_t *c_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(c.to_capsule(), "iarray_container_t*")
 
@@ -617,7 +621,8 @@ def iarray2numpy(ctx, c):
     return a
 
 
-def from_file(ctx, filename):
+def from_file(cfg, filename):
+    ctx = Context(cfg)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
 
     cdef ciarray.iarray_store_properties_t store
