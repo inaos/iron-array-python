@@ -13,18 +13,15 @@ import numpy as np
 
                          ])
 def test_slice(shape, pshape, start, stop, dtype):
-    cfg = ia.Config()
-    ctx = ia.Context(cfg)
-
     slices = tuple(slice(start[i], stop[i]) for i in range(len(start)))
     if len(start) == 1:
         slices = slices[0]
 
     asize = int(np.prod(shape))
-    a = ia.linspace(ctx, asize, -10, 10, shape, pshape, dtype)
-    an = ia.iarray2numpy(ctx, a)
+    a = ia.linspace2(asize, -10, 10, shape, pshape, dtype)
+    an = ia.iarray2numpy2(a)
 
     b = a[slices]
-    bn = ia.iarray2numpy(ctx, b)
+    bn = ia.iarray2numpy2(b)
 
     np.testing.assert_almost_equal(an[slices], bn)

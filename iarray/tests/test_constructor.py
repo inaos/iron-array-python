@@ -98,11 +98,8 @@ def test_empty(shape, pshape, dtype):
                              ([12, 16], None, "float")
                          ])
 def test_zeros(shape, pshape, dtype):
-    cfg = ia.Config()
-    ctx = ia.Context(cfg)
-
-    a = ia.zeros(ctx, shape, pshape, dtype)
-    b = ia.iarray2numpy(ctx, a)
+    a = ia.zeros2(shape, pshape, dtype)
+    b = ia.iarray2numpy2(a)
     npdtype = np.float64 if dtype == "double" else np.float32
     c = np.zeros(shape, dtype=npdtype)
     np.testing.assert_almost_equal(b, c)
@@ -117,11 +114,8 @@ def test_zeros(shape, pshape, dtype):
                              ([12, 16], None, "float")
                          ])
 def test_ones(shape, pshape, dtype):
-    cfg = ia.Config()
-    ctx = ia.Context(cfg)
-
-    a = ia.ones(ctx, shape, pshape, dtype)
-    b = ia.iarray2numpy(ctx, a)
+    a = ia.ones2(shape, pshape, dtype)
+    b = ia.iarray2numpy2(a)
     npdtype = np.float64 if dtype == "double" else np.float32
     c = np.ones(shape, dtype=npdtype)
     np.testing.assert_almost_equal(b, c)
@@ -136,11 +130,8 @@ def test_ones(shape, pshape, dtype):
                              (2.00001, [12, 16], None, "float")
                          ])
 def test_full(fill_value, shape, pshape, dtype):
-    cfg = ia.Config()
-    ctx = ia.Context(cfg)
-
-    a = ia.full(ctx, fill_value, shape, pshape, dtype)
-    b = ia.iarray2numpy(ctx, a)
+    a = ia.full2(fill_value, shape, pshape, dtype)
+    b = ia.iarray2numpy2(a)
     npdtype = np.float64 if dtype == "double" else np.float32
     c = np.full(shape, fill_value, dtype=npdtype)
     np.testing.assert_almost_equal(b, c)

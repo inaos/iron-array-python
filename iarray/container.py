@@ -244,6 +244,24 @@ def linspace2(nelem, start, stop, shape=None, pshape=None, dtype="double", filen
     return ext.linspace(ctx, nelem, start, stop, shape, pshape, dtype, filename)
 
 
+def zeros2(shape, pshape=None, dtype="double", filename=None, ctx=None):
+    if ctx is None:
+        ctx = ext.Context(ia.Config())
+    return ext.zeros(ctx, shape, pshape, dtype, filename)
+
+
+def ones2(shape, pshape=None, dtype="double", filename=None, ctx=None):
+    if ctx is None:
+        ctx = ext.Context(ia.Config())
+    return ext.ones(ctx, shape, pshape, dtype, filename)
+
+
+def full2(fill_value, shape, pshape=None, dtype="double", filename=None, ctx=None):
+    if ctx is None:
+        ctx = ext.Context(ia.Config())
+    return ext.full(ctx, fill_value, shape, pshape, dtype, filename)
+
+
 def from_file2(filename=None, ctx=None):
     if ctx is None:
         ctx = ext.Context(ia.Config())
