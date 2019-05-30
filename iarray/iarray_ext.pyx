@@ -137,7 +137,7 @@ cdef class IarrayInit:
 cdef class Config:
     cdef ciarray.iarray_config_t _cfg
 
-    def __init__(self, compression_codec=1, compression_level=5, use_dict=0, filter_flags=0, eval_flags="iterblock",
+    def __init__(self, compression_codec=1, compression_level=5, use_dict=0, filter_flags=1, eval_flags="iterblock",
                  max_num_threads=1, fp_mantissa_bits=0, blocksize=0):
         self._cfg.compression_codec = compression_codec
         self._cfg.compression_level = compression_level
