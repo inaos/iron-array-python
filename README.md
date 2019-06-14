@@ -19,7 +19,7 @@ export LD_LIBRARY_PATH=/opt/intel/compilers_and_libraries/linux/mkl/lib:$HOME/ir
 export IARRAY_DEVELOP_MODE=True
 export INAC_DIR=$HOME/.inaos/cmake/inac-linux-x86_64-relwithdebinfo-1.0.4
 export PYTHONPATH=$HOME/iron-array-python/
-export IARRAY_BUILD_DIR=$HOME/iron-array/build
+export IARRAY_DIR=$HOME/iron-array
 export KMP_DUPLICATE_LIB_OK=TRUE  # for allowing the MKL in NumPy to run in parallel to the one in IronArray
 ```
 
@@ -29,7 +29,7 @@ export LD_LIBRARY_PATH=/opt/intel/compilers_and_libraries/linux/mac/lib:$HOME/ir
 export IARRAY_DEVELOP_MODE=True
 export INAC_DIR=$HOME/.inaos/cmake/inac-darwin-x86_64-relwithdebinfo-1.0.4
 export PYTHONPATH=$HOME/iron-array-python/
-export IARRAY_BUILD_DIR=$HOME/iron-array/build
+export IARRAY_DIR=$HOME/iron-array
 export KMP_DUPLICATE_LIB_OK=TRUE  # for allowing the MKL in NumPy to run in parallel to the one in IronArray
 ```
 
@@ -38,7 +38,6 @@ export KMP_DUPLICATE_LIB_OK=TRUE  # for allowing the MKL in NumPy to run in para
 ```bash
 unset IARRAY_DEVELOP_MODE
 export INAC_DIR=$HOME/.inaos/cmake/inac-darwin-x86_64-relwithdebinfo-1.0.4
-export PYTHONPATH=.
 ```
 
 ## Compile
