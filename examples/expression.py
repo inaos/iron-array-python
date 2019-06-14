@@ -3,7 +3,7 @@ import numpy as np
 
 
 # Create iarray context
-cfg = ia.Config(eval_flags="iterblock", blocksize=0)
+cfg = ia.Config(max_num_threads=4, eval_flags="iterblock", blocksize=0)
 ctx = ia.Context(cfg)
 
 # Define array params
