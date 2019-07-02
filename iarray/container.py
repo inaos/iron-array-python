@@ -12,7 +12,7 @@
 import numpy as np
 import numexpr as ne
 import iarray as ia
-from . import iarray_ext as ext
+from iarray import iarray_ext as ext
 from itertools import zip_longest as zip
 
 
@@ -210,7 +210,7 @@ class LazyExpr:
         shape_ = o0.shape
         pshape_ = o0.pshape
         if method == "iarray_eval":
-            expr = ia.Expression(cfg)
+            expr = Expr(cfg)
             for k, v in self.operands.items():
                 if isinstance(v, IArray):
                     expr.bind(k, v)
@@ -279,120 +279,120 @@ class Expr(ext.Expression):
 #
 
 def empty(shape, pshape=None, dtype="double", filename=None, **kwargs):
-    cfg = ia.Config(**kwargs)
+    cfg = Config(**kwargs)
     return ext.empty(cfg, shape, pshape, dtype, filename)
 
 
 def arange(start=None, stop=None, step=None, shape=None, pshape=None, dtype="double", filename=None, **kwargs):
-    cfg = ia.Config(**kwargs)
+    cfg = Config(**kwargs)
     slice_ = slice(start, stop, step)
     return ext.arange(cfg, slice_, shape, pshape, dtype, filename)
 
 
 def linspace(nelem, start, stop, shape=None, pshape=None, dtype="double", filename=None, **kwargs):
-    cfg = ia.Config(**kwargs)
+    cfg = Config(**kwargs)
     return ext.linspace(cfg, nelem, start, stop, shape, pshape, dtype, filename)
 
 
 def zeros(shape, pshape=None, dtype="double", filename=None, **kwargs):
-    cfg = ia.Config(**kwargs)
+    cfg = Config(**kwargs)
     return ext.zeros(cfg, shape, pshape, dtype, filename)
 
 
 def ones(shape, pshape=None, dtype="double", filename=None, **kwargs):
-    cfg = ia.Config(**kwargs)
+    cfg = Config(**kwargs)
     return ext.ones(cfg, shape, pshape, dtype, filename)
 
 
 def full(fill_value, shape, pshape=None, dtype="double", filename=None, **kwargs):
-    cfg = ia.Config(**kwargs)
+    cfg = Config(**kwargs)
     return ext.full(cfg, fill_value, shape, pshape, dtype, filename)
 
 
 def from_file(filename=None, **kwargs):
-    cfg = ia.Config(**kwargs)
+    cfg = Config(**kwargs)
     return ext.from_file(cfg, filename)
 
 
 def iarray2numpy(c, **kwargs):
-    cfg = ia.Config(**kwargs)
+    cfg = Config(**kwargs)
     return ext.iarray2numpy(cfg, c)
 
 
 def numpy2iarray(c, pshape=None, filename=None, **kwargs):
-    cfg = ia.Config(**kwargs)
+    cfg = Config(**kwargs)
     return ext.numpy2iarray(cfg, c, pshape, filename)
 
 
 def random_rand(shape, pshape=None, dtype="double", filename=None, **kwargs):
-    cfg = ia.Config(**kwargs)
+    cfg = Config(**kwargs)
     return ext.random_rand(cfg, shape, pshape, dtype, filename)
 
 
 def random_randn(shape, pshape=None, dtype="double", filename=None, **kwargs):
-    cfg = ia.Config(**kwargs)
+    cfg = Config(**kwargs)
     return ext.random_randn(cfg, shape, pshape, dtype, filename)
 
 
 def random_beta(alpha, beta, shape, pshape=None, dtype="double", filename=None, **kwargs):
-    cfg = ia.Config(**kwargs)
+    cfg = Config(**kwargs)
     return ext.random_beta(cfg, alpha, beta, shape, pshape, dtype, filename)
 
 
 def random_lognormal(mu, sigma, shape, pshape=None, dtype="double", filename=None, **kwargs):
-    cfg = ia.Config(**kwargs)
+    cfg = Config(**kwargs)
     return ext.random_lognormal(cfg, mu, sigma, shape, pshape, dtype, filename)
 
 
 def random_exponential(beta, shape, pshape=None, dtype="double", filename=None, **kwargs):
-    cfg = ia.Config(**kwargs)
+    cfg = Config(**kwargs)
     return ext.random_exponential(cfg, beta, shape, pshape, dtype, filename)
 
 
 def random_uniform(a, b, shape, pshape=None, dtype="double", filename=None, **kwargs):
-    cfg = ia.Config(**kwargs)
+    cfg = Config(**kwargs)
     return ext.random_uniform(cfg, a, b, shape, pshape, dtype, filename)
 
 
 def random_normal(mu, sigma, shape, pshape=None, dtype="double", filename=None, **kwargs):
-    cfg = ia.Config(**kwargs)
+    cfg = Config(**kwargs)
     return ext.random_normal(cfg, mu, sigma, shape, pshape, dtype, filename)
 
 
 def random_bernoulli(p, shape, pshape=None, dtype="double", filename=None, **kwargs):
-    cfg = ia.Config(**kwargs)
+    cfg = Config(**kwargs)
     return ext.random_bernoulli(cfg, p, shape, pshape, dtype, filename)
 
 
 def random_binomial(m, p, shape, pshape=None, dtype="double", filename=None, **kwargs):
-    cfg = ia.Config(**kwargs)
+    cfg = Config(**kwargs)
     return ext.random_binomial(cfg, m, p, shape, pshape, dtype, filename)
 
 
 def random_poisson(l, shape, pshape=None, dtype="double", filename=None, **kwargs):
-    cfg = ia.Config(**kwargs)
+    cfg = Config(**kwargs)
     return ext.random_poisson(cfg, l, shape, pshape, dtype, filename)
 
 
 def random_kstest(a, b, **kwargs):
-    cfg = ia.Config(**kwargs)
+    cfg = Config(**kwargs)
     return ext.random_kstest(cfg, a, b)
 
 
 def matmul(a, b, block_a, block_b, **kwargs):
-    cfg = ia.Config(**kwargs)
+    cfg = Config(**kwargs)
     return ext.matmul(cfg, a, b, block_a, block_b)
 
 
 if __name__ == "__main__":
     # Define array params
-    shape = [40]
-    pshape = [20]
-    size = int(np.prod(shape))
+    _shape = [40]
+    _pshape = [20]
+    size = int(np.prod(_shape))
 
     # Create initial containers
-    a1 = ia.linspace(size, 0, 10, shape, pshape, "double")
-    a2 = ia.linspace(size, 0, 20, shape, pshape, "double")
+    a1 = ia.linspace(size, 0, 10, _shape, _pshape, "double")
+    a2 = ia.linspace(size, 0, 20, _shape, _pshape, "double")
     # a3 = a1 + a2 + a1 - 2 * a1 + 1
     a3 = a1 + 2 * a1 + 1
     # a3 = a1 + a2
