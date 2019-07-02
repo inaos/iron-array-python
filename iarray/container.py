@@ -204,12 +204,13 @@ class LazyExpr:
         return self.update_expr(new_op=(value, '/', self))
 
 
-    def eval(self, method="iarray_eval", cfg=None):
+    def eval(self, method="iarray_eval", **kwargs):
         # TODO: see if ctx, shape and pshape can be instance variables, or better stay like this
         o0 = self.operands['o0']
         shape_ = o0.shape
         pshape_ = o0.pshape
         if method == "iarray_eval":
+            cfg = Config(**kwargs)
             expr = Expr(cfg)
             for k, v in self.operands.items():
                 if isinstance(v, IArray):
