@@ -35,7 +35,7 @@ cdef class ReadBlockIter:
         for i in range(len(block)):
             block_[i] = block[i]
 
-        ciarray.iarray_iter_read_block_new(self._c._ctx._ctx, &self._iter, self._c._c, block_, &self._val)
+        ciarray.iarray_iter_read_block_new(self._c._ctx._ctx, &self._iter, self._c._c, block_, &self._val, False)
         if self._c.dtype == "double":
             self.dtype = 0
         else:
@@ -51,15 +51,15 @@ cdef class ReadBlockIter:
         if not ciarray.iarray_iter_read_block_has_next(self._iter):
             raise StopIteration
 
-        ciarray.iarray_iter_read_block_next(self._iter)
+        ciarray.iarray_iter_read_block_next(self._iter, NULL, 0)
 
         shape = tuple(self._val.block_shape[i] for i in range(self._c.ndim))
         size = np.prod(shape)
 
         if self.dtype == 0:
-            view = <np.float64_t[:size]> self._val.pointer
+            view = <np.float64_t[:size]> self._val.block_pointer
         else:
-            view = <np.float32_t[:size]> self._val.pointer
+            view = <np.float32_t[:size]> self._val.block_pointer
         a = np.asarray(view)
 
         elem_index = tuple(self._val.elem_index[i] for i in range(self._c.ndim))
@@ -87,7 +87,8 @@ cdef class WriteBlockIter:
             block = c.pshape
         for i in range(len(block)):
             block_[i] = block[i]
-        retcode = ciarray.iarray_iter_write_block_new(self._c._ctx._ctx, &self._iter, self._c._c, block_, &self._val)
+        retcode = ciarray.iarray_iter_write_block_new(self._c._ctx._ctx, &self._iter, self._c._c, block_, &self._val,
+                                                      False)
         assert(retcode == 0)
         if self._c.dtype == "double":
             self.dtype = 0
@@ -104,15 +105,15 @@ cdef class WriteBlockIter:
         if not ciarray.iarray_iter_write_block_has_next(self._iter):
             raise StopIteration
 
-        ciarray.iarray_iter_write_block_next(self._iter)
+        ciarray.iarray_iter_write_block_next(self._iter, NULL, 0)
 
         shape = tuple(self._val.block_shape[i] for i in range(self._c.ndim))
         size = np.prod(shape)
 
         if self.dtype == 0:
-            view = <np.float64_t[:size]> self._val.pointer
+            view = <np.float64_t[:size]> self._val.block_pointer
         else:
-            view = <np.float32_t[:size]> self._val.pointer
+            view = <np.float32_t[:size]> self._val.block_pointer
         a = np.asarray(view)
 
         elem_index = tuple(self._val.elem_index[i] for i in range(self._c.ndim))
@@ -327,8 +328,8 @@ cdef class Expression:
     cdef ciarray.iarray_expression_t *_e
     cdef Context _ctx
 
-    def __init__(self, ctx):
-        self._ctx = ctx
+    def __init__(self, cfg):
+        self._ctx = Context(cfg)
         cdef ciarray.iarray_expression_t* e
         ciarray.iarray_expr_new(self._ctx._ctx, &e)
         self._e = e

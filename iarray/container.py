@@ -207,22 +207,17 @@ class LazyExpr:
     def eval(self, method="iarray_eval", cfg=None):
         # TODO: see if ctx, shape and pshape can be instance variables, or better stay like this
         o0 = self.operands['o0']
-        if cfg is None:
-            # Choose the context of the first operand
-            self.ctx = o0.ctx
-        else:
-            self.ctx = ext.Context(cfg)
         shape_ = o0.shape
         pshape_ = o0.pshape
         if method == "iarray_eval":
-            expr = ia.Expression(self.ctx)
+            expr = ia.Expression(cfg)
             for k, v in self.operands.items():
                 if isinstance(v, IArray):
                     expr.bind(k, v)
             expr.compile(self.expression)
             out = expr.eval(shape_, pshape_, "double")
         elif method == "numexpr":
-            out = ia.empty(self.ctx, shape=shape_, pshape=pshape_)
+            out = ia.empty2(cfg, shape=shape_, pshape=pshape_)
             operand_iters = tuple(o.iter_read_block(pshape_) for o in self.operands.values() if isinstance(o, IArray))
             all_iters = operand_iters + (out.iter_write_block(pshape_),)   # put the iterator for the output at the end
             # all_iters =  (out.iter_write_block(pshape_),) + operand_iters  # put the iterator for the output at the front

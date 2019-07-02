@@ -17,13 +17,12 @@ import numpy as np
                          ])
 def test_expression(eval_flags, shape, pshape, dtype, expression):
     cfg = ia.Config(eval_flags=eval_flags)
-    ctx = ia.Context(cfg)
 
     size = int(np.prod(shape))
     a = ia.linspace2(size, 0, 10, shape, pshape, dtype)
     b = ia.iarray2numpy2(a)
 
-    e = ia.Expression(ctx)
+    e = ia.Expression(cfg)
     e.bind("x", a)
     e.compile(expression)
     c = e.eval(shape, pshape, dtype)
