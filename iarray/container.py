@@ -11,8 +11,8 @@
 
 import numpy as np
 import numexpr as ne
-from iarray import iarray_ext as ext
 import iarray as ia
+from . import iarray_ext as ext
 from itertools import zip_longest as zip
 
 
@@ -268,6 +268,10 @@ class IArray(ext.Container):
 
     def __rtruediv__(self, value):
         return LazyExpr(new_op=(value, '/', self))
+
+
+class Expr(ext.Expression):
+    pass
 
 
 #

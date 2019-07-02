@@ -22,7 +22,7 @@ def test_expression(eval_flags, shape, pshape, dtype, expression):
     a = ia.linspace2(size, 0, 10, shape, pshape, dtype)
     b = ia.iarray2numpy2(a)
 
-    e = ia.Expression(cfg)
+    e = ia.Expr(cfg)
     e.bind("x", a)
     e.compile(expression)
     c = e.eval(shape, pshape, dtype)

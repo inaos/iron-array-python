@@ -22,6 +22,7 @@ from libc.stdlib cimport malloc, free
 from iarray.container import IArray
 from collections import namedtuple
 
+
 cdef class ReadBlockIter:
     cdef ciarray.iarray_iter_read_block_t *_iter
     cdef ciarray.iarray_iter_read_block_value_t _val
@@ -71,6 +72,7 @@ cdef class ReadBlockIter:
         info = Info(index=index, elemindex=elem_index, nblock=nblock, shape=shape, size=size)
 
         return info, a.reshape(shape)
+
 
 cdef class WriteBlockIter:
     cdef ciarray.iarray_iter_write_block_t *_iter
