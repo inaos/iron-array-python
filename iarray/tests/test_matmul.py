@@ -17,17 +17,17 @@ import numpy as np
                          ])
 def test_matmul(ashape, apshape, abshape, bshape, bpshape, bbshape, dtype):
     asize = int(np.prod(ashape))
-    a = ia.linspace2(asize, -10, 10, ashape, apshape, dtype)
-    an = ia.iarray2numpy2(a)
+    a = ia.linspace(asize, -10, 10, ashape, apshape, dtype)
+    an = ia.iarray2numpy(a)
 
     bsize = int(np.prod(bshape))
-    b = ia.linspace2(bsize, -10, 10, bshape, bpshape, dtype)
-    bn = ia.iarray2numpy2(b)
+    b = ia.linspace(bsize, -10, 10, bshape, bpshape, dtype)
+    bn = ia.iarray2numpy(b)
 
-    c = ia.matmul2(a, b, abshape, bbshape)
+    c = ia.matmul(a, b, abshape, bbshape)
     cn = np.matmul(an, bn)
 
-    cn_2 = ia.iarray2numpy2(c)
+    cn_2 = ia.iarray2numpy(c)
 
     np.testing.assert_almost_equal(cn, cn_2)
 
@@ -55,24 +55,24 @@ def test_matmul(ashape, apshape, abshape, bshape, bpshape, bbshape, dtype):
                          ])
 def test_matmul_slice(ashape, apshape, astart, astop, abshape, bshape, bpshape, bstart, bstop, bbshape, dtype):
     asize = int(np.prod(ashape))
-    a = ia.linspace2(asize, -10, 10, ashape, apshape, dtype)
-    an = ia.iarray2numpy2(a)
+    a = ia.linspace(asize, -10, 10, ashape, apshape, dtype)
+    an = ia.iarray2numpy(a)
     aslices = tuple(slice(astart[i], astop[i]) for i in range(len(astart)))
     if len(astart) == 1:
         aslices = aslices[0]
     asl = a[aslices]
 
     bsize = int(np.prod(bshape))
-    b = ia.linspace2(bsize, -10, 10, bshape, bpshape, dtype)
-    bn = ia.iarray2numpy2(b)
+    b = ia.linspace(bsize, -10, 10, bshape, bpshape, dtype)
+    bn = ia.iarray2numpy(b)
     bslices = tuple(slice(bstart[i], bstop[i]) for i in range(len(bstart)))
     if len(bstart) == 1:
         bslices = bslices[0]
     bsl = b[bslices]
 
-    c = ia.matmul2(asl, bsl, abshape, bbshape)
+    c = ia.matmul(asl, bsl, abshape, bbshape)
     cn = np.matmul(an[aslices], bn[bslices])
 
-    cn_2 = ia.iarray2numpy2(c)
+    cn_2 = ia.iarray2numpy(c)
 
     np.testing.assert_almost_equal(cn, cn_2)

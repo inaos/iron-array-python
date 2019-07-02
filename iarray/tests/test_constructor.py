@@ -14,8 +14,8 @@ import numpy as np
                          ])
 def test_linspace(start, stop, shape, pshape, dtype):
     size = int(np.prod(shape))
-    a = ia.linspace2(size, start, stop, shape, pshape, dtype)
-    b = ia.iarray2numpy2(a)
+    a = ia.linspace(size, start, stop, shape, pshape, dtype)
+    b = ia.iarray2numpy(a)
     npdtype = np.float64 if dtype == "double" else np.float32
     c = np.linspace(start, stop, size, dtype=npdtype).reshape(shape)
     np.testing.assert_almost_equal(b, c)
@@ -32,8 +32,8 @@ def test_linspace(start, stop, shape, pshape, dtype):
 def test_arange(start, stop, shape, pshape, dtype):
     size = int(np.prod(shape))
     step = (stop - start) / size
-    a = ia.arange2(start, stop, step, shape=shape, pshape=pshape, dtype=dtype)
-    b = ia.iarray2numpy2(a)
+    a = ia.arange(start, stop, step, shape=shape, pshape=pshape, dtype=dtype)
+    b = ia.iarray2numpy(a)
     npdtype = np.float64 if dtype == "double" else np.float32
     c = np.arange(start, stop, step, dtype=npdtype).reshape(shape)
     np.testing.assert_almost_equal(b, c)
@@ -49,9 +49,9 @@ def test_from_file(start, stop, shape, pshape, dtype, filename):
     size = int(np.prod(shape))
     npdtype = np.float64 if dtype == "double" else np.float32
     a = np.linspace(start, stop, size, dtype=npdtype).reshape(shape)
-    b = ia.numpy2iarray2(a, pshape, filename)
-    c = ia.from_file2(filename)
-    d = ia.iarray2numpy2(c)
+    b = ia.numpy2iarray(a, pshape, filename)
+    c = ia.from_file(filename)
+    d = ia.iarray2numpy(c)
     np.testing.assert_almost_equal(a, d)
     os.remove(filename)
 
@@ -67,9 +67,9 @@ def test_from_file(start, stop, shape, pshape, dtype, filename):
 def test_slice(start, stop, slice, shape, pshape, dtype):
     size = int(np.prod(shape))
     step = (stop - start) / size
-    a = ia.arange2(start, stop, step, shape=shape, pshape=pshape, dtype=dtype)
+    a = ia.arange(start, stop, step, shape=shape, pshape=pshape, dtype=dtype)
     b = a[slice]
-    c = ia.iarray2numpy2(b)
+    c = ia.iarray2numpy(b)
     npdtype = np.float64 if dtype == "double" else np.float32
     d = np.arange(start, stop, step, dtype=npdtype).reshape(shape)[slice]
     np.testing.assert_almost_equal(c, d)
@@ -82,8 +82,8 @@ def test_slice(start, stop, slice, shape, pshape, dtype):
                              ([10, 12, 5], None, "float"),
                          ])
 def test_empty(shape, pshape, dtype):
-    a = ia.empty2(shape, pshape, dtype)
-    b = ia.iarray2numpy2(a)
+    a = ia.empty(shape, pshape, dtype)
+    b = ia.iarray2numpy(a)
     npdtype = np.float64 if dtype == "double" else np.float32
     assert b.dtype == npdtype
     assert b.shape == tuple(shape)
@@ -98,8 +98,8 @@ def test_empty(shape, pshape, dtype):
                              ([12, 16], None, "float")
                          ])
 def test_zeros(shape, pshape, dtype):
-    a = ia.zeros2(shape, pshape, dtype)
-    b = ia.iarray2numpy2(a)
+    a = ia.zeros(shape, pshape, dtype)
+    b = ia.iarray2numpy(a)
     npdtype = np.float64 if dtype == "double" else np.float32
     c = np.zeros(shape, dtype=npdtype)
     np.testing.assert_almost_equal(b, c)
@@ -114,8 +114,8 @@ def test_zeros(shape, pshape, dtype):
                              ([12, 16], None, "float")
                          ])
 def test_ones(shape, pshape, dtype):
-    a = ia.ones2(shape, pshape, dtype)
-    b = ia.iarray2numpy2(a)
+    a = ia.ones(shape, pshape, dtype)
+    b = ia.iarray2numpy(a)
     npdtype = np.float64 if dtype == "double" else np.float32
     c = np.ones(shape, dtype=npdtype)
     np.testing.assert_almost_equal(b, c)
@@ -130,8 +130,8 @@ def test_ones(shape, pshape, dtype):
                              (2.00001, [12, 16], None, "float")
                          ])
 def test_full(fill_value, shape, pshape, dtype):
-    a = ia.full2(fill_value, shape, pshape, dtype)
-    b = ia.iarray2numpy2(a)
+    a = ia.full(fill_value, shape, pshape, dtype)
+    b = ia.iarray2numpy(a)
     npdtype = np.float64 if dtype == "double" else np.float32
     c = np.full(shape, fill_value, dtype=npdtype)
     np.testing.assert_almost_equal(b, c)

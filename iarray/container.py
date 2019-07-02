@@ -217,7 +217,7 @@ class LazyExpr:
             expr.compile(self.expression)
             out = expr.eval(shape_, pshape_, "double")
         elif method == "numexpr":
-            out = ia.empty2(cfg, shape=shape_, pshape=pshape_)
+            out = ia.empty(cfg, shape=shape_, pshape=pshape_)
             operand_iters = tuple(o.iter_read_block(pshape_) for o in self.operands.values() if isinstance(o, IArray))
             all_iters = operand_iters + (out.iter_write_block(pshape_),)   # put the iterator for the output at the end
             # all_iters =  (out.iter_write_block(pshape_),) + operand_iters  # put the iterator for the output at the front
@@ -278,108 +278,108 @@ class Expr(ext.Expression):
 # Constructors
 #
 
-def empty2(shape, pshape=None, dtype="double", filename=None, **kwargs):
+def empty(shape, pshape=None, dtype="double", filename=None, **kwargs):
     cfg = ia.Config(**kwargs)
     return ext.empty(cfg, shape, pshape, dtype, filename)
 
 
-def arange2(start=None, stop=None, step=None, shape=None, pshape=None, dtype="double", filename=None, **kwargs):
+def arange(start=None, stop=None, step=None, shape=None, pshape=None, dtype="double", filename=None, **kwargs):
     cfg = ia.Config(**kwargs)
     slice_ = slice(start, stop, step)
     return ext.arange(cfg, slice_, shape, pshape, dtype, filename)
 
 
-def linspace2(nelem, start, stop, shape=None, pshape=None, dtype="double", filename=None, **kwargs):
+def linspace(nelem, start, stop, shape=None, pshape=None, dtype="double", filename=None, **kwargs):
     cfg = ia.Config(**kwargs)
     return ext.linspace(cfg, nelem, start, stop, shape, pshape, dtype, filename)
 
 
-def zeros2(shape, pshape=None, dtype="double", filename=None, **kwargs):
+def zeros(shape, pshape=None, dtype="double", filename=None, **kwargs):
     cfg = ia.Config(**kwargs)
     return ext.zeros(cfg, shape, pshape, dtype, filename)
 
 
-def ones2(shape, pshape=None, dtype="double", filename=None, **kwargs):
+def ones(shape, pshape=None, dtype="double", filename=None, **kwargs):
     cfg = ia.Config(**kwargs)
     return ext.ones(cfg, shape, pshape, dtype, filename)
 
 
-def full2(fill_value, shape, pshape=None, dtype="double", filename=None, **kwargs):
+def full(fill_value, shape, pshape=None, dtype="double", filename=None, **kwargs):
     cfg = ia.Config(**kwargs)
     return ext.full(cfg, fill_value, shape, pshape, dtype, filename)
 
 
-def from_file2(filename=None, **kwargs):
+def from_file(filename=None, **kwargs):
     cfg = ia.Config(**kwargs)
     return ext.from_file(cfg, filename)
 
 
-def iarray2numpy2(c, **kwargs):
+def iarray2numpy(c, **kwargs):
     cfg = ia.Config(**kwargs)
     return ext.iarray2numpy(cfg, c)
 
 
-def numpy2iarray2(c, pshape=None, filename=None, **kwargs):
+def numpy2iarray(c, pshape=None, filename=None, **kwargs):
     cfg = ia.Config(**kwargs)
     return ext.numpy2iarray(cfg, c, pshape, filename)
 
 
-def random_rand2(shape, pshape=None, dtype="double", filename=None, **kwargs):
+def random_rand(shape, pshape=None, dtype="double", filename=None, **kwargs):
     cfg = ia.Config(**kwargs)
     return ext.random_rand(cfg, shape, pshape, dtype, filename)
 
 
-def random_randn2(shape, pshape=None, dtype="double", filename=None, **kwargs):
+def random_randn(shape, pshape=None, dtype="double", filename=None, **kwargs):
     cfg = ia.Config(**kwargs)
     return ext.random_randn(cfg, shape, pshape, dtype, filename)
 
 
-def random_beta2(alpha, beta, shape, pshape=None, dtype="double", filename=None, **kwargs):
+def random_beta(alpha, beta, shape, pshape=None, dtype="double", filename=None, **kwargs):
     cfg = ia.Config(**kwargs)
     return ext.random_beta(cfg, alpha, beta, shape, pshape, dtype, filename)
 
 
-def random_lognormal2(mu, sigma, shape, pshape=None, dtype="double", filename=None, **kwargs):
+def random_lognormal(mu, sigma, shape, pshape=None, dtype="double", filename=None, **kwargs):
     cfg = ia.Config(**kwargs)
     return ext.random_lognormal(cfg, mu, sigma, shape, pshape, dtype, filename)
 
 
-def random_exponential2(beta, shape, pshape=None, dtype="double", filename=None, **kwargs):
+def random_exponential(beta, shape, pshape=None, dtype="double", filename=None, **kwargs):
     cfg = ia.Config(**kwargs)
     return ext.random_exponential(cfg, beta, shape, pshape, dtype, filename)
 
 
-def random_uniform2(a, b, shape, pshape=None, dtype="double", filename=None, **kwargs):
+def random_uniform(a, b, shape, pshape=None, dtype="double", filename=None, **kwargs):
     cfg = ia.Config(**kwargs)
     return ext.random_uniform(cfg, a, b, shape, pshape, dtype, filename)
 
 
-def random_normal2(mu, sigma, shape, pshape=None, dtype="double", filename=None, **kwargs):
+def random_normal(mu, sigma, shape, pshape=None, dtype="double", filename=None, **kwargs):
     cfg = ia.Config(**kwargs)
     return ext.random_normal(cfg, mu, sigma, shape, pshape, dtype, filename)
 
 
-def random_bernoulli2(p, shape, pshape=None, dtype="double", filename=None, **kwargs):
+def random_bernoulli(p, shape, pshape=None, dtype="double", filename=None, **kwargs):
     cfg = ia.Config(**kwargs)
     return ext.random_bernoulli(cfg, p, shape, pshape, dtype, filename)
 
 
-def random_binomial2(m, p, shape, pshape=None, dtype="double", filename=None, **kwargs):
+def random_binomial(m, p, shape, pshape=None, dtype="double", filename=None, **kwargs):
     cfg = ia.Config(**kwargs)
     return ext.random_binomial(cfg, m, p, shape, pshape, dtype, filename)
 
 
-def random_poisson2(l, shape, pshape=None, dtype="double", filename=None, **kwargs):
+def random_poisson(l, shape, pshape=None, dtype="double", filename=None, **kwargs):
     cfg = ia.Config(**kwargs)
     return ext.random_poisson(cfg, l, shape, pshape, dtype, filename)
 
 
-def random_kstest2(a, b, **kwargs):
+def random_kstest(a, b, **kwargs):
     cfg = ia.Config(**kwargs)
     return ext.random_kstest(cfg, a, b)
 
 
-def matmul2(a, b, block_a, block_b, **kwargs):
+def matmul(a, b, block_a, block_b, **kwargs):
     cfg = ia.Config(**kwargs)
     return ext.matmul(cfg, a, b, block_a, block_b)
 
@@ -391,8 +391,8 @@ if __name__ == "__main__":
     size = int(np.prod(shape))
 
     # Create initial containers
-    a1 = ia.linspace2(size, 0, 10, shape, pshape, "double")
-    a2 = ia.linspace2(size, 0, 20, shape, pshape, "double")
+    a1 = ia.linspace(size, 0, 10, shape, pshape, "double")
+    a2 = ia.linspace(size, 0, 20, shape, pshape, "double")
     # a3 = a1 + a2 + a1 - 2 * a1 + 1
     a3 = a1 + 2 * a1 + 1
     # a3 = a1 + a2
@@ -401,5 +401,5 @@ if __name__ == "__main__":
     print(a3)
     # a4 = a3.eval(method="numexpr")
     a4 = a3.eval(method="iarray_eval")
-    a4_np = ia.iarray2numpy2(a4)
+    a4_np = ia.iarray2numpy(a4)
     print(a4_np)

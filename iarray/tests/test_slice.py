@@ -18,10 +18,10 @@ def test_slice(shape, pshape, start, stop, dtype):
         slices = slices[0]
 
     asize = int(np.prod(shape))
-    a = ia.linspace2(asize, -10, 10, shape, pshape, dtype)
-    an = ia.iarray2numpy2(a)
+    a = ia.linspace(asize, -10, 10, shape, pshape, dtype)
+    an = ia.iarray2numpy(a)
 
     b = a[slices]
-    bn = ia.iarray2numpy2(b)
+    bn = ia.iarray2numpy(b)
 
     np.testing.assert_almost_equal(an[slices], bn)

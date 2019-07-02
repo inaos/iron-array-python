@@ -14,11 +14,12 @@ TRUNC_PREC = 4
 
 
 from . import iarray_ext as ext
-from .container import (IArray, Expr, LazyExpr, empty2, arange2, linspace2, zeros2, ones2, full2, from_file2, iarray2numpy2, numpy2iarray2,
-                        random_rand2, random_randn2, random_beta2, random_lognormal2, random_exponential2, random_uniform2,
-                        random_normal2, random_bernoulli2, random_binomial2, random_poisson2,
-                        random_kstest2,
-                        matmul2, Config)
+from .container import (IArray, Config, Expr, LazyExpr, empty, arange, linspace, zeros, ones, full, from_file,
+                        iarray2numpy, numpy2iarray, matmul,
+                        random_rand, random_randn, random_beta, random_lognormal, random_exponential,
+                        random_uniform, random_normal, random_bernoulli, random_binomial, random_poisson,
+                        random_kstest
+                        )
 from .version import version as __version__
 
-ext.IarrayInit()
+ext.IArrayInit()

@@ -8,8 +8,8 @@ pshape = [1000, 200]
 size = int(np.prod(shape))
 
 # Create initial containers
-a1 = ia.linspace2(size, 0, 10, shape, pshape, "double")
-a2 = ia.iarray2numpy2(a1)
+a1 = ia.linspace(size, 0, 10, shape, pshape, "double")
+a2 = ia.iarray2numpy(a1)
 
 print("iarray evaluation...")
 # Create iarray context
@@ -21,7 +21,7 @@ expr.bind("x", a1)
 expr.compile("(x - 1.35) * (x - 4.45) * (x - 8.5)")
 b2 = expr.eval(shape, pshape, "double")
 
-b2_n = ia.iarray2numpy2(b2)
+b2_n = ia.iarray2numpy(b2)
 
 print("numpy evaluation...")
 b2 = eval("(x - 1.35) * (x - 4.45) * (x - 8.5)", {"x": a2})

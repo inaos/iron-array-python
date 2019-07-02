@@ -129,7 +129,7 @@ cdef class WriteBlockIter:
         return info, a.reshape(shape)
 
 
-cdef class IarrayInit:
+cdef class IArrayInit:
     def __cinit__(self):
         ciarray.iarray_init()
 
