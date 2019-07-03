@@ -14,5 +14,3 @@ b2 = ia.numpy2iarray(b1, pshape=pshape, filename="test_poisson_f_06.iarray")
 
 # Check that distributions are equal
 print(ia.random_kstest(a1, b2))
-
-
