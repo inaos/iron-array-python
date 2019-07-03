@@ -16,13 +16,11 @@ import numpy as np
                              ("iterchunk", [8, 6, 7, 4, 5], None, "float", "(x - 1) * (x - 1) + 2 * x")
                          ])
 def test_expression(eval_flags, shape, pshape, dtype, expression):
-    cfg = ia.Config(eval_flags=eval_flags)
-
     size = int(np.prod(shape))
     a = ia.linspace(size, 0, 10, shape, pshape, dtype)
     b = ia.iarray2numpy(a)
 
-    e = ia.Expr(cfg)
+    e = ia.Expr(eval_flags=eval_flags)
     e.bind("x", a)
     e.compile(expression)
     c = e.eval(shape, pshape, dtype)
