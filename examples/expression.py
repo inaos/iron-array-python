@@ -12,8 +12,6 @@ a1 = ia.linspace(size, 0, 10, shape, pshape, "double")
 a2 = ia.iarray2numpy(a1)
 
 print("iarray evaluation...")
-# Create iarray context
-#cfg = ia.Config(eval_flags="iterblock", blocksize=0)
 
 # And now, the expression
 expr = ia.Expr(eval_flags="iterblock", blocksize=0)

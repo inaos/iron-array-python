@@ -398,9 +398,7 @@ def arange(cfg, slice, shape=None, pshape=None, dtype="double", filename=None):
     ctx = Context(cfg)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
 
-    start = 0 if slice.start is None else slice.start
-    stop = slice.stop
-    step = 1 if slice.step is None else slice.step
+    start, stop, step = slice.start, slice.stop, slice.step
 
     if shape is None:
         shape = [ceil((stop - start)/step)]

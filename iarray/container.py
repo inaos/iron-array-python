@@ -57,6 +57,13 @@ def fuse_expressions(expr, new_base, dup_op):
     return new_expr
 
 
+class RandomContext(ext.RandomContext):
+
+    def __init__(self, **kwargs):
+        cfg = Config(**kwargs)
+        super(RandomContext, self).__init__(cfg)
+
+
 class Config(ext._Config):
 
     def __init__(self, compression_codec=ia.LZ4, compression_level=5, use_dict=0, filter_flags=ia.SHUFFLE,
@@ -205,7 +212,7 @@ class LazyExpr:
 
 
     def eval(self, method="iarray_eval", **kwargs):
-        # TODO: see if ctx, shape and pshape can be instance variables, or better stay like this
+        # TODO: see if shape and pshape can be instance variables, or better stay like this
         o0 = self.operands['o0']
         shape_ = o0.shape
         pshape_ = o0.pshape
@@ -240,11 +247,6 @@ class LazyExpr:
 
 # The main IronArray container (not meant to be called from user space)
 class IArray(ext.Container):
-
-    def __init__(self, ctx=None, c=None):
-        self.ctx = ctx
-        super(IArray, self).__init__(ctx, c)
-
 
     def __add__(self, value):
         return LazyExpr(new_op=(self, '+', value))
@@ -290,6 +292,14 @@ def empty(shape, pshape=None, dtype="double", filename=None, **kwargs):
 
 def arange(start=None, stop=None, step=None, shape=None, pshape=None, dtype="double", filename=None, **kwargs):
     cfg = Config(**kwargs)
+
+    if stop is None and step is None:
+        stop = start
+        start = 0
+        step = 1
+    elif step is None:
+        step = 1
+
     slice_ = slice(start, stop, step)
     return ext.arange(cfg, slice_, shape, pshape, dtype, filename)
 
