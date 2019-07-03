@@ -1,18 +1,14 @@
 import iarray as ia
 import numpy as np
-from itertools import zip_longest as izip
 from time import time
-import ctypes
+# import ctypes
 
-mkl_rt = ctypes.CDLL('libmkl_rt.dylib')
-mkl_set_num_threads = mkl_rt.MKL_Set_Num_Threads
-mkl_get_max_threads = mkl_rt.MKL_Get_Max_Threads
+# mkl_rt = ctypes.CDLL('libmkl_rt.dylib')
+# mkl_set_num_threads = mkl_rt.MKL_Set_Num_Threads
+# mkl_get_max_threads = mkl_rt.MKL_Get_Max_Threads
 
-mkl_set_num_threads(1)
-print(f"Numpy max threads: {mkl_get_max_threads()}")
-
-cfg = ia.Config(max_num_threads=1, compression_level=0)
-ctx = ia.Context(cfg)
+# mkl_set_num_threads(1)
+# print(f"Numpy max threads: {mkl_get_max_threads()}")
 
 shape_a = [2000, 2000]
 size_a = np.prod(shape_a)
@@ -26,11 +22,11 @@ bshape_b = [200, 200]
 
 pshape = None
 
-a = ia.arange(ctx, size_a, shape=shape_a, pshape=pshape_a)
-an = ia.iarray2numpy(ctx, a)
+a = ia.arange(size_a, shape=shape_a, pshape=pshape_a, compression_level=0)
+an = ia.iarray2numpy(a)
 
-b = ia.arange(ctx, size_b, shape=shape_b, pshape=pshape_b)
-bn = ia.iarray2numpy(ctx, b)
+b = ia.arange(size_b, shape=shape_b, pshape=pshape_b, compression_level=0)
+bn = ia.iarray2numpy(b)
 
 nrep = 10
 
@@ -46,12 +42,12 @@ print(f"Time to compute matmul with numpy: {(t1-t0)/nrep} s")
 
 t0 = time()
 for i in range(nrep):
-    c = ia.matmul(ctx, a, b, bshape_a, bshape_b)
+    c = ia.matmul(a, b, bshape_a, bshape_b, compression_level=0, max_num_threads=1)
 t1 = time()
 print(f"Time to compute matmul with iarray: {(t1-t0)/nrep} s")
 
-cn = ia.iarray2numpy(ctx, c)
+cn = ia.iarray2numpy(c)
 
 np.testing.assert_almost_equal(cn, cn2)
 
-print("Las multiplicaciones son iguales!")
+print("Matrix multiplication is working!")
