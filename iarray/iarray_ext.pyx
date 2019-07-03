@@ -247,7 +247,7 @@ cdef class RandomContext:
         return PyCapsule_New(self._r_ctx, "iarray_random_ctx_t*", NULL)
 
     def __str__(self):
-        return "IARRAY RANDOM CONTEXT OBJECT"
+        return "IArray random context object"
 
 
 cdef class Container:

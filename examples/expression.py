@@ -13,10 +13,10 @@ a2 = ia.iarray2numpy(a1)
 
 print("iarray evaluation...")
 # Create iarray context
-cfg = ia.Config(eval_flags="iterblock", blocksize=0)
+#cfg = ia.Config(eval_flags="iterblock", blocksize=0)
 
 # And now, the expression
-expr = ia.Expr(cfg)
+expr = ia.Expr(eval_flags="iterblock", blocksize=0)
 expr.bind("x", a1)
 expr.compile("(x - 1.35) * (x - 4.45) * (x - 8.5)")
 b2 = expr.eval(shape, pshape, "double")

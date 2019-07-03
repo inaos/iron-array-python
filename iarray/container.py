@@ -210,15 +210,14 @@ class LazyExpr:
         shape_ = o0.shape
         pshape_ = o0.pshape
         if method == "iarray_eval":
-            cfg = Config(**kwargs)
-            expr = Expr(cfg)
+            expr = Expr(**kwargs)
             for k, v in self.operands.items():
                 if isinstance(v, IArray):
                     expr.bind(k, v)
             expr.compile(self.expression)
             out = expr.eval(shape_, pshape_, "double")
         elif method == "numexpr":
-            out = ia.empty(cfg, shape=shape_, pshape=pshape_)
+            out = ia.empty(shape=shape_, pshape=pshape_, **kwargs)
             operand_iters = tuple(o.iter_read_block(pshape_) for o in self.operands.values() if isinstance(o, IArray))
             all_iters = operand_iters + (out.iter_write_block(pshape_),)   # put the iterator for the output at the end
             # all_iters =  (out.iter_write_block(pshape_),) + operand_iters  # put the iterator for the output at the front
@@ -239,6 +238,7 @@ class LazyExpr:
         return expression
 
 
+# The main IronArray container (not meant to be called from user space)
 class IArray(ext.Container):
 
     def __init__(self, ctx=None, c=None):
@@ -271,8 +271,12 @@ class IArray(ext.Container):
         return LazyExpr(new_op=(value, '/', self))
 
 
+# The main expression class
 class Expr(ext.Expression):
-    pass
+
+    def __init__(self, **kwargs):
+        cfg = Config(**kwargs)
+        super(Expr, self).__init__(cfg)
 
 
 #
