@@ -14,6 +14,7 @@ TRUNC_PREC = 4
 
 
 from . import iarray_ext as ext
+
 from .container import (IArray, Config, RandomContext, Expr, LazyExpr,
                         empty, arange, linspace, zeros, ones, full, from_file,
                         iarray2numpy, numpy2iarray, matmul,

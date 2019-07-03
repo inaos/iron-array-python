@@ -1,14 +1,14 @@
 import iarray as ia
 import numpy as np
 from time import time
-# import ctypes
+import ctypes
 
-# mkl_rt = ctypes.CDLL('libmkl_rt.dylib')
-# mkl_set_num_threads = mkl_rt.MKL_Set_Num_Threads
-# mkl_get_max_threads = mkl_rt.MKL_Get_Max_Threads
+mkl_rt = ctypes.CDLL('libmkl_rt.dylib')
+mkl_set_num_threads = mkl_rt.MKL_Set_Num_Threads
+mkl_get_max_threads = mkl_rt.MKL_Get_Max_Threads
 
-# mkl_set_num_threads(1)
-# print(f"Numpy max threads: {mkl_get_max_threads()}")
+mkl_set_num_threads(1)
+print(f"Numpy max threads: {mkl_get_max_threads()}")
 
 shape_a = [2000, 2000]
 size_a = np.prod(shape_a)
@@ -17,10 +17,8 @@ bshape_a = [200, 200]
 
 shape_b = [2000, 2000]
 size_b = np.prod(shape_b)
-pshape_b =  [200, 200]
+pshape_b = [200, 200]
 bshape_b = [200, 200]
-
-pshape = None
 
 a = ia.arange(size_a, shape=shape_a, pshape=pshape_a, compression_level=0)
 an = ia.iarray2numpy(a)
