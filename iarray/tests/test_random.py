@@ -13,7 +13,7 @@ import numpy as np
                          ])
 def test_rand(shape, pshape, dtype):
     size = int(np.prod(shape))
-    a = ia.random_rand(shape, pshape, dtype)
+    a = ia.random_rand(ia.dtshape(shape, pshape, dtype))
 
     npdtype = np.float64 if dtype == "double" else np.float32
     b = np.random.rand(size).reshape(shape).astype(npdtype)
@@ -32,7 +32,7 @@ def test_rand(shape, pshape, dtype):
                          ])
 def test_randn(shape, pshape, dtype):
     size = int(np.prod(shape))
-    a = ia.random_randn(shape, pshape, dtype)
+    a = ia.random_randn(ia.dtshape(shape, pshape, dtype))
 
     npdtype = np.float64 if dtype == "double" else np.float32
     b = np.random.randn(size).reshape(shape).astype(npdtype)
@@ -51,7 +51,7 @@ def test_randn(shape, pshape, dtype):
                          ])
 def test_beta(alpha, beta, shape, pshape, dtype):
     size = int(np.prod(shape))
-    a = ia.random_beta(alpha, beta, shape, pshape, dtype)
+    a = ia.random_beta(ia.dtshape(shape, pshape, dtype), alpha, beta)
 
     npdtype = np.float64 if dtype == "double" else np.float32
     b = np.random.beta(alpha, beta, size).reshape(shape).astype(npdtype)
@@ -70,7 +70,7 @@ def test_beta(alpha, beta, shape, pshape, dtype):
                          ])
 def test_lognormal(mu, sigma, shape, pshape, dtype):
     size = int(np.prod(shape))
-    a = ia.random_lognormal(mu, sigma, shape, pshape, dtype)
+    a = ia.random_lognormal(ia.dtshape(shape, pshape, dtype), mu, sigma)
 
     npdtype = np.float64 if dtype == "double" else np.float32
     b = np.random.lognormal(mu, sigma, size).reshape(shape).astype(npdtype)
@@ -89,7 +89,7 @@ def test_lognormal(mu, sigma, shape, pshape, dtype):
                          ])
 def test_exponential(beta, shape, pshape, dtype):
     size = int(np.prod(shape))
-    a = ia.random_exponential(beta, shape, pshape, dtype)
+    a = ia.random_exponential(ia.dtshape(shape, pshape, dtype), beta)
 
     npdtype = np.float64 if dtype == "double" else np.float32
     b = np.random.exponential(beta, size).reshape(shape).astype(npdtype)
@@ -108,7 +108,7 @@ def test_exponential(beta, shape, pshape, dtype):
                          ])
 def test_uniform(a_, b_, shape, pshape, dtype):
     size = int(np.prod(shape))
-    a = ia.random_uniform(a_, b_, shape, pshape, dtype)
+    a = ia.random_uniform(ia.dtshape(shape, pshape, dtype), a_, b_)
 
     npdtype = np.float64 if dtype == "double" else np.float32
     b = np.random.uniform(a_, b_, size).reshape(shape).astype(npdtype)
@@ -127,7 +127,7 @@ def test_uniform(a_, b_, shape, pshape, dtype):
                          ])
 def test_normal(mu, sigma, shape, pshape, dtype):
     size = int(np.prod(shape))
-    a = ia.random_normal(mu, sigma, shape, pshape, dtype)
+    a = ia.random_normal(ia.dtshape(shape, pshape, dtype), mu, sigma)
 
     npdtype = np.float64 if dtype == "double" else np.float32
     b = np.random.normal(mu, sigma, size).reshape(shape).astype(npdtype)
@@ -146,7 +146,7 @@ def test_normal(mu, sigma, shape, pshape, dtype):
                          ])
 def test_bernoulli(p, shape, pshape, dtype):
     size = int(np.prod(shape))
-    a = ia.random_bernoulli(p, shape, pshape, dtype)
+    a = ia.random_bernoulli(ia.dtshape(shape, pshape, dtype), p)
 
     npdtype = np.float64 if dtype == "double" else np.float32
     b = np.random.binomial(1, p, size).reshape(shape).astype(npdtype)
@@ -165,7 +165,7 @@ def test_bernoulli(p, shape, pshape, dtype):
                          ])
 def test_binomial(n, p, shape, pshape, dtype):
     size = int(np.prod(shape))
-    a = ia.random_binomial(n, p, shape, pshape, dtype)
+    a = ia.random_binomial(ia.dtshape(shape, pshape, dtype), n, p)
 
     npdtype = np.float64 if dtype == "double" else np.float32
     b = np.random.binomial(n, p, size).reshape(shape).astype(npdtype)
@@ -184,7 +184,7 @@ def test_binomial(n, p, shape, pshape, dtype):
                          ])
 def test_poisson(lamb, shape, pshape, dtype):
     size = int(np.prod(shape))
-    a = ia.random_poisson(lamb, shape, pshape, dtype)
+    a = ia.random_poisson(ia.dtshape(shape, pshape, dtype), lamb)
 
     npdtype = np.float64 if dtype == "double" else np.float32
     b = np.random.poisson(lamb, size).reshape(shape).astype(npdtype)

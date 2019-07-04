@@ -5,7 +5,7 @@ size = 10000
 shape = [size]
 pshape = [100]
 
-a1 = ia.random_uniform(0, 1, shape, pshape, dtype="float")
+a1 = ia.random_uniform(ia.dtshape(shape, pshape, dtype="float"), 0, 1)
 a2 = ia.iarray2numpy(a1)
 
 b1 = np.random.uniform(0, 1, size).astype(np.float32)

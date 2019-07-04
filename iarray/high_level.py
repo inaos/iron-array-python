@@ -363,53 +363,63 @@ def numpy2iarray(c, pshape=None, filename=None, **kwargs):
     return ext.numpy2iarray(cfg, c, pshape, filename)
 
 
-def random_rand(shape, pshape=None, dtype="double", filename=None, **kwargs):
+def random_rand(dtshape, filename=None, **kwargs):
     cfg = Config(**kwargs)
+    shape, pshape, dtype = dtshape.to_tuple()
     return ext.random_rand(cfg, shape, pshape, dtype, filename)
 
 
-def random_randn(shape, pshape=None, dtype="double", filename=None, **kwargs):
+def random_randn(dtshape, filename=None, **kwargs):
     cfg = Config(**kwargs)
+    shape, pshape, dtype = dtshape.to_tuple()
     return ext.random_randn(cfg, shape, pshape, dtype, filename)
 
 
-def random_beta(alpha, beta, shape, pshape=None, dtype="double", filename=None, **kwargs):
+def random_beta(dtshape, alpha, beta, filename=None, **kwargs):
     cfg = Config(**kwargs)
+    shape, pshape, dtype = dtshape.to_tuple()
     return ext.random_beta(cfg, alpha, beta, shape, pshape, dtype, filename)
 
 
-def random_lognormal(mu, sigma, shape, pshape=None, dtype="double", filename=None, **kwargs):
+def random_lognormal(dtshape, mu, sigma, filename=None, **kwargs):
     cfg = Config(**kwargs)
+    shape, pshape, dtype = dtshape.to_tuple()
     return ext.random_lognormal(cfg, mu, sigma, shape, pshape, dtype, filename)
 
 
-def random_exponential(beta, shape, pshape=None, dtype="double", filename=None, **kwargs):
+def random_exponential(dtshape, beta, filename=None, **kwargs):
     cfg = Config(**kwargs)
+    shape, pshape, dtype = dtshape.to_tuple()
     return ext.random_exponential(cfg, beta, shape, pshape, dtype, filename)
 
 
-def random_uniform(a, b, shape, pshape=None, dtype="double", filename=None, **kwargs):
+def random_uniform(dtshape, a, b, filename=None, **kwargs):
     cfg = Config(**kwargs)
+    shape, pshape, dtype = dtshape.to_tuple()
     return ext.random_uniform(cfg, a, b, shape, pshape, dtype, filename)
 
 
-def random_normal(mu, sigma, shape, pshape=None, dtype="double", filename=None, **kwargs):
+def random_normal(dtshape, mu, sigma, filename=None, **kwargs):
     cfg = Config(**kwargs)
+    shape, pshape, dtype = dtshape.to_tuple()
     return ext.random_normal(cfg, mu, sigma, shape, pshape, dtype, filename)
 
 
-def random_bernoulli(p, shape, pshape=None, dtype="double", filename=None, **kwargs):
+def random_bernoulli(dtshape, p, filename=None, **kwargs):
     cfg = Config(**kwargs)
+    shape, pshape, dtype = dtshape.to_tuple()
     return ext.random_bernoulli(cfg, p, shape, pshape, dtype, filename)
 
 
-def random_binomial(m, p, shape, pshape=None, dtype="double", filename=None, **kwargs):
+def random_binomial(dtshape, m, p, filename=None, **kwargs):
     cfg = Config(**kwargs)
+    shape, pshape, dtype = dtshape.to_tuple()
     return ext.random_binomial(cfg, m, p, shape, pshape, dtype, filename)
 
 
-def random_poisson(l, shape, pshape=None, dtype="double", filename=None, **kwargs):
+def random_poisson(dtshape, l, filename=None, **kwargs):
     cfg = Config(**kwargs)
+    shape, pshape, dtype = dtshape.to_tuple()
     return ext.random_poisson(cfg, l, shape, pshape, dtype, filename)
 
 
