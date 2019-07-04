@@ -32,7 +32,7 @@ def test_linspace(start, stop, shape, pshape, dtype):
 def test_arange(start, stop, shape, pshape, dtype):
     size = int(np.prod(shape))
     step = (stop - start) / size
-    a = ia.arange(start, stop, step, shape=shape, pshape=pshape, dtype=dtype)
+    a = ia.arange(ia.dtshape(shape=shape, pshape=pshape, dtype=dtype), start, stop, step)
     b = ia.iarray2numpy(a)
     npdtype = np.float64 if dtype == "double" else np.float32
     c = np.arange(start, stop, step, dtype=npdtype).reshape(shape)
@@ -67,7 +67,7 @@ def test_from_file(start, stop, shape, pshape, dtype, filename):
 def test_slice(start, stop, slice, shape, pshape, dtype):
     size = int(np.prod(shape))
     step = (stop - start) / size
-    a = ia.arange(start, stop, step, shape=shape, pshape=pshape, dtype=dtype)
+    a = ia.arange(ia.dtshape(shape=shape, pshape=pshape, dtype=dtype), start, stop, step)
     b = a[slice]
     c = ia.iarray2numpy(b)
     npdtype = np.float64 if dtype == "double" else np.float32
@@ -82,7 +82,7 @@ def test_slice(start, stop, slice, shape, pshape, dtype):
                              ([10, 12, 5], None, "float"),
                          ])
 def test_empty(shape, pshape, dtype):
-    a = ia.empty(shape, pshape, dtype)
+    a = ia.empty(ia.dtshape(shape, pshape, dtype))
     b = ia.iarray2numpy(a)
     npdtype = np.float64 if dtype == "double" else np.float32
     assert b.dtype == npdtype

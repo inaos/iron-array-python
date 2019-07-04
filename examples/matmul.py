@@ -10,20 +10,16 @@ mkl_get_max_threads = mkl_rt.MKL_Get_Max_Threads
 mkl_set_num_threads(1)
 print(f"Numpy max threads: {mkl_get_max_threads()}")
 
-shape_a = [2000, 2000]
-size_a = np.prod(shape_a)
-pshape_a = [200, 200]
+dtshape_a = ia.dtshape([2000, 2000], [200, 200])
 bshape_a = [200, 200]
 
-shape_b = [2000, 2000]
-size_b = np.prod(shape_b)
-pshape_b = [200, 200]
+dtshape_b = ia.dtshape([2000, 2000], [200, 200])
 bshape_b = [200, 200]
 
-a = ia.arange(size_a, shape=shape_a, pshape=pshape_a, compression_level=0)
+a = ia.arange(dtshape_a, compression_level=0)
 an = ia.iarray2numpy(a)
 
-b = ia.arange(size_b, shape=shape_b, pshape=pshape_b, compression_level=0)
+b = ia.arange(dtshape_b, compression_level=0)
 bn = ia.iarray2numpy(b)
 
 nrep = 10

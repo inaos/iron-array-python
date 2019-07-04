@@ -224,7 +224,7 @@ class LazyExpr:
             expr.compile(self.expression)
             out = expr.eval(shape_, pshape_, "double")
         elif method == "numexpr":
-            out = ia.empty(shape=shape_, pshape=pshape_, **kwargs)
+            out = ia.empty(ia.dtshape(shape=shape_, pshape=pshape_), **kwargs)
             operand_iters = tuple(o.iter_read_block(pshape_) for o in self.operands.values() if isinstance(o, IArray))
             all_iters = operand_iters + (out.iter_write_block(pshape_),)   # put the iterator for the output at the end
             # all_iters =  (out.iter_write_block(pshape_),) + operand_iters  # put the iterator for the output at the front
@@ -281,23 +281,42 @@ class Expr(ext.Expression):
         super(Expr, self).__init__(cfg)
 
 
+class dtshape:
+
+    def __init__(self, shape=None, pshape=None, dtype="double"):
+        self.shape = shape
+        self.pshape = pshape
+        self.dtype = dtype
+
+    def to_tuple(self):
+        return (self.shape, self.pshape, self.dtype)
+
+
 #
 # Constructors
 #
 
-def empty(shape, pshape=None, dtype="double", filename=None, **kwargs):
+def empty(dtshape, filename=None, **kwargs):
     cfg = Config(**kwargs)
+    shape, pshape, dtype = dtshape.to_tuple()
     return ext.empty(cfg, shape, pshape, dtype, filename)
 
 
-def arange(start=None, stop=None, step=None, shape=None, pshape=None, dtype="double", filename=None, **kwargs):
+def arange(dtshape, start=None, stop=None, step=None, filename=None, **kwargs):
     cfg = Config(**kwargs)
+    shape, pshape, dtype = dtshape.to_tuple()
 
-    if stop is None and step is None:
+    if (start, stop, step) == (None, None, None):
+        stop = np.prod(shape)
+        start = 0
+        step = 1
+    elif (stop, step) == (None, None):
         stop = start
         start = 0
         step = 1
     elif step is None:
+        stop = stop
+        start = start
         step = 1
 
     slice_ = slice(start, stop, step)

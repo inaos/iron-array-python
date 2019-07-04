@@ -21,7 +21,7 @@ def test_iterator(shape, pshape, bshape, dtype):
     a = ia.linspace(size, -10, 10, shape, pshape, dtype)
     an = ia.iarray2numpy(a)
 
-    b = ia.empty(shape, pshape)
+    b = ia.empty(ia.dtshape(shape, pshape))
 
     for i, ((ainfo, aslice), (binfo, bslice)) in enumerate(izip(a.iter_read_block(bshape), b.iter_write_block(bshape))):
         bslice[:] = aslice
