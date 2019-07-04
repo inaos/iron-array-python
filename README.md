@@ -13,13 +13,24 @@ The two modes are setup and driven by environment variables.  Here are examples 
 
 ### Develop mode
 
+### Linux
 ```bash
+export LD_LIBRARY_PATH=/opt/intel/compilers_and_libraries/linux/mkl/lib:$HOME/inaos/iron-array/build
 export IARRAY_DEVELOP_MODE=True
-export INAC_DIR=~/.inaos/cmake/inac-darwin-x86_64-relwithdebinfo-1.0.4
-export IARRAY_DIR=../iron-array  # the default; if your path is this one, no need to set this
-export IARRAY_BUILD_DIR=../iron-array/build  # the default; if your path is this one, no need to set this
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:../iron-array/build  # Linux only
-export PYTHONPATH=.
+export INAC_DIR=$HOME/.inaos/cmake/inac-linux-x86_64-relwithdebinfo-1.0.4
+export PYTHONPATH=$HOME/inaos/iron-array-python/
+export IARRAY_DIR=$HOME/inaos/iron-array
+export KMP_DUPLICATE_LIB_OK=TRUE  # for allowing the MKL in NumPy to run in parallel to the one in IronArray
+```
+
+### MacOS
+```bash
+export LD_LIBRARY_PATH=/opt/intel/compilers_and_libraries/mac/mkl/lib:$HOME/inaos/iron-array/build
+export IARRAY_DEVELOP_MODE=True
+export INAC_DIR=$HOME/.inaos/cmake/inac-darwin-x86_64-relwithdebinfo-1.0.4
+export PYTHONPATH=$HOME/inaos/iron-array-python/
+export IARRAY_DIR=$HOME/inaos/iron-array
+export KMP_DUPLICATE_LIB_OK=TRUE  # for allowing the MKL in NumPy to run in parallel to the one in IronArray
 ```
 
 ### Release mode
@@ -27,12 +38,11 @@ export PYTHONPATH=.
 ```bash
 unset IARRAY_DEVELOP_MODE
 export INAC_DIR=$HOME/.inaos/cmake/inac-darwin-x86_64-relwithdebinfo-1.0.4
-export PYTHONPATH=.
 ```
 
 ## Compile
 
-In case you have Intel IPP libraries installed (for a turbo-enable LZ4 codec within C-Blosc2), make sure that you run:
+In case you have Intel IPP libraries installed (for a turbo-enabled LZ4 codec within C-Blosc2), make sure that you run:
 
 ```bash
 source ~/intel/bin/compilervars.sh intel64
@@ -71,17 +81,3 @@ python setup.py install
 ```
 
 The setup.py can be used to produce wheels, where all the libraries are included (see https://pythonwheels.com).
-
-## Jupyter notebooks
-
-To run jupyter notebooks, you need to make use of absolute paths.  E.g.:
-
-```
-export PYTHONUNBUFFERED=1
-export LD_LIBRARY_PATH=/opt/intel/compilers_and_libraries/linux/mkl/lib:$HOME/iron-array/build
-export IARRAY_DEVELOP_MODE=True
-export INAC_DIR=$HOME/.inaos/cmake/inac-linux-x86_64-relwithdebinfo-1.0.4
-export PYTHONPATH=$HOME/iron-array-python/
-export IARRAY_BUILD_DIR=$HOME/iron-array/build
-export KMP_DUPLICATE_LIB_OK=TRUE  # for allowing the MKL in NumPy to run in parallel to the one in IronArray
-```

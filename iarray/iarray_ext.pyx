@@ -558,9 +558,10 @@ def _get_slice(ctx, data, start, stop, pshape=None, filename=None, view=True):
         ciarray.iarray_get_slice(ctx_, data_, start_, stop_, pshape_, &store, flags, view, &c)
     else:
         ciarray.iarray_get_slice(ctx_, data_, start_, stop_, pshape_, NULL, flags, view, &c)
-
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
-    return IArray(ctx, c_c)
+
+    b =  IArray(ctx, c_c)
+    return b
 
 
 def numpy2iarray(cfg, a, pshape=None, filename=None):
@@ -618,7 +619,6 @@ def iarray2numpy(cfg, c):
 
     a = np.zeros(size, dtype=npdtype).reshape(shape)
     ciarray.iarray_to_buffer(ctx_, c_, np.PyArray_DATA(a), size * sizeof(npdtype))
-
     return a
 
 
