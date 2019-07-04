@@ -1,5 +1,4 @@
 import iarray as ia
-import numpy as np
 from itertools import zip_longest as izip
 
 

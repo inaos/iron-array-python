@@ -12,7 +12,7 @@ a = np.arange(size, dtype=np.float64).reshape(shape)
 
 if not os.path.isfile(filename):
     print(f"Creating {filename}")
-    b = ia.numpy2iarray(a, pshape, filename)
+    b = ia.numpy2iarray(a, pshape, filename=filename)
 else:
     print(f"Reading {filename}")
     c = ia.from_file(filename)
