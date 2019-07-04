@@ -17,8 +17,7 @@ def test_slice(shape, pshape, start, stop, dtype):
     if len(start) == 1:
         slices = slices[0]
 
-    asize = int(np.prod(shape))
-    a = ia.linspace(asize, -10, 10, shape, pshape, dtype)
+    a = ia.linspace(ia.dtshape(shape, pshape, dtype), -10, 10)
     an = ia.iarray2numpy(a)
 
     b = a[slices]

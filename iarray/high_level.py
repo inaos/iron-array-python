@@ -323,8 +323,10 @@ def arange(dtshape, start=None, stop=None, step=None, filename=None, **kwargs):
     return ext.arange(cfg, slice_, shape, pshape, dtype, filename)
 
 
-def linspace(nelem, start, stop, shape=None, pshape=None, dtype="double", filename=None, **kwargs):
+def linspace(dtshape, start, stop, filename=None, **kwargs):
     cfg = Config(**kwargs)
+    shape, pshape, dtype = dtshape.to_tuple()
+    nelem = np.prod(shape)
     return ext.linspace(cfg, nelem, start, stop, shape, pshape, dtype, filename)
 
 
@@ -419,14 +421,12 @@ def matmul(a, b, block_a, block_b, **kwargs):
 
 
 if __name__ == "__main__":
-    # Define array params
-    _shape = [40]
-    _pshape = [20]
-    size = int(np.prod(_shape))
-
     # Create initial containers
-    a1 = ia.linspace(size, 0, 10, _shape, _pshape, "double")
-    a2 = ia.linspace(size, 0, 20, _shape, _pshape, "double")
+    dtshape = ia.dtshape([40], [20])
+    a1 = ia.linspace(dtshape, 0, 10)
+    a2 = ia.linspace(dtshape, 0, 20)
+
+    # Evaluate with different methods
     # a3 = a1 + a2 + a1 - 2 * a1 + 1
     a3 = a1 + 2 * a1 + 1
     # a3 = a1 + a2

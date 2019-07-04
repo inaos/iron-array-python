@@ -14,7 +14,7 @@ import numpy as np
                          ])
 def test_linspace(start, stop, shape, pshape, dtype):
     size = int(np.prod(shape))
-    a = ia.linspace(size, start, stop, shape, pshape, dtype)
+    a = ia.linspace(ia.dtshape(shape, pshape, dtype), start, stop)
     b = ia.iarray2numpy(a)
     npdtype = np.float64 if dtype == "double" else np.float32
     c = np.linspace(start, stop, size, dtype=npdtype).reshape(shape)

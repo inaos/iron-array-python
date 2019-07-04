@@ -156,7 +156,7 @@ def do_block_evaluation(pshape_):
 
     x = np.linspace(0, 10, N, dtype=np.double).reshape(shape)
     # TODO: looks like nelem is not in the same position than numpy
-    xa = ia.linspace(N, 0., 10., shape=shape, pshape=pshape_, **cparams)
+    xa = ia.linspace(ia.dtshape(shape=shape, pshape=pshape_), 0., 10., **cparams)
 
     # Reference to compare to
     y0 = (x - 1.35) * (x - 4.45) * (x - 8.5) * (x + 1.5) * (x + 4.6)

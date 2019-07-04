@@ -16,12 +16,10 @@ import numpy as np
                              ([100, 100], [30, 30], [12, 100], [100], None, [100], "float")
                          ])
 def test_matmul(ashape, apshape, abshape, bshape, bpshape, bbshape, dtype):
-    asize = int(np.prod(ashape))
-    a = ia.linspace(asize, -10, 10, ashape, apshape, dtype)
+    a = ia.linspace(ia.dtshape(ashape, apshape, dtype), -10, 10)
     an = ia.iarray2numpy(a)
 
-    bsize = int(np.prod(bshape))
-    b = ia.linspace(bsize, -10, 10, bshape, bpshape, dtype)
+    b = ia.linspace(ia.dtshape(bshape, bpshape, dtype), -10, 10)
     bn = ia.iarray2numpy(b)
 
     c = ia.matmul(a, b, abshape, bbshape)
@@ -54,16 +52,14 @@ def test_matmul(ashape, apshape, abshape, bshape, bpshape, bbshape, dtype):
                               [100], None, [25], [35], [10], "float")
                          ])
 def test_matmul_slice(ashape, apshape, astart, astop, abshape, bshape, bpshape, bstart, bstop, bbshape, dtype):
-    asize = int(np.prod(ashape))
-    a = ia.linspace(asize, -10, 10, ashape, apshape, dtype)
+    a = ia.linspace(ia.dtshape(ashape, apshape, dtype), -10, 10)
     an = ia.iarray2numpy(a)
     aslices = tuple(slice(astart[i], astop[i]) for i in range(len(astart)))
     if len(astart) == 1:
         aslices = aslices[0]
     asl = a[aslices]
 
-    bsize = int(np.prod(bshape))
-    b = ia.linspace(bsize, -10, 10, bshape, bpshape, dtype)
+    b = ia.linspace(ia.dtshape(bshape, bpshape, dtype), -10, 10)
     bn = ia.iarray2numpy(b)
     bslices = tuple(slice(bstart[i], bstop[i]) for i in range(len(bstart)))
     if len(bstart) == 1:

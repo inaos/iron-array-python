@@ -17,8 +17,7 @@ from itertools import zip_longest as izip
                              ([10, 10, 10, 10], None, [3, 4, 3, 4], "float")
                          ])
 def test_iterator(shape, pshape, bshape, dtype):
-    size = int(np.prod(shape))
-    a = ia.linspace(size, -10, 10, shape, pshape, dtype)
+    a = ia.linspace(ia.dtshape(shape, pshape, dtype), -10, 10)
     an = ia.iarray2numpy(a)
 
     b = ia.empty(ia.dtshape(shape, pshape))

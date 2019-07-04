@@ -5,10 +5,9 @@ import numpy as np
 # Define array params
 shape = [10000, 2000]
 pshape = [1000, 200]
-size = int(np.prod(shape))
 
 # Create initial containers
-a1 = ia.linspace(size, 0, 10, shape, pshape, "double")
+a1 = ia.linspace(ia.dtshape(shape, pshape, "double"), 0, 10)
 a2 = ia.iarray2numpy(a1)
 
 print("iarray evaluation...")
