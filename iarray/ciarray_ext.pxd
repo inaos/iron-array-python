@@ -156,6 +156,8 @@ cdef extern from "libiarray/iarray.h":
                               iarray_store_properties_t *store,
                               iarray_container_t **container)
 
+    bool iarray_is_empty(iarray_container_t *container)
+
     ina_rc_t iarray_expr_new(iarray_context_t *ctx, iarray_expression_t **e)
     void iarray_expr_free(iarray_context_t *ctx, iarray_expression_t **e)
 
@@ -187,7 +189,7 @@ cdef extern from "libiarray/iarray.h":
     ctypedef struct  iarray_iter_write_block_t
 
     ctypedef struct iarray_iter_write_block_value_t:
-        void *pointer
+        void *block_pointer
         int64_t *block_index
         int64_t *elem_index
         int64_t nblock
@@ -198,16 +200,17 @@ cdef extern from "libiarray/iarray.h":
                                          iarray_iter_write_block_t **itr,
                                          iarray_container_t *container,
                                          const int64_t *blockshape,
-                                         iarray_iter_write_block_value_t *value)
+                                         iarray_iter_write_block_value_t *value,
+                                         bool external_buffer)
     void iarray_iter_write_block_free(iarray_iter_write_block_t *itr)
-    ina_rc_t iarray_iter_write_block_next(iarray_iter_write_block_t *itr)
+    ina_rc_t iarray_iter_write_block_next(iarray_iter_write_block_t *itr, void *buffer, int32_t bufsize)
     int iarray_iter_write_block_has_next(iarray_iter_write_block_t *itr)
 
 
     ctypedef struct iarray_iter_read_block_t
 
     ctypedef struct iarray_iter_read_block_value_t:
-        void *pointer
+        void *block_pointer
         int64_t *block_index
         int64_t *elem_index
         int64_t nblock
@@ -219,9 +222,10 @@ cdef extern from "libiarray/iarray.h":
                                         iarray_iter_read_block_t **itr,
                                         iarray_container_t *cont,
                                         const int64_t *blockshape,
-                                        iarray_iter_read_block_value_t *value)
+                                        iarray_iter_read_block_value_t *value,
+                                        bool external_buffer)
     void iarray_iter_read_block_free(iarray_iter_read_block_t *itr)
-    ina_rc_t iarray_iter_read_block_next(iarray_iter_read_block_t *itr)
+    ina_rc_t iarray_iter_read_block_next(iarray_iter_read_block_t *itr, void *buffer, int32_t bufsize)
     int iarray_iter_read_block_has_next(iarray_iter_read_block_t *itr)
 
     # Random

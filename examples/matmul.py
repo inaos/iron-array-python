@@ -1,4 +1,5 @@
 import iarray as ia
+import numpy as np
 from itertools import zip_longest as izip
 from time import time
 import ctypes
@@ -6,24 +7,20 @@ import sys
 
 nthreads = int(sys.argv[1])
 
-cfg = ia.Config(max_num_threads=nthreads, compression_level=0)
-ctx = ia.Context(cfg)
+mkl_set_num_threads(1)
+print(f"Numpy max threads: {mkl_get_max_threads()}")
 
-shape_a = [2000, 2000]
-size_a = shape_a[0] * shape_a[1]
-pshape_a = None
-bshape_a = [2000, 2000]
+dtshape_a = ia.dtshape([2000, 2000], [200, 200])
+bshape_a = [200, 200]
 
-shape_b = [2000, 2000]
-size_b = shape_b[0] * shape_b[1]
-pshape_b = None
-bshape_b = [2000, 2000]
+dtshape_b = ia.dtshape([2000, 2000], [200, 200])
+bshape_b = [200, 200]
 
-pshape = None
+a = ia.arange(dtshape_a, clevel=0)
+an = ia.iarray2numpy(a)
 
-a = ia.arange(ctx, size_a, shape=shape_a, pshape=pshape_a)
-
-b = ia.arange(ctx, size_b, shape=shape_b, pshape=pshape_b)
+b = ia.arange(dtshape_b, clevel=0)
+bn = ia.iarray2numpy(b)
 
 nrep = 10
 
@@ -32,9 +29,11 @@ cn2 = None
 
 
 for i in range(nrep):
-    t0 = time()
-    c = ia.matmul(ctx, a, b, bshape_a, bshape_b)
-    t1 = time()
-    print(t1 - t0)
+    c = ia.matmul(a, b, bshape_a, bshape_b, clevel=0, max_num_threads=1)
+t1 = time()
+print(f"Time to compute matmul with iarray: {(t1 - t0) / nrep} s")
+
+cn = ia.iarray2numpy(c)
 
 
+print("Matrix multiplication is working!")
