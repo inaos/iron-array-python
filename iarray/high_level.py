@@ -222,7 +222,7 @@ class LazyExpr:
                 if isinstance(v, IArray):
                     expr.bind(k, v)
             expr.compile(self.expression)
-            out = expr.eval(shape_, pshape_, "double")
+            out = expr.eval(shape_, pshape_, np.float64)
         elif method == "numexpr":
             out = ia.empty(ia.dtshape(shape=shape_, pshape=pshape_), **kwargs)
             operand_iters = tuple(o.iter_read_block(pshape_) for o in self.operands.values() if isinstance(o, IArray))
@@ -283,7 +283,7 @@ class Expr(ext.Expression):
 
 class dtshape:
 
-    def __init__(self, shape=None, pshape=None, dtype="double"):
+    def __init__(self, shape=None, pshape=None, dtype=np.float64):
         self.shape = shape
         self.pshape = pshape
         self.dtype = dtype

@@ -243,7 +243,7 @@ def do_block_evaluation(pshape_):
     expr.bind(b'x', xa)
     expr.compile(b'(x - 1.35) * (x - 4.45) * (x - 8.5) * (x + 1.5) * (x + 4.6)')
     for i in range(NITER):
-        ya = expr.eval(shape, pshape_, "double")
+        ya = expr.eval(shape, pshape_, np.float64)
     print("Block evaluate via iarray.eval:", round((time() - t0) / NITER, 4))
     y1 = ia.iarray2numpy(ya)
     np.testing.assert_almost_equal(y0, y1)

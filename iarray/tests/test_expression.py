@@ -6,14 +6,14 @@ import numpy as np
 # Expression
 @pytest.mark.parametrize("eval_flags, shape, pshape, dtype, expression",
                          [
-                             ("block", [1000], [100], "double", "(x - 1.35) * (x - 4.45) * (x - 8.5)"),
-                             ("iterchunk", [1000], [123], "float", "(x - 1) * (x - 1) + 2 * x"),
-                             ("block", [100, 100], [23, 32], "double", "(x - 1) * 2"),
-                             ("iterchunk", [100, 100, 55], [10, 5, 10], "float", "(x - 1) * (x - 1) + 2 * x"),
-                             ("block", [1000], None, "double", "(x - 1.35) * (x - 4.45) * (x - 8.5)"),
-                             ("iterchunk", [1000], None, "float", "(x - 1) * (x - 1) + 2 * x"),
-                             ("block", [100, 100], None, "double", "(x - 1) * 2"),
-                             ("iterchunk", [8, 6, 7, 4, 5], None, "float", "(x - 1) * (x - 1) + 2 * x")
+                             ("block", [1000], [100], np.float64, "(x - 1.35) * (x - 4.45) * (x - 8.5)"),
+                             ("iterchunk", [1000], [123], np.float32, "(x - 1) * (x - 1) + 2 * x"),
+                             ("block", [100, 100], [23, 32], np.float64, "(x - 1) * 2"),
+                             ("iterchunk", [100, 100, 55], [10, 5, 10], np.float32, "(x - 1) * (x - 1) + 2 * x"),
+                             ("block", [1000], None, np.float64, "(x - 1.35) * (x - 4.45) * (x - 8.5)"),
+                             ("iterchunk", [1000], None, np.float32, "(x - 1) * (x - 1) + 2 * x"),
+                             ("block", [100, 100], None, np.float64, "(x - 1) * 2"),
+                             ("iterchunk", [8, 6, 7, 4, 5], None, np.float32, "(x - 1) * (x - 1) + 2 * x")
                          ])
 def test_expression(eval_flags, shape, pshape, dtype, expression):
     a = ia.linspace(ia.dtshape(shape, pshape, dtype), 0, 10)

@@ -37,7 +37,7 @@ cdef class ReadBlockIter:
             block_[i] = block[i]
 
         ciarray.iarray_iter_read_block_new(self._c._ctx._ctx, &self._iter, self._c._c, block_, &self._val, False)
-        if self._c.dtype == "double":
+        if self._c.dtype == np.float64:
             self.dtype = 0
         else:
             self.dtype = 1
@@ -92,7 +92,7 @@ cdef class WriteBlockIter:
         retcode = ciarray.iarray_iter_write_block_new(self._c._ctx._ctx, &self._iter, self._c._c, block_, &self._val,
                                                       False)
         assert(retcode == 0)
-        if self._c.dtype == "double":
+        if self._c.dtype == np.float64:
             self.dtype = 0
         else:
             self.dtype = 1
@@ -178,11 +178,11 @@ cdef class Context:
 cdef class _DTShape:
     cdef ciarray.iarray_dtshape_t _dtshape
 
-    def __cinit__(self, shape, pshape=None, dtype="double"):
+    def __cinit__(self, shape, pshape=None, dtype=np.float64):
         self._dtshape.ndim = len(shape)
-        if dtype == "double":
+        if dtype == np.float64:
             self._dtshape.dtype = ciarray.IARRAY_DATA_TYPE_DOUBLE
-        elif dtype == "float":
+        elif dtype == np.float32:
             self._dtshape.dtype = ciarray.IARRAY_DATA_TYPE_FLOAT
         for i in range(len(shape)):
             self._dtshape.shape[i] = shape[i]
@@ -200,7 +200,7 @@ cdef class _DTShape:
 
     @property
     def dtype(self):
-        dtype = ["double", "float"]
+        dtype = [np.float64, np.float32]
         return dtype[self._dtshape.dtype]
 
     @property
@@ -300,7 +300,7 @@ cdef class Container:
 
     @property
     def dtype(self):
-        dtype = ["double", "float"]
+        dtype = [np.float64, np.float32]
         cdef ciarray.iarray_dtshape_t dtshape
         ciarray.iarray_get_dtshape(self._ctx._ctx, self._c, &dtshape)
 
@@ -351,7 +351,7 @@ cdef class Expression:
             raise ValueError(f"Error in compiling expr: {expr}")
         self.expression = expr2
 
-    def eval(self, shape, pshape=None, dtype="double", filename=None):
+    def eval(self, shape, pshape=None, dtype=np.float64, filename=None):
 
         dtshape = _DTShape(shape, pshape, dtype).to_dict()
         cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
@@ -369,7 +369,7 @@ cdef class Expression:
 # Iarray container creators
 #
 
-def empty(cfg, shape, pshape=None, dtype="double", filename=None):
+def empty(cfg, shape, pshape=None, dtype=np.float64, filename=None):
     ctx = Context(cfg)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
 
@@ -394,7 +394,7 @@ def empty(cfg, shape, pshape=None, dtype="double", filename=None):
     return IArray(ctx, c_c)
 
 
-def arange(cfg, slice, shape=None, pshape=None, dtype="double", filename=None):
+def arange(cfg, slice, shape=None, pshape=None, dtype=np.float64, filename=None):
     ctx = Context(cfg)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
 
@@ -424,7 +424,7 @@ def arange(cfg, slice, shape=None, pshape=None, dtype="double", filename=None):
     return IArray(ctx, c_c)
 
 
-def linspace(cfg, nelem, start, stop, shape=None, pshape=None, dtype="double", filename=None):
+def linspace(cfg, nelem, start, stop, shape=None, pshape=None, dtype=np.float64, filename=None):
     ctx = Context(cfg)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
 
@@ -451,7 +451,7 @@ def linspace(cfg, nelem, start, stop, shape=None, pshape=None, dtype="double", f
     return IArray(ctx, c_c)
 
 
-def zeros(cfg, shape, pshape=None, dtype="double", filename=None):
+def zeros(cfg, shape, pshape=None, dtype=np.float64, filename=None):
     ctx = Context(cfg)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
 
@@ -475,7 +475,7 @@ def zeros(cfg, shape, pshape=None, dtype="double", filename=None):
     return IArray(ctx, c_c)
 
 
-def ones(cfg, shape, pshape=None, dtype="double", filename=None):
+def ones(cfg, shape, pshape=None, dtype=np.float64, filename=None):
     ctx = Context(cfg)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
 
@@ -499,7 +499,7 @@ def ones(cfg, shape, pshape=None, dtype="double", filename=None):
     return IArray(ctx, c_c)
 
 
-def full(cfg, fill_value, shape, pshape=None, dtype="double", filename=None):
+def full(cfg, fill_value, shape, pshape=None, dtype=np.float64, filename=None):
     ctx = Context(cfg)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
 
@@ -515,12 +515,12 @@ def full(cfg, fill_value, shape, pshape=None, dtype="double", filename=None):
 
     cdef ciarray.iarray_container_t *c
     if flags == ciarray.IARRAY_CONTAINER_PERSIST:
-        if dtype == "double":
+        if dtype == np.float64:
             ciarray.iarray_fill_double(ctx_, &dtshape_, fill_value, &store, flags, &c)
         else:
             ciarray.iarray_fill_float(ctx_, &dtshape_, fill_value, &store, flags, &c)
     else:
-        if dtype == "double":
+        if dtype == np.float64:
             ciarray.iarray_fill_double(ctx_, &dtshape_, fill_value, NULL, flags, &c)
         else:
             ciarray.iarray_fill_float(ctx_, &dtshape_, fill_value, NULL, flags, &c)
@@ -569,9 +569,9 @@ def numpy2iarray(cfg, a, pshape=None, filename=None):
 
     dtype = None
     if a.dtype == np.float64:
-        dtype = "double"
+        dtype = np.float64
     elif a.dtype == np.float32:
-        dtype = "float"
+        dtype = np.float32
     else:
         raise NotImplementedError("Only float32 and float64 types are supported for now")
 
@@ -658,7 +658,7 @@ def expr_eval(e, c):
 # Random functions
 #
 
-def random_rand(cfg, shape, pshape=None, dtype="double", filename=None):
+def random_rand(cfg, shape, pshape=None, dtype=np.float64, filename=None):
     ctx = Context(cfg)
     r_ctx = RandomContext(ctx)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
@@ -684,7 +684,7 @@ def random_rand(cfg, shape, pshape=None, dtype="double", filename=None):
     return IArray(ctx, c_c)
 
 
-def random_randn(cfg, shape, pshape=None, dtype="double", filename=None):
+def random_randn(cfg, shape, pshape=None, dtype=np.float64, filename=None):
     ctx = Context(cfg)
     r_ctx = RandomContext(ctx)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
@@ -710,13 +710,13 @@ def random_randn(cfg, shape, pshape=None, dtype="double", filename=None):
     return IArray(ctx, c_c)
 
 
-def random_beta(cfg, alpha, beta, shape, pshape=None, dtype="double", filename=None):
+def random_beta(cfg, alpha, beta, shape, pshape=None, dtype=np.float64, filename=None):
     ctx = Context(cfg)
     r_ctx = RandomContext(ctx)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
     cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(), "iarray_random_ctx_t*")
 
-    if dtype == "double":
+    if dtype == np.float64:
         ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_ALPHA, alpha)
         ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_BETA, beta)
     else:
@@ -743,13 +743,13 @@ def random_beta(cfg, alpha, beta, shape, pshape=None, dtype="double", filename=N
     return IArray(ctx, c_c)
 
 
-def random_lognormal(cfg, mu, sigma, shape, pshape=None, dtype="double", filename=None):
+def random_lognormal(cfg, mu, sigma, shape, pshape=None, dtype=np.float64, filename=None):
     ctx = Context(cfg)
     r_ctx = RandomContext(ctx)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
     cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(), "iarray_random_ctx_t*")
 
-    if dtype == "double":
+    if dtype == np.float64:
         ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_MU, mu)
         ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_SIGMA, sigma)
     else:
@@ -776,13 +776,13 @@ def random_lognormal(cfg, mu, sigma, shape, pshape=None, dtype="double", filenam
     return IArray(ctx, c_c)
 
 
-def random_exponential(cfg, beta, shape, pshape=None, dtype="double", filename=None):
+def random_exponential(cfg, beta, shape, pshape=None, dtype=np.float64, filename=None):
     ctx = Context(cfg)
     r_ctx = RandomContext(ctx)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
     cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(), "iarray_random_ctx_t*")
 
-    if dtype == "double":
+    if dtype == np.float64:
         ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_BETA, beta)
     else:
         ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_BETA, beta)
@@ -807,13 +807,13 @@ def random_exponential(cfg, beta, shape, pshape=None, dtype="double", filename=N
     return IArray(ctx, c_c)
 
 
-def random_uniform(cfg, a, b, shape, pshape=None, dtype="double", filename=None):
+def random_uniform(cfg, a, b, shape, pshape=None, dtype=np.float64, filename=None):
     ctx = Context(cfg)
     r_ctx = RandomContext(ctx)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
     cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(), "iarray_random_ctx_t*")
 
-    if dtype == "double":
+    if dtype == np.float64:
         ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_A, a)
         ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_B, b)
     else:
@@ -840,13 +840,13 @@ def random_uniform(cfg, a, b, shape, pshape=None, dtype="double", filename=None)
     return IArray(ctx, c_c)
 
 
-def random_normal(cfg, mu, sigma, shape, pshape=None, dtype="double", filename=None):
+def random_normal(cfg, mu, sigma, shape, pshape=None, dtype=np.float64, filename=None):
     ctx = Context(cfg)
     r_ctx = RandomContext(ctx)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
     cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(), "iarray_random_ctx_t*")
 
-    if dtype == "double":
+    if dtype == np.float64:
         ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_MU, mu)
         ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_SIGMA, sigma)
     else:
@@ -873,13 +873,13 @@ def random_normal(cfg, mu, sigma, shape, pshape=None, dtype="double", filename=N
     return IArray(ctx, c_c)
 
 
-def random_bernoulli(cfg, p, shape, pshape=None, dtype="double", filename=None):
+def random_bernoulli(cfg, p, shape, pshape=None, dtype=np.float64, filename=None):
     ctx = Context(cfg)
     r_ctx = RandomContext(ctx)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
     cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(), "iarray_random_ctx_t*")
 
-    if dtype == "double":
+    if dtype == np.float64:
         ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_P, p)
     else:
         ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_P, p)
@@ -904,13 +904,13 @@ def random_bernoulli(cfg, p, shape, pshape=None, dtype="double", filename=None):
     return IArray(ctx, c_c)
 
 
-def random_binomial(cfg, m, p, shape, pshape=None, dtype="double", filename=None):
+def random_binomial(cfg, m, p, shape, pshape=None, dtype=np.float64, filename=None):
     ctx = Context(cfg)
     r_ctx = RandomContext(ctx)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
     cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(), "iarray_random_ctx_t*")
 
-    if dtype == "double":
+    if dtype == np.float64:
         ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_P, p)
         ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_M, m)
     else:
@@ -937,13 +937,13 @@ def random_binomial(cfg, m, p, shape, pshape=None, dtype="double", filename=None
     return IArray(ctx, c_c)
 
 
-def random_poisson(cfg, l, shape, pshape=None, dtype="double", filename=None):
+def random_poisson(cfg, l, shape, pshape=None, dtype=np.float64, filename=None):
     ctx = Context(cfg)
     r_ctx = RandomContext(ctx)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
     cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(), "iarray_random_ctx_t*")
 
-    if dtype == "double":
+    if dtype == np.float64:
         ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_LAMBDA, l)
     else:
         ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_LAMBDA, l)

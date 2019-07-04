@@ -6,10 +6,10 @@ import numpy as np
 # Slice
 @pytest.mark.parametrize("shape, pshape, start, stop, dtype",
                          [
-                             ([100], [20], [20], [30], "double"),
-                             ([100, 100], [20, 20], [5, 10], [30, 40], "float"),
-                             ([100, 100], None, [5, 10], [30, 40], "double"),
-                             ([100, 100, 100], None, [5, 46, 10], [30, 77, 40], "float")
+                             ([100], [20], [20], [30], np.float64),
+                             ([100, 100], [20, 20], [5, 10], [30, 40], np.float32),
+                             ([100, 100], None, [5, 10], [30, 40], np.float64),
+                             ([100, 100, 100], None, [5, 46, 10], [30, 77, 40], np.float32)
 
                          ])
 def test_slice(shape, pshape, start, stop, dtype):
