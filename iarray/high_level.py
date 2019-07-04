@@ -66,7 +66,7 @@ class RandomContext(ext.RandomContext):
 
 class Config(ext._Config):
 
-    def __init__(self, clib=ia.LZ4, clevel=5, use_dict=0, filter_flags=ia.SHUFFLE, max_num_threads=1,
+    def __init__(self, clib=ia.LZ4, clevel=5, use_dict=0, filter_flags=ia.SHUFFLE, nthreads=1,
                  fp_mantissa_bits=0, blocksize=0, filename=None, eval_flags="iterblock"):
         self._clib = clib
         self._clevel = clevel
@@ -75,10 +75,10 @@ class Config(ext._Config):
         self._fp_mantissa_bits = fp_mantissa_bits
         self._blocksize = blocksize
         self._filename = filename
-        self._max_num_threads = max_num_threads
+        self._nthreads = nthreads
         self._eval_flags = eval_flags  # TODO: should we move this to its own eval configuration?
         super(Config, self).__init__(clib, clevel, use_dict, filter_flags,
-                                     max_num_threads, fp_mantissa_bits, blocksize, eval_flags)
+                                     nthreads, fp_mantissa_bits, blocksize, eval_flags)
 
     @property
     def clib(self):
@@ -95,8 +95,8 @@ class Config(ext._Config):
         return flags[self._filter_flags]
 
     @property
-    def max_num_threads(self):
-        return self._max_num_threads
+    def nthreads(self):
+        return self._nthreads
 
     @property
     def fp_mantissa_bits(self):
@@ -119,13 +119,13 @@ class Config(ext._Config):
         clib = f"    Compression library: {self.clib}\n"
         clevel = f"    Compression level: {self.clevel}\n"
         filter_flags = f"    Filter flags: {self.filter_flags}\n"
-        max_num_threads = f"    Max. num. threads: {self.max_num_threads}\n"
-        fp_mantissa_bits = f"    Fp mantissa bits: {self.fp_mantissa_bits}\n"
+        nthreads = f"    Number of threads: {self.nthreads}\n"
+        fp_mantissa_bits = f"    Floating point mantissa bits: {self.fp_mantissa_bits}\n"
         blocksize = f"    Blocksize: {self.blocksize}"
         filename = f"    Filename: {self.filename}"
         eval_flags = f"    Eval flags: {self.eval_flags}\n"
         return res + clib + clevel + filter_flags + \
-               max_num_threads + fp_mantissa_bits + blocksize + filename + eval_flags
+               nthreads + fp_mantissa_bits + blocksize + filename + eval_flags
 
 
 class LazyExpr:

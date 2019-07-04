@@ -20,7 +20,7 @@ block_size = pshape
 expression = '(x - 1.35) * (x - 4.45) * (x - 8.5)'
 clevel = 1   # compression level
 clib = ia.LZ4  # compression codec
-max_num_threads = 2  # number of threads for the evaluation and/or compression
+nthreads = 2  # number of threads for the evaluation and/or compression
 
 
 # Make this True if you want to test the pre-compilation in Numba (not necessary, really)
@@ -105,7 +105,7 @@ def do_regular_evaluation():
     np.testing.assert_almost_equal(y0, y1)
 
     t0 = time()
-    ne.set_num_threads(max_num_threads)
+    ne.set_num_threads(nthreads)
     for i in range(NITER):
         y1 = ne.evaluate(expression, local_dict={'x': x})
     print("Regular evaluate via numexpr (multi-thread):", round((time() - t0) / NITER, 4))
@@ -152,7 +152,7 @@ def do_regular_evaluation():
 def do_block_evaluation(pshape_):
     storage = "superchunk" if pshape_ is not None else "plain buffer"
     print(f"Block ({storage}) evaluation of the expression:", expression, "with %d elements" % N)
-    cparams = dict(clib=clib, clevel=clevel, max_num_threads=max_num_threads)
+    cparams = dict(clib=clib, clevel=clevel, nthreads=nthreads)
 
     x = np.linspace(0, 10, N, dtype=np.double).reshape(shape)
     # TODO: looks like nelem is not in the same position than numpy
