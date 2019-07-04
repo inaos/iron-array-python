@@ -19,7 +19,7 @@ import cython
 from cpython.pycapsule cimport PyCapsule_New, PyCapsule_GetPointer
 from math import ceil
 from libc.stdlib cimport malloc, free
-from iarray.container import IArray
+from iarray.high_level import IArray
 from collections import namedtuple
 
 
