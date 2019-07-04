@@ -330,18 +330,21 @@ def linspace(dtshape, start, stop, filename=None, **kwargs):
     return ext.linspace(cfg, nelem, start, stop, shape, pshape, dtype, filename)
 
 
-def zeros(shape, pshape=None, dtype="double", filename=None, **kwargs):
+def zeros(dtshape, filename=None, **kwargs):
     cfg = Config(**kwargs)
+    shape, pshape, dtype = dtshape.to_tuple()
     return ext.zeros(cfg, shape, pshape, dtype, filename)
 
 
-def ones(shape, pshape=None, dtype="double", filename=None, **kwargs):
+def ones(dtshape, filename=None, **kwargs):
     cfg = Config(**kwargs)
+    shape, pshape, dtype = dtshape.to_tuple()
     return ext.ones(cfg, shape, pshape, dtype, filename)
 
 
-def full(fill_value, shape, pshape=None, dtype="double", filename=None, **kwargs):
+def full(dtshape, fill_value, filename=None, **kwargs):
     cfg = Config(**kwargs)
+    shape, pshape, dtype = dtshape.to_tuple()
     return ext.full(cfg, fill_value, shape, pshape, dtype, filename)
 
 

@@ -98,7 +98,7 @@ def test_empty(shape, pshape, dtype):
                              ([12, 16], None, "float")
                          ])
 def test_zeros(shape, pshape, dtype):
-    a = ia.zeros(shape, pshape, dtype)
+    a = ia.zeros(ia.dtshape(shape, pshape, dtype))
     b = ia.iarray2numpy(a)
     npdtype = np.float64 if dtype == "double" else np.float32
     c = np.zeros(shape, dtype=npdtype)
@@ -114,7 +114,7 @@ def test_zeros(shape, pshape, dtype):
                              ([12, 16], None, "float")
                          ])
 def test_ones(shape, pshape, dtype):
-    a = ia.ones(shape, pshape, dtype)
+    a = ia.ones(ia.dtshape(shape, pshape, dtype))
     b = ia.iarray2numpy(a)
     npdtype = np.float64 if dtype == "double" else np.float32
     c = np.ones(shape, dtype=npdtype)
@@ -130,7 +130,7 @@ def test_ones(shape, pshape, dtype):
                              (2.00001, [12, 16], None, "float")
                          ])
 def test_full(fill_value, shape, pshape, dtype):
-    a = ia.full(fill_value, shape, pshape, dtype)
+    a = ia.full(ia.dtshape(shape, pshape, dtype), fill_value)
     b = ia.iarray2numpy(a)
     npdtype = np.float64 if dtype == "double" else np.float32
     c = np.full(shape, fill_value, dtype=npdtype)
