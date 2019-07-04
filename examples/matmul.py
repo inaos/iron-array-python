@@ -16,10 +16,10 @@ bshape_a = [200, 200]
 dtshape_b = ia.dtshape([2000, 2000], [200, 200])
 bshape_b = [200, 200]
 
-a = ia.arange(dtshape_a, compression_level=0)
+a = ia.arange(dtshape_a, clevel=0)
 an = ia.iarray2numpy(a)
 
-b = ia.arange(dtshape_b, compression_level=0)
+b = ia.arange(dtshape_b, clevel=0)
 bn = ia.iarray2numpy(b)
 
 nrep = 10
@@ -36,7 +36,7 @@ print(f"Time to compute matmul with numpy: {(t1-t0)/nrep} s")
 
 t0 = time()
 for i in range(nrep):
-    c = ia.matmul(a, b, bshape_a, bshape_b, compression_level=0, max_num_threads=1)
+    c = ia.matmul(a, b, bshape_a, bshape_b, clevel=0, max_num_threads=1)
 t1 = time()
 print(f"Time to compute matmul with iarray: {(t1-t0)/nrep} s")
 

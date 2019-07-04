@@ -152,7 +152,7 @@ def do_regular_evaluation():
 def do_block_evaluation(pshape_):
     storage = "superchunk" if pshape_ is not None else "plain buffer"
     print(f"Block ({storage}) evaluation of the expression:", expression, "with %d elements" % N)
-    cparams = dict(compression_codec=clib, compression_level=clevel, max_num_threads=max_num_threads)
+    cparams = dict(clib=clib, clevel=clevel, max_num_threads=max_num_threads)
 
     x = np.linspace(0, 10, N, dtype=np.double).reshape(shape)
     # TODO: looks like nelem is not in the same position than numpy
@@ -165,7 +165,7 @@ def do_block_evaluation(pshape_):
 
     t0 = time()
     for i in range(NITER):
-        ya = ia.empty(shape=shape, pshape=pshape_, **cparams)
+        ya = ia.empty(ia.dtshape(shape=shape, pshape=pshape_), **cparams)
         for ((j, x), (k, y)) in zip(xa.iter_read_block(block_size), ya.iter_write_block(block_write)):
             y[:] = (x - 1.35) * (x - 4.45) * (x - 8.5) * (x + 1.5) * (x + 4.6)
     print("Block evaluate via numpy:", round((time() - t0) / NITER, 4))
@@ -174,7 +174,7 @@ def do_block_evaluation(pshape_):
 
     t0 = time()
     for i in range(NITER):
-        ya = ia.empty(shape=shape, pshape=pshape_, **cparams)
+        ya = ia.empty(ia.dtshape(shape=shape, pshape=pshape_), **cparams)
         for ((j, x), (k, y)) in zip(xa.iter_read_block(block_size), ya.iter_write_block(block_write)):
             ne.evaluate(expression, local_dict={'x': x}, out=y)
     print("Block evaluate via numexpr:", round((time() - t0) / NITER, 4))
@@ -183,7 +183,7 @@ def do_block_evaluation(pshape_):
 
     t0 = time()
     for i in range(NITER):
-        ya = ia.empty(shape=shape, pshape=pshape_, **cparams)
+        ya = ia.empty(ia.dtshape(shape=shape, pshape=pshape_), **cparams)
         for ((j, x), (k, y)) in zip(xa.iter_read_block(block_size), ya.iter_write_block(block_write)):
             # y[:] = poly_numba(x)
             poly_numba2(x, y)
@@ -193,7 +193,7 @@ def do_block_evaluation(pshape_):
 
     t0 = time()
     for i in range(NITER):
-        ya = ia.empty(shape=shape, pshape=pshape_, **cparams)
+        ya = ia.empty(ia.dtshape(shape=shape, pshape=pshape_), **cparams)
         for ((j, x), (k, y)) in zip(xa.iter_read_block(block_size), ya.iter_write_block(block_write)):
             # y[:] = poly_numba(x)
             poly_numba2(x, y)
@@ -204,7 +204,7 @@ def do_block_evaluation(pshape_):
     if NUMBA_PRECOMP:
         t0 = time()
         for i in range(NITER):
-            ya = ia.empty(shape=shape, pshape=pshape_, **cparams)
+            ya = ia.empty(ia.dtshape(shape=shape, pshape=pshape_), **cparams)
             for ((j, x), (k, y)) in zip(xa.iter_read_block(block_size), ya.iter_write_block(block_write)):
                 y[:] = numba_prec.poly_double(x)
         print("Block evaluate via pre-compiled numba:", round((time() - t0) / NITER, 4))
@@ -213,7 +213,7 @@ def do_block_evaluation(pshape_):
 
     t0 = time()
     for i in range(NITER):
-        ya = ia.empty(shape=shape, pshape=pshape_, **cparams)
+        ya = ia.empty(ia.dtshape(shape=shape, pshape=pshape_), **cparams)
         for ((j, x), (k, y)) in zip(xa.iter_read_block(block_size), ya.iter_write_block(block_write)):
             y[:] = ia.ext.poly_cython(x)
     print("Block evaluate via cython:", round((time() - t0) / NITER, 4))
@@ -222,7 +222,7 @@ def do_block_evaluation(pshape_):
 
     t0 = time()
     for i in range(NITER):
-        ya = ia.empty(shape=shape, pshape=pshape_, **cparams)
+        ya = ia.empty(ia.dtshape(shape=shape, pshape=pshape_), **cparams)
         for ((j, x), (k, y)) in zip(xa.iter_read_block(block_size), ya.iter_write_block(block_write)):
             y[:] = ia.ext.poly_cython_nogil(x)
     print("Block evaluate via cython (nogil):", round((time() - t0) / NITER, 4))
@@ -231,7 +231,7 @@ def do_block_evaluation(pshape_):
 
     t0 = time()
     for i in range(NITER):
-        ya = ia.empty(shape=shape, pshape=pshape_, **cparams)
+        ya = ia.empty(ia.dtshape(shape=shape, pshape=pshape_), **cparams)
         for ((j, x), (k, y)) in zip(xa.iter_read_block(block_size), ya.iter_write_block(block_write)):
             poly_llvmc(x, y)
     print("Block evaluate via py2llvm:", round((time() - t0) / NITER, 4))
