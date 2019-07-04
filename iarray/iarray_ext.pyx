@@ -1033,7 +1033,7 @@ def poly_cython(xa):
     cdef np.ndarray[np.npy_float64] y = np.empty(xa.shape, xa.dtype).flatten()
     cdef np.ndarray[np.npy_float64] x = xa.flatten()
     for i in range(len(x)):
-        y[i] = (x[i] - 1.35) * (x[i] - 4.45) * (x[i] - 8.5) * (x[i] + 1.5) * (x[i] + 4.6)
+        y[i] = (x[i] - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
     return y.reshape(shape)
 
 
@@ -1044,7 +1044,7 @@ cdef void poly_nogil(double *x, double *y, int n) nogil:
     cdef int i
     # for i in prange(n):
     for i in range(n):
-        y[i] = (x[i] - 1.35) * (x[i] - 4.45) * (x[i] - 8.5) * (x[i] + 1.5) * (x[i] + 4.6)
+        y[i] = (x[i] - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
 
 
 def poly_cython_nogil(xa):
