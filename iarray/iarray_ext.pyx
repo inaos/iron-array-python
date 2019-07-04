@@ -148,8 +148,12 @@ cdef class _Config:
         self._cfg.filter_flags = filter_flags
         if eval_flags == "iterblock":
             self._cfg.eval_flags = ciarray.IARRAY_EXPR_EVAL_ITERBLOCK
+        elif eval_flags == "iterblosc":
+            self._cfg.eval_flags = ciarray.IARRAY_EXPR_EVAL_ITERBLOSC
         elif eval_flags == "iterchunk":
             self._cfg.eval_flags = ciarray.IARRAY_EXPR_EVAL_ITERCHUNK
+        else:
+            raise ValueError("eval_flags not recognized:", eval_flags)
         self._cfg.max_num_threads = max_num_threads
         self._cfg.fp_mantissa_bits = fp_mantissa_bits
         self._cfg.blocksize = blocksize
