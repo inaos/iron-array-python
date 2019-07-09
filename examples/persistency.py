@@ -20,3 +20,4 @@ else:
 
     np.testing.assert_array_equal(a, d)
     print("Correct values read!")
+

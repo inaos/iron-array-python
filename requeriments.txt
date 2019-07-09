@@ -1,1 +1,2 @@
-.
+-r requirements/default.txt
+-r requirements/test.txt

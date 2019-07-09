@@ -47,6 +47,25 @@ if INAC_DIR != '':
     include_dirs += [os.path.join(INAC_DIR, 'include')]
     libraries += ['inac']
 
+
+def parse_requirements_file(filename):
+    with open(filename) as fid:
+        requires = [l.strip() for l in fid.readlines() if l]
+
+    return requires
+
+
+INSTALL_REQUIRES = parse_requirements_file('requirements/default.txt')
+extras_require = {
+    dep : parse_requirements_file('requirements/' + dep + '.txt')
+    for dep in ['docs', 'optional', 'test']
+}
+
+# requirements for those browsing PyPI
+REQUIRES = [r.replace('>=', ' (>= ') + ')' for r in INSTALL_REQUIRES]
+REQUIRES = [r.replace('==', ' (== ') for r in REQUIRES]
+REQUIRES = [r.replace('[array]', '') for r in REQUIRES]
+
 setup(
     name="iarray",
     description=DESCRIPTION,
@@ -56,23 +75,12 @@ setup(
         'local_scheme': 'dirty-tag',
         'write_to': 'iarray/version.py'
     },
-    setup_requires=[
-        'setuptools>18.0',
-        'setuptools-scm>3.0'
-        'numpy>=1.15',
-        'cython>=0.23',
-    ],
     python_requires=">=3.6",
-    install_requires=[
-        'numpy>=1.15',
-        'numexpr>=2.6',
-        'numba>=0.42',
-        'llvmlite',
-        'pytest',
-        'hypothesis',
-    ],
+    install_requires=INSTALL_REQUIRES,
+    requires=REQUIRES,
+    extras_require=extras_require,
+    packages=find_packages(exclude=['doc', 'benchmarks']),
     package_dir={'': '.'},
-    packages=find_packages(),
     ext_modules=cythonize([
         Extension(
             "iarray.iarray_ext", sources,
@@ -85,15 +93,4 @@ setup(
             )
     ],
     ),
-    extras_require={
-        'doc': [
-            'sphinx >= 1.5',
-            'sphinx_rtd_theme',
-            'numpydoc',
-        ],
-        'examples': [
-            'matplotlib',
-            'numexpr',
-            'numba',
-        ]},
 )

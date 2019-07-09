@@ -1,0 +1,5 @@
+Cython>=0.25,!=0.28.2,!=0.29.0
+wheel
+numpy>=1.15
+setuptools>18.0
+setuptools-scm>3.0
