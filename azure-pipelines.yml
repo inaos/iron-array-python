@@ -31,25 +31,11 @@ steps:
   inputs:
     versionSpec: '$(PYTHON_VERSION)'
     architecture: '$(ARCH)'
-
-- powershell: gci env:* | sort-object name
-
-- powershell: |
-    mkdir -p $HOME/.inaos/cmake
-    $inac_home = Join-Path -Path $env:USERPROFILE -ChildPath "INAOS"
-    mkdir -p $inac_home
-    $repos = "INAC_REPOSITORY_LOCAL=$inac_home`nINAC_REPOSITORY_REMOTE=https://inaos.jfrog.io/inaos/libs-release-local/inaos`nINAC_REPOSITORY_USRPWD=licensed:AKCp5bBraH7CasbsYCURsjzkbjXwVwdYcT7u39EiuL6GjnK1VKfKQWCd1E2E64mHokU5YUHku"
-    Set-Content $HOME/.inaos/cmake/repository.txt $repos
-
-- bash: |
-    git submodule update --init --recursive
+    IARRAY_EXTERNAL: 'iarray/external'
 
 - powershell: |
     Write-Host "##vso[task.setvariable variable=PATH;]${env:PYTHON};${env:PYTHON}\Scripts;${env:PATH}";
   displayName: 'Add Python paths to PATH'
-
-- powershell: Write-Host "##vso[task.prependpath]${env:CONDA}\Scripts"
-  displayName: Add conda to PATH
 
 - script: |
     @echo on
@@ -72,6 +58,10 @@ steps:
 - script: |
     @echo on
 
+    :: Get iron-array library from somewhere (TBD)
+    :: curl https://raw.somewhere.com/libiarray/iarray.h -o %IARRAY_EXTERNAL%/iarray.h
+    :: curl https://raw.somewhere.com/libiarrau/iarray.dll -o %IARRAY_EXTERNAL%/iarray.dll
+
     :: Compile the package and build the wheel
     python setup.py bdist_wheel
 
@@ -79,6 +69,10 @@ steps:
     dir dist
     pip install %PIP_FLAGS% --no-index --find-links dist/ iarray
   displayName: 'Installation'
+
+- powershell: |
+    Write-Host "##vso[task.setvariable variable=PATH;]${env:IARRAY_EXTERNAL};${env:PATH}";
+  displayName: 'Add IARRAY_EXTERNAL path to PATH'
 
 - script: |
     @echo on
