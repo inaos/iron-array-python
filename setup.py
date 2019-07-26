@@ -15,7 +15,7 @@ LFLAGS = os.environ.get('LFLAGS', '').split()
 # Sources & libraries
 include_dirs = [numpy.get_include()]
 library_dirs = []
-libraries = ['iarray', 'inac']
+libraries = ['iarray']
 define_macros = []
 sources = ['iarray/iarray_ext.pyx']
 
@@ -30,6 +30,14 @@ if 'IARRAY_DEVELOP_MODE' in os.environ:
         print("Looking at iarray library at:", IARRAY_BUILD_DIR, ".  If not correct, use the `IARRAY_BUILD_DIR` envvar")
         library_dirs += [IARRAY_BUILD_DIR]
         include_dirs += [os.path.join(IARRAY_DIR, 'include')]
+
+    INAC_DIR = os.environ.get('INAC_DIR', '../INAOS')
+    INAC_DIR = os.path.expanduser(INAC_DIR)
+    print("Looking at the inac library at:", INAC_DIR, ".  If not correct, use the `INAC_DIR` envvar")
+    if INAC_DIR != '':
+        library_dirs += [os.path.join(INAC_DIR, 'lib')]
+        include_dirs += [os.path.join(INAC_DIR, 'include')]
+        libraries += ['inac']
 else:
     print("*** Entering iarray production mode ***")
     IARRAY_DIR = os.environ.get('IARRAY_DIR', '/usr/local')
@@ -39,13 +47,6 @@ else:
         library_dirs += [os.path.join(IARRAY_DIR, 'lib')]
         include_dirs += [os.path.join(IARRAY_DIR, 'include')]
 
-INAC_DIR = os.environ.get('INAC_DIR', '../INAOS')
-INAC_DIR = os.path.expanduser(INAC_DIR)
-print("Looking at the inac library at:", INAC_DIR, ".  If not correct, use the `INAC_DIR` envvar")
-if INAC_DIR != '':
-    library_dirs += [os.path.join(INAC_DIR, 'lib')]
-    include_dirs += [os.path.join(INAC_DIR, 'include')]
-    libraries += ['inac']
 
 setup(
     name="iarray",
