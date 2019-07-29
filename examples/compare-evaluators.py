@@ -158,6 +158,9 @@ def do_block_evaluation(pshape_):
     # TODO: looks like nelem is not in the same position than numpy
     xa = ia.linspace(ia.dtshape(shape=shape, pshape=pshape_), 0., 10., **cparams)
 
+    if (pshape is not None):
+        print("Operand cratio:", round(xa.cratio, 2))
+
     # Reference to compare to
     y0 = (x - 1.35) * (x - 4.45) * (x - 8.5)
 
@@ -169,6 +172,7 @@ def do_block_evaluation(pshape_):
         for ((j, x), (k, y)) in zip(xa.iter_read_block(block_size), ya.iter_write_block(block_write)):
             y[:] = (x - 1.35) * (x - 4.45) * (x - 8.5)
     print("Block evaluate via numpy:", round((time() - t0) / NITER, 4))
+
     y1 = ia.iarray2numpy(ya)
     np.testing.assert_almost_equal(y0, y1)
 
@@ -238,23 +242,32 @@ def do_block_evaluation(pshape_):
     y1 = ia.iarray2numpy(ya)
     np.testing.assert_almost_equal(y0, y1)
 
+    if pshape_ is None:
+        # eval_method = "iterchunk"
+        eval_method = "iterblock"
+    else:
+        eval_method = "iterblosc"
+
     t0 = time()
-    expr = ia.Expr(eval_flags="iterblock", **cparams)
+    expr = ia.Expr(eval_flags=eval_method, **cparams)
     expr.bind(b'x', xa)
     expr.compile(b'(x - 1.35) * (x - 4.45) * (x - 8.5)')
     for i in range(NITER):
         ya = expr.eval(shape, pshape_, np.float64)
-    print("Block evaluate via iarray.eval:", round((time() - t0) / NITER, 4))
+    print("Block evaluate via iarray.eval (method: %s): %.4f" % (eval_method, round((time() - t0) / NITER, 4)))
     y1 = ia.iarray2numpy(ya)
     np.testing.assert_almost_equal(y0, y1)
 
     t0 = time()
     x = xa
     for i in range(NITER):
-        ya = ((x - 1.35) * (x - 4.45) * (x - 8.5)).eval(method="iarray_eval", eval_flags="iterblosc")
-    print("Block evaluate via iarray.LazyExpr.eval('iarray_eval')):", round((time() - t0) / NITER, 4))
+        ya = ((x - 1.35) * (x - 4.45) * (x - 8.5)).eval(method="iarray_eval", pshape=pshape_, eval_flags=eval_method, **cparams)
+    print("Block evaluate via iarray.LazyExpr.eval (method: %s): %.4f" % (eval_method, round((time() - t0) / NITER, 4)))
     y1 = ia.iarray2numpy(ya)
     np.testing.assert_almost_equal(y0, y1)
+
+    if (pshape is not None):
+        print("Result cratio:", round(ya.cratio, 2))
 
 
 if __name__ == "__main__":

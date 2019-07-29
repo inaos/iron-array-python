@@ -216,11 +216,11 @@ class LazyExpr:
         return self.update_expr(new_op=(value, '/', self))
 
 
-    def eval(self, method="iarray_eval", **kwargs):
+    def eval(self, method="iarray_eval", pshape=None, **kwargs):
         # TODO: see if shape and pshape can be instance variables, or better stay like this
         o0 = self.operands['o0']
         shape_ = o0.shape
-        pshape_ = o0.pshape
+        pshape_ = pshape
         if method == "iarray_eval":
             expr = Expr(**kwargs)
             for k, v in self.operands.items():
