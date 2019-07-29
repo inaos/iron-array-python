@@ -14,13 +14,13 @@ NITER = 10
 # Vector sizes and partitions
 shape = [10 * 1000 * 1000]
 N = int(np.prod(shape))
-pshape = [100 * 1000]
+pshape = [200 * 1000]
 
 block_size = pshape
 expression = '(x - 1.35) * (x - 4.45) * (x - 8.5)'
 clevel = 1   # compression level
-clib = ia.LZ4  # compression codec
-nthreads = 2  # number of threads for the evaluation and/or compression
+clib = ia.BLOSCLZ  # compression codec
+nthreads = 4  # number of threads for the evaluation and/or compression
 
 
 # Make this True if you want to test the pre-compilation in Numba (not necessary, really)

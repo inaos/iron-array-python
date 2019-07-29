@@ -310,6 +310,14 @@ cdef class Container:
 
         return dtype[dtshape.dtype]
 
+    @property
+    def cratio(self):
+        cdef ciarray.int64_t nbytes, cbytes
+        ciarray.iarray_container_info(self._c, &nbytes, &cbytes)
+
+        return <double>nbytes / <double>cbytes
+
+
     def __str__(self):
         res = f"IARRAY CONTAINER OBJECT\n"
         ndim = f"    Dimensions: {self.ndim}\n"
