@@ -43,7 +43,7 @@ cdef class ReadBlockIter:
             self.dtype = 1
 
     def __dealloc__(self):
-        ciarray.iarray_iter_read_block_free(self._iter)
+        ciarray.iarray_iter_read_block_free(&self._iter)
 
     def __iter__(self):
         return self
@@ -98,7 +98,7 @@ cdef class WriteBlockIter:
             self.dtype = 1
 
     def __dealloc__(self):
-        ciarray.iarray_iter_write_block_free(self._iter)
+        ciarray.iarray_iter_write_block_free(&self._iter)
 
     def __iter__(self):
         return self
