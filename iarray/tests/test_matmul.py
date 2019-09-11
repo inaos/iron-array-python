@@ -27,7 +27,9 @@ def test_matmul(ashape, apshape, abshape, bshape, bpshape, bbshape, dtype):
 
     cn_2 = ia.iarray2numpy(c)
 
-    np.testing.assert_almost_equal(cn, cn_2)
+    rtol = 1e-6 if dtype == np.float32 else 1e-14
+
+    np.testing.assert_allclose(cn, cn_2, rtol=rtol)
 
 
 
