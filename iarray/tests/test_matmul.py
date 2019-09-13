@@ -16,10 +16,10 @@ import numpy as np
                              ([100, 100], [30, 30], [12, 100], [100], None, [100], np.float32)
                          ])
 def test_matmul(ashape, apshape, abshape, bshape, bpshape, bbshape, dtype):
-    a = ia.linspace(ia.dtshape(ashape, apshape, dtype), -10, 10)
+    a = ia.linspace(ia.dtshape(ashape, apshape, dtype), -10, 1)
     an = ia.iarray2numpy(a)
 
-    b = ia.linspace(ia.dtshape(bshape, bpshape, dtype), -10, 10)
+    b = ia.linspace(ia.dtshape(bshape, bpshape, dtype), -1, 10)
     bn = ia.iarray2numpy(b)
 
     c = ia.matmul(a, b, abshape, bbshape)
@@ -54,14 +54,14 @@ def test_matmul(ashape, apshape, abshape, bshape, bpshape, bbshape, dtype):
                               [100], None, [25], [35], [10], np.float32)
                          ])
 def test_matmul_slice(ashape, apshape, astart, astop, abshape, bshape, bpshape, bstart, bstop, bbshape, dtype):
-    a = ia.linspace(ia.dtshape(ashape, apshape, dtype), -10, 10)
+    a = ia.linspace(ia.dtshape(ashape, apshape, dtype), -1, -2)
     an = ia.iarray2numpy(a)
     aslices = tuple(slice(astart[i], astop[i]) for i in range(len(astart)))
     if len(astart) == 1:
         aslices = aslices[0]
     asl = a[aslices]
 
-    b = ia.linspace(ia.dtshape(bshape, bpshape, dtype), -10, 10)
+    b = ia.linspace(ia.dtshape(bshape, bpshape, dtype), 1, 200)
     bn = ia.iarray2numpy(b)
     bslices = tuple(slice(bstart[i], bstop[i]) for i in range(len(bstart)))
     if len(bstart) == 1:
@@ -73,4 +73,6 @@ def test_matmul_slice(ashape, apshape, astart, astop, abshape, bshape, bpshape, 
 
     cn_2 = ia.iarray2numpy(c)
 
-    np.testing.assert_almost_equal(cn, cn_2)
+    rtol = 1e-6 if dtype == np.float32 else 1e-14
+
+    np.testing.assert_allclose(cn, cn_2, rtol=rtol)
