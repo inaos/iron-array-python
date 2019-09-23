@@ -158,7 +158,8 @@ cdef extern from "libiarray/iarray.h":
 
     ina_rc_t iarray_from_file(iarray_context_t *ctx,
                               iarray_store_properties_t *store,
-                              iarray_container_t **container)
+                              iarray_container_t **container,
+                              bool load_in_mem)
 
     bool iarray_is_empty(iarray_container_t *container)
 
