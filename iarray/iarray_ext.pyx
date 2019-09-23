@@ -49,7 +49,7 @@ cdef class ReadBlockIter:
         return self
 
     def __next__(self):
-        if not ciarray.iarray_iter_read_block_has_next(self._iter):
+        if ciarray.iarray_iter_read_block_has_next(self._iter) != 0:
             raise StopIteration
 
         ciarray.iarray_iter_read_block_next(self._iter, NULL, 0)
@@ -104,7 +104,7 @@ cdef class WriteBlockIter:
         return self
 
     def __next__(self):
-        if not ciarray.iarray_iter_write_block_has_next(self._iter):
+        if ciarray.iarray_iter_write_block_has_next(self._iter) != 0:
             raise StopIteration
 
         ciarray.iarray_iter_write_block_next(self._iter, NULL, 0)
@@ -634,7 +634,7 @@ def iarray2numpy(cfg, c):
     return a
 
 
-def from_file(cfg, filename):
+def from_file(cfg, filename, copy=False):
     ctx = Context(cfg)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
 
@@ -643,7 +643,7 @@ def from_file(cfg, filename):
     store.id = filename
 
     cdef ciarray.iarray_container_t *c
-    ciarray.iarray_from_file(ctx_, &store, &c)
+    ciarray.iarray_from_file(ctx_, &store, &c, copy)
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     return IArray(ctx, c_c)
