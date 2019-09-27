@@ -209,7 +209,7 @@ cdef extern from "libiarray/iarray.h":
                                          bool external_buffer)
     void iarray_iter_write_block_free(iarray_iter_write_block_t **itr)
     ina_rc_t iarray_iter_write_block_next(iarray_iter_write_block_t *itr, void *buffer, int32_t bufsize)
-    int iarray_iter_write_block_has_next(iarray_iter_write_block_t *itr)
+    ina_rc_t iarray_iter_write_block_has_next(iarray_iter_write_block_t *itr)
 
 
     ctypedef struct iarray_iter_read_block_t
@@ -231,7 +231,7 @@ cdef extern from "libiarray/iarray.h":
                                         bool external_buffer)
     void iarray_iter_read_block_free(iarray_iter_read_block_t **itr)
     ina_rc_t iarray_iter_read_block_next(iarray_iter_read_block_t *itr, void *buffer, int32_t bufsize)
-    int iarray_iter_read_block_has_next(iarray_iter_read_block_t *itr)
+    ina_rc_t iarray_iter_read_block_has_next(iarray_iter_read_block_t *itr)
 
     # Random
 
