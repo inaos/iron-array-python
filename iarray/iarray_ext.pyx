@@ -34,6 +34,8 @@ cdef class ReadBlockIter:
     def __cinit__(self, c, block):
         self._c = c
         cdef ciarray.int64_t block_[ciarray.IARRAY_DIMENSION_MAX]
+        if block is None:
+            block = c.pshape
         for i in range(len(block)):
             block_[i] = block[i]
 
@@ -255,9 +257,10 @@ cdef class Container:
         if ctx is None:
             raise ValueError("You must pass a context to the Container constructor")
         if c is None:
-            raise ValueError("You must pass a Capsule to the C container struct to the Container constructor")
+            raise ValueError("You must pass a Capsule to the C container struct of the Container constructor")
         self._ctx = ctx
-        cdef ciarray.iarray_container_t* c_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(c, "iarray_container_t*")
+        cdef ciarray.iarray_container_t* c_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(
+            c, "iarray_container_t*")
         self._c = c_
 
     def __dealloc__(self):
@@ -360,7 +363,7 @@ cdef class Expression:
         return IArray(self._ctx, c_c)
 
 #
-# Iarray container creators
+# Iarray container constructors
 #
 
 def empty(cfg, shape, pshape=None, dtype=np.float64, filename=None):
@@ -633,10 +636,12 @@ def expr_bind(e, var, c):
         c.to_capsule(), "iarray_container_t*")
     ciarray.iarray_expr_bind(e_, var, c_)
 
+
 def expr_compile(e, expr):
     cdef ciarray.iarray_expression_t* e_= <ciarray.iarray_expression_t*> PyCapsule_GetPointer(
         e, "iarray_expression_t*")
     ciarray.iarray_expr_compile(e_, expr)
+
 
 def expr_eval(e, c):
     cdef ciarray.iarray_expression_t* e_= <ciarray.iarray_expression_t*> PyCapsule_GetPointer(

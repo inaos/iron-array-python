@@ -131,8 +131,15 @@ class Config(ext._Config):
 class LazyExpr:
 
     def __init__(self, new_op):
-        # This is the very first time that a LazyExpr is formed from two operands that are not LazyExpr themselves
         value1, op, value2 = new_op
+        if value2 is None:
+            # ufunc
+            if isinstance(value1, LazyExpr):
+                self.expression = f"{op}({self.expression})"
+            else:
+                self.operands = {"o0": value1}
+                self.expression = f"{op}(o0)"
+            return
         if isinstance(value1, (int, float)) and isinstance(value2, (int, float)):
             self.expression = f"({value1} {op} {value2})"
         elif isinstance(value2, (int, float)):
@@ -154,6 +161,8 @@ class LazyExpr:
                     self.operands = {"o0": value1}
                 self.update_expr(new_op)
             else:
+                # This is the very first time that a LazyExpr is formed from two operands
+                # that are not LazyExpr themselves
                 self.operands = {"o0": value1, "o1": value2}
                 self.expression = f"(o0 {op} o1)"
 
@@ -190,7 +199,6 @@ class LazyExpr:
                 self.expression = f"({op_name} {op} {self.expression})"
         return self
 
-
     def __add__(self, value):
         return self.update_expr(new_op=(self, '+', value))
 
@@ -214,7 +222,6 @@ class LazyExpr:
 
     def __rtruediv__(self, value):
         return self.update_expr(new_op=(value, '/', self))
-
 
     def eval(self, method="iarray_eval", pshape=None, **kwargs):
         # TODO: see if shape and pshape can be instance variables, or better stay like this
@@ -243,7 +250,6 @@ class LazyExpr:
             raise ValueError(f"Unrecognized '{method}' method")
 
         return out
-
 
     def __str__(self):
         expression = f"{self.expression}"
@@ -276,6 +282,21 @@ class IArray(ext.Container):
 
     def __rtruediv__(self, value):
         return LazyExpr(new_op=(value, '/', self))
+
+    # def __array_function__(self, func, types, args, kwargs):
+    #     if not all(issubclass(t, np.ndarray) for t in types):
+    #         # Defer to any non-subclasses that implement __array_function__
+    #         return NotImplemented
+    #
+    #     # Use NumPy's private implementation without __array_function__
+    #     # dispatching
+    #     return func._implementation(*args, **kwargs)
+
+    # def __array_ufunc__(self, ufunc, method, *inputs, **kwargs):
+    #     print("method:", method)
+
+    def cos(self, **kwargs):
+        return LazyExpr(new_op=(self, 'cos', None))
 
 
 # The main expression class
