@@ -14,7 +14,6 @@ TRUNC_PREC = 4
 
 
 from . import iarray_ext as ext
-
 from .high_level import (IArray, dtshape, Config, RandomContext, Expr, LazyExpr,
                          empty, arange, linspace, zeros, ones, full, from_file,
                          iarray2numpy, numpy2iarray, matmul,
@@ -22,6 +21,7 @@ from .high_level import (IArray, dtshape, Config, RandomContext, Expr, LazyExpr,
                          random_uniform, random_normal, random_bernoulli, random_binomial, random_poisson,
                          random_kstest
                          )
+from .expression_eval import Parser
 from .version import version as __version__
 
 ext.IArrayInit()
