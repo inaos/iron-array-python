@@ -22,7 +22,7 @@ from .high_level import (IArray, dtshape, Config, RandomContext, Expr, LazyExpr,
                          random_uniform, random_normal, random_bernoulli, random_binomial, random_poisson,
                          random_kstest,
                          # ufuncs
-                         abs, arccos, arcsin, arctan, arctan2, cos, cosh, exp, log, log10, negative, power,
+                         abs, arccos, arcsin, arctan, arctan2, ceil, cos, cosh, exp, floor, log, log10, negative, power,
                          sin, sinh, sqrt, tan, tanh
                          )
 

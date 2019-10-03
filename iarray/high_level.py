@@ -544,6 +544,9 @@ def cosh(iarr):
 def exp(iarr):
     return iarr.exp()
 
+def floor(iarr):
+    return iarr.floor()
+
 def log(iarr):
     return iarr.log()
 

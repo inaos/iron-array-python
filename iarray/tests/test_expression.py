@@ -37,25 +37,20 @@ def test_expression(eval_flags, shape, pshape, dtype, expression):
 
 # ufuncs
 @pytest.mark.parametrize("ufunc, ia_expr", [
-    # ("np.abs(x)", "abs(x)"),
-    # TODO: TypeError: bad operand type for abs(): 'IArray'
+    ("abs(x)", "abs(x)"),
     ("arccos(x)", "acos(x)"),
     ("arcsin(x)", "asin(x)"),
     ("arctan(x)", "atan(x)"),
     ("arctan2(x, y)", "atan2(x, y)"),
-    # ("np.ceil(x)", "ceil(x)"),
-    # TODO: TypeError: must be real number, not IArray
+    ("ceil(x)", "ceil(x)"),
     ("cos(x)", "cos(x)"),
     ("cosh(x)", "cosh(x)"),
     ("exp(x)", "exp(x)"),
-    # ("floor(x)", "floor(x)"),
-    # TODO: TypeError: must be real number, not IArray
+    ("floor(x)", "floor(x)"),
     ("log(x)", "log(x)"),
     ("log10(x)", "log10(x)"),
-    # ("negative(x)", "negate(x)"),
-    # TODO: TypeError: bad operand type for unary -: 'IArray'
-    # ("power(x, y)", "pow(x, y)"),
-    # TODO: TypeError: unsupported operand type(s) for ** or pow(): 'IArray' and 'IArray'
+    ("negative(x)", "negate(x)"),
+    ("power(x, y)", "pow(x, y)"),
     ("sin(x)", "sin(x)"),
     ("sinh(x)", "sinh(x)"),
     ("sqrt(x)", "sqrt(x)"),
@@ -89,10 +84,16 @@ def test_ufuncs(ufunc, ia_expr):
         np.testing.assert_almost_equal(npout, npout2, decimal=decimal)
 
         # High-level ironarray eval, but via numpy ufunc machinery
-        lazy_expr = eval("np." + ufunc, {"np": np, "x": x, "y": y})
-        iout2 = lazy_expr.eval(pshape=pshape, dtype=dtype)
-        npout2 = ia.iarray2numpy(iout2)
-        np.testing.assert_almost_equal(npout, npout2, decimal=decimal)
+        # TODO: the next ufuncs still have some problems with the numpy machinery (bug?)
+        # abs(x) : TypeError: bad operand type for abs(): 'IArray'
+        # ceil(x) : TypeError: must be real number, not IArray
+        # negative(x) : TypeError: bad operand type for unary -: 'IArray'
+        # power(x,y) : TypeError: unsupported operand type(s) for ** or pow(): 'IArray' and 'IArray'
+        if ufunc not in ("abs(x)", "ceil(x)", "negative(x)", "power(x, y)"):
+            lazy_expr = eval("np." + ufunc, {"np": np, "x": x, "y": y})
+            iout2 = lazy_expr.eval(pshape=pshape, dtype=dtype)
+            npout2 = ia.iarray2numpy(iout2)
+            np.testing.assert_almost_equal(npout, npout2, decimal=decimal)
 
         npout2 = eval("np." + ufunc, {"np": np, "x": npx, "y": npy})  # pure numpy
         np.testing.assert_almost_equal(npout, npout2, decimal=decimal)
