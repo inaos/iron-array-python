@@ -438,9 +438,9 @@ def from_file(filename, **kwargs):
     return ext.from_file(cfg, filename)
 
 
-def iarray2numpy(c, **kwargs):
+def iarray2numpy(iarr, **kwargs):
     cfg = Config(**kwargs)
-    return ext.iarray2numpy(cfg, c)
+    return ext.iarray2numpy(cfg, iarr)
 
 
 def numpy2iarray(c, pshape=None, **kwargs):
@@ -516,6 +516,61 @@ def random_kstest(a, b, **kwargs):
 def matmul(a, b, block_a, block_b, **kwargs):
     cfg = Config(**kwargs)
     return ext.matmul(cfg, a, b, block_a, block_b)
+
+def abs(iarr):
+    return iarr.abs()
+
+def arccos(iarr):
+    return iarr.arccos()
+
+def arcsin(iarr):
+    return iarr.arcsin()
+
+def arctan(iarr):
+    return iarr.arctan()
+
+def arctan2(iarr1, iarr2):
+    return iarr1.arctan2(iarr2)
+
+def ceil(iarr):
+    return iarr.ceil()
+
+def cos(iarr):
+    return iarr.cos()
+
+def cosh(iarr):
+    return iarr.cosh()
+
+def exp(iarr):
+    return iarr.exp()
+
+def log(iarr):
+    return iarr.log()
+
+def log10(iarr):
+    return iarr.log10()
+
+def negative(iarr):
+    return iarr.negative()
+
+def power(iarr1, iarr2):
+    return iarr1.power(iarr2)
+
+def sin(iarr):
+    return iarr.sin()
+
+def sinh(iarr):
+    return iarr.sinh()
+
+def sqrt(iarr):
+    return iarr.sqrt()
+
+def tan(iarr):
+    return iarr.tan()
+
+def tanh(iarr):
+    return iarr.tanh()
+
 
 
 if __name__ == "__main__":
