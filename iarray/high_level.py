@@ -140,6 +140,10 @@ class LazyExpr:
                 self.operands = {"o0": value1}
                 self.expression = f"{op}(o0)"
             return
+        elif op in ("atan2", "pow"):
+            self.operands = {"o0": value1, "o1": value2}
+            self.expression = f"{op}(o0, o1)"
+            return
         if isinstance(value1, (int, float)) and isinstance(value2, (int, float)):
             self.expression = f"({value1} {op} {value2})"
         elif isinstance(value2, (int, float)):
@@ -223,22 +227,23 @@ class LazyExpr:
     def __rtruediv__(self, value):
         return self.update_expr(new_op=(value, '/', self))
 
-    def eval(self, method="iarray_eval", pshape=None, **kwargs):
+    def eval(self, method="iarray_eval", pshape=None, dtype=None, **kwargs):
         # TODO: see if shape and pshape can be instance variables, or better stay like this
         o0 = self.operands['o0']
         shape_ = o0.shape
-        pshape_ = pshape
+        # TODO: figure out a better way to set a default for the dtype
+        dtype = o0.dtype if dtype is None else dtype
         if method == "iarray_eval":
             expr = Expr(**kwargs)
             for k, v in self.operands.items():
                 if isinstance(v, IArray):
                     expr.bind(k, v)
             expr.compile(self.expression)
-            out = expr.eval(shape_, pshape_, np.float64)
+            out = expr.eval(shape_, pshape, dtype)
         elif method == "numexpr":
-            out = ia.empty(ia.dtshape(shape=shape_, pshape=pshape_), **kwargs)
-            operand_iters = tuple(o.iter_read_block(pshape_) for o in self.operands.values() if isinstance(o, IArray))
-            all_iters = operand_iters + (out.iter_write_block(pshape_),)   # put the iterator for the output at the end
+            out = ia.empty(ia.dtshape(shape=shape_, pshape=pshape, dtype=dtype), **kwargs)
+            operand_iters = tuple(o.iter_read_block(pshape) for o in self.operands.values() if isinstance(o, IArray))
+            all_iters = operand_iters + (out.iter_write_block(pshape),)   # put the iterator for the output at the end
             # all_iters =  (out.iter_write_block(pshape_),) + operand_iters  # put the iterator for the output at the front
             for block in zip(*all_iters):
                 block_operands = {o: block[i][1] for (i, o) in enumerate(self.operands.keys(), start=0)}
@@ -295,8 +300,62 @@ class IArray(ext.Container):
     # def __array_ufunc__(self, ufunc, method, *inputs, **kwargs):
     #     print("method:", method)
 
-    def cos(self, **kwargs):
+    def abs(self):
+        return LazyExpr(new_op=(self, 'abs', None))
+
+    def arccos(self):
+        return LazyExpr(new_op=(self, 'acos', None))
+
+    def arcsin(self):
+        return LazyExpr(new_op=(self, 'asin', None))
+
+    def arctan(self):
+        return LazyExpr(new_op=(self, 'atan', None))
+
+    def arctan2(self, op2):
+        return LazyExpr(new_op=(self, 'atan2', op2))
+
+    def ceil(self):
+        return LazyExpr(new_op=(self, 'ceil', None))
+
+    def cos(self):
         return LazyExpr(new_op=(self, 'cos', None))
+
+    def cosh(self):
+        return LazyExpr(new_op=(self, 'cosh', None))
+
+    def exp(self):
+        return LazyExpr(new_op=(self, 'exp', None))
+
+    def floor(self):
+        return LazyExpr(new_op=(self, 'floor', None))
+
+    def log(self):
+        return LazyExpr(new_op=(self, 'log', None))
+
+    def log10(self):
+        return LazyExpr(new_op=(self, 'log10', None))
+
+    def negative(self):
+        return LazyExpr(new_op=(self, 'negate', None))
+
+    def power(self, op2):
+        return LazyExpr(new_op=(self, 'pow', op2))
+
+    def sin(self):
+        return LazyExpr(new_op=(self, 'sin', None))
+
+    def sinh(self):
+        return LazyExpr(new_op=(self, 'sinh', None))
+
+    def sqrt(self):
+        return LazyExpr(new_op=(self, 'sqrt', None))
+
+    def tan(self):
+        return LazyExpr(new_op=(self, 'tan', None))
+
+    def tanh(self):
+        return LazyExpr(new_op=(self, 'tanh', None))
 
 
 # The main expression class

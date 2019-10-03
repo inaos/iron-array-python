@@ -28,15 +28,88 @@ def test_expression(eval_flags, shape, pshape, dtype, expression):
     npx = ia.iarray2numpy(x)
     npy = ia.iarray2numpy(y)
 
-    e = ia.Expr(eval_flags=eval_flags)
-    e.bind("x", x)
-    e.bind("y", y)
-    e.compile(expression)
-    c = e.eval(shape, pshape, dtype)
-    d = ia.iarray2numpy(c)
+    expr = ia.Expr(eval_flags=eval_flags)
+    expr.bind("x", x)
+    expr.bind("y", y)
+    expr.compile(expression)
+    iout = expr.eval(shape, pshape, dtype)
+    npout = ia.iarray2numpy(iout)
 
-    # f = eval(expression, {"x": npx})  # pure numpy
-    # f = ne.evaluate(expression, {"x": npx})  # numexpr
-    f = parser.parse(expression).evaluate({"x": npx, "y": npy})
+    # npout2 = eval(expression, {"x": npx})  # pure numpy
+    # npout2 = ne.evaluate(expression, {"x": npx})  # numexpr
+    npout2 = parser.parse(expression).evaluate({"x": npx, "y": npy})
+    np.testing.assert_almost_equal(npout, npout2)
 
-    np.testing.assert_almost_equal(d, f)
+
+    # IARRAY_FUNC_ABS,
+    # IARRAY_FUNC_ACOS,
+    # IARRAY_FUNC_ASIN,
+    # IARRAY_FUNC_ATAN,
+    # IARRAY_FUNC_ATAN2,
+    # IARRAY_FUNC_CEIL,
+    # IARRAY_FUNC_COS,
+    # IARRAY_FUNC_COSH,
+    # IARRAY_FUNC_E,
+    # IARRAY_FUNC_EXP,
+    # IARRAY_FUNC_FAC,
+    # IARRAY_FUNC_FLOOR,
+    # IARRAY_FUNC_LN,
+    # IARRAY_FUNC_LOG,
+    # IARRAY_FUNC_LOG10,
+    # IARRAY_FUNC_NCR,
+    # IARRAY_FUNC_NEGATE,
+    # IARRAY_FUNC_NPR,
+    # IARRAY_FUNC_PI,
+    # IARRAY_FUNC_POW,
+    # IARRAY_FUNC_SIN,
+    # IARRAY_FUNC_SINH,
+    # IARRAY_FUNC_SQRT,
+    # IARRAY_FUNC_TAN,
+    # IARRAY_FUNC_TANH,
+
+# ufuncs
+@pytest.mark.parametrize("ufunc, ia_expr, dtype",
+                         [
+                             # ("np.abs(x)", "abs(x)", np.float64),  # TODO: TypeError: bad operand type for abs(): 'IArray'
+                             ("np.arccos(x)", "acos(x)", np.float64),
+                             ("np.arcsin(x)", "asin(x)", np.float64),
+                             ("np.arctan(x)", "atan(x)", np.float64),
+                             ("np.arctan2(x, y)", "atan2(x, y)", np.float64),
+                             # ("np.ceil(x)", "ceil(x)", np.float32), # TODO: TypeError: must be real number, not IArray
+                             ("np.cos(x)", "cos(x)", np.float64),
+                             ("np.cosh(x)", "cosh(x)", np.float64),
+                             ("np.exp(x)", "exp(x)", np.float64),
+                             # ("np.floor(x)", "floor(x)", np.float64), # TODO: TypeError: must be real number, not IArray
+                             ("np.log(x)", "log(x)", np.float64),
+                             ("np.log10(x)", "log10(x)", np.float64),
+                             # ("np.negative(x)", "negate(x)", np.float64),  # TODO: TypeError: bad operand type for unary -: 'IArray'
+                             # ("np.power(x, y)", "pow(x, y)", np.float64),  # TODO: TypeError: unsupported operand type(s) for ** or pow(): 'IArray' and 'IArray'
+                             ("np.sin(x)", "sin(x)", np.float32),
+                             ("np.sinh(x)", "sinh(x)", np.float64),
+                             ("np.sqrt(x)", "sqrt(x)", np.float64),
+                             ("np.tan(x)", "tan(x)", np.float64),
+                             ("np.tanh(x)", "tanh(x)", np.float64),
+                         ])
+def test_ufuncs(ufunc, ia_expr, dtype):
+    shape = [20, 30]
+    pshape = [2, 3]
+    # The ranges below are important for not overflowing operations
+    x = ia.linspace(ia.dtshape(shape, pshape, dtype), .1, .4)
+    y = ia.linspace(ia.dtshape(shape, pshape, dtype), 0, 1)
+    npx = ia.iarray2numpy(x)
+    npy = ia.iarray2numpy(y)
+
+    expr = ia.Expr()
+    expr.bind("x", x)
+    expr.bind("y", y)
+    expr.compile(ia_expr)
+    iout = expr.eval(shape, pshape, dtype)
+    npout = ia.iarray2numpy(iout)
+
+    lazy_expr = eval(ufunc, {"np": np, "x": x, "y": y})
+    iout2 = lazy_expr.eval(pshape=pshape, dtype=dtype)  # pure ironarray eval
+    npout2 = ia.iarray2numpy(iout2)
+    np.testing.assert_almost_equal(npout, npout2)
+
+    npout3 = eval(ufunc, {"np": np, "x": npx, "y": npy})  # pure numpy
+    np.testing.assert_almost_equal(npout2, npout3)
