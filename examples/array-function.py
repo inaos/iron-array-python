@@ -1,6 +1,7 @@
+from time import time
 import iarray as ia
 import numpy as np
-from time import time
+import numexpr as ne
 
 
 # Define array params
@@ -27,6 +28,29 @@ t0 = time()
 np3 = np.cos(np1)
 t1 = time()
 print("Time for numpy evaluation: %.3f" % (t1 - t0))
+
+try:
+    np.testing.assert_almost_equal(np3, np2)
+    print("OK.  Results are the same.")
+except AssertionError:
+    print("ERROR. Results are different.")
+
+t0 = time()
+np3 = ne.evaluate("cos(np1)")
+t1 = time()
+print("Time for numexpr evaluation: %.3f" % (t1 - t0))
+
+try:
+    np.testing.assert_almost_equal(np3, np2)
+    print("OK.  Results are the same.")
+except AssertionError:
+    print("ERROR. Results are different.")
+
+t0 = time()
+parser = ia.Parser()
+np3 = parser.evaluate("cos(np1)", {"np1": np1})
+t1 = time()
+print("Time for internal expression_eval evaluation: %.3f" % (t1 - t0))
 
 try:
     np.testing.assert_almost_equal(np3, np2)

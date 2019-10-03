@@ -21,6 +21,7 @@ from math import ceil
 from libc.stdlib cimport malloc, free
 from iarray.high_level import IArray
 from collections import namedtuple
+from .expression_eval import Parser
 
 
 cdef class ReadBlockIter:
@@ -346,6 +347,7 @@ cdef class Expression:
         ciarray.iarray_expr_bind(self._e, var2, c_)
 
     def compile(self, expr):
+        expr = Parser().parse(expr).simplify({}).toString()
         expr2 = expr.encode("utf-8") if isinstance(expr, str) else expr
         if ciarray.iarray_expr_compile(self._e, expr2) != 0:
             raise ValueError(f"Error in compiling expr: {expr}")
