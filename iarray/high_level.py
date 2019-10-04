@@ -41,9 +41,11 @@ def fuse_expressions(expr, new_base, dup_op):
             continue
         if expr[i] == 'o':
             try:
-                j = expr[i+1:].index(' ')
+                j = expr[i + 1:].index(' ')
             except ValueError:
                 j = expr[i + 1:].index(')')
+            if expr[i + j] == ')':
+                j -= 1
             old_pos = int(expr[i+1:i+j+1])
             old_op = f"o{old_pos}"
             if old_op not in dup_op:
