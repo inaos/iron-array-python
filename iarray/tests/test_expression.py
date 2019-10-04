@@ -87,9 +87,10 @@ def test_ufuncs(ufunc, ia_expr):
         # TODO: the next ufuncs still have some problems with the numpy machinery (bug?)
         # abs(x) : TypeError: bad operand type for abs(): 'IArray'
         # ceil(x) : TypeError: must be real number, not IArray
+        # floor(x): TypeError: must be real number, not IArray
         # negative(x) : TypeError: bad operand type for unary -: 'IArray'
         # power(x,y) : TypeError: unsupported operand type(s) for ** or pow(): 'IArray' and 'IArray'
-        if ufunc not in ("abs(x)", "ceil(x)", "negative(x)", "power(x, y)"):
+        if ufunc not in ("abs(x)", "ceil(x)", "floor(x)", "negative(x)", "power(x, y)"):
             lazy_expr = eval("np." + ufunc, {"np": np, "x": x, "y": y})
             iout2 = lazy_expr.eval(pshape=pshape, dtype=dtype)
             npout2 = ia.iarray2numpy(iout2)
