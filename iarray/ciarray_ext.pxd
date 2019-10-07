@@ -82,6 +82,11 @@ cdef extern from "libiarray/iarray.h":
     void iarray_container_free(iarray_context_t *ctx,
                                iarray_container_t **container)
 
+    ina_rc_t iarray_get_sframe(iarray_container_t *container,
+                               char **sframe,
+                               int64_t *len,
+                               int *shared)
+
     ina_rc_t iarray_container_info(iarray_container_t *c, int64_t *nbytes, int64_t *cbytes)
 
 

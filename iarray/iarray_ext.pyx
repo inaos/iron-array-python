@@ -40,7 +40,7 @@ cdef class ReadBlockIter:
         for i in range(len(block)):
             block_[i] = block[i]
 
-        ciarray.iarray_iter_read_block_new(self._c._ctx._ctx, &self._iter, self._c._c, block_, &self._val, False)
+        ciarray.iarray_iter_read_block_new(self._c._ctx._ctx, &self._iter, self._c.array, block_, &self._val, False)
         if self._c.dtype == np.float64:
             self.dtype = 0
         else:
@@ -89,7 +89,7 @@ cdef class WriteBlockIter:
             block = c.pshape
         for i in range(len(block)):
             block_[i] = block[i]
-        retcode = ciarray.iarray_iter_write_block_new(self._c._ctx._ctx, &self._iter, self._c._c, block_, &self._val,
+        retcode = ciarray.iarray_iter_write_block_new(self._c._ctx._ctx, &self._iter, self._c.array, block_, &self._val,
                                                       False)
         assert(retcode == 0)
         if self._c.dtype == np.float64:
@@ -251,7 +251,7 @@ cdef class RandomContext:
 
 
 cdef class Container:
-    cdef ciarray.iarray_container_t *_c
+    cdef ciarray.iarray_container_t *array
     cdef Context _ctx
 
     def __init__(self, ctx, c):
@@ -262,10 +262,10 @@ cdef class Container:
         self._ctx = ctx
         cdef ciarray.iarray_container_t* c_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(
             c, "iarray_container_t*")
-        self._c = c_
+        self.array = c_
 
     def __dealloc__(self):
-        ciarray.iarray_container_free(self._ctx._ctx, &self._c)
+        ciarray.iarray_container_free(self._ctx._ctx, &self.array)
 
     def iter_read_block(self, block=None):
         return ReadBlockIter(self, block)
@@ -274,25 +274,25 @@ cdef class Container:
         return WriteBlockIter(self, block)
 
     def to_capsule(self):
-        return PyCapsule_New(self._c, "iarray_container_t*", NULL)
+        return PyCapsule_New(self.array, "iarray_container_t*", NULL)
 
     @property
     def ndim(self):
         cdef ciarray.iarray_dtshape_t dtshape
-        ciarray.iarray_get_dtshape(self._ctx._ctx, self._c, &dtshape)
+        ciarray.iarray_get_dtshape(self._ctx._ctx, self.array, &dtshape)
         return dtshape.ndim
 
     @property
     def shape(self):
         cdef ciarray.iarray_dtshape_t dtshape
-        ciarray.iarray_get_dtshape(self._ctx._ctx, self._c, &dtshape)
+        ciarray.iarray_get_dtshape(self._ctx._ctx, self.array, &dtshape)
         shape = [dtshape.shape[i] for i in range(self.ndim)]
         return tuple(shape)
 
     @property
     def pshape(self):
         cdef ciarray.iarray_dtshape_t dtshape
-        ciarray.iarray_get_dtshape(self._ctx._ctx, self._c, &dtshape)
+        ciarray.iarray_get_dtshape(self._ctx._ctx, self.array, &dtshape)
         pshape = [dtshape.pshape[i] for i in range(self.ndim)]
         return tuple(pshape)
 
@@ -300,13 +300,13 @@ cdef class Container:
     def dtype(self):
         dtype = [np.float64, np.float32]
         cdef ciarray.iarray_dtshape_t dtshape
-        ciarray.iarray_get_dtshape(self._ctx._ctx, self._c, &dtshape)
+        ciarray.iarray_get_dtshape(self._ctx._ctx, self.array, &dtshape)
         return dtype[dtshape.dtype]
 
     @property
     def cratio(self):
         cdef ciarray.int64_t nbytes, cbytes
-        ciarray.iarray_container_info(self._c, &nbytes, &cbytes)
+        ciarray.iarray_container_info(self.array, &nbytes, &cbytes)
         return <double>nbytes / <double>cbytes
 
     def __str__(self):
@@ -323,6 +323,25 @@ cdef class Container:
         start = [s.start if s.start is not None else 0 for s in item]
         stop = [s.stop if s.stop is not None else sh for s, sh in zip(item, self.shape)]
         return _get_slice(self._ctx, self, start, stop)
+
+    def to_sframe(self):
+        cdef char *sframe
+        cdef ciarray.int64_t length
+        cdef int shared
+        if (ciarray.iarray_get_sframe(self.array, &sframe, &length, &shared) < 0):
+            raise NotImplementedError("Cannot get a serial version of the iarray")
+        cdef char[::1] sview
+        cdef bytes sbytes
+        if shared:
+            # A shared sframe; just return a memory view (i.e. avoid copies)
+            sview = <char[:length:1]>sframe
+            return sview
+        else:
+            # This is not a shared sframe, so copy and free it
+            # Returning a view in this is dangerous because we can create leaks on sframe
+            sbytes = sframe[:length]
+            free(sframe)
+            return sbytes
 
 
 cdef class Expression:
