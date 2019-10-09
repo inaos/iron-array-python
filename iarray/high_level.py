@@ -435,9 +435,9 @@ def full(dtshape, fill_value, **kwargs):
     return ext.full(cfg, fill_value, shape, pshape, dtype, cfg.filename)
 
 
-def from_file(filename, **kwargs):
+def from_file(filename, load_in_mem=False, **kwargs):
     cfg = Config(**kwargs)
-    return ext.from_file(cfg, filename)
+    return ext.from_file(cfg, filename, load_in_mem)
 
 
 def iarray2numpy(iarr, **kwargs):
