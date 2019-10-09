@@ -44,3 +44,37 @@ t1 = time()
 print("Time for summing up %d slices (via iarray iter): %.3f" % (NSLICES, (t1 - t0)))
 
 # np.testing.assert_allclose(np.array(slsum1), np.array(slsum2))
+
+# Apparently the evaluation engine does not handle views well yet
+xnp = [ia.iarray2numpy(sl[i]) for i in range(NSLICES)]
+x = [ia.numpy2iarray(xnp[i]) for i in range(NSLICES)]
+
+# Compute the accumulation of the random slices into one
+t0 = time()
+accum = x[0]
+for i in range(1, NSLICES):
+    accum += x[i]
+result = accum.eval()
+t1 = time()
+print("Time for accumulating %d slices into one (via eval()): %.3f" % (NSLICES, (t1 - t0)))
+
+# # Compute the accumulation of the random slices into one
+t0 = time()
+expr = ia.Expr(eval_flags="iterblock", blocksize=0)
+sexpr = ""
+for i in range(NSLICES):
+    expr.bind("x%d"%i, x[i])
+    sexpr += "x%d + " % i
+sexpr = sexpr[:-2]
+expr.compile(sexpr)
+b2 = expr.eval((SLICE_THICKNESS, nx, ny), (1, nx, ny), precipitation.dtype)
+t1 = time()
+print("Time for accumulating %d slices into one (via Expr()): %.3f" % (NSLICES, (t1 - t0)))
+
+# Compute the accumulation of the random slices into one
+t0 = time()
+xnp_accum = x[0]
+for i in range(1, NSLICES):
+    xnp_accum += x[i]
+t1 = time()
+print("Time for accumulating %d slices into one (via numpy): %.3f" % (NSLICES, (t1 - t0)))
