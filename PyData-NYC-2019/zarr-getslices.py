@@ -5,7 +5,7 @@ import zarr
 
 NSLICES = 100
 SLICE_THICKNESS = 10
-IN_MEMORY = False
+IN_MEMORY = True
 
 t0 = time()
 if IN_MEMORY:
