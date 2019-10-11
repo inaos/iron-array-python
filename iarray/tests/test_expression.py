@@ -15,7 +15,7 @@ import numpy as np
      ("iterchunk", [1000], None, np.float32, "sqrt(x) + atan2(x, x) + pow(x, x)"),
      ("iterblock", [100, 100], None, np.float64, "(x - cos(1)) * 2"),
      ("iterchunk", [8, 6, 7, 4, 5], None, np.float32, "(x - cos(y)) * (sin(x) + y) + 2 * x + y"),
-     ("iterblosc", [8, 6, 7, 4, 5], [4, 3, 3, 4, 5], np.float32, "(x - cos(y)) * (sin(x) + y) + 2 * x + y"),
+     ("iterblosc", [8, 6, 7, 4, 5], [4, 3, 3, 4, 5], np.float64, "(x - cos(y)) * (sin(x) + y) + 2 * x + y"),
 ])
 def test_expression(eval_flags, shape, pshape, dtype, expression):
     # The ranges below are important for not overflowing operations
@@ -57,7 +57,7 @@ def test_expression(eval_flags, shape, pshape, dtype, expression):
     ("tan(x)", "tan(x)"),
     ("tanh(x)", "tanh(x)"),
 ])
-def test_ufuncs(ufunc, ia_expr):
+def _test_ufuncs(ufunc, ia_expr):
     shape = [20, 30]
     pshape = [2, 3]
     for dtype in np.float64, np.float32:
