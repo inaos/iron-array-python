@@ -3,9 +3,9 @@ import numpy as np
 import zarr
 
 
-NSLICES = 100
+NSLICES = 50
 SLICE_THICKNESS = 10
-IN_MEMORY = True
+IN_MEMORY = False
 
 t0 = time()
 if IN_MEMORY:

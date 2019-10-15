@@ -3,7 +3,7 @@ import numpy as np
 import netCDF4
 
 
-NSLICES = 100
+NSLICES = 50
 SLICE_THICKNESS = 10
 IN_MEMORY = False
 
