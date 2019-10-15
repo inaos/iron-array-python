@@ -2,6 +2,7 @@ from time import time
 import numpy as np
 import numexpr as ne
 import iarray as ia
+from memory_profiler import profile
 
 
 NSLICES = 50
@@ -13,22 +14,32 @@ CLIB = ia.LZ4
 # CLEVEL = 1
 # CLIB = ia.ZSTD
 
-t0 = time()
-precipitation = ia.from_file("ia-data/rea6/tot_prec/2018.iarray", load_in_mem=IN_MEMORY)
-t1 = time()
-print("Time to open file: %.3f" % (t1 - t0))
+@profile
+def open_datafile(filename):
+    t0 = time()
+    dataset = ia.from_file(filename, load_in_mem=IN_MEMORY)
+    t1 = time()
+    print("Time to open file: %.3f" % (t1 - t0))
+    return dataset
+
+precipitation = open_datafile("ia-data/rea6/tot_prec/2018.iarray")
 print("dataset:", precipitation)
 
 # Get a random number of slices
 nt, nx, ny = precipitation.shape
 tslices = np.random.choice(nt, NSLICES)
 
+@profile
+def get_slices(dataset):
+    sl = []
+    for tslice in tslices:
+        sl.append(dataset[slice(tslice, tslice + SLICE_THICKNESS),:,:])
+    return sl
 t0 = time()
-sl = []
-for tslice in tslices:
-    sl.append(precipitation[slice(tslice, tslice + SLICE_THICKNESS),:,:])
+slices = get_slices(precipitation)
 t1 = time()
 print("Time for getting %d slices: %.3f" % (NSLICES, (t1 - t0)))
+
 
 # # Time for getting the accumulation
 # t0 = time()
@@ -39,37 +50,30 @@ print("Time for getting %d slices: %.3f" % (NSLICES, (t1 - t0)))
 # print("Time for summing out %d slices (via numpy): %.3f" % (NSLICES, (t1 - t0)))
 
 # Time for getting the accumulation
+@profile
+def get_accum(sl):
+    slsum = 0
+    for i in range(NSLICES):
+        for (_, block) in sl[i].iter_read_block((1, nx, ny)):
+            slsum += block.sum()
+    return slsum
 t0 = time()
-sllist = []
-slsum = 0
-for i in range(NSLICES):
-    for (_, block) in sl[i].iter_read_block((1, nx, ny)):
-        slsum += block.sum()
-    sllist.append(slsum)
+slsum = get_accum(slices)
 t1 = time()
 print("Time for summing up %d slices (via iarray iter): %.3f" % (NSLICES, (t1 - t0)))
-print(slsum)
 
-# np.testing.assert_allclose(np.array(slsum1), np.array(sllist))
-
-# # Convert ia views into numpy arrays
-# t0 = time()
-# xnp = [ia.iarray2numpy(sl[i]) for i in range(NSLICES)]
-# t1 = time()
-# print("Time for converting %d slices into numpy: %.3f" % (NSLICES, (t1 - t0)))
-#
-# # Apparently the evaluation engine does not handle views well yet
-# # x = [ia.numpy2iarray(xnp[i], pshape=(1, nx, ny)) for i in range(NSLICES)]
-# x = [ia.numpy2iarray(xnp[i], pshape=(1, nx, ny)) for i in range(NSLICES)]
-
+@profile
+def concatenate_slices(slices):
+    dtshape = ia.dtshape(shape=(NSLICES * SLICE_THICKNESS, nx, ny), pshape=(1, nx, ny), dtype=np.float32)
+    iarr = ia.empty(dtshape, clevel=CLEVEL, clib=CLIB, nthreads=NTHREADS)
+    islices = iter(slices)
+    for i, (_, precip_block) in enumerate(iarr.iter_write_block()):
+        if i % SLICE_THICKNESS == 0:
+            slice_np = ia.iarray2numpy(next(islices))
+        precip_block[:, :, :] = slice_np[i % SLICE_THICKNESS]
+    return iarr
 t0 = time()
-dtshape = ia.dtshape(shape=(NSLICES * SLICE_THICKNESS, nx, ny), pshape=(1, nx, ny), dtype=np.float32)
-prec2 = ia.empty(dtshape, clevel=CLEVEL, clib=CLIB, nthreads=NTHREADS)
-ixnp = iter(sl)
-for i, (_, precip_block) in enumerate(prec2.iter_write_block()):
-    if i % SLICE_THICKNESS == 0:
-        xnp_ = ia.iarray2numpy(next(ixnp))
-    precip_block[:, :, :] = xnp_[i % SLICE_THICKNESS]
+prec2 = concatenate_slices(slices)
 t1 = time()
 print("Time for concatenating %d slices into ia container: %.3f" % (NSLICES, (t1 - t0)))
 print(prec2)
@@ -85,24 +89,38 @@ print("cratio", prec2.cratio)
 # t1 = time()
 # print("Time for accumulating %d slices into one (via eval()): %.3f" % (NSLICES, (t1 - t0)))
 
+@profile
+def sum_concat(iarr):
+    concatsum = 0
+    for i, (_, iarr_block) in enumerate(iarr.iter_read_block((1, nx, ny))):
+        concatsum += iarr_block.sum()
+    return concatsum
 t0 = time()
-slsum2 = 0
-for i, (_, prec2_block) in enumerate(prec2.iter_read_block((1, nx, ny))):
-    slsum2 += prec2_block.sum()
+concatsum = sum_concat(prec2)
 t1 = time()
 print("Time for summing up the concatenated ia container: %.3f" % (t1 - t0))
-print(slsum2)
 
 # Compute the accumulation of the random slices into one
-prec2np = ia.iarray2numpy(prec2)
-print("Size of np array:", prec2np.size * 4 / 2**20, "MB")
+@profile
+def tonumpy(iarr):
+    return ia.iarray2numpy(iarr)
+t0 = time()
+prec2np = tonumpy(prec2)
+t1 = time()
+print("Time for converting the concatenated ia container into numpy: %.3f" % (t1 - t0))
+print("Size of numpy array:", prec2np.size * 4 / 2**20, "MB")
 
 sexpr = "(sin(x) - 3.2) * (cos(x) + 1.2)"
 # sexpr = "(x - 3.2) * (x + 1.2)"
 
-ne.set_num_threads(NTHREADS)
+@profile
+def compute_numexpr(sexpr, x):
+    ne.set_num_threads(NTHREADS)
+    # So as to avoid the result to be cast to a float64, we use an out param
+    out = np.empty(x.shape, x.dtype)
+    return ne.evaluate(sexpr, local_dict={'x': x}, out=out, casting='unsafe')
 t0 = time()
-res = ne.evaluate(sexpr, local_dict={'x': prec2np})
+res = compute_numexpr(sexpr, prec2np)
 t1 = time()
 print("Time for computing '%s' expression (via numexpr): %.3f" % (sexpr, (t1 - t0)))
 
@@ -113,14 +131,16 @@ print("Time for computing '%s' expression (via numexpr): %.3f" % (sexpr, (t1 - t
 # print("Time for computing '%s' expression (via numpy): %.3f" % (sexpr, (t1 - t0)))
 
 # Compute the accumulation of the random slices into one
+@profile
+def compute_iaexpr(sexpr, x):
+    expr = ia.Expr(eval_flags="iterblock", blocksize=0, nthreads=NTHREADS, clevel=CLEVEL)
+    expr.bind("x", prec2)
+    expr.compile(sexpr)
+    return expr.eval((NSLICES * SLICE_THICKNESS, nx, ny), (1, nx, ny), precipitation.dtype)
 t0 = time()
-expr = ia.Expr(eval_flags="iterblock", blocksize=0, nthreads=NTHREADS, clevel=CLEVEL)
-expr.bind("x", prec2)
-expr.compile(sexpr)
-b2 = expr.eval((NSLICES * SLICE_THICKNESS, nx, ny), (1, nx, ny), precipitation.dtype)
+b2 = compute_iaexpr(sexpr, prec2)
 t1 = time()
 print("Time for computing '%s' expression (via ia.Expr()): %.3f" % (sexpr, (t1 - t0)))
 
 # res2 = ia.iarray2numpy(b2)
-#
-# np.testing.assert_allclose(res, res2, rtol=1e-6)
+# np.testing.assert_allclose(res, res2, rtol=1e-5)
