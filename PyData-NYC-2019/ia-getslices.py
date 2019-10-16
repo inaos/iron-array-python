@@ -1,4 +1,5 @@
 from time import time
+import os
 import numpy as np
 import numexpr as ne
 import iarray as ia
@@ -14,12 +15,22 @@ BLOCKSIZE = 0
 # CLEVEL = 1
 # CLIB = ia.ZSTD
 
-MEMPROF = False
+MEMPROF = True
 if MEMPROF:
     from memory_profiler import profile
 else:
     def profile(f):
         return f
+
+in_filename = None
+out_filename = None
+if not IN_MEMORY:
+    in_filename = "inarray.iarray"
+    out_filename = "outarray.iarray"
+    if os.path.exists(in_filename):
+        os.remove(in_filename)
+    if os.path.exists(out_filename):
+        os.remove(out_filename)
 
 @profile
 def open_datafile(filename):
@@ -28,13 +39,12 @@ def open_datafile(filename):
     t1 = time()
     print("Time to open file: %.3f" % (t1 - t0))
     return dataset
-
 precipitation = open_datafile("ia-data/rea6/tot_prec/2018.iarray")
 print("dataset:", precipitation)
 
 # Get a random number of slices
 nt, nx, ny = precipitation.shape
-tslices = np.random.choice(nt, NSLICES)
+tslices = np.random.choice(nt - 1, NSLICES)
 
 @profile
 def get_slices(dataset):
@@ -72,7 +82,7 @@ print("Time for summing up %d slices (via iarray iter): %.3f" % (NSLICES, (t1 - 
 @profile
 def concatenate_slices(slices):
     dtshape = ia.dtshape(shape=(NSLICES * SLICE_THICKNESS, nx, ny), pshape=(1, nx, ny), dtype=np.float32)
-    iarr = ia.empty(dtshape, clevel=CLEVEL, clib=CLIB, nthreads=NTHREADS, blocksize=BLOCKSIZE)
+    iarr = ia.empty(dtshape, clevel=CLEVEL, clib=CLIB, nthreads=NTHREADS, blocksize=BLOCKSIZE, filename=in_filename)
     islices = iter(slices)
     for i, (_, precip_block) in enumerate(iarr.iter_write_block()):
         if i % SLICE_THICKNESS == 0:
@@ -139,13 +149,15 @@ print("Time for computing '%s' expression (via numexpr): %.3f" % (sexpr, (t1 - t
 
 # Compute the accumulation of the random slices into one
 @profile
-def compute_iaexpr(sexpr, x):
+def compute_expr(sexpr, x):
     expr = ia.Expr(eval_flags="iterblock", blocksize=BLOCKSIZE, nthreads=NTHREADS, clevel=CLEVEL)
-    expr.bind("x", prec2)
+    if not IN_MEMORY:
+        x = ia.from_file(in_filename)
+    expr.bind("x", x)
     expr.compile(sexpr)
-    return expr.eval((NSLICES * SLICE_THICKNESS, nx, ny), (1, nx, ny), precipitation.dtype)
+    return expr.eval((NSLICES * SLICE_THICKNESS, nx, ny), (1, nx, ny), precipitation.dtype, filename=out_filename)
 t0 = time()
-b2 = compute_iaexpr(sexpr, prec2)
+b2 = compute_expr(sexpr, prec2)
 t1 = time()
 print("Time for computing '%s' expression (via ia.Expr()): %.3f" % (sexpr, (t1 - t0)))
 
