@@ -2,7 +2,6 @@ from time import time
 import numpy as np
 import numexpr as ne
 import iarray as ia
-from memory_profiler import profile
 
 
 NSLICES = 50
@@ -11,8 +10,16 @@ IN_MEMORY = False
 NTHREADS = 4
 CLEVEL = 5
 CLIB = ia.LZ4
+BLOCKSIZE = 0
 # CLEVEL = 1
 # CLIB = ia.ZSTD
+
+MEMPROF = False
+if MEMPROF:
+    from memory_profiler import profile
+else:
+    def profile(f):
+        return f
 
 @profile
 def open_datafile(filename):
@@ -65,7 +72,7 @@ print("Time for summing up %d slices (via iarray iter): %.3f" % (NSLICES, (t1 - 
 @profile
 def concatenate_slices(slices):
     dtshape = ia.dtshape(shape=(NSLICES * SLICE_THICKNESS, nx, ny), pshape=(1, nx, ny), dtype=np.float32)
-    iarr = ia.empty(dtshape, clevel=CLEVEL, clib=CLIB, nthreads=NTHREADS)
+    iarr = ia.empty(dtshape, clevel=CLEVEL, clib=CLIB, nthreads=NTHREADS, blocksize=BLOCKSIZE)
     islices = iter(slices)
     for i, (_, precip_block) in enumerate(iarr.iter_write_block()):
         if i % SLICE_THICKNESS == 0:
@@ -133,7 +140,7 @@ print("Time for computing '%s' expression (via numexpr): %.3f" % (sexpr, (t1 - t
 # Compute the accumulation of the random slices into one
 @profile
 def compute_iaexpr(sexpr, x):
-    expr = ia.Expr(eval_flags="iterblock", blocksize=0, nthreads=NTHREADS, clevel=CLEVEL)
+    expr = ia.Expr(eval_flags="iterblock", blocksize=BLOCKSIZE, nthreads=NTHREADS, clevel=CLEVEL)
     expr.bind("x", prec2)
     expr.compile(sexpr)
     return expr.eval((NSLICES * SLICE_THICKNESS, nx, ny), (1, nx, ny), precipitation.dtype)
