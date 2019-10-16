@@ -31,19 +31,18 @@ t_ratio = []
 for i, shape in enumerate(shapes):
     shape = (shape,)
     print(shape)
-    ia.arange(ia.dtshape(shape, pshape=pshape, dtype=DTYPE), filename="iarray_infile.iarray", clib=CLIB, clevel=CLEVEL)
+    data = ia.arange(ia.dtshape(shape, pshape=pshape, dtype=DTYPE), filename="iarray_file.iarray", clib=CLIB, clevel=CLEVEL)
 
     t0 = time()
-    data = ia.from_file("iarray_infile.iarray", load_in_mem=False)
     expr = ia.Expr(eval_flags="iterblock", blocksize=0, nthreads=NTHREADS, clevel=CLEVEL)
     expr.bind("x", data)
     expr.compile(sexpr)
-    res1 = expr.eval(shape, pshape=pshape, filename="iarray_outfile.iarray")
+    res1 = expr.eval(shape, pshape=pshape)
     t1 = time()
     t_iarray.append(t1 - t0)
     print("Time for computing '%s' expression (via ia.Expr()): %.3f" % (sexpr, (t1 - t0)))
 
-    data2 = zarr.open("zarr_infile.zarr", "w", shape=shape, chunks=pshape, dtype=DTYPE, compressor=compressor)
+    data2 = zarr.zeros(shape=shape, chunks=pshape, dtype=DTYPE, compressor=compressor)
     for info, block in data.iter_read_block():
         sl = tuple([slice(i, i + s) for i, s in zip(info.elemindex, info.shape)])
         data2[sl] = block[:]
@@ -51,11 +50,9 @@ for i, shape in enumerate(shapes):
     scheduler = "single-threaded" if NTHREADS == 1 else "threads"
     t0 = time()
     with dask.config.set(scheduler=scheduler):
-        data2 = zarr.open("zarr_infile.zarr")
         d = da.from_zarr(data2)
         res = (np.sin(d) - 3.2) * (np.cos(d) + 1.2)
-        # z2 = zarr.empty(shape, dtype=DTYPE, compressor=compressor, chunks=pshape)
-        z2 = zarr.open("zarr_outfile.zarr", "w", shape=shape, chunks=pshape, dtype=DTYPE, compressor=compressor)
+        z2 = zarr.empty(shape, dtype=DTYPE, compressor=compressor, chunks=pshape)
         da.to_zarr(res, z2)
     t1 = time()
     t_dask.append(t1 - t0)
@@ -73,7 +70,7 @@ for i, shape in enumerate(shapes):
 # plt.semilogx(shapes, t_ratio, label="(zarr + dask) / iarray")
 plt.bar(np.log10(shapes), t_ratio, label="t(zarr + dask) / t(iarray)", width=0.07)
 plt.legend()
-plt.title(f"Times for computing '{sexpr}' (on disk)")
+plt.title(f"Times for computing '{sexpr}' (in memory)")
 plt.ylabel("Time ratio")
 plt.xlabel("log10(elements in array)")
 # plt.ylim(bottom=0)
