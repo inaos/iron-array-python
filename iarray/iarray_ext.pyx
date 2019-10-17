@@ -356,8 +356,19 @@ cdef class Expression:
     def eval(self, shape, pshape=None, dtype=np.float64, filename=None):
         dtshape = _DTShape(shape, pshape, dtype).to_dict()
         cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
+        cdef ciarray.iarray_store_properties_t store
+        if filename is not None:
+            filename = filename.encode("utf-8") if isinstance(filename, str) else filename
+            store.id = filename
+
+        flags = 0 if filename is None else ciarray.IARRAY_CONTAINER_PERSIST
         cdef ciarray.iarray_container_t *c
-        ciarray.iarray_container_new(self._ctx._ctx, &dtshape_, NULL, 0, &c)
+        ctx_ = self._ctx._ctx
+        if flags == ciarray.IARRAY_CONTAINER_PERSIST:
+            ciarray.iarray_container_new(ctx_, &dtshape_, &store, flags, &c)
+        else:
+            ciarray.iarray_container_new(ctx_, &dtshape_, NULL, flags, &c)
+
         if ciarray.iarray_eval(self._e, c) != 0:
             raise ValueError(f"Error in evaluating expr: {self.expression}")
 
