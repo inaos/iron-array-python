@@ -34,12 +34,12 @@ if not IN_MEMORY:
 
 @profile
 def open_datafile(filename):
-    t0 = time()
     dataset = ia.from_file(filename, load_in_mem=IN_MEMORY)
-    t1 = time()
-    print("Time to open file: %.3f" % (t1 - t0))
     return dataset
+t0 = time()
 precipitation = open_datafile("ia-data/rea6/tot_prec/2018.iarray")
+t1 = time()
+print("Time to open file: %.3f" % (t1 - t0))
 print("dataset:", precipitation)
 
 # Get a random number of slices

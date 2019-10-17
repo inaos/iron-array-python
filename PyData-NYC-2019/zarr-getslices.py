@@ -40,7 +40,6 @@ compressor = Blosc(cname=CNAME, clevel=CLEVEL, shuffle=Blosc.SHUFFLE)
 
 @profile
 def open_datafile(filename):
-    t0 = time()
     data = zarr.open(filename)
     if IN_MEMORY:
         nt, nx, ny = data.shape
@@ -50,10 +49,11 @@ def open_datafile(filename):
         for i in range(nt):
             data2[i, :, :] = data[i]
         data = data2
-    t1 = time()
-    print("Time to open file: %.3f" % (t1 - t0))
     return data
+t0 = time()
 precipitation = open_datafile("ia-data/rea6/tot_prec/2018.zarr")
+t1 = time()
+print("Time to open file: %.3f" % (t1 - t0))
 # print("dataset:", precipitation)
 
 # Get a random number of slices
@@ -129,4 +129,4 @@ t0 = time()
 b2 = compute_expr(prec2)
 t1 = time()
 sexpr = "(sin(x) - 3.2) * (cos(x) + 1.2)"
-print("Time for computing '%s' expression (via dask): %.3f" % (sexpr, (t1 - t0)))
+print("Time for computing '%s' expression (via dask + zarr): %.3f" % (sexpr, (t1 - t0)))
