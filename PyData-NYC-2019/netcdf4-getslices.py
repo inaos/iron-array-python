@@ -21,7 +21,7 @@ print("dataset:", precipitation)
 
 # Get a random number of slices
 nt, nx, ny = precipitation.shape
-tslices = np.random.choice(nt - 1, NSLICES)
+tslices = np.random.choice(nt - SLICE_THICKNESS, NSLICES)
 
 t0 = time()
 sl = []

@@ -60,12 +60,16 @@ precipitation = open_datafile("ia-data/rea6/tot_prec/2018.zarr")
 nt, nx, ny = precipitation.shape
 shape = (NSLICES * SLICE_THICKNESS, nx, ny)
 pshape = (1, nx, ny)
-tslices = np.random.choice(nt - 1, NSLICES)
+tslices = np.random.choice(nt - SLICE_THICKNESS, NSLICES)
 
+@profile
+def get_slices(data):
+    slices = []
+    for tslice in tslices:
+        slices.append(data[slice(tslice, tslice + SLICE_THICKNESS), :, :])
+    return slices
 t0 = time()
-slices = []
-for tslice in tslices:
-    slices.append(precipitation[slice(tslice, tslice + SLICE_THICKNESS), :, :])
+slices = get_slices(precipitation)
 t1 = time()
 print("Time for getting %d slices: %.3f" % (NSLICES, (t1 - t0)))
 
@@ -99,7 +103,7 @@ print("cratio", prec2.nbytes / prec2.nbytes_stored)
 @profile
 def sum_concat(data):
     concatsum = 0
-    for i in range(NSLICES):
+    for i in range(len(data)):
         concatsum += data[i].sum()
     return concatsum
 t0 = time()

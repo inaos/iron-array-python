@@ -44,7 +44,9 @@ print("dataset:", precipitation)
 
 # Get a random number of slices
 nt, nx, ny = precipitation.shape
-tslices = np.random.choice(nt - 1, NSLICES)
+shape = (NSLICES * SLICE_THICKNESS, nx, ny)
+pshape = (1, nx, ny)
+tslices = np.random.choice(nt - SLICE_THICKNESS, NSLICES)
 
 @profile
 def get_slices(dataset):
@@ -81,7 +83,7 @@ print("Time for summing up %d slices (via iarray iter): %.3f" % (NSLICES, (t1 - 
 
 @profile
 def concatenate_slices(slices):
-    dtshape = ia.dtshape(shape=(NSLICES * SLICE_THICKNESS, nx, ny), pshape=(1, nx, ny), dtype=np.float32)
+    dtshape = ia.dtshape(shape=shape, pshape=pshape, dtype=np.float32)
     iarr = ia.empty(dtshape, clevel=CLEVEL, clib=CLIB, nthreads=NTHREADS, blocksize=BLOCKSIZE, filename=in_filename)
     islices = iter(slices)
     for i, (_, precip_block) in enumerate(iarr.iter_write_block()):
@@ -109,7 +111,7 @@ print("cratio", prec2.cratio)
 @profile
 def sum_concat(iarr):
     concatsum = 0
-    for i, (_, iarr_block) in enumerate(iarr.iter_read_block((1, nx, ny))):
+    for (_, iarr_block) in iarr.iter_read_block():
         concatsum += iarr_block.sum()
     return concatsum
 t0 = time()
@@ -155,7 +157,7 @@ def compute_expr(sexpr, x):
         x = ia.from_file(in_filename)
     expr.bind("x", x)
     expr.compile(sexpr)
-    return expr.eval((NSLICES * SLICE_THICKNESS, nx, ny), (1, nx, ny), precipitation.dtype, filename=out_filename)
+    return expr.eval(shape, pshape, precipitation.dtype, filename=out_filename)
 t0 = time()
 b2 = compute_expr(sexpr, prec2)
 t1 = time()
