@@ -2,6 +2,7 @@ from time import time
 import numpy as np
 import numexpr as ne
 import iarray as ia
+from numba import jit
 
 
 NSLICES = 50
@@ -40,8 +41,8 @@ nt, nx, ny = precipitation.shape
 shape = (NSLICES * SLICE_THICKNESS, nx, ny)
 pshape = (1, nx, ny)
 # tslices = np.random.choice(nt - SLICE_THICKNESS, NSLICES)
-# np.random.seed(1)
-np.random.seed(3)
+np.random.seed(1)
+# np.random.seed(3)
 tslice = np.random.choice(nt - NSLICES * SLICE_THICKNESS)
 
 def get_slice(dataset, i):
@@ -73,7 +74,7 @@ def compute_slices(dataset):
 t0 = time()
 slices_computed = compute_slices(prec2)
 t1 = time()
-print("Time for computing %d slices: %.3f" % (NSLICES, (t1 - t0)))
+print("Time for computing %d slices (iarray): %.3f" % (NSLICES, (t1 - t0)))
 
 @profile
 def sum_slices(slice):
@@ -91,16 +92,13 @@ t1 = time()
 print("Time for converting the slices into numpy: %.3f" % (t1 - t0))
 
 @profile
-def compute_numexpr(sexpr, x):
-    ne.set_num_threads(NTHREADS)
-    # So as to avoid the result to be cast to a float64, we use an out param
-    out = np.empty(x.shape, x.dtype)
-    ne.evaluate(sexpr, local_dict={'x': x}, out=out, casting='unsafe')
+def compute_numpy(x):
+    out = (np.sin(x) - 3.2) * (np.cos(x) + 1.2)
     return out
 t0 = time()
-npslices_computed = compute_numexpr(sexpr, npslices)
+npslices_computed = compute_numpy(npslices)
 t1 = time()
-print("Time for computing '%s' expression in slices (via numexpr): %.3f" % (sexpr, (t1 - t0)))
+print("Time for computing '%s' expression in slices (via numpy): %.3f" % (sexpr, (t1 - t0)))
 
 @profile
 def sum_npslices(npslices):
@@ -111,3 +109,34 @@ t1 = time()
 print("Time for summing up the computed slices (pure numpy): %.3f" % (t1 - t0))
 
 np.testing.assert_allclose(np.array(slsum, dtype=np.float32), np.array(npslsum, dtype=np.float32), rtol=1e-5)
+
+@profile
+def compute_numexpr(sexpr, x):
+    ne.set_num_threads(NTHREADS)
+    # So as to avoid the result to be cast to a float64, we use an out param
+    out = np.empty(x.shape, x.dtype)
+    ne.evaluate(sexpr, local_dict={'x': x}, out=out, casting='unsafe')
+    return out
+t0 = time()
+npslices_computed2 = compute_numexpr(sexpr, npslices)
+t1 = time()
+print("Time for computing '%s' expression in slices (via numexpr): %.3f" % (sexpr, (t1 - t0)))
+
+@jit(nopython=True, cache=True)
+def poly_numba2(x, y):
+    nt, nx, ny = x.shape
+    for i in range(nt):
+        for j in range(nx):
+            for k in range(ny):
+                y[i,j,k] = (np.sin(x[i,j,k]) - 3.2) * (np.cos(x[i,j,k]) + 1.2)
+
+@profile
+def compute_numba(x):
+    # So as to avoid the result to be cast to a float64
+    out = np.empty(x.shape, x.dtype)
+    poly_numba2(x, out)
+    return out
+t0 = time()
+npslices_computed3 = compute_numba(npslices)
+t1 = time()
+print("Time for computing '%s' expression in slices (via numba): %.3f" % (sexpr, (t1 - t0)))

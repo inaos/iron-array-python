@@ -39,8 +39,8 @@ nt, nx, ny = precipitation.shape
 shape = (NSLICES * SLICE_THICKNESS, nx, ny)
 pshape = (1, nx, ny)
 # tslices = np.random.choice(nt - SLICE_THICKNESS, NSLICES)
-# np.random.seed(1)
-np.random.seed(3)
+np.random.seed(1)
+# np.random.seed(3)
 tslice = np.random.choice(nt - NSLICES * SLICE_THICKNESS)
 
 @profile
