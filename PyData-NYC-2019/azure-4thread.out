@@ -1,0 +1,408 @@
+(base) ia@ia-bench-01:~/inaos/iron-array-python/PyData-NYC-2019$ PYTHONPATH=.. python ia-getslices4.py
+Filename: ia-getslices4.py
+
+Line #    Mem usage    Increment   Line Contents
+================================================
+    29    113.7 MiB    113.7 MiB   @profile
+    30                             def open_datafile(filename):
+    31    116.8 MiB      3.1 MiB       dataset = ia.from_file(filename, load_in_mem=False)
+    32    116.8 MiB      0.0 MiB       return dataset
+
+
+Time to open file: 0.034
+Filename: ia-getslices4.py
+
+Line #    Mem usage    Increment   Line Contents
+================================================
+    48    116.8 MiB    116.8 MiB   @profile
+    49                             def concatenate_slices(dataset):
+    50    116.8 MiB      0.0 MiB       dtshape = ia.dtshape(shape=shape, pshape=pshape, dtype=np.float32)
+    51    120.2 MiB      3.3 MiB       iarr = ia.empty(dtshape, clevel=CLEVEL, clib=CLIB, nthreads=NTHREADS, blocksize=BLOCKSIZE)
+    52    446.5 MiB      0.0 MiB       for i, (_, precip_block) in enumerate(iarr.iter_write_block()):
+    53    446.8 MiB      7.2 MiB           slice_np = ia.iarray2numpy(get_slice(dataset, i))
+    54    446.8 MiB      2.6 MiB           precip_block[:, :, :] = slice_np
+    55    444.3 MiB      0.0 MiB       return iarr
+
+
+Time for concatenating 50 slices into an ia container (1): 2.306
+cratio 7.2476217055789975
+Filename: ia-getslices4.py
+
+Line #    Mem usage    Increment   Line Contents
+================================================
+    48    444.3 MiB    444.3 MiB   @profile
+    49                             def concatenate_slices(dataset):
+    50    444.3 MiB      0.0 MiB       dtshape = ia.dtshape(shape=shape, pshape=pshape, dtype=np.float32)
+    51    444.3 MiB      0.0 MiB       iarr = ia.empty(dtshape, clevel=CLEVEL, clib=CLIB, nthreads=NTHREADS, blocksize=BLOCKSIZE)
+    52    713.6 MiB      0.0 MiB       for i, (_, precip_block) in enumerate(iarr.iter_write_block()):
+    53    713.6 MiB      5.3 MiB           slice_np = ia.iarray2numpy(get_slice(dataset, i))
+    54    713.6 MiB      0.2 MiB           precip_block[:, :, :] = slice_np
+    55    713.6 MiB      0.0 MiB       return iarr
+
+
+Time for concatenating 50 slices into an ia container (2): 2.080
+cratio 8.853534263744733
+Filename: ia-getslices4.py
+
+Line #    Mem usage    Increment   Line Contents
+================================================
+    48    703.0 MiB    703.0 MiB   @profile
+    49                             def concatenate_slices(dataset):
+    50    703.0 MiB      0.0 MiB       dtshape = ia.dtshape(shape=shape, pshape=pshape, dtype=np.float32)
+    51    703.0 MiB      0.0 MiB       iarr = ia.empty(dtshape, clevel=CLEVEL, clib=CLIB, nthreads=NTHREADS, blocksize=BLOCKSIZE)
+    52    904.7 MiB      0.0 MiB       for i, (_, precip_block) in enumerate(iarr.iter_write_block()):
+    53    904.6 MiB      5.4 MiB           slice_np = ia.iarray2numpy(get_slice(dataset, i))
+    54    904.7 MiB      0.2 MiB           precip_block[:, :, :] = slice_np
+    55    904.7 MiB      0.0 MiB       return iarr
+
+
+Time for concatenating 50 slices into an ia container (3): 1.870
+cratio 12.473624496082632
+Filename: ia-getslices4.py
+
+Line #    Mem usage    Increment   Line Contents
+================================================
+    80    894.6 MiB    894.6 MiB   @profile
+    81                             def compute_slices(dataset):
+    82    894.6 MiB      0.0 MiB       expr = ia.Expr(eval_flags="iterblock", clevel=CLEVEL, clib=CLIB, nthreads=NTHREADS, blocksize=BLOCKSIZE)
+    83    894.6 MiB      0.0 MiB       expr.bind("x", dataset)
+    84    901.6 MiB      7.1 MiB       expr.compile(sexpr)
+    85    964.6 MiB     63.0 MiB       out = expr.eval(shape, pshape, dataset.dtype)
+    86    964.6 MiB      0.0 MiB       return out
+
+
+Time for computing '(sin(x) - 3.2) * (cos(x) + 1.2)' expression with 1 operand (iarray): 1.293
+Filename: ia-getslices4.py
+
+Line #    Mem usage    Increment   Line Contents
+================================================
+    92    964.8 MiB    964.8 MiB   @profile
+    93                             def sum_slices(slice):
+    94    966.8 MiB      2.1 MiB       slsum = ia.iarray2numpy(slice).sum()
+    95    966.8 MiB      0.0 MiB       return slsum
+
+
+Time for summing up 1 operand (iarray): 0.859
+Filename: ia-getslices4.py
+
+Line #    Mem usage    Increment   Line Contents
+================================================
+   102    966.8 MiB    966.8 MiB   @profile
+   103                             def compute_slices2(dset1, dset2, dset3):
+   104    966.8 MiB      0.0 MiB       expr = ia.Expr(eval_flags="iterblock", clevel=CLEVEL, clib=CLIB, nthreads=NTHREADS, blocksize=BLOCKSIZE)
+   105    966.8 MiB      0.0 MiB       expr.bind("x", dset1)
+   106    966.8 MiB      0.0 MiB       expr.bind("y", dset2)
+   107    966.8 MiB      0.0 MiB       expr.bind("z", dset3)
+   108    966.8 MiB      0.0 MiB       expr.compile(sexpr2)
+   109   1324.4 MiB    357.6 MiB       out = expr.eval(shape, pshape, dset1.dtype)
+   110   1324.4 MiB      0.0 MiB       return out
+
+
+Time for computing '(x - y) * (z - 3.) * (y - x - 2)' expression with 3 operands (iarray): 2.393
+Time for converting the slices into numpy: 2.339
+Filename: ia-getslices4.py
+
+Line #    Mem usage    Increment   Line Contents
+================================================
+   125   5322.7 MiB   5322.7 MiB   @profile
+   126                             def compute_numpy(x):
+   127   6656.3 MiB   1333.6 MiB       out = (np.sin(x) - 3.2) * (np.cos(x) + 1.2)
+   128   6656.3 MiB      0.0 MiB       return out
+
+
+Time for computing '(sin(x) - 3.2) * (cos(x) + 1.2)' expression with 1 operand (via numpy): 2.682
+Filename: ia-getslices4.py
+
+Line #    Mem usage    Increment   Line Contents
+================================================
+   134   6656.3 MiB   6656.3 MiB   @profile
+   135                             def sum_npslices(npslices):
+   136   6656.3 MiB      0.0 MiB       return npslices.sum()
+
+
+Time for summing up the computed slices (pure numpy): 0.148
+Filename: ia-getslices4.py
+
+Line #    Mem usage    Increment   Line Contents
+================================================
+   144   6656.3 MiB   6656.3 MiB   @profile
+   145                             def compute_numpy2(x, y, z):
+   146   7989.2 MiB   1332.8 MiB       out = (x - y) * (z - 3.) * (y - x - 2)
+   147   7989.2 MiB      0.0 MiB       return out
+
+
+Time for computing '(x - y) * (z - 3.) * (y - x - 2)' expression with 3 operands (via numpy): 2.841
+Filename: ia-getslices4.py
+
+Line #    Mem usage    Increment   Line Contents
+================================================
+   153   7989.2 MiB   7989.2 MiB   @profile
+   154                             def compute_numexpr(sexpr, x):
+   155   7989.2 MiB      0.0 MiB       ne.set_num_threads(NTHREADS)
+   156                                 # So as to avoid the result to be cast to a float64, we use an out param
+   157   7989.2 MiB      0.0 MiB       out = np.empty(x.shape, x.dtype)
+   158   9322.2 MiB   1333.1 MiB       ne.evaluate(sexpr, local_dict={'x': x}, out=out, casting='unsafe')
+   159   9322.2 MiB      0.0 MiB       return out
+
+
+Time for computing '(sin(x) - 3.2) * (cos(x) + 1.2)' expression with 1 operand (via numexpr): 0.781
+Filename: ia-getslices4.py
+
+Line #    Mem usage    Increment   Line Contents
+================================================
+   165   7989.7 MiB   7989.7 MiB   @profile
+   166                             def compute_numexpr2(sexpr, x, y, z):
+   167   7989.8 MiB      0.1 MiB       ne.set_num_threads(NTHREADS)
+   168                                 # So as to avoid the result to be cast to a float64, we use an out param
+   169   7989.8 MiB      0.0 MiB       out = np.empty(x.shape, x.dtype)
+   170   9322.5 MiB   1332.8 MiB       ne.evaluate(sexpr, local_dict={'x': x, 'y': y, 'z': z}, out=out, casting='unsafe')
+   171   9322.5 MiB      0.0 MiB       return out
+
+
+Time for computing '(x - y) * (z - 3.) * (y - x - 2)' expression with 3 operands (via numexpr): 0.780
+Filename: ia-getslices4.py
+
+Line #    Mem usage    Increment   Line Contents
+================================================
+   185   7989.8 MiB   7989.8 MiB   @profile
+   186                             def compute_numba(x):
+   187                                 # So as to avoid the result to be cast to a float64
+   188   7989.8 MiB      0.0 MiB       out = np.empty(x.shape, x.dtype)
+   189   9330.4 MiB   1340.6 MiB       poly_numba(x, out)
+   190   9330.4 MiB      0.0 MiB       return out
+
+
+Time for computing '(sin(x) - 3.2) * (cos(x) + 1.2)' expression with 1 operand (via numba): 3.474
+Filename: ia-getslices4.py
+
+Line #    Mem usage    Increment   Line Contents
+================================================
+   204   9330.4 MiB   9330.4 MiB   @profile
+   205                             def compute_numba2(x, y, z):
+   206                                 # So as to avoid the result to be cast to a float64
+   207   9330.4 MiB      0.0 MiB       out = np.empty(x.shape, x.dtype)
+   208  10665.3 MiB   1334.9 MiB       poly_numba2(x, y, z, out)
+   209  10665.3 MiB      0.0 MiB       return out
+
+
+Time for computing '(x - y) * (z - 3.) * (y - x - 2)' expression with 3 operand (via numba): 1.801
+(base) ia@ia-bench-01:~/inaos/iron-array-python/PyData-NYC-2019$ PYTHONPATH=.. python zarr-getslices4.py
+Filename: zarr-getslices4.py
+
+Line #    Mem usage    Increment   Line Contents
+================================================
+    27     53.1 MiB     53.1 MiB   @profile
+    28                             def open_datafile(filename):
+    29     53.1 MiB      0.0 MiB       data = zarr.open(filename)
+    30     53.1 MiB      0.0 MiB       return data
+
+
+Time to open file: 0.023
+Filename: zarr-getslices4.py
+
+Line #    Mem usage    Increment   Line Contents
+================================================
+    42     53.1 MiB     53.1 MiB   @profile
+    43                             def concatenate_slices(dataset):
+    44     53.1 MiB      0.0 MiB       data = zarr.empty(shape=shape, dtype=dataset.dtype, compressor=compressor, chunks=pshape)
+    45    342.5 MiB      0.0 MiB       for i in range(NSLICES * SLICE_THICKNESS):
+    46    342.5 MiB      7.7 MiB           data[i] = dataset[tslice + i]
+    47    342.5 MiB      0.0 MiB       return data
+
+
+Time for concatenating 50 slices into a zarr container: 2.984
+cratio 4.81307090068472
+Filename: zarr-getslices4.py
+
+Line #    Mem usage    Increment   Line Contents
+================================================
+    42    342.5 MiB    342.5 MiB   @profile
+    43                             def concatenate_slices(dataset):
+    44    342.5 MiB      0.0 MiB       data = zarr.empty(shape=shape, dtype=dataset.dtype, compressor=compressor, chunks=pshape)
+    45    563.7 MiB      0.0 MiB       for i in range(NSLICES * SLICE_THICKNESS):
+    46    563.7 MiB      0.8 MiB           data[i] = dataset[tslice + i]
+    47    563.7 MiB      0.0 MiB       return data
+
+
+Time for concatenating 50 slices into a zarr container: 2.703
+cratio 6.02094090609253
+Filename: zarr-getslices4.py
+
+Line #    Mem usage    Increment   Line Contents
+================================================
+    42    563.7 MiB    563.7 MiB   @profile
+    43                             def concatenate_slices(dataset):
+    44    563.7 MiB      0.0 MiB       data = zarr.empty(shape=shape, dtype=dataset.dtype, compressor=compressor, chunks=pshape)
+    45    718.6 MiB      0.0 MiB       for i in range(NSLICES * SLICE_THICKNESS):
+    46    718.6 MiB      0.5 MiB           data[i] = dataset[tslice + i]
+    47    718.6 MiB      0.0 MiB       return data
+
+
+Time for concatenating 50 slices into a zarr container: 2.469
+cratio 8.612568383982413
+Filename: zarr-getslices4.py
+
+Line #    Mem usage    Increment   Line Contents
+================================================
+    73    718.6 MiB    718.6 MiB   @profile
+    74                             def compute_expr(x):
+    75    718.6 MiB      0.0 MiB       scheduler = "single-threaded" if NTHREADS == 1 else "threads"
+    76    718.6 MiB      0.0 MiB       with dask.config.set(scheduler=scheduler):
+    77    718.6 MiB      0.0 MiB           z2 = zarr.empty(shape, dtype=x.dtype, compressor=compressor, chunks=pshape)
+    78    719.0 MiB      0.4 MiB           dx = da.from_zarr(x)
+    79    719.0 MiB      0.0 MiB           res = (np.sin(dx) - 3.2) * (np.cos(dx) + 1.2)
+    80   1248.4 MiB    529.4 MiB           return da.to_zarr(res, z2)
+
+
+Time for computing '(sin(x) - 3.2) * (cos(x) + 1.2)' expression (via dask + zarr): 7.462
+Filename: zarr-getslices4.py
+
+Line #    Mem usage    Increment   Line Contents
+================================================
+    87   1248.4 MiB   1248.4 MiB   @profile
+    88                             def sum_concat(data):
+    89   1248.4 MiB      0.0 MiB       concatsum = 0
+    90   1249.2 MiB      0.0 MiB       for i in range(len(data)):
+    91   1249.2 MiB      0.8 MiB           concatsum += data[i].sum()
+    92   1249.2 MiB      0.0 MiB       return concatsum
+
+
+Time for summing up the concatenated zarr container: 1.389
+Filename: zarr-getslices4.py
+
+Line #    Mem usage    Increment   Line Contents
+================================================
+    98   1249.2 MiB   1249.2 MiB   @profile
+    99                             def compute_expr2(x, y, z):
+   100   1249.2 MiB      0.0 MiB       scheduler = "single-threaded" if NTHREADS == 1 else "threads"
+   101   1249.2 MiB      0.0 MiB       with dask.config.set(scheduler=scheduler):
+   102   1249.2 MiB      0.0 MiB           z2 = zarr.empty(shape, dtype=x.dtype, compressor=compressor, chunks=pshape)
+   103   1249.2 MiB      0.0 MiB           dx = da.from_zarr(x)
+   104   1249.2 MiB      0.0 MiB           dy = da.from_zarr(y)
+   105   1249.2 MiB      0.0 MiB           dz = da.from_zarr(z)
+   106   1249.2 MiB      0.0 MiB           res = (dx - dy) * (dz - 3.) * (dy - dx - 2)
+   107   2013.7 MiB    764.5 MiB           return da.to_zarr(res, z2)
+
+
+Time for computing '(x - y) * (z - 3.) * (y - x - 2)' expression (via dask + zarr): 10.890
+(base) ia@ia-bench-01:~/inaos/iron-array-python/PyData-NYC-2019$ PYTHONPATH=.. python netcdf4-getslices4.py
+Filename: netcdf4-getslices4.py
+
+Line #    Mem usage    Increment   Line Contents
+================================================
+    24     59.7 MiB     59.7 MiB   @profile
+    25                             def open_datafile(filename):
+    26                                 global rootgrp
+    27     61.9 MiB      2.3 MiB       rootgrp = netCDF4.Dataset(filename, mode='r')
+    28     61.9 MiB      0.0 MiB       return rootgrp['precipitation']
+
+
+Time to open file: 0.026
+dataset: <class 'netCDF4._netCDF4.Variable'>
+float32 precipitation(time, yc, xc)
+unlimited dimensions: time
+current shape = (8760, 824, 848)
+filling on, default _FillValue of 9.969209968386869e+36 used
+
+Filename: netcdf4-getslices4.py
+
+Line #    Mem usage    Increment   Line Contents
+================================================
+    40     62.3 MiB     62.3 MiB   @profile
+    41                             def concatenate_slices(dataset):
+    42                                 # HDF5 is handier for outputing datasets
+    43     62.3 MiB      0.0 MiB       iobytes = io.BytesIO()
+    44     62.9 MiB      0.5 MiB       f = h5py.File(iobytes)
+    45     62.9 MiB      0.0 MiB       data = f.create_dataset("prec2", shape, chunks=pshape, compression="gzip", compression_opts=1, shuffle=True)
+    46    295.8 MiB      0.0 MiB       for i in range(NSLICES * SLICE_THICKNESS):
+    47    295.8 MiB     10.0 MiB           data[i] = dataset[tslice + i]
+    48    295.8 MiB      0.0 MiB       return (data, iobytes)
+
+
+Time for concatenating 50 slices into HDF5 container: 19.592
+cratio 6.239389719336757
+Filename: netcdf4-getslices4.py
+
+Line #    Mem usage    Increment   Line Contents
+================================================
+    40    294.5 MiB    294.5 MiB   @profile
+    41                             def concatenate_slices(dataset):
+    42                                 # HDF5 is handier for outputing datasets
+    43    294.5 MiB      0.0 MiB       iobytes = io.BytesIO()
+    44    284.0 MiB      0.0 MiB       f = h5py.File(iobytes)
+    45    284.0 MiB      0.0 MiB       data = f.create_dataset("prec2", shape, chunks=pshape, compression="gzip", compression_opts=1, shuffle=True)
+    46    472.8 MiB      0.0 MiB       for i in range(NSLICES * SLICE_THICKNESS):
+    47    472.8 MiB      7.1 MiB           data[i] = dataset[tslice + i]
+    48    472.8 MiB      0.0 MiB       return (data, iobytes)
+
+
+Time for concatenating 50 slices into HDF5 container: 17.625
+cratio 7.850710838120502
+Filename: netcdf4-getslices4.py
+
+Line #    Mem usage    Increment   Line Contents
+================================================
+    40    473.0 MiB    473.0 MiB   @profile
+    41                             def concatenate_slices(dataset):
+    42                                 # HDF5 is handier for outputing datasets
+    43    473.0 MiB      0.0 MiB       iobytes = io.BytesIO()
+    44    473.0 MiB      0.0 MiB       f = h5py.File(iobytes)
+    45    473.0 MiB      0.0 MiB       data = f.create_dataset("prec2", shape, chunks=pshape, compression="gzip", compression_opts=1, shuffle=True)
+    46    607.5 MiB      0.0 MiB       for i in range(NSLICES * SLICE_THICKNESS):
+    47    607.5 MiB      6.4 MiB           data[i] = dataset[tslice + i]
+    48    607.5 MiB      0.0 MiB       return (data, iobytes)
+
+
+Time for concatenating 50 slices into HDF5 container: 15.131
+cratio 10.973495021855841
+Filename: netcdf4-getslices4.py
+
+Line #    Mem usage    Increment   Line Contents
+================================================
+    75    607.4 MiB    607.4 MiB   @profile
+    76                             def compute_expr(x):
+    77    607.4 MiB      0.0 MiB       scheduler = "single-threaded" if NTHREADS == 1 else "threads"
+    78    607.4 MiB      0.0 MiB       with dask.config.set(scheduler=scheduler):
+    79    607.5 MiB      0.1 MiB           dx = da.from_array(x)
+    80    607.7 MiB      0.2 MiB           res = (np.sin(dx) - 3.2) * (np.cos(dx) + 1.2)
+    81                                     # I don't see a way to use a memory handler for output
+    82    688.1 MiB     80.4 MiB           da.to_hdf5("outarray.h5", "/prec2_computed", res)
+    83    688.1 MiB      0.0 MiB           with h5py.File("outarray.h5") as f:
+    84    688.1 MiB      0.0 MiB               data = f["/prec2_computed"]
+    85    688.1 MiB      0.0 MiB       return data
+
+
+Time for computing '(sin(x) - 3.2) * (cos(x) + 1.2)' expression (via dask + HDF5): 8.226
+Filename: netcdf4-getslices4.py
+
+Line #    Mem usage    Increment   Line Contents
+================================================
+    92    688.1 MiB    688.1 MiB   @profile
+    93                             def sum_concat(data):
+    94    688.1 MiB      0.0 MiB       concatsum = 0
+    95    690.6 MiB      0.0 MiB       for i in range(len(data)):
+    96    690.6 MiB      2.5 MiB           concatsum += data[i].sum()
+    97    690.6 MiB      0.0 MiB       return concatsum
+
+
+Time for summing up the concatenated HDF5 container: 4.438
+Filename: netcdf4-getslices4.py
+
+Line #    Mem usage    Increment   Line Contents
+================================================
+   104    690.6 MiB    690.6 MiB   @profile
+   105                             def compute_expr2(x, y, z):
+   106    690.6 MiB      0.0 MiB       scheduler = "single-threaded" if NTHREADS == 1 else "threads"
+   107    690.6 MiB      0.0 MiB       with dask.config.set(scheduler=scheduler):
+   108    690.6 MiB      0.0 MiB           dx = da.from_array(x)
+   109    690.6 MiB      0.0 MiB           dy = da.from_array(y)
+   110    690.6 MiB      0.0 MiB           dz = da.from_array(z)
+   111    690.6 MiB      0.0 MiB           res = (dx - dy) * (dz - 3.) * (dy - dx - 2)
+   112                                     # I don't see a way to use a memory handler for output
+   113    691.9 MiB      1.3 MiB           da.to_hdf5("outarray.h5", "/prec2_computed", res)
+   114    691.9 MiB      0.0 MiB           with h5py.File("outarray.h5") as f:
+   115    691.9 MiB      0.0 MiB               data = f["/prec2_computed"]
+   116    691.9 MiB      0.0 MiB       return data
+
+
+Time for computing '(x - y) * (z - 3.) * (y - x - 2)' expression (via dask + HDF5): 17.747
