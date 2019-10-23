@@ -379,6 +379,36 @@ cdef class Expression:
 # Iarray container constructors
 #
 
+def partition_advice(ctx, dtshape, low=128*1024, high=1024*1024):
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
+        ctx.to_capsule(), "iarray_context_t*")
+
+    cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
+    ciarray.iarray_partition_advice(ctx_, &dtshape_, low, high)
+    return dict(dtshape_)["pshape"]
+
+def copy(cfg, src, view=False, filename=None):
+    ctx = Context(cfg)
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
+        ctx.to_capsule(), "iarray_context_t*")
+
+    cdef ciarray.iarray_store_properties_t store
+    if filename is not None:
+        filename = filename.encode("utf-8") if isinstance(filename, str) else filename
+        store.id = filename
+
+    flags = 0 if filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+    cdef ciarray.iarray_container_t *c
+    cdef ciarray.iarray_container_t *src_ = <ciarray.iarray_container_t *> PyCapsule_GetPointer(
+        src.to_capsule(), "iarray_container_t*")
+    if flags == ciarray.IARRAY_CONTAINER_PERSIST:
+        ciarray.iarray_copy(ctx_, src_, view, &store, flags, &c)
+    else:
+        ciarray.iarray_copy(ctx_, src_, view, NULL, flags, &c)
+    c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
+    return IArray(ctx, c_c)
+
+
 def empty(cfg, shape, pshape=None, dtype=np.float64, filename=None):
     ctx = Context(cfg)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
@@ -539,7 +569,7 @@ def _get_slice(ctx, data, start, stop, pshape=None, filename=None, view=True):
 
     shape = [sp%s - st%s for sp, st, s in zip(stop, start, data.shape)]
     if pshape is None:
-        pshape = shape
+        pshape = partition_advice(ctx, _DTShape(shape, data.pshape, data.dtype).to_dict())
 
     cdef ciarray.iarray_store_properties_t store
     if filename is not None:

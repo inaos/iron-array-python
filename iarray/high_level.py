@@ -266,6 +266,10 @@ class LazyExpr:
 # The main IronArray container (not meant to be called from user space)
 class IArray(ext.Container):
 
+    def copy(self, view=False, **kwargs):
+        cfg = Config(**kwargs)
+        return ext.copy(cfg, self, view, cfg.filename)
+
     def __add__(self, value):
         return LazyExpr(new_op=(self, '+', value))
 
