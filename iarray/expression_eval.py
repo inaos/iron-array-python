@@ -51,7 +51,6 @@ class Token():
 
 
 class Expression():
-
     def __init__(self, tokens, ops1, ops2, functions):
         self.tokens = tokens
         self.ops1 = ops1
