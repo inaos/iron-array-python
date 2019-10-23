@@ -97,7 +97,7 @@ print("Time for summing up the concatenated zarr container: %.3f" % (t1 - t0))
 
 @profile
 def compute_expr2(x, y, z):
-    scheduler = "single-threaded" if NTHREADS == 1 else "processes"
+    scheduler = "single-threaded" if NTHREADS == 1 else "threads"
     with dask.config.set(scheduler=scheduler):
         z2 = zarr.empty(shape, dtype=x.dtype, compressor=compressor, chunks=pshape)
         dx = da.from_zarr(x)

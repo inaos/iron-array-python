@@ -1,3 +1,8 @@
+(base) ia@ia-bench-01:~$ free -h
+              total        used        free      shared  buff/cache   available
+Mem:            15G        463M         10G        700K        4.4G         14G
+Swap:            0B          0B          0B
+
 processor	: 7
 vendor_id	: GenuineIntel
 cpu family	: 6
