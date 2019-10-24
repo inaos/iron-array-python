@@ -77,7 +77,7 @@ for info, block in bia.iter_read_block():
 
 scheduler = "single-threaded" if NTHREADS == 1 else "threads"
 
-mkl_set_num_threads(NTHREADS)
+mkl_set_num_threads(1)
 
 @profile
 def dask_matmul(azarr, bzarr):
@@ -107,6 +107,7 @@ bnp = ia.iarray2numpy(bia)
 
 @profile
 def ia_matmul(anp, bnp):
+    mkl_set_num_threads(NTHREADS)
     return np.matmul(anp, bnp)
 
 
