@@ -241,7 +241,11 @@ class LazyExpr:
                 if isinstance(v, IArray):
                     expr.bind(k, v)
             expr.compile(self.expression)
-            out = expr.eval(shape_, pshape, dtype)
+            if "filename" in kwargs:
+                filename = kwargs["filename"]
+            else:
+                filename = None
+            out = expr.eval(shape_, pshape, dtype, filename=filename)
         elif method == "numexpr":
             out = ia.empty(ia.dtshape(shape=shape_, pshape=pshape, dtype=dtype), **kwargs)
             operand_iters = tuple(o.iter_read_block(pshape) for o in self.operands.values() if isinstance(o, IArray))
