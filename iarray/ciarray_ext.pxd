@@ -73,6 +73,9 @@ cdef extern from "libiarray/iarray.h":
 
     void iarray_context_free(iarray_context_t **ctx)
 
+    ina_rc_t iarray_partition_advice(iarray_context_t *ctx, iarray_dtshape_t *dtshape,
+                                          int64_t low, int64_t high)
+
     ina_rc_t iarray_container_new(iarray_context_t *ctx,
                                   iarray_dtshape_t *dtshape,
                                   iarray_store_properties_t *store,
@@ -128,6 +131,13 @@ cdef extern from "libiarray/iarray.h":
                                      iarray_store_properties_t *store,
                                      int flags,
                                      iarray_container_t **container)
+
+    ina_rc_t iarray_copy(iarray_context_t *ctx,
+                              iarray_container_t *src,
+                              bool view,
+                              iarray_store_properties_t *store,
+                              int flags,
+                              iarray_container_t **dest)
 
     ina_rc_t iarray_get_slice(iarray_context_t *ctx,
                               iarray_container_t *c,
