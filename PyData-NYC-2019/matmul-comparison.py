@@ -119,5 +119,5 @@ tnp = t1 - t0
 print("Time for computing matmul (via numpy): %.3f" % (tnp))
 
 
-print(f"Speed-up: {tzarr / tia}")
-print(f"Speed-up: {tnp / tia}")
+print(f"Speed-up vs zarr: {tzarr / tia}")
+print(f"Speed-up vs numpy (MKL): {tnp / tia}")
