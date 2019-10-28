@@ -1,0 +1,144 @@
+(base) ia@ia-bench-01:~/inaos/iron-array-python/PyData-NYC-2019$ PYTHONPATH=.. python3 ia-getslices4.py
+/home/ia/.local/lib/python3.6/site-packages/numba/errors.py:137: UserWarning: Insufficiently recent colorama version found. Numba requires colorama >= 0.3.9
+  warnings.warn(msg)
+Filename: ia-getslices4.py
+
+Line #    Mem usage    Increment   Line Contents
+================================================
+    29    107.6 MiB    107.6 MiB   @profile
+    30                             def open_datafile(filename):
+    31    111.7 MiB      4.2 MiB       dataset = ia.from_file(filename, load_in_mem=False)
+    32    111.7 MiB      0.0 MiB       return dataset
+
+
+Time to open file: 0.035
+Filename: ia-getslices4.py
+
+Line #    Mem usage    Increment   Line Contents
+================================================
+    48    111.7 MiB    111.7 MiB   @profile
+    49                             def concatenate_slices(dataset):
+    50    111.7 MiB      0.0 MiB       dtshape = ia.dtshape(shape=shape, pshape=pshape, dtype=np.float32)
+    51    116.1 MiB      4.3 MiB       iarr = ia.empty(dtshape, clevel=CLEVEL, clib=CLIB, nthreads=NTHREADS, blocksize=BLOCKSIZE)
+    52    407.7 MiB      0.3 MiB       for i, (_, precip_block) in enumerate(iarr.iter_write_block()):
+    53    408.2 MiB      7.2 MiB           slice_np = ia.iarray2numpy(get_slice(dataset, i))
+    54    408.2 MiB      2.5 MiB           precip_block[:, :, :] = slice_np
+    55    405.8 MiB      0.0 MiB       return iarr
+
+
+Time for concatenating 50 slices into an ia container (1): 2.195
+cratio 4.822437946210753
+Filename: ia-getslices4.py
+
+Line #    Mem usage    Increment   Line Contents
+================================================
+    48    405.8 MiB    405.8 MiB   @profile
+    49                             def concatenate_slices(dataset):
+    50    405.8 MiB      0.0 MiB       dtshape = ia.dtshape(shape=shape, pshape=pshape, dtype=np.float32)
+    51    405.8 MiB      0.0 MiB       iarr = ia.empty(dtshape, clevel=CLEVEL, clib=CLIB, nthreads=NTHREADS, blocksize=BLOCKSIZE)
+    52    636.3 MiB      0.2 MiB       for i, (_, precip_block) in enumerate(iarr.iter_write_block()):
+    53    636.3 MiB      5.2 MiB           slice_np = ia.iarray2numpy(get_slice(dataset, i))
+    54    636.3 MiB      0.0 MiB           precip_block[:, :, :] = slice_np
+    55    636.3 MiB      0.0 MiB       return iarr
+
+
+Time for concatenating 50 slices into an ia container (2): 1.991
+cratio 6.023612129902033
+Filename: ia-getslices4.py
+
+Line #    Mem usage    Increment   Line Contents
+================================================
+    48    636.3 MiB    636.3 MiB   @profile
+    49                             def concatenate_slices(dataset):
+    50    636.3 MiB      0.0 MiB       dtshape = ia.dtshape(shape=shape, pshape=pshape, dtype=np.float32)
+    51    636.3 MiB      0.0 MiB       iarr = ia.empty(dtshape, clevel=CLEVEL, clib=CLIB, nthreads=NTHREADS, blocksize=BLOCKSIZE)
+    52    799.4 MiB      0.0 MiB       for i, (_, precip_block) in enumerate(iarr.iter_write_block()):
+    53    799.4 MiB      3.9 MiB           slice_np = ia.iarray2numpy(get_slice(dataset, i))
+    54    799.4 MiB      0.0 MiB           precip_block[:, :, :] = slice_np
+    55    799.4 MiB      0.0 MiB       return iarr
+
+
+Time for concatenating 50 slices into an ia container (3): 1.824
+cratio 8.565665018339143
+Filename: ia-getslices4.py
+
+Line #    Mem usage    Increment   Line Contents
+================================================
+    80    799.4 MiB    799.4 MiB   @profile
+    81                             def compute_slices(dataset):
+    82    799.4 MiB      0.0 MiB       expr = ia.Expr(eval_flags="iterblosc", clevel=CLEVEL, clib=CLIB, nthreads=NTHREADS, blocksize=BLOCKSIZE)
+    83    799.4 MiB      0.0 MiB       expr.bind("x", dataset)
+    84    808.1 MiB      8.7 MiB       expr.compile(sexpr)
+    85   1394.6 MiB    586.5 MiB       out = expr.eval(shape, pshape, dataset.dtype)
+    86   1394.6 MiB      0.0 MiB       return out
+
+
+Time for computing '(sin(x) - 3.2) * (cos(x) + 1.2)' expression with 1 operand (iarray): 1.661
+/home/ia/.local/lib/python3.6/site-packages/numpy/core/_methods.py:38: RuntimeWarning: overflow encountered in reduce
+  return umr_sum(a, axis, dtype, out, keepdims, initial, where)
+/home/ia/.local/lib/python3.6/site-packages/numpy/core/_methods.py:38: RuntimeWarning: invalid value encountered in reduce
+  return umr_sum(a, axis, dtype, out, keepdims, initial, where)
+Filename: ia-getslices4.py
+
+Line #    Mem usage    Increment   Line Contents
+================================================
+    92   1394.6 MiB   1394.6 MiB   @profile
+    93                             def sum_slices(slice):
+    94   1394.6 MiB      0.0 MiB       slsum = ia.iarray2numpy(slice).sum()
+    95   1394.6 MiB      0.0 MiB       return slsum
+
+
+Time for summing up 1 operand (iarray): 0.926
+Filename: ia-getslices4.py
+
+Line #    Mem usage    Increment   Line Contents
+================================================
+   102   1394.6 MiB   1394.6 MiB   @profile
+   103                             def compute_slices2(dset1, dset2, dset3):
+   104   1394.6 MiB      0.0 MiB       expr = ia.Expr(eval_flags="iterblosc", clevel=CLEVEL, clib=CLIB, nthreads=NTHREADS, blocksize=BLOCKSIZE)
+   105   1394.6 MiB      0.0 MiB       expr.bind("x", dset1)
+   106   1394.6 MiB      0.0 MiB       expr.bind("y", dset2)
+   107   1394.6 MiB      0.0 MiB       expr.bind("z", dset3)
+   108   1396.2 MiB      1.5 MiB       expr.compile(sexpr2)
+   109   2315.9 MiB    919.7 MiB       out = expr.eval(shape, pshape, dset1.dtype)
+   110   2315.9 MiB      0.0 MiB       return out
+
+
+Time for computing '(x - y) * (z - 3.) * (y - x - 2)' expression with 3 operands (iarray): 2.683
+Time for converting the slices into numpy: 2.161
+Filename: ia-getslices4.py
+
+Line #    Mem usage    Increment   Line Contents
+================================================
+   125   6314.4 MiB   6314.4 MiB   @profile
+   126                             def compute_numpy(x):
+   127   7648.0 MiB   1333.6 MiB       out = (np.sin(x) - 3.2) * (np.cos(x) + 1.2)
+   128   7648.0 MiB      0.0 MiB       return out
+
+
+Time for computing '(sin(x) - 3.2) * (cos(x) + 1.2)' expression with 1 operand (via numpy): 5.811
+Filename: ia-getslices4.py
+
+Line #    Mem usage    Increment   Line Contents
+================================================
+   134   7648.0 MiB   7648.0 MiB   @profile
+   135                             def sum_npslices(npslices):
+   136   7648.0 MiB      0.0 MiB       return npslices.sum()
+
+
+Time for summing up the computed slices (pure numpy): 0.178
+Traceback (most recent call last):
+  File "ia-getslices4.py", line 142, in <module>
+    np.testing.assert_allclose(np.array(slsum, dtype=np.float32), np.array(npslsum, dtype=np.float32), rtol=1e-5)
+  File "/home/ia/.local/lib/python3.6/site-packages/numpy/testing/_private/utils.py", line 1515, in assert_allclose
+    verbose=verbose, header=header, equal_nan=equal_nan)
+  File "/home/ia/.local/lib/python3.6/site-packages/numpy/testing/_private/utils.py", line 769, in assert_array_compare
+    flagged = func_assert_same_pos(x, y, func=isnan, hasval='nan')
+  File "/home/ia/.local/lib/python3.6/site-packages/numpy/testing/_private/utils.py", line 745, in func_assert_same_pos
+    raise AssertionError(msg)
+AssertionError:
+Not equal to tolerance rtol=1e-05, atol=0
+
+x and y nan location mismatch:
+ x: array(nan, dtype=float32)
+ y: array(-2.427255e+09, dtype=float32)
