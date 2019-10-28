@@ -196,99 +196,100 @@ Line #    Mem usage    Increment   Line Contents
 ================================================
     27     39.7 MiB     39.7 MiB   @profile
     28                             def open_datafile(filename):
-    29     39.8 MiB      0.1 MiB       data = zarr.open(filename)
-    30     39.8 MiB      0.0 MiB       return data
+    29     39.7 MiB      0.0 MiB       data = zarr.open(filename)
+    30     39.7 MiB      0.0 MiB       return data
 
 
-Time to open file: 0.023
+Time to open file: 0.022
 Filename: zarr-getslices4.py
 
 Line #    Mem usage    Increment   Line Contents
 ================================================
-    42     39.8 MiB     39.8 MiB   @profile
+    42     39.9 MiB     39.9 MiB   @profile
     43                             def concatenate_slices(dataset):
-    44     39.8 MiB      0.0 MiB       data = zarr.empty(shape=shape, dtype=dataset.dtype, compressor=compressor, chunks=pshape)
-    45    327.7 MiB      0.0 MiB       for i in range(NSLICES * SLICE_THICKNESS):
-    46    327.7 MiB      5.8 MiB           data[i] = dataset[tslice + i]
-    47    327.7 MiB      0.0 MiB       return data
+    44     40.1 MiB      0.2 MiB       data = zarr.empty(shape=shape, dtype=dataset.dtype, compressor=compressor, chunks=pshape)
+    45    327.3 MiB      0.0 MiB       for i in range(NSLICES * SLICE_THICKNESS):
+    46    327.3 MiB      5.5 MiB           data[i] = dataset[tslice + i]
+    47    327.3 MiB      0.0 MiB       return data
 
 
-Time for concatenating 50 slices into a zarr container: 2.140
+Time for concatenating 50 slices into a zarr container: 2.006
 cratio 4.81307090068472
 Filename: zarr-getslices4.py
 
 Line #    Mem usage    Increment   Line Contents
 ================================================
-    42    327.7 MiB    327.7 MiB   @profile
+    42    327.3 MiB    327.3 MiB   @profile
     43                             def concatenate_slices(dataset):
-    44    328.0 MiB      0.3 MiB       data = zarr.empty(shape=shape, dtype=dataset.dtype, compressor=compressor, chunks=pshape)
-    45    549.2 MiB      0.0 MiB       for i in range(NSLICES * SLICE_THICKNESS):
-    46    549.2 MiB      0.8 MiB           data[i] = dataset[tslice + i]
-    47    549.2 MiB      0.0 MiB       return data
+    44    327.3 MiB      0.0 MiB       data = zarr.empty(shape=shape, dtype=dataset.dtype, compressor=compressor, chunks=pshape)
+    45    548.8 MiB      0.0 MiB       for i in range(NSLICES * SLICE_THICKNESS):
+    46    548.8 MiB      0.8 MiB           data[i] = dataset[tslice + i]
+    47    548.8 MiB      0.0 MiB       return data
 
 
-Time for concatenating 50 slices into a zarr container: 2.046
+Time for concatenating 50 slices into a zarr container: 1.919
 cratio 6.02094090609253
 Filename: zarr-getslices4.py
 
 Line #    Mem usage    Increment   Line Contents
 ================================================
-    42    549.2 MiB    549.2 MiB   @profile
+    42    548.8 MiB    548.8 MiB   @profile
     43                             def concatenate_slices(dataset):
-    44    549.2 MiB      0.0 MiB       data = zarr.empty(shape=shape, dtype=dataset.dtype, compressor=compressor, chunks=pshape)
-    45    703.9 MiB      0.0 MiB       for i in range(NSLICES * SLICE_THICKNESS):
-    46    703.9 MiB      2.6 MiB           data[i] = dataset[tslice + i]
-    47    703.9 MiB      0.0 MiB       return data
+    44    548.8 MiB      0.0 MiB       data = zarr.empty(shape=shape, dtype=dataset.dtype, compressor=compressor, chunks=pshape)
+    45    703.7 MiB      0.0 MiB       for i in range(NSLICES * SLICE_THICKNESS):
+    46    703.7 MiB      0.5 MiB           data[i] = dataset[tslice + i]
+    47    703.7 MiB      0.0 MiB       return data
 
 
-Time for concatenating 50 slices into a zarr container: 1.903
+Time for concatenating 50 slices into a zarr container: 1.796
 cratio 8.612568383982413
 Filename: zarr-getslices4.py
 
 Line #    Mem usage    Increment   Line Contents
 ================================================
-    73    703.9 MiB    703.9 MiB   @profile
+    73    703.7 MiB    703.7 MiB   @profile
     74                             def compute_expr(x):
-    75    703.9 MiB      0.0 MiB       scheduler = "single-threaded" if NTHREADS == 1 else "threads"
-    76    703.9 MiB      0.0 MiB       with dask.config.set(scheduler=scheduler):
-    77    703.9 MiB      0.0 MiB           z2 = zarr.empty(shape, dtype=x.dtype, compressor=compressor, chunks=pshape)
-    78    704.2 MiB      0.3 MiB           dx = da.from_zarr(x)
-    79    704.2 MiB      0.0 MiB           res = (np.sin(dx) - 3.2) * (np.cos(dx) + 1.2)
-    80   1213.8 MiB    509.6 MiB           return da.to_zarr(res, z2)
+    75    703.7 MiB      0.0 MiB       scheduler = "single-threaded" if NTHREADS == 1 else "threads"
+    76    703.7 MiB      0.0 MiB       with dask.config.set(scheduler=scheduler, num_workers=NTHREADS):
+    77    703.7 MiB      0.0 MiB           z2 = zarr.empty(shape, dtype=x.dtype, compressor=compressor, chunks=pshape)
+    78    703.7 MiB      0.0 MiB           dx = da.from_zarr(x)
+    79    704.0 MiB      0.3 MiB           res = (np.sin(dx) - 3.2) * (np.cos(dx) + 1.2)
+    80   1146.9 MiB    442.9 MiB           return da.to_zarr(res, z2)
 
 
-Time for computing '(sin(x) - 3.2) * (cos(x) + 1.2)' expression (via dask + zarr): 2.980
+Time for computing '(sin(x) - 3.2) * (cos(x) + 1.2)' expression (via dask + zarr): 3.867
 Filename: zarr-getslices4.py
 
 Line #    Mem usage    Increment   Line Contents
 ================================================
-    87   1213.8 MiB   1213.8 MiB   @profile
+    87   1146.9 MiB   1146.9 MiB   @profile
     88                             def sum_concat(data):
-    89   1213.8 MiB      0.0 MiB       concatsum = 0
-    90   1214.4 MiB      0.0 MiB       for i in range(len(data)):
-    91   1214.4 MiB      0.2 MiB           concatsum += data[i].sum()
-    92   1213.8 MiB      0.0 MiB       return concatsum
+    89   1146.9 MiB      0.0 MiB       concatsum = 0
+    90   1146.9 MiB      0.0 MiB       for i in range(len(data)):
+    91   1146.9 MiB      0.0 MiB           concatsum += data[i].sum()
+    92   1146.9 MiB      0.0 MiB       return concatsum
 
 
-Time for summing up the concatenated zarr container: 1.483
+Time for summing up the concatenated zarr container: 0.993
 Filename: zarr-getslices4.py
 
 Line #    Mem usage    Increment   Line Contents
 ================================================
-    98   1213.8 MiB   1213.8 MiB   @profile
+    98   1146.9 MiB   1146.9 MiB   @profile
     99                             def compute_expr2(x, y, z):
-   100   1213.8 MiB      0.0 MiB       scheduler = "single-threaded" if NTHREADS == 1 else "threads"
-   101   1213.8 MiB      0.0 MiB       with dask.config.set(scheduler=scheduler):
-   102   1213.8 MiB      0.0 MiB           z2 = zarr.empty(shape, dtype=x.dtype, compressor=compressor, chunks=pshape)
-   103   1213.8 MiB      0.0 MiB           dx = da.from_zarr(x)
-   104   1213.8 MiB      0.0 MiB           dy = da.from_zarr(y)
-   105   1213.8 MiB      0.0 MiB           dz = da.from_zarr(z)
-   106   1213.8 MiB      0.0 MiB           res = (dx - dy) * (dz - 3.) * (dy - dx - 2)
-   107   1998.7 MiB    784.9 MiB           return da.to_zarr(res, z2)
+   100   1146.9 MiB      0.0 MiB       scheduler = "single-threaded" if NTHREADS == 1 else "threads"
+   101   1146.9 MiB      0.0 MiB       with dask.config.set(scheduler=scheduler, num_workers=NTHREADS):
+   102   1146.9 MiB      0.0 MiB           z2 = zarr.empty(shape, dtype=x.dtype, compressor=compressor, chunks=pshape)
+   103   1146.9 MiB      0.0 MiB           dx = da.from_zarr(x)
+   104   1146.9 MiB      0.0 MiB           dy = da.from_zarr(y)
+   105   1146.9 MiB      0.0 MiB           dz = da.from_zarr(z)
+   106   1146.9 MiB      0.0 MiB           res = (dx - dy) * (dz - 3.) * (dy - dx - 2)
+   107   1926.1 MiB    779.2 MiB           return da.to_zarr(res, z2)
 
 
-Time for computing '(x - y) * (z - 3.) * (y - x - 2)' expression (via dask + zarr): 4.860
-Filename: netcdf4-getslices4.py
+Time for computing '(x - y) * (z - 3.) * (y - x - 2)' expression (via dask + zarr): 4.778
+
+ilename: netcdf4-getslices4.py
 
 Line #    Mem usage    Increment   Line Contents
 ================================================
