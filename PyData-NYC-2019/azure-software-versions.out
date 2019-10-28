@@ -1,0 +1,20 @@
+(base) ia@ia-bench-01:~$ python3 -c "import dask; print(dask.__version__)"
+2.6.0
+(base) ia@ia-bench-01:~$ python3 -c "import numpy; print(numpy.__version__)"
+1.17.3
+(base) ia@ia-bench-01:~$ python3 -c "import numpy; print(zarr.__version__)"
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+NameError: name 'zarr' is not defined
+(base) ia@ia-bench-01:~$ python3 -c "import zarr; print(zarr.__version__)"
+2.3.2
+(base) ia@ia-bench-01:~$ python3 -c "import numba; print(numba.__version__)"
+/home/ia/.local/lib/python3.6/site-packages/numba/errors.py:137: UserWarning: Insufficiently recent colorama version found. Numba requires colorama >= 0.3.9
+  warnings.warn(msg)
+0.46.0
+(base) ia@ia-bench-01:~$ python3 -c "import numexpr; print(numexpr.__version__)"
+2.7.0
+(base) ia@ia-bench-01:~$ python3 -c "import h5py; print(h5py.__version__)"
+2.10.0
+(base) ia@ia-bench-01:~$ uname -a
+Linux ia-bench-01 5.0.0-1023-azure #24~18.04.1-Ubuntu SMP Wed Oct 2 20:23:29 UTC 2019 x86_64 x86_64 x86_64 GNU/Linux
