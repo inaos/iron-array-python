@@ -73,7 +73,7 @@ print("cratio", prec3.nbytes / prec3.nbytes_stored)
 @profile
 def compute_expr(x):
     scheduler = "single-threaded" if NTHREADS == 1 else "threads"
-    with dask.config.set(scheduler=scheduler):
+    with dask.config.set(scheduler=scheduler, num_workers=NTHREADS):
         z2 = zarr.empty(shape, dtype=x.dtype, compressor=compressor, chunks=pshape)
         dx = da.from_zarr(x)
         res = (np.sin(dx) - 3.2) * (np.cos(dx) + 1.2)
@@ -98,7 +98,7 @@ print("Time for summing up the concatenated zarr container: %.3f" % (t1 - t0))
 @profile
 def compute_expr2(x, y, z):
     scheduler = "single-threaded" if NTHREADS == 1 else "threads"
-    with dask.config.set(scheduler=scheduler):
+    with dask.config.set(scheduler=scheduler, num_workers=NTHREADS):
         z2 = zarr.empty(shape, dtype=x.dtype, compressor=compressor, chunks=pshape)
         dx = da.from_zarr(x)
         dy = da.from_zarr(y)

@@ -81,7 +81,7 @@ mkl_set_num_threads(1)
 
 @profile
 def dask_matmul(azarr, bzarr):
-    with dask.config.set(scheduler=scheduler):
+    with dask.config.set(scheduler=scheduler, num_workers=NTHREADS):
         ad = da.from_zarr(azarr)
         bd = da.from_zarr(bzarr)
         cd = da.matmul(ad, bd)
