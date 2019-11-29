@@ -7,9 +7,7 @@ import zarr
 from numcodecs import Blosc
 
 import iarray as ia
-import matplotlib.pyplot as plt
 
-import numpy
 import ctypes
 mkl_rt = ctypes.CDLL('libmkl_rt.dylib')
 mkl_get_max_threads = mkl_rt.mkl_get_max_threads

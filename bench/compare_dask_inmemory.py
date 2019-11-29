@@ -16,11 +16,9 @@ CLEVEL = 5
 CLIB = ia.LZ4
 
 compressor = Blosc(cname='lz4', clevel=CLEVEL, shuffle=Blosc.SHUFFLE)
-# shape = (1 * 1000 * 1000,)
 shapes = np.logspace(5, 8, 10, dtype=np.int64)
-# chunksizes = np.linspace(10 * 1000, 1000 * 1000, 10)
 pshape = (100 * 1000,)
-# pshape = None
+# pshape = None  # use a plainbuffer
 
 sexpr = "(sin(x) - 3.2) * (cos(x) + 1.2)"
 
@@ -31,9 +29,10 @@ t_ratio = []
 for i, shape in enumerate(shapes):
     shape = (shape,)
     print(shape)
-    data = ia.arange(ia.dtshape(shape, pshape=pshape, dtype=DTYPE), filename="iarray_file.iarray", clib=CLIB, clevel=CLEVEL)
+    data = ia.arange(ia.dtshape(shape, pshape=pshape, dtype=DTYPE), clib=CLIB, clevel=CLEVEL)
 
     t0 = time()
+    # TODO: the next crashes if eval_flags == "iterblosc" and DTYPE = np.float32
     expr = ia.Expr(eval_flags="iterblock", blocksize=0, nthreads=NTHREADS, clevel=CLEVEL)
     expr.bind("x", data)
     expr.compile(sexpr)
