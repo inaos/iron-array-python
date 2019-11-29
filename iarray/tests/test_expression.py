@@ -96,5 +96,55 @@ def test_ufuncs(ufunc, ia_expr):
             npout2 = ia.iarray2numpy(iout2)
             np.testing.assert_almost_equal(npout, npout2, decimal=decimal)
 
-        npout2 = eval("np." + ufunc, {"np": np, "x": npx, "y": npy})  # pure numpy
+        npout2 = eval("np." + ufunc, {"np": np, "x": npx, "y": npy})   # pure numpy
+        np.testing.assert_almost_equal(npout, npout2, decimal=decimal)
+
+
+# ufuncs inside of expressions
+@pytest.mark.parametrize("ufunc", [
+    "abs",
+    "arccos",
+    "arcsin",
+    "arctan",
+    "arctan2",
+    "ceil",
+    "cos",
+    "cosh",
+    "exp",
+    "floor",
+    "log",
+    "log10",
+    "negative",
+    "power",
+    "sin",
+    "sinh",
+    "sqrt",
+    "tan",
+    "tanh",
+])
+def test_expr_ufuncs(ufunc):
+    shape = [20, 30]
+    pshape = [4, 5]
+    for dtype in np.float64, np.float32:
+        # The ranges below are important for not overflowing operations
+        x = ia.linspace(ia.dtshape(shape, pshape, dtype), .1, .9)
+        y = ia.linspace(ia.dtshape(shape, pshape, dtype), 0, 1)
+
+        # NumPy computation
+        npx = ia.iarray2numpy(x)
+        npy = ia.iarray2numpy(y)
+        if ufunc in ("arctan2", "power"):
+            npout = eval("1 + 2 * np.%s(x, y)" % ufunc, {"np": np, "x": npx, "y": npy})
+        else:
+            npout = eval("1 + 2 * np.%s(x)" % ufunc, {"np": np, "x": npx})
+
+        # High-level ironarray eval
+        if ufunc in ("arctan2", "power"):
+            lazy_expr = eval("1 + 2* x.%s(y)" % ufunc, {"ia": ia, "x": x, "y": y})
+        else:
+            lazy_expr = eval("1 + 2 * x.%s()" % ufunc, {"ia": ia, "x": x})
+        iout2 = lazy_expr.eval(pshape=pshape, dtype=dtype)
+        npout2 = ia.iarray2numpy(iout2)
+
+        decimal = 6 if dtype is np.float32 else 7
         np.testing.assert_almost_equal(npout, npout2, decimal=decimal)
