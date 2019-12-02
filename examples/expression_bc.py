@@ -13,7 +13,7 @@ a2 = ia.iarray2numpy(a1)
 print("iarray evaluation...")
 
 # And now, the expression
-expr = ia.Expr(eval_flags="iterblock", blocksize=0)
+expr = ia.Expr(eval_flags="iterblosc", blocksize=0)
 expr.bind("x", a1)
 bc = open('examples/expression.bc', 'rb').read()
 expr.compile_udf(bc)
