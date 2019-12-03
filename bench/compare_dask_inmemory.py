@@ -33,10 +33,10 @@ for i, shape in enumerate(shapes):
 
     t0 = time()
     # TODO: the next crashes if eval_flags == "iterblosc" and DTYPE = np.float32
-    expr = ia.Expr(eval_flags="iterblock", blocksize=0, nthreads=NTHREADS, clevel=CLEVEL)
+    expr = ia.Expr(eval_flags="iterblosc", blocksize=0, nthreads=NTHREADS, clevel=CLEVEL)
     expr.bind("x", data)
     expr.compile(sexpr)
-    res1 = expr.eval(shape, pshape=pshape)
+    res1 = expr.eval(shape, pshape=pshape, dtype=DTYPE)
     t1 = time()
     t_iarray.append(t1 - t0)
     print("Time for computing '%s' expression (via ia.Expr()): %.3f" % (sexpr, (t1 - t0)))

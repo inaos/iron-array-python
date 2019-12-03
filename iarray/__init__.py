@@ -27,7 +27,7 @@ from .high_level import (IArray, dtshape, Config, RandomContext, Expr, LazyExpr,
                          sin, sinh, sqrt, tan, tanh
                          )
 
-from .expression_eval import Parser
+from .expression import Parser
 from .version import version as __version__
 
 ext.IArrayInit()

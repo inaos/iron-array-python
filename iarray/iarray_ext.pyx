@@ -21,7 +21,7 @@ from math import ceil
 from libc.stdlib cimport malloc, free
 from iarray.high_level import IArray
 from collections import namedtuple
-from .expression_eval import Parser
+from .expression import Parser
 
 
 cdef class ReadBlockIter:

@@ -5,6 +5,7 @@ import numexpr as ne
 
 
 # Define array params
+dtype = np.float64
 shape = [10000, 2000]
 pshape = [1000, 200]
 nthreads = 4
@@ -12,14 +13,14 @@ eval_method = "iterblock"
 kwargs = dict(eval_flags=eval_method, nthreads=nthreads, clevel=1, clib=ia.LZ4)
 
 # Create initial containers
-ia1 = ia.linspace(ia.dtshape(shape, pshape, np.float64), 0, 10, **kwargs)
+ia1 = ia.linspace(ia.dtshape(shape, pshape, dtype), 0, 10, **kwargs)
 np1 = ia.iarray2numpy(ia1)
 
 t0 = time()
 expr = ia.Expr(**kwargs)
 expr.bind("x", ia1)
 expr.compile("cos(x)")
-ia2 = expr.eval(shape, pshape, np.float64)
+ia2 = expr.eval(shape, pshape, dtype)
 t1 = time()
 print("Time for iarray evaluation: %.3f (cratio: %.2fx)" % ((t1 - t0), ia2.cratio))
 np2 = ia.iarray2numpy(ia2)
@@ -59,7 +60,7 @@ except AssertionError:
     print("ERROR. Results are different.")
 
 t0 = time()
-ia3 = np.cos(ia1).eval(pshape=pshape, **kwargs)
+ia3 = np.cos(ia1).eval(pshape=pshape, dtype=dtype, **kwargs)
 # ia3 = ia1.cos().eval(pshape=pshape, **kwargs)
 # ia3 = ia1.cos().eval(method="numexpr", pshape=pshape, **kwargs)
 t1 = time()

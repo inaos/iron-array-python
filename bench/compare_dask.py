@@ -38,7 +38,7 @@ for i, shape in enumerate(shapes):
     expr = ia.Expr(eval_flags="iterblock", blocksize=0, nthreads=NTHREADS, clevel=CLEVEL)
     expr.bind("x", data)
     expr.compile(sexpr)
-    res1 = expr.eval(shape, pshape=pshape, filename="iarray_outfile.iarray")
+    res1 = expr.eval(shape, pshape=pshape, dtype=DTYPE, filename="iarray_outfile.iarray")
     t1 = time()
     t_iarray.append(t1 - t0)
     print("Time for computing '%s' expression (via ia.Expr()): %.3f" % (sexpr, (t1 - t0)))
