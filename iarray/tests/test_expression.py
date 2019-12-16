@@ -140,9 +140,45 @@ def test_expr_ufuncs(ufunc):
 
         # High-level ironarray eval
         if ufunc in ("arctan2", "power"):
-            lazy_expr = eval("1 + 2* x.%s(y)" % ufunc, {"ia": ia, "x": x, "y": y})
+            lazy_expr = eval("1 + 2* x.%s(y)" % ufunc, {"x": x, "y": y})
         else:
-            lazy_expr = eval("1 + 2 * x.%s()" % ufunc, {"ia": ia, "x": x})
+            lazy_expr = eval("1 + 2 * x.%s()" % ufunc, {"x": x})
+        iout2 = lazy_expr.eval(pshape=pshape, dtype=dtype)
+        npout2 = ia.iarray2numpy(iout2)
+
+        decimal = 6 if dtype is np.float32 else 7
+        np.testing.assert_almost_equal(npout, npout2, decimal=decimal)
+
+# Different operand fusions inside expressions
+@pytest.mark.parametrize("expr", [
+    "x + y",
+    "(x + y) + z",
+    "(x + y) * (x + z)",
+    "(x + y + z) * (x + z)",
+    "(x + y - z) * (x + y + t)",
+    "(x - z + t) * (x + y - z)",
+    "(x - z + t) * (z + t - x)",
+    "(x - z + t + y) * (t - y + z - x)",
+])
+def test_expr_fusion(expr):
+    shape = [20, 30]
+    pshape = [4, 5]
+    for dtype in np.float64, np.float32:
+        # The ranges below are important for not overflowing operations
+        x = ia.linspace(ia.dtshape(shape, pshape, dtype), .1, .9)
+        y = ia.linspace(ia.dtshape(shape, pshape, dtype), 0., 1.)
+        z = ia.linspace(ia.dtshape(shape, pshape, dtype), 0., 2.)
+        t = ia.linspace(ia.dtshape(shape, pshape, dtype), 0., 3.)
+
+        # NumPy computation
+        npx = ia.iarray2numpy(x)
+        npy = ia.iarray2numpy(y)
+        npz = ia.iarray2numpy(z)
+        npt = ia.iarray2numpy(t)
+        npout = eval("%s" % expr, {"np": np, "x": npx, "y": npy, "z": npz, "t": npt})
+
+        # High-level ironarray eval
+        lazy_expr = eval(expr, {"x": x, "y": y, "z": z, "t": t})
         iout2 = lazy_expr.eval(pshape=pshape, dtype=dtype)
         npout2 = ia.iarray2numpy(iout2)
 

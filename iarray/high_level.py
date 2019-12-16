@@ -19,6 +19,7 @@ from itertools import zip_longest as zip
 def fuse_operands(operands1, operands2):
     new_operands = {}
     dup_operands = {}
+    new_pos = len(operands1)
     for k2, v2 in operands2.items():
         try:
             k1 = list(operands1.keys())[list(operands1.values()).index(v2)]
@@ -26,9 +27,8 @@ def fuse_operands(operands1, operands2):
             dup_operands[k2] = k1
         except ValueError:
             # The value is not among operands1, so rebase it
-            prev_pos = int(k2[1:])
-            new_pos = prev_pos + len(new_operands)
             new_op = f"o{new_pos}"
+            new_pos += 1
             new_operands[new_op] = operands2[k2]
     return new_operands, dup_operands
 
@@ -36,6 +36,7 @@ def fuse_operands(operands1, operands2):
 def fuse_expressions(expr, new_base, dup_op):
     new_expr = ""
     skip_to_char = 0
+    old_base = 0
     for i in range(len(expr)):
         if i < skip_to_char:
             continue
@@ -49,8 +50,9 @@ def fuse_expressions(expr, new_base, dup_op):
             old_pos = int(expr[i+1:i+j+1])
             old_op = f"o{old_pos}"
             if old_op not in dup_op:
-                new_pos = old_pos + new_base
+                new_pos = old_base + new_base
                 new_expr += f"o{new_pos}"
+                old_base += 1
             else:
                 new_expr += dup_op[old_op]
             skip_to_char = i + j + 1
@@ -179,10 +181,10 @@ class LazyExpr:
             # Expression fusion
             # Fuse operands in expressions and detect duplicates
             new_op, dup_op = fuse_operands(value1.operands, value2.operands)
-            self.operands.update(new_op)
             # Take expression 2 and rebase the operands while removing duplicates
             new_expr = fuse_expressions(value2.expression, len(value1.operands), dup_op)
             self.expression = f"({self.expression} {op} {new_expr})"
+            self.operands.update(new_op)
         elif isinstance(value1, LazyExpr):
             if isinstance(value2, (int, float)):
                 self.expression = f"({self.expression} {op} {value2})"
