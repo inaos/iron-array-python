@@ -1,0 +1,61 @@
+trigger:
+- develop
+
+variables:
+- group: jfrog-artifactory
+
+strategy:
+  matrix:
+    linux:
+      imageName: 'ubuntu-16.04'
+#    mac:
+#      imageName: 'macos-10.13'
+#    windows:
+#      imageName: 'vs2017-win2016'
+
+pool:
+  vmImage: $(imageName)
+
+
+steps:
+- powershell: gci env:* | sort-object name
+
+- bash: |
+    mkdir -p $HOME/.inaos/cmake
+    mkdir -p $HOME/INAOS
+    echo "INAC_REPOSITORY_LOCAL=$HOME/INAOS" > $HOME/.inaos/cmake/repository.txt 
+    echo "INAC_REPOSITORY_REMOTE=https://inaos.jfrog.io/inaos/libs-release-local/inaos" >> $HOME/.inaos/cmake/repository.txt
+    echo "INAC_REPOSITORY_USRPWD=licensed:AKCp5bBraH7CasbsYCURsjzkbjXwVwdYcT7u39EiuL6GjnK1VKfKQWCd1E2E64mHokU5YUHku" >> $HOME/.inaos/cmake/repository.txt
+    git submodule update --init --recursive
+  displayName: Clone repos
+
+- bash: |
+    if [ "$AGENT_OS" == "Darwin" ]
+      then
+        echo "##vso[task.prependpath]$CONDA/bin"
+    fi
+    if [ "$AGENT_OS" == "Windows_NT" ]
+      then
+        echo "##vso[task.prependpath]$CONDA/Scripts"
+    fi
+  displayName: Add conda to PATH
+
+- bash: |
+    if [ "$AGENT_OS" == "Darwin" ]
+      then
+        sudo chown -R $USER $CONDA
+      fi
+  displayName: Take ownership of conda installation
+
+- bash: |
+    conda create --yes --quiet --name iArrayEnv
+    source activate iArrayEnv
+    conda install -y --name iArrayEnv -c intel openmp
+  displayName: Download dependencies
+    
+- bash: |
+    mkdir cmake-build-$BUILD_CONFIGURATION
+    cd cmake-build-$BUILD_CONFIGURATION
+    cmake ../ -DCMAKE_BUILD_TYPE=$BUILD_CONFIGURATION  -DMULTITHREADING=$MULTITHREADING
+    make -j
+  displayName: Generate wheel
