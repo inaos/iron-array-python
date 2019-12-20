@@ -1,7 +1,8 @@
 import os
-from setuptools import setup, Extension, find_packages
+from setuptools import Extension, find_packages
 from Cython.Build import cythonize
 import numpy
+from skbuild import setup
 
 DESCRIPTION = 'A Python wrapper of the IronArray (N-dimensional arrays) C library for Python.'
 
@@ -62,17 +63,17 @@ setup(
         'setuptools-scm>3.0'
         'numpy>=1.15',
         'cython>=0.23',
+        'scikit-build',
     ],
     python_requires=">=3.6",
     install_requires=[
         'numpy>=1.15',
         'numexpr>=2.6',
         'numba>=0.42',
-        'llvmlite',
-        'pytest',
+        'llvmlite>=0.30',
+        'pytest>=5.0',
         'hypothesis',
     ],
-    package_dir={'': '.'},
     packages=find_packages(),
     ext_modules=cythonize([
         Extension(

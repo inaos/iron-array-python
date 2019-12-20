@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.2)
 project(iarray-python VERSION 1.0.0)
+find_package(PythonExtensions REQUIRED)
 
 if(NOT EXISTS "${CMAKE_BINARY_DIR}/inac.cmake")
     if (NOT EXISTS "${CMAKE_SOURCE_DIR}/inac.cmake")
@@ -16,6 +17,15 @@ if(NOT EXISTS "${CMAKE_BINARY_DIR}/inac.cmake")
     endif()
 endif()
 include("${CMAKE_BINARY_DIR}/inac.cmake")
-
+set(CMAKE_BUILD_TYPE "RelWithDebInfo")
+inac_add_dependency(inac "1.0.6")
 inac_add_dependency(iarray "0.1.2" SEMANTIC true)
 
+find_package(NumPy)
+include_directories(${NumPy_INCLUDE_DIRS})
+
+add_library(iarray_ext MODULE iarray/iarray_ext.c)
+target_link_libraries(iarray_ext ${INAC_DEPENDENCY_LIBS})
+python_extension_module(iarray_ext)
+install(TARGETS iarray_ext LIBRARY DESTINATION iarray)
+install(FILES iarray DESTINATION iarray)
