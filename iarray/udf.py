@@ -6,7 +6,7 @@ from ctypes import c_int, c_uint8, c_int32
 from llvmlite import ir
 
 #import py2llvm as llvm
-from py2llvm import StructType, int8p, int32, float32
+from py2llvm import StructType, int8p, int32, float64
 from py2llvm import types
 
 
@@ -101,8 +101,8 @@ class params_type(StructType):
         ('out_typesize', int32), # int32_t out_typesize;  // automatically filled
     ]
 
-    input_types = [float32]
-    out_type = float32
+    input_types = [float64]
+    out_type = float64
 
     @property
     def inputs(self):

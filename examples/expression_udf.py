@@ -6,6 +6,8 @@ import py2llvm as llvm
 #from py2llvm import Array, float64, int64
 from py2llvm import int64
 
+# Number of iterations per benchmark
+NITER = 10
 
 #@llvm.jit(verbose=0)
 #def expr_func(array: Array(float64, 1), out: Array(float64, 1)) -> int64:
@@ -28,32 +30,39 @@ def expr_func(params: udf.params_type) -> int64:
 
 
 # Define array params
-shape = [10000, 2000]
-pshape = [1000, 200]
+# shape = [10000, 2000]
+# pshape = [1000, 200]
+shape = [10 * 1000 * 1000]
+pshape = [200 * 1000]
+dtype = np.float64
+
 
 # Create initial containers
-a1 = ia.linspace(ia.dtshape(shape, pshape, np.float64), 0, 10)
-a2 = ia.iarray2numpy(a1)
+a1 = ia.linspace(ia.dtshape(shape, pshape, dtype), 0, 10)
+#a2 = ia.iarray2numpy(a1)
+a2 = np.linspace(0, 10, shape[0], dtype=dtype).reshape(shape)
+
 
 print("iarray evaluation...")
 
 # And now, the expression
-expr = ia.Expr(eval_flags="iterblosc", blocksize=0)
+expr = ia.Expr(eval_flags="iterblosc", nthreads=1)
 expr.bind("x", a1)
 expr.compile_udf(expr_func.bc)
-print(f'DEBUG expr.eval({shape}, {pshape}, {np.float64})')
-b2 = expr.eval(shape, pshape, np.float64)
-
-b2_n = ia.iarray2numpy(b2)
-assert b2.shape == b2_n.shape
-print(b2_n) # numpy
-print(b2)   # iarray
+for i in range(NITER):
+    b1 = expr.eval(shape, pshape, dtype)
+b1_n = ia.iarray2numpy(b1)
+print(b1_n)
 
 print("numpy evaluation...")
-b2 = eval("(x - 1.35) * (x - 4.45) * (x - 8.5)", {"x": a2})
+for i in range(NITER):
+    b2 = eval("(x - 1.35) * (x - 4.45) * (x - 8.5)", {"x": a2})
+print(b2)
+
+assert b2.shape == b1_n.shape
 
 try:
-    np.testing.assert_almost_equal(b2, b2_n)
+    np.testing.assert_almost_equal(b2, b1_n)
     print("OK.  Results are the same.")
 except AssertionError:
     print("ERROR. Results are different.")
