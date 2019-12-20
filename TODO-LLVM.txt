@@ -1,0 +1,9 @@
+- Allow to have 2+ UDFs in the same Python code (udf, py2llvm?)
+- Allow UDF name other than expr_func (iron-array)
+- Test calling C functions
+- Call intrinsics (py2llvm, )
+- Support for single precision
+- Support UDF prototype with arrays instead of struct
+- Stable API
+- Unit tests
+- Missing feautres (operators, etc.)
