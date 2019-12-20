@@ -24,6 +24,7 @@ inac_add_dependency(iarray "0.1.2" SEMANTIC true)
 find_package(NumPy)
 include_directories(${NumPy_INCLUDE_DIRS})
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR})
 find_package(OMP)
 
 add_library(iarray_ext MODULE iarray/iarray_ext.c)
