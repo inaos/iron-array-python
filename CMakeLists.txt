@@ -24,8 +24,11 @@ inac_add_dependency(iarray "0.1.2" SEMANTIC true)
 find_package(NumPy)
 include_directories(${NumPy_INCLUDE_DIRS})
 
+find_package(OMP)
+
 add_library(iarray_ext MODULE iarray/iarray_ext.c)
 target_link_libraries(iarray_ext ${INAC_DEPENDENCY_LIBS})
 python_extension_module(iarray_ext)
 install(TARGETS iarray_ext LIBRARY DESTINATION iarray)
 install(FILES iarray DESTINATION iarray)
+install(FILES ${OMP_LIBRARIES} DESTINATION iarray)
