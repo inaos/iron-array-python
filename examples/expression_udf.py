@@ -3,19 +3,24 @@ from iarray import udf
 import numpy as np
 
 import py2llvm as llvm
-#from py2llvm import Array, float64, int64
-from py2llvm import int64
+from py2llvm import Array, float64, int64
 
 # Number of iterations per benchmark
 NITER = 10
 
 #@llvm.jit(verbose=0)
-#def f(array: Array(float64, 1), out: Array(float64, 1)) -> int64:
+#def inner(array: Array(float64, 1), out: Array(float64, 1)) -> int64:
 #    for i in range(array.shape[0]):
 #        x = array[i]
 #        out[i] = (x - 1.35) * (x - 4.45) * (x - 8.5)
 #
 #    return 0
+#
+#@llvm.jit(verbose=0)
+#def f(params: udf.params_type) -> int64:
+#    n = params.out_size / params.out_typesize
+#    return inner(params.inputs[0], n, params.out, n)
+
 
 @llvm.jit(verbose=0)
 def f(params: udf.params_type) -> int64:
@@ -26,6 +31,7 @@ def f(params: udf.params_type) -> int64:
         params.out[i] = (x - 1.35) * (x - 4.45) * (x - 8.5)
 
     return 0
+
 
 # Define array params
 # shape = [10000, 2000]

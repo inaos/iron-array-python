@@ -23,7 +23,7 @@ print("iarray evaluation...")
 expr = ia.Expr(eval_flags="iterblosc", nthreads=1)
 expr.bind("x", a1)
 bc = open('examples/expression.bc', 'rb').read()
-expr.compile_udf(bc)
+expr.compile_bc(bc, "expr_func")
 for i in range(NITER):
     b1 = expr.eval(shape, pshape, dtype)
 b1_n = ia.iarray2numpy(b1)

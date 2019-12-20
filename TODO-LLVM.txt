@@ -1,7 +1,7 @@
+- Support UDF prototype with arrays instead of struct
 - Test calling C functions
 - Call intrinsics (py2llvm, )
 - Support for single precision
-- Support UDF prototype with arrays instead of struct
 - Stable API
 - Unit tests
-- Missing feautres (operators, etc.)
+- Missing features (operators, etc.)
