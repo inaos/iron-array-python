@@ -10,16 +10,15 @@ from py2llvm import int64
 NITER = 10
 
 #@llvm.jit(verbose=0)
-#def expr_func(array: Array(float64, 1), out: Array(float64, 1)) -> int64:
+#def f(array: Array(float64, 1), out: Array(float64, 1)) -> int64:
 #    for i in range(array.shape[0]):
 #        x = array[i]
 #        out[i] = (x - 1.35) * (x - 4.45) * (x - 8.5)
 #
 #    return 0
 
-# XXX The name MUST be 'expr_func' (required by iron-array)
 @llvm.jit(verbose=0)
-def expr_func(params: udf.params_type) -> int64:
+def f(params: udf.params_type) -> int64:
     n = params.out_size / params.out_typesize
 
     for i in range(n):
@@ -27,7 +26,6 @@ def expr_func(params: udf.params_type) -> int64:
         params.out[i] = (x - 1.35) * (x - 4.45) * (x - 8.5)
 
     return 0
-
 
 # Define array params
 # shape = [10000, 2000]
@@ -48,7 +46,7 @@ print("iarray evaluation...")
 # And now, the expression
 expr = ia.Expr(eval_flags="iterblosc", nthreads=1)
 expr.bind("x", a1)
-expr.compile_udf(expr_func.bc)
+expr.compile_udf(f)
 for i in range(NITER):
     b1 = expr.eval(shape, pshape, dtype)
 b1_n = ia.iarray2numpy(b1)

@@ -353,8 +353,10 @@ cdef class Expression:
             raise ValueError(f"Error in compiling expr: {expr}")
         self.expression = expr2
 
-    def compile_udf(self, bc_udf):
-        if ciarray.iarray_expr_compile_udf(self._e, len(bc_udf), bc_udf) != 0:
+    def compile_udf(self, func):
+        bc = func.bc
+        name = func.name.encode()
+        if ciarray.iarray_expr_compile_udf(self._e, len(bc), bc, name) != 0:
             raise ValueError(f"Error in compiling udf...")
         self.expression = "user_defined_function"
 

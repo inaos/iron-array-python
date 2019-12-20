@@ -180,7 +180,10 @@ cdef extern from "libiarray/iarray.h":
 
     ina_rc_t iarray_expr_compile(iarray_expression_t *e, const char *expr)
 
-    ina_rc_t iarray_expr_compile_udf(iarray_expression_t *e, int llvm_bc_len, const char *llvm_bc)
+    ina_rc_t iarray_expr_compile_udf(iarray_expression_t *e,
+                                     int llvm_bc_len,
+                                     const char *llvm_bc,
+                                     const char *name)
 
     ina_rc_t iarray_eval(iarray_expression_t *e, iarray_container_t *ret)
 
