@@ -57,12 +57,15 @@ class params_type_input:
         self.ptr = ptr
         self.typ = typ
 
-    def subscript(self, visitor, slice, ctx):
+    def to_ir_value(self, visitor):
         ptr = visitor.builder.load(self.ptr)
         ptr = visitor.builder.bitcast(ptr, self.typ.as_pointer())
+        return ptr
+
+    def subscript(self, visitor, slice, ctx):
+        ptr = self.to_ir_value(visitor)
         ptr = visitor.builder.gep(ptr, [slice])
-        value = visitor.builder.load(ptr)
-        return value
+        return visitor.builder.load(ptr)
 
 
 class params_type_inputs:

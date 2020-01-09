@@ -3,7 +3,8 @@ from iarray import udf
 import numpy as np
 
 import py2llvm as llvm
-from py2llvm import Array, float64, int64
+#from py2llvm import Array, float64, int64
+from py2llvm import int64
 
 # Number of iterations per benchmark
 NITER = 10
@@ -25,9 +26,10 @@ NITER = 10
 @llvm.jit(verbose=0)
 def f(params: udf.params_type) -> int64:
     n = params.out_size / params.out_typesize
+    array = params.inputs[0]
 
     for i in range(n):
-        x = params.inputs[0][i]
+        x = array[i]
         params.out[i] = (x - 1.35) * (x - 4.45) * (x - 8.5)
 
     return 0
