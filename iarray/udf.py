@@ -1,4 +1,3 @@
-from array import array
 import argparse
 import ctypes
 from ctypes import c_int, c_uint8, c_int32
@@ -124,59 +123,3 @@ class params_type(StructType):
             return params_type_out(ptr, self.out_type)
 
         return cb
-
-
-#@llvm.jit(verbose=verbose)
-#def f(params: params_type) -> float:
-#    n = params.out_size / params.out_typesize
-#
-#    x = 0.0
-#    for i in range(n):
-#        x = x + params.inputs[0][i]
-#        params.out[i] = params.inputs[0][i]
-#
-#    return x
-
-
-def array_to_pointer(array):
-    address, length = array.buffer_info()
-    return ctypes.cast(address, c_uint8_p)
-
-def prep_data(*args):
-    # Number of inputs and number of items in every input
-    ninputs = len(args)
-    nitems = len(args[0])
-
-    # Prepare output array
-    res = array('f', [0.0] * nitems)
-
-    # Inputs
-    inputs = [array_to_pointer(x) for x in args]
-    inputs = inputs_type(*inputs)
-
-    input_typesizes = [x.itemsize for x in args]
-    input_typesizes = input_typesizes_type(*input_typesizes)
-
-    # Output
-    out = array_to_pointer(res)
-    out_itemsize = res.itemsize
-    out_size = nitems * out_itemsize
-
-    # User data
-    user_data = 0
-
-    data = blosc2_prefilter_params(
-        ninputs, inputs, input_typesizes,
-        user_data,
-        out, out_size, out_itemsize)
-
-    return data, res
-
-
-#if __name__ == '__main__':
-#    a = array('f', [1.0, 2.0, 3.0])
-#    data, out = prep_data(a)
-#
-#    ret = f(data)
-#    print(ret)
-#    print(out)
