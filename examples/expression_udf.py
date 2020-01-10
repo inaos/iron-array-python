@@ -1,3 +1,4 @@
+from time import time
 import iarray as ia
 from iarray import udf
 import numpy as np
@@ -8,6 +9,8 @@ from py2llvm import int64
 
 # Number of iterations per benchmark
 NITER = 10
+
+cparams = dict(clib=ia.LZ4, clevel=1, nthreads=8)
 
 #@llvm.jit(verbose=0)
 #def inner(array: Array(float64, 1), out: Array(float64, 1)) -> int64:
@@ -52,17 +55,21 @@ a2 = np.linspace(0, 10, shape[0], dtype=dtype).reshape(shape)
 print("iarray evaluation...")
 
 # And now, the expression
-expr = ia.Expr(eval_flags="iterblosc", nthreads=1)
+t0 = time()
+expr = ia.Expr(eval_flags="iterblosc", **cparams)
 expr.bind("x", a1)
 expr.compile_udf(f)
 for i in range(NITER):
     b1 = expr.eval(shape, pshape, dtype)
 b1_n = ia.iarray2numpy(b1)
+print("Time for llvm eval:", round((time() - t0) / NITER, 3))
 print(b1_n)
 
 print("numpy evaluation...")
+t0 = time()
 for i in range(NITER):
     b2 = eval("(x - 1.35) * (x - 4.45) * (x - 8.5)", {"x": a2})
+print("Time for numpy eval:", round((time() - t0) / NITER, 3))
 print(b2)
 
 assert b2.shape == b1_n.shape

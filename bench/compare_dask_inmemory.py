@@ -10,7 +10,7 @@ import iarray as ia
 import matplotlib.pyplot as plt
 
 
-DTYPE = np.float32
+DTYPE = np.float64
 NTHREADS = 4
 CLEVEL = 5
 CLIB = ia.LZ4

@@ -10,7 +10,7 @@ import iarray as ia
 import matplotlib.pyplot as plt
 
 
-DTYPE = np.float32
+DTYPE = np.float64
 NTHREADS = 4
 CLEVEL = 5
 CLIB = ia.LZ4
@@ -22,7 +22,8 @@ shapes = np.logspace(5, 8, 10, dtype=np.int64)
 pshape = (100 * 1000,)
 # pshape = None
 
-sexpr = "(sin(x) - 3.2) * (cos(x) + 1.2)"
+#sexpr = "((x) - 3.2) * ((x) + 1.2)"
+sexpr = "(x - 1.35) * (x - 4.45) * (x - 8.5)"
 
 t_iarray = []
 t_dask = []
@@ -53,7 +54,9 @@ for i, shape in enumerate(shapes):
     with dask.config.set(scheduler=scheduler):
         data2 = zarr.open("zarr_infile.zarr")
         d = da.from_zarr(data2)
-        res = (np.sin(d) - 3.2) * (np.cos(d) + 1.2)
+        # res = (np.sin(d) - 3.2) * (np.cos(d) + 1.2)
+        # res = ((d) - 3.2) * ((d) + 1.2)
+        res = (d - 1.35) * (d - 4.45) * (d - 8.5)
         # z2 = zarr.empty(shape, dtype=DTYPE, compressor=compressor, chunks=pshape)
         z2 = zarr.open("zarr_outfile.zarr", "w", shape=shape, chunks=pshape, dtype=DTYPE, compressor=compressor)
         da.to_zarr(res, z2)

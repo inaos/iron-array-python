@@ -1,11 +1,12 @@
 import iarray as ia
+from iarray import udf
 from time import time
 import numpy as np
 import numexpr as ne
 from numba import jit
 from itertools import zip_longest as zip
 import py2llvm as llvm
-from py2llvm import float64, int32, Array
+from py2llvm import float64, int32, int64, Array
 
 
 # Number of iterations per benchmark
@@ -20,7 +21,7 @@ block_size = pshape
 expression = '(x - 1.35) * (x - 4.45) * (x - 8.5)'
 clevel = 1   # compression level
 clib = ia.LZ4  # compression codec
-nthreads = 4  # number of threads for the evaluation and/or compression
+nthreads = 8  # number of threads for the evaluation and/or compression
 
 
 # Make this True if you want to test the pre-compilation in Numba (not necessary, really)
@@ -65,15 +66,16 @@ def poly_numba2(x, y):
         y[i] = (x[i] - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
 
 
-def poly_llvm(x, y):
-    i = 0
-    while i < x.shape[0]:
-        y[i] = (x[i] - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
-        i = i + 1
-    return 0
+@llvm.jit(verbose=0)
+def poly_llvm(params: udf.params_type) -> float64:
+    n = params.out_size / params.out_typesize
+    array = params.inputs[0]
 
-signature = Array(float64, 1), Array(float64, 1), int32
-poly_llvmc = llvm.compile(poly_llvm, signature, verbose=0)
+    for i in range(n):
+        x = array[i]
+        params.out[i] = (x - 1.35) * (x - 4.45) * (x - 8.5)
+
+    return 0
 
 
 def do_regular_evaluation():
@@ -142,12 +144,6 @@ def do_regular_evaluation():
     print("Regular evaluate via cython (nogil):", round((time() - t0) / NITER, 4))
     np.testing.assert_almost_equal(y0, y1)
 
-    t0 = time()
-    for i in range(NITER):
-        poly_llvmc(x, y1)
-    print("Regular evaluate via py2llvm:", round((time() - t0) / NITER, 4))
-    np.testing.assert_almost_equal(y0, y1)
-
 
 def do_block_evaluation(pshape_):
     storage = "superchunk" if pshape_ is not None else "plain buffer"
@@ -191,16 +187,6 @@ def do_block_evaluation(pshape_):
         for ((j, x), (k, y)) in zip(xa.iter_read_block(block_size), ya.iter_write_block(block_write)):
             # y[:] = poly_numba(x)
             poly_numba2(x, y)
-    print("Block evaluate via numba:", round((time() - t0) / NITER, 4))
-    y1 = ia.iarray2numpy(ya)
-    np.testing.assert_almost_equal(y0, y1)
-
-    t0 = time()
-    for i in range(NITER):
-        ya = ia.empty(ia.dtshape(shape=shape, pshape=pshape_), **cparams)
-        for ((j, x), (k, y)) in zip(xa.iter_read_block(block_size), ya.iter_write_block(block_write)):
-            # y[:] = poly_numba(x)
-            poly_numba2(x, y)
     print("Block evaluate via numba (II):", round((time() - t0) / NITER, 4))
     y1 = ia.iarray2numpy(ya)
     np.testing.assert_almost_equal(y0, y1)
@@ -233,25 +219,19 @@ def do_block_evaluation(pshape_):
     y1 = ia.iarray2numpy(ya)
     np.testing.assert_almost_equal(y0, y1)
 
-    t0 = time()
-    for i in range(NITER):
-        ya = ia.empty(ia.dtshape(shape=shape, pshape=pshape_), **cparams)
-        for ((j, x), (k, y)) in zip(xa.iter_read_block(block_size), ya.iter_write_block(block_write)):
-            poly_llvmc(x, y)
-    print("Block evaluate via py2llvm:", round((time() - t0) / NITER, 4))
-    y1 = ia.iarray2numpy(ya)
-    np.testing.assert_almost_equal(y0, y1)
-
     if pshape_ is None:
         # eval_method = "iterchunk"
         eval_method = "iterblock"
     else:
-        eval_method = "iterblock"
+        eval_method = "iterblosc"
 
     t0 = time()
     expr = ia.Expr(eval_flags=eval_method, **cparams)
     expr.bind('x', xa)
-    expr.compile('(x - 1.35) * (x - 4.45) * (x - 8.5)')
+    if pshape_ is None:
+        expr.compile('(x - 1.35) * (x - 4.45) * (x - 8.5)')
+    else:
+        expr.compile_udf(poly_llvm)
     for i in range(NITER):
         ya = expr.eval(shape, pshape_, np.float64)
     print("Block evaluate via iarray.eval (method: %s): %.4f" % (eval_method, round((time() - t0) / NITER, 4)))
