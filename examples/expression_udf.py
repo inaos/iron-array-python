@@ -3,39 +3,37 @@ import iarray as ia
 from iarray import udf
 import numpy as np
 
-import py2llvm as llvm
-#from py2llvm import Array, float64, int64
-from py2llvm import int64
+from py2llvm import Array, float64, int64
 
 # Number of iterations per benchmark
 NITER = 10
 
 cparams = dict(clib=ia.LZ4, clevel=1, nthreads=8)
 
-#@llvm.jit(verbose=0)
-#def inner(array: Array(float64, 1), out: Array(float64, 1)) -> int64:
-#    for i in range(array.shape[0]):
-#        x = array[i]
-#        out[i] = (x - 1.35) * (x - 4.45) * (x - 8.5)
-#
-#    return 0
-#
+
+@udf.jit(verbose=0)
+def f(array: Array(float64, 1), out: Array(float64, 1)) -> int64:
+    n = array.shape[0]
+#   array = array[0]
+
+    for i in range(n):
+        x = array[0][i]
+        out[i] = (x - 1.35) * (x - 4.45) * (x - 8.5)
+
+    return 0
+
+
+#from py2llvm import llvm
 #@llvm.jit(verbose=0)
 #def f(params: udf.params_type) -> int64:
 #    n = params.out_size / params.out_typesize
-#    return inner(params.inputs[0], n, params.out, n)
-
-
-@llvm.jit(verbose=0)
-def f(params: udf.params_type) -> int64:
-    n = params.out_size / params.out_typesize
-    array = params.inputs[0]
-
-    for i in range(n):
-        x = array[i]
-        params.out[i] = (x - 1.35) * (x - 4.45) * (x - 8.5)
-
-    return 0
+#    array = params.inputs[0]
+#
+#    for i in range(n):
+#        x = array[i]
+#        params.out[i] = (x - 1.35) * (x - 4.45) * (x - 8.5)
+#
+#    return 0
 
 
 # Define array params
@@ -57,7 +55,7 @@ print("iarray evaluation...")
 # And now, the expression
 t0 = time()
 expr = ia.Expr(eval_flags="iterblosc", **cparams)
-expr.bind("x", a1)
+expr.bind("", a1)
 expr.compile_udf(f)
 for i in range(NITER):
     b1 = expr.eval(shape, pshape, dtype)

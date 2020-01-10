@@ -1,12 +1,14 @@
+# Standard Library
 import argparse
+import ast
 import ctypes
 from ctypes import c_int, c_uint8, c_int32
 
+# Requirements
 from llvmlite import ir
-
-#import py2llvm as llvm
-from py2llvm import StructType, int8p, int32, float64
+from py2llvm import int8p, int32, float64
 from py2llvm import types
+from py2llvm import LLVM, Function, Signature, Parameter
 
 
 parser = argparse.ArgumentParser()
@@ -85,13 +87,17 @@ class params_type_out:
         self.ptr = ptr
         self.typ = typ
 
-    def subscript(self, visitor, slice, ctx):
+    def to_ir_value(self, visitor):
         ptr = visitor.builder.load(self.ptr)
         ptr = visitor.builder.bitcast(ptr, self.typ.as_pointer())
+        return ptr
+
+    def subscript(self, visitor, slice, ctx):
+        ptr = self.to_ir_value(visitor)
         ptr = visitor.builder.gep(ptr, [slice])
         return ptr
 
-class params_type(StructType):
+class params_type(types.StructType):
     _name_ = 'blosc2_prefilter_params'
     _fields_ = [
         ('ninputs', int32), # int32 may not be the same as int
@@ -123,3 +129,65 @@ class params_type(StructType):
             return params_type_out(ptr, self.out_type)
 
         return cb
+
+
+class udf_array_shape:
+
+    def __init__(self, name, params):
+        self.name = name
+        self.params = params
+
+    def subscript(self, visitor, slice, ctx):
+        assert ctx is ast.Load
+
+#       if self.name == 'out':
+#           assert slice == 0 # Output only has 1 dimension
+#       else:
+#           pass # TODO assert slice is less than number of input dimensions
+
+        # The dimension size is the same for every dimension in every array
+        params = self.params
+        out_size = params.out_size(visitor) # gep
+        out_typesize = params.out_typesize(visitor) # load
+        out_size = visitor.builder.load(out_size) # gep
+        out_typesize = visitor.builder.load(out_typesize) # load
+        return visitor.BinOp_exit(None, None, out_size, ast.Div, out_typesize)
+
+class udf_array:
+
+    def __init__(self, name, params):
+        self.name = name
+        self.params = params
+
+    @property
+    def shape(self):
+        return udf_array_shape(self.name, self.params)
+
+    def subscript(self, visitor, slice, ctx):
+        params = self.params
+        if self.name == 'out':
+            arr = params.out(visitor).subscript(visitor, slice, ctx)
+        else:
+            arr = params.inputs(visitor).subscript(visitor, slice, ctx)
+
+        return arr
+
+
+class udf_type(params_type):
+
+    def get_locals(self):
+        return {
+            'array': udf_array('array', self),
+            'out': udf_array('out', self),
+        }
+
+
+class UDFFunction(Function):
+
+    def _get_signature(self, signature):
+        parameters = [Parameter('params', udf_type)]
+        return Signature(parameters, types.int64)
+
+
+llvm = LLVM(UDFFunction)
+jit = llvm.jit
