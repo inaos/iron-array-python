@@ -5,6 +5,7 @@ import ctypes
 from ctypes import c_int, c_uint8, c_int32
 
 # Requirements
+import iarray as ia
 from llvmlite import ir
 from py2llvm import int8p, int32, float64
 from py2llvm import types
@@ -139,11 +140,7 @@ class udf_array_shape:
 
     def subscript(self, visitor, slice, ctx):
         assert ctx is ast.Load
-
-#       if self.name == 'out':
-#           assert slice == 0 # Output only has 1 dimension
-#       else:
-#           pass # TODO assert slice is less than number of input dimensions
+#       assert slice == 0 # XXX For now we only support 1 dimension arrays
 
         # The dimension size is the same for every dimension in every array
         params = self.params
@@ -177,7 +174,7 @@ class udf_type(params_type):
 
     def get_locals(self):
         return {
-            'array': udf_array('array', self),
+            'inputs': udf_array('inputs', self),
             'out': udf_array('out', self),
         }
 
@@ -187,6 +184,14 @@ class UDFFunction(Function):
     def _get_signature(self, signature):
         parameters = [Parameter('params', udf_type)]
         return Signature(parameters, types.int64)
+
+    def create_expr(self, inputs, **cparams):
+        expr = ia.Expr(eval_flags="iterblosc", **cparams)
+        for a in inputs:
+            expr.bind("", a)
+
+        expr.compile_udf(self)
+        return expr
 
 
 llvm = LLVM(UDFFunction)

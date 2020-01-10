@@ -12,28 +12,15 @@ cparams = dict(clib=ia.LZ4, clevel=1, nthreads=8)
 
 
 @udf.jit(verbose=0)
-def f(array: Array(float64, 1), out: Array(float64, 1)) -> int64:
-    n = array.shape[0]
-#   array = array[0]
+def f(out: Array(float64, 1), inputs: Array(float64, 1)) -> int64:
+    n = out.shape[0]
+    x = inputs[0]
+    #y = inputs[1]
 
     for i in range(n):
-        x = array[0][i]
-        out[i] = (x - 1.35) * (x - 4.45) * (x - 8.5)
+        out[i] = (x[i] - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
 
     return 0
-
-
-#from py2llvm import llvm
-#@llvm.jit(verbose=0)
-#def f(params: udf.params_type) -> int64:
-#    n = params.out_size / params.out_typesize
-#    array = params.inputs[0]
-#
-#    for i in range(n):
-#        x = array[i]
-#        params.out[i] = (x - 1.35) * (x - 4.45) * (x - 8.5)
-#
-#    return 0
 
 
 # Define array params
@@ -51,12 +38,9 @@ a2 = np.linspace(0, 10, shape[0], dtype=dtype).reshape(shape)
 
 
 print("iarray evaluation...")
-
 # And now, the expression
 t0 = time()
-expr = ia.Expr(eval_flags="iterblosc", **cparams)
-expr.bind("", a1)
-expr.compile_udf(f)
+expr = f.create_expr([a1], **cparams)
 for i in range(NITER):
     b1 = expr.eval(shape, pshape, dtype)
 b1_n = ia.iarray2numpy(b1)

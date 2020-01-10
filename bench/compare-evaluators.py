@@ -5,8 +5,7 @@ import numpy as np
 import numexpr as ne
 from numba import jit
 from itertools import zip_longest as zip
-import py2llvm as llvm
-from py2llvm import float64, int32, int64, Array
+from py2llvm import float64, int64, Array
 
 
 # Number of iterations per benchmark
@@ -66,14 +65,13 @@ def poly_numba2(x, y):
         y[i] = (x[i] - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
 
 
-@llvm.jit(verbose=0)
-def poly_llvm(params: udf.params_type) -> float64:
-    n = params.out_size / params.out_typesize
-    array = params.inputs[0]
+@udf.jit(verbose=0)
+def poly_llvm(out: Array(float64, 1), inputs: Array(float64, 1)) -> int64:
+    n = out.shape[0]
+    x = inputs[0]
 
     for i in range(n):
-        x = array[i]
-        params.out[i] = (x - 1.35) * (x - 4.45) * (x - 8.5)
+        out[i] = (x[i] - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
 
     return 0
 

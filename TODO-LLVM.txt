@@ -1,4 +1,6 @@
-- Support UDF prototype with arrays instead of struct
+- Assert Py signature
+- Drop support for params prototype
+- Support multiple dimensions
 - Test calling C functions
 - Call intrinsics (py2llvm, )
 - Support for single precision
