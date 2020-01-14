@@ -224,12 +224,13 @@ def do_block_evaluation(pshape_):
         eval_method = "iterblosc"
 
     t0 = time()
-    expr = ia.Expr(eval_flags=eval_method, **cparams)
-    expr.bind('x', xa)
     if pshape_ is None:
+        expr = ia.Expr(eval_flags=eval_method, **cparams)
+        expr.bind('x', xa)
         expr.compile('(x - 1.35) * (x - 4.45) * (x - 8.5)')
     else:
-        expr.compile_udf(poly_llvm)
+        # expr.compile_udf(poly_llvm)
+        expr = poly_llvm.create_expr([xa], **cparams)
     for i in range(NITER):
         ya = expr.eval(shape, pshape_, np.float64)
     print("Block evaluate via iarray.eval (method: %s): %.4f" % (eval_method, round((time() - t0) / NITER, 4)))
