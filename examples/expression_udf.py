@@ -8,6 +8,13 @@ from py2llvm import Array, float64, int64
 # Number of iterations per benchmark
 NITER = 10
 
+# Define array params
+# shape = [10000, 2000]
+# pshape = [1000, 200]
+shape = [20 * 1000 * 1000]
+pshape = [4 * 1000 * 1000]
+dtype = np.float64
+
 cparams = dict(clib=ia.LZ4, clevel=5, nthreads=16) #, blocksize=1024)
 
 
@@ -21,14 +28,6 @@ def f(out: Array(float64, 1), inputs: Array(float64, 1)) -> int64:
         out[i] = (x[i] - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
 
     return 0
-
-
-# Define array params
-# shape = [10000, 2000]
-# pshape = [1000, 200]
-shape = [20 * 1000 * 1000]
-pshape = [2000 * 1000]
-dtype = np.float64
 
 
 # Create initial containers
