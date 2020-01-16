@@ -88,17 +88,17 @@ print(bne)
 
 print("iarray evaluation...")
 cparams2 = cparams.copy()
-# cparams2.update(dict(fp_mantissa_bits=3, clevel=5))
-# cparams2.update(dict(clevel=5))
-# expr = f2.create_expr([x, y, z], **cparams2)
-expr = f.create_expr([a1], **cparams2)
-# And now, the expression
-t0 = time()
-for i in range(NITER):
-    b1 = expr.eval(shape, pshape, dtype)
-print("Time for llvm eval:", round((time() - t0) / NITER, 3))
-b1_n = ia.iarray2numpy(b1)
-print(b1_n)
+# # cparams2.update(dict(fp_mantissa_bits=3, clevel=5))
+# # cparams2.update(dict(clevel=5))
+# # expr = f2.create_expr([x, y, z], **cparams2)
+# expr = f.create_expr([a1], **cparams2)
+# # And now, the expression
+# t0 = time()
+# for i in range(NITER):
+#     b1 = expr.eval(shape, pshape, dtype)
+# print("Time for llvm eval:", round((time() - t0) / NITER, 3))
+# b1_n = ia.iarray2numpy(b1)
+# print(b1_n)
 
 t0 = time()
 expr = ia.Expr(eval_flags="iterblosc", **cparams2)
@@ -115,7 +115,7 @@ b2_n = ia.iarray2numpy(b2)
 print(b2_n)
 
 try:
-    np.testing.assert_almost_equal(bn, b1_n)
+    # np.testing.assert_almost_equal(bn, b1_n)
     np.testing.assert_almost_equal(bn, b2_n)
     print("OK.  Results are the same.")
 except AssertionError:
