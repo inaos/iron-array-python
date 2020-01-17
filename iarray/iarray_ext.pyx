@@ -672,7 +672,7 @@ def from_file(cfg, filename, load_in_mem=False):
     store.id = filename
 
     cdef ciarray.iarray_container_t *c
-    ciarray.iarray_from_file(ctx_, &store, &c, load_in_mem)
+    ciarray.iarray_container_load(ctx_, &store, &c, load_in_mem)
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     return IArray(ctx, c_c)
