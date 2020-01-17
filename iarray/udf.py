@@ -3,11 +3,12 @@ import argparse
 import ast
 import ctypes
 from ctypes import c_int, c_uint8, c_int32
+import inspect
 
 # Requirements
 import iarray as ia
 from llvmlite import ir
-from py2llvm import int8p, int32, float64
+from py2llvm import int8p, int32
 from py2llvm import types
 from py2llvm import LLVM, Function, Signature, Parameter
 
@@ -53,89 +54,9 @@ class blosc2_prefilter_params(ctypes.Structure):
     ]
 
 
-class params_type_input:
-
-    def __init__(self, ptr, typ):
-        self.ptr = ptr
-        self.typ = typ
-
-    def to_ir_value(self, visitor):
-        ptr = visitor.builder.load(self.ptr)
-        ptr = visitor.builder.bitcast(ptr, self.typ.as_pointer())
-        return ptr
-
-    def subscript(self, visitor, slice, ctx):
-        ptr = self.to_ir_value(visitor)
-        ptr = visitor.builder.gep(ptr, [slice])
-        return visitor.builder.load(ptr)
-
-
-class params_type_inputs:
-
-    def __init__(self, ptr, typs):
-        self.ptr = ptr
-        self.typs = typs
-
-    def subscript(self, visitor, slice, ctx):
-        typ = self.typs[slice]
-        idx = types.value_to_ir_value(slice)
-        ptr = visitor.builder.gep(self.ptr, [types.zero, idx])
-        return params_type_input(ptr, typ)
-
-class params_type_out:
-
-    def __init__(self, ptr, typ):
-        self.ptr = ptr
-        self.typ = typ
-
-    def to_ir_value(self, visitor):
-        ptr = visitor.builder.load(self.ptr)
-        ptr = visitor.builder.bitcast(ptr, self.typ.as_pointer())
-        return ptr
-
-    def subscript(self, visitor, slice, ctx):
-        ptr = self.to_ir_value(visitor)
-        ptr = visitor.builder.gep(ptr, [slice])
-        return ptr
-
-class params_type(types.StructType):
-    _name_ = 'blosc2_prefilter_params'
-    _fields_ = [
-        ('ninputs', int32), # int32 may not be the same as int
-        ('inputs', ir.ArrayType(int8p, BLOSC2_PREFILTER_INPUTS_MAX)),
-        ('input_typesizes', ir.ArrayType(int32, BLOSC2_PREFILTER_INPUTS_MAX)),
-        ('user_data', int8p), # LLVM does not have the concept of void*
-        ('out', int8p), # LLVM doesn't make the difference between signed and unsigned
-        ('out_size', int32),
-        ('out_typesize', int32), # int32_t out_typesize;  // automatically filled
-    ]
-
-    input_types = [float64]
-    out_type = float64
-
-    @property
-    def inputs(self):
-        inputs = super().__getattr__('inputs')
-        def cb(visitor):
-            ptr = inputs(visitor)
-            return params_type_inputs(ptr, self.input_types)
-
-        return cb
-
-    @property
-    def out(self):
-        out = super().__getattr__('out')
-        def cb(visitor):
-            ptr = out(visitor)
-            return params_type_out(ptr, self.out_type)
-
-        return cb
-
-
 class udf_array_shape:
 
-    def __init__(self, name, params):
-        self.name = name
+    def __init__(self, params):
         self.params = params
 
     def subscript(self, visitor, slice, ctx):
@@ -152,37 +73,106 @@ class udf_array_shape:
 
 class udf_array:
 
-    def __init__(self, name, params):
-        self.name = name
+    def __init__(self, params, idx, dtype, ndim):
         self.params = params
+        self.idx = idx
+        self.dtype = dtype
+        self.ndim = ndim
 
     @property
     def shape(self):
-        return udf_array_shape(self.name, self.params)
+        return udf_array_shape(self.params)
 
     def subscript(self, visitor, slice, ctx):
         params = self.params
-        if self.name == 'out':
-            arr = params.out(visitor).subscript(visitor, slice, ctx)
+        if self.idx is None:
+            assert ctx is ast.Store
+            arr = params.get_out(visitor, slice)
         else:
-            arr = params.inputs(visitor).subscript(visitor, slice, ctx)
+            assert ctx is ast.Load
+            arr = params.get_input(visitor, self.idx, slice)
 
         return arr
 
 
-class udf_type(params_type):
+class udf_type(types.StructType):
+    _name_ = 'blosc2_prefilter_params'
+    _fields_ = [
+        ('ninputs', int32), # int32 may not be the same as int
+        ('inputs', ir.ArrayType(int8p, BLOSC2_PREFILTER_INPUTS_MAX)),
+        ('input_typesizes', ir.ArrayType(int32, BLOSC2_PREFILTER_INPUTS_MAX)),
+        ('user_data', int8p), # LLVM does not have the concept of void*
+        ('out', int8p), # LLVM doesn't make the difference between signed and unsigned
+        ('out_size', int32),
+        ('out_typesize', int32), # int32_t out_typesize;  // automatically filled
+    ]
 
     def get_locals(self):
         return {
-            'inputs': udf_array('inputs', self),
-            'out': udf_array('out', self),
+            name: udf_array(self, idx, dtype, ndim)
+            for name, idx, dtype, ndim in self.local_vars
         }
+
+    def get_input(self, visitor, n, idx):
+        # .inputs (uint8_t**)
+        inputs = super().__getattr__('inputs')
+        ptr = inputs(visitor)
+        # .inputs[n] (uint8_t*)
+        n_ir = types.value_to_ir_value(n)
+        ptr = visitor.builder.gep(ptr, [types.zero, n_ir])
+        ptr = visitor.builder.load(ptr)
+        # .inputs[n] (<type>*)
+        typ = self.input_types[n]
+        ptr = visitor.builder.bitcast(ptr, typ.as_pointer())
+        # .inputs[n][slice] (<type>)
+        ptr = visitor.builder.gep(ptr, [idx])
+        return visitor.builder.load(ptr)
+
+    def get_out(self, visitor, idx):
+        # .out (uint8_t*)
+        out = super().__getattr__('out')
+        ptr = out(visitor)
+        # .out (<type>*)
+        ptr = visitor.builder.load(ptr)
+        typ = self.out_type
+        ptr = visitor.builder.bitcast(ptr, typ.as_pointer())
+        # .out[n]
+        return visitor.builder.gep(ptr, [idx])
+
+
+def udf_type_factory(local_vars):
+    out_type = local_vars[0][2]
+    input_types = [x[2] for x in local_vars[1:]]
+
+    return type(
+        f'udf_type[]',
+        (udf_type,),
+        dict(
+            local_vars=local_vars,
+            input_types=input_types,
+            out_type=out_type,
+        )
+    )
 
 
 class UDFFunction(Function):
 
     def _get_signature(self, signature):
-        parameters = [Parameter('params', udf_type)]
+        assert signature is None
+        signature = inspect.signature(self.py_function)
+        parameters = list(signature.parameters.values())
+        assert len(parameters) >= 2
+
+        local_vars = []
+        for idx, param in enumerate(parameters):
+            name = param.name
+            annotation = param.annotation
+            assert param.default == inspect.Parameter.empty
+            assert issubclass(annotation, types.ArrayType)
+            idx = (idx - 1) if idx > 0 else None
+            local_vars.append((name, idx, annotation.dtype, annotation.ndim))
+
+        parameters = [Parameter('params', udf_type_factory(local_vars))]
         return Signature(parameters, types.int64)
 
     def create_expr(self, inputs, **cparams):

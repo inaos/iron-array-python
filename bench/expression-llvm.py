@@ -22,29 +22,22 @@ pshape = [4000 * 1000]
 dtype = np.float64
 
 
-@udf.jit(verbose=0)
-def f(out: Array(float64, 1), inputs: Array(float64, 1)) -> int64:
-    n = out.shape[0]
-    x = inputs[0]
-    #y = inputs[1]
-
-    for i in range(n):
-        out[i] = (x[i] - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
-
-    return 0
-
-# Not working yet!
 # @udf.jit(verbose=0)
-# def f2(out: Array(float64, 1), inputs: Array(float64, 1)) -> int64:
+# def f(out: Array(float64, 1), x: Array(float64, 1)) -> int64:
 #     n = out.shape[0]
-#     x = inputs[0]
-#     y = inputs[1]
-#     z = inputs[2]
-#
 #     for i in range(n):
-#         out[i] = (x[i] - 1.35) * (y[i] - 4.45) * (z[i] - 8.5)
+#         out[i] = (x[i] - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
 #
 #     return 0
+
+# Not working yet!
+@udf.jit(verbose=0)
+def f2(out: Array(float64, 1), x: Array(float64, 1), y: Array(float64, 1), z: Array(float64, 1)) -> int64:
+    n = out.shape[0]
+    for i in range(n):
+        out[i] = (x[i] - 1.35) * (y[i] - 4.45) * (z[i] - 8.5)
+
+    return 0
 
 
 # Create initial containers
@@ -82,23 +75,23 @@ print("Time for numexpr eval:", round((time() - t0) / NITER, 3))
 print(bne)
 
 
-# x = a1.copy(view=False)
-# y = a1.copy(view=False)
-# z = a1.copy(view=False)
+x = a1.copy(view=False)
+y = a1.copy(view=False)
+z = a1.copy(view=False)
 
 print("iarray evaluation...")
 cparams2 = cparams.copy()
-# # cparams2.update(dict(fp_mantissa_bits=3, clevel=5))
-# # cparams2.update(dict(clevel=5))
-# # expr = f2.create_expr([x, y, z], **cparams2)
-# expr = f.create_expr([a1], **cparams2)
-# # And now, the expression
-# t0 = time()
-# for i in range(NITER):
-#     b1 = expr.eval(shape, pshape, dtype)
-# print("Time for llvm eval:", round((time() - t0) / NITER, 3))
-# b1_n = ia.iarray2numpy(b1)
-# print(b1_n)
+cparams2.update(dict(fp_mantissa_bits=3, clevel=5))
+cparams2.update(dict(clevel=5))
+expr = f2.create_expr([x, y, z], **cparams2)
+#expr = f.create_expr([a1], **cparams2)
+# And now, the expression
+t0 = time()
+for i in range(NITER):
+    b1 = expr.eval(shape, pshape, dtype)
+print("Time for llvm eval:", round((time() - t0) / NITER, 3))
+b1_n = ia.iarray2numpy(b1)
+print(b1_n)
 
 t0 = time()
 expr = ia.Expr(eval_flags="iterblosc", **cparams2)

@@ -1,9 +1,7 @@
-- Assert Py signature
-- Drop support for params prototype
-- Support multiple dimensions
+- Move py2llvm to iron-array (setuptools find_packages)
 - Test calling C functions
 - Call intrinsics (py2llvm, )
-- Support for single precision
+* Support multiple dimensions
 - Stable API
 - Unit tests
 - Missing features (operators, etc.)
