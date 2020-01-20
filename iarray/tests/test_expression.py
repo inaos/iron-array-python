@@ -114,7 +114,7 @@ def test_ufuncs(ufunc, ia_expr):
     "floor",
     "log",
     "log10",
-    "negative",
+    #"negative",
     "power",
     "sin",
     "sinh",
