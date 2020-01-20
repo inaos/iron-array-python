@@ -34,7 +34,7 @@ for i, shape in enumerate(shapes):
     ia.arange(ia.dtshape(shape, pshape=pshape, dtype=DTYPE), filename="iarray_infile.iarray", clib=CLIB, clevel=CLEVEL)
 
     t0 = time()
-    data = ia.from_file("iarray_infile.iarray", load_in_mem=False)
+    data = ia.load("iarray_infile.iarray", load_in_mem=False)
     expr = ia.Expr(eval_flags="iterblock", blocksize=0, nthreads=NTHREADS, clevel=CLEVEL)
     expr.bind("x", data)
     expr.compile(sexpr)

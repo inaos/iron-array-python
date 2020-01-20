@@ -166,10 +166,14 @@ cdef extern from "libiarray/iarray.h":
                                 int flags,
                                 iarray_container_t **container)
 
-    ina_rc_t iarray_from_file(iarray_context_t *ctx,
-                              iarray_store_properties_t *store,
-                              iarray_container_t **container,
-                              bool load_in_mem)
+    ina_rc_t iarray_container_load(iarray_context_t *ctx,
+                                   iarray_store_properties_t *store,
+                                   iarray_container_t **container,
+                                   bool load_in_mem);
+
+    ina_rc_t iarray_container_save(iarray_context_t *ctx,
+                                   iarray_container_t *c,
+                                   char *filename);
 
     bool iarray_is_empty(iarray_container_t *container)
 

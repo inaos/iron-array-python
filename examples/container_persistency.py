@@ -15,7 +15,7 @@ if not os.path.isfile(filename):
     b = ia.numpy2iarray(a, pshape, filename=filename)
 else:
     print(f"Reading {filename}")
-    c = ia.from_file(filename)
+    c = ia.load(filename)
     d = ia.iarray2numpy(c)
 
     np.testing.assert_array_equal(a, d)

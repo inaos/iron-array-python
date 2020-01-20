@@ -426,7 +426,6 @@ def linspace(dtshape, start, stop, **kwargs):
     nelem = np.prod(shape)
     return ext.linspace(cfg, nelem, start, stop, shape, pshape, dtype, cfg.filename)
 
-
 def zeros(dtshape, **kwargs):
     cfg = Config(**kwargs)
     shape, pshape, dtype = dtshape.to_tuple()
@@ -445,9 +444,14 @@ def full(dtshape, fill_value, **kwargs):
     return ext.full(cfg, fill_value, shape, pshape, dtype, cfg.filename)
 
 
-def from_file(filename, load_in_mem=False, **kwargs):
+def save(c, filename, **kwargs):
     cfg = Config(**kwargs)
-    return ext.from_file(cfg, filename, load_in_mem)
+    return ext.save(cfg, c, filename)
+
+
+def load(filename, load_in_mem=False, **kwargs):
+    cfg = Config(**kwargs)
+    return ext.load(cfg, filename, load_in_mem)
 
 
 def iarray2numpy(iarr, **kwargs):

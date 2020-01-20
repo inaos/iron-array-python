@@ -34,7 +34,7 @@ if not IN_MEMORY:
 
 @profile
 def open_datafile(filename):
-    dataset = ia.from_file(filename, load_in_mem=IN_MEMORY)
+    dataset = ia.load(filename, load_in_mem=IN_MEMORY)
     return dataset
 t0 = time()
 precipitation = open_datafile("ia-data/rea6/tot_prec/2018.iarray")
@@ -154,7 +154,7 @@ print("Time for computing '%s' expression (via numexpr): %.3f" % (sexpr, (t1 - t
 def compute_expr(sexpr, x):
     expr = ia.Expr(eval_flags="iterblock", blocksize=BLOCKSIZE, nthreads=NTHREADS, clevel=CLEVEL)
     if not IN_MEMORY:
-        x = ia.from_file(in_filename)
+        x = ia.load(in_filename)
     expr.bind("x", x)
     expr.compile(sexpr)
     return expr.eval(shape, pshape, precipitation.dtype, filename=out_filename)
