@@ -6,10 +6,10 @@ import numpy as np
 # Test load and save
 @pytest.mark.parametrize("shape, pshape, dtype, load_in_mem",
                          [
-                             ([100], [20], np.float64, True),
-                             ([100, 100], [20, 20], np.float32, True),
-                             ([100, 100], [5, 10], np.float64, False),
-                             ([100, 100, 100], [5, 46, 10], np.float32, False)
+                             ([67], [20], np.float64, True),
+                             ([100, 123], [12, 21], np.float32, True),
+                             ([100, 100], [5, 17], np.float64, False),
+                             ([104, 121, 212], [5, 46, 10], np.float32, False)
 
                          ])
 def test_load_save(shape, pshape, dtype, load_in_mem):
