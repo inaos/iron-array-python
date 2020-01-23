@@ -36,8 +36,9 @@ cdef extern from "libiarray/iarray.h":
 
     ctypedef enum iarray_eval_flags_t:
         IARRAY_EXPR_EVAL_ITERBLOCK
-        IARRAY_EXPR_EVAL_ITERBLOSC
         IARRAY_EXPR_EVAL_ITERCHUNK
+        IARRAY_EXPR_EVAL_ITERBLOSC
+        IARRAY_EXPR_EVAL_ITERBLOSC2
 
     ctypedef struct iarray_config_t:
         iarray_compression_codec_t compression_codec

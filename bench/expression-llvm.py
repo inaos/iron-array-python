@@ -10,9 +10,9 @@ from py2llvm import Array, float64, int64
 # Number of iterations per benchmark
 NITER = 10
 PROFILE = False
-NTHREADS = 16
+NTHREADS = 20
 
-cparams = dict(clib=ia.LZ4, clevel=5, nthreads=NTHREADS) #, blocksize=1024)
+cparams = dict(clib=ia.LZ4, clevel=5, nthreads=NTHREADS) #, blocksize=2**16)
 
 # Define array params
 # shape = [10000, 2000]
@@ -22,22 +22,22 @@ pshape = [4000 * 1000]
 dtype = np.float64
 
 
-# @udf.jit(verbose=0)
-# def f(out: Array(float64, 1), x: Array(float64, 1)) -> int64:
-#     n = out.shape[0]
-#     for i in range(n):
-#         out[i] = (x[i] - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
-#
-#     return 0
-
-# Not working yet!
 @udf.jit(verbose=0)
-def f2(out: Array(float64, 1), x: Array(float64, 1), y: Array(float64, 1), z: Array(float64, 1)) -> int64:
+def f(out: Array(float64, 1), x: Array(float64, 1)) -> int64:
     n = out.shape[0]
     for i in range(n):
-        out[i] = (x[i] - 1.35) * (y[i] - 4.45) * (z[i] - 8.5)
+        out[i] = (x[i] - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
 
     return 0
+
+# Version with 3 parameters
+# @udf.jit(verbose=0)
+# def f2(out: Array(float64, 1), x: Array(float64, 1), y: Array(float64, 1), z: Array(float64, 1)) -> int64:
+#     n = out.shape[0]
+#     for i in range(n):
+#         out[i] = (x[i] - 1.35) * (y[i] - 4.45) * (z[i] - 8.5)
+#
+#     return 0
 
 
 # Create initial containers
@@ -60,8 +60,8 @@ y = a2.copy()
 z = a2.copy()
 t0 = time()
 for i in range(NITER):
-    # bn = eval("(x - 1.35) * (y - 4.45) * (z - 8.5)", {"x": x, "y": y, "z": z})
     bn = eval("(x - 1.35) * (x - 4.45) * (x - 8.5)", {"x": x})
+    # bn = eval("(x - 1.35) * (y - 4.45) * (z - 8.5)", {"x": x, "y": y, "z": z})
 print("Time for numpy eval:", round((time() - t0) / NITER, 3))
 print(bn)
 
@@ -69,22 +69,22 @@ print("numexpr evaluation...")
 ne.set_num_threads(NTHREADS)
 t0 = time()
 for i in range(NITER):
-    # bne = ne.evaluate("(x - 1.35) * (y - 4.45) * (z - 8.5)", {"x": x, "y": y, "z": z})
     bne = ne.evaluate("(x - 1.35) * (x - 4.45) * (x - 8.5)", {"x": x})
+    # bne = ne.evaluate("(x - 1.35) * (y - 4.45) * (z - 8.5)", {"x": x, "y": y, "z": z})
 print("Time for numexpr eval:", round((time() - t0) / NITER, 3))
 print(bne)
 
 
-x = a1.copy(view=False)
-y = a1.copy(view=False)
-z = a1.copy(view=False)
+iax = a1.copy(view=False, **cparams)
+iay = a1.copy(view=False, **cparams)
+iaz = a1.copy(view=False, **cparams)
 
 print("iarray evaluation...")
 cparams2 = cparams.copy()
-cparams2.update(dict(fp_mantissa_bits=3, clevel=5))
-cparams2.update(dict(clevel=5))
-expr = f2.create_expr([x, y, z], **cparams2)
-#expr = f.create_expr([a1], **cparams2)
+# cparams2.update(dict(fp_mantissa_bits=3, clevel=5))
+# cparams2.update(dict(clevel=5))
+expr = f.create_expr([iax], **cparams2)
+# expr = f2.create_expr([iax, iay, iaz], **cparams2)
 # And now, the expression
 t0 = time()
 for i in range(NITER):
@@ -94,13 +94,13 @@ b1_n = ia.iarray2numpy(b1)
 print(b1_n)
 
 t0 = time()
-expr = ia.Expr(eval_flags="iterblosc", **cparams2)
-expr.bind('x', a1)
-expr.compile('(x - 1.35) * (x - 4.45) * (x - 8.5)')
-# expr.bind('x', x)
-# expr.bind('y', y)
-# expr.bind('z', z)
-# expr.compile('(x - 1.35) * (y - 4.45) * (z - 8.5)')
+expr = ia.Expr(eval_flags="iterblosc2", **cparams2)
+# expr.bind('x', a1)
+# expr.compile('(x - 1.35) * (x - 4.45) * (x - 8.5)')
+expr.bind('x', iax)
+expr.bind('y', iay)
+expr.bind('z', iaz)
+expr.compile('(x - 1.35) * (y - 4.45) * (z - 8.5)')
 for i in range(NITER):
     b2 = expr.eval(shape, pshape, dtype)
 print("Time for juggernaut eval:", round((time() - t0) / NITER, 3))

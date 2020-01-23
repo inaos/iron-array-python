@@ -19,18 +19,18 @@ def evaluate(command):
         dtype = np.float64
         cparams = dict(clib=ia.LZ4, clevel=5, nthreads=NTHREADS)  # , blocksize=1024)
         iax = ia.linspace(ia.dtshape(shape, pshape, dtype), 0, 1, **cparams)
-        iay = iax.copy()
-        iaz = iax.copy()
+        iay = iax.copy(**cparams)
+        iaz = iax.copy(**cparams)
 
         return command
 
     def ia_llvm_parallel(command, nthreads):
         global iax, iay, iaz, shape, pshape, dtype, cparams
         cparams['nthreads'] = nthreads
-        expr = ia.Expr(eval_flags="iterblosc", **cparams)
+        expr = ia.Expr(eval_flags="iterblosc2", **cparams)
         expr.bind('x', iax)
-        # expr.bind('y', iay)
-        # expr.bind('z', iaz)
+        expr.bind('y', iay)
+        expr.bind('z', iaz)
         expr.compile(command)
         expr.eval(shape, pshape, dtype)
 
@@ -58,11 +58,12 @@ def evaluate(command):
         logx=False,
         logy=False,
         automatic_order=False,
-        title="Scalability for iarray with LLVM + iterblosc",
+        title="Scalability for iarray with LLVM + iterblosc (3 operands)",
         xlabel='len(x)',
         equality_check=None,
         flops=lambda n: 5 * n,
     )
 
 
-evaluate("(x - 1.35) * (x - 4.45) * (x - 8.5)")
+# evaluate("(x - 1.35) * (x - 4.45) * (x - 8.5)")
+evaluate("(x - 1.35) * (y - 4.45) * (z - 8.5)")

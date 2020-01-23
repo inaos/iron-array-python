@@ -34,21 +34,19 @@ def evaluate(command):
         dtype = np.float64
         cparams = dict(clib=ia.LZ4, clevel=5, nthreads=NTHREADS)  # , blocksize=1024)
         iax = ia.linspace(ia.dtshape(shape, pshape, dtype), 0, 1, **cparams)
-        iay = iax.copy()
-        iaz = iax.copy()
+        iay = iax.copy(**cparams)
+        iaz = iax.copy(**cparams)
         # dask/zarr
         global zx, zy, zz, zcompr
         zcompr = Blosc(cname='lz4', clevel=5, shuffle=Blosc.SHUFFLE)
         zx = zarr.empty(shape=shape, chunks=pshape, dtype=dtype, compressor=zcompr)
-        # zy = zarr.empty(shape=shape, chunks=pshape, dtype=dtype, compressor=zcompr)
-        # zz = zarr.empty(shape=shape, chunks=pshape, dtype=dtype, compressor=zcompr)
-        # zarr.copy(zx, zy)
-        # zarr.copy(zx, zz)
+        zy = zarr.empty(shape=shape, chunks=pshape, dtype=dtype, compressor=zcompr)
+        zz = zarr.empty(shape=shape, chunks=pshape, dtype=dtype, compressor=zcompr)
         for info, block in iax.iter_read_block():
             sl = tuple([slice(i, i + s) for i, s in zip(info.elemindex, info.shape)])
             zx[sl] = block[:]
-            # zy[sl] = block[:]
-            # zz[sl] = block[:]
+            zy[sl] = block[:]
+            zz[sl] = block[:]
 
         return command
 
@@ -66,20 +64,20 @@ def evaluate(command):
     def ia_llvm_parallel(command):
         global iax, iay, iaz, shape, pshape, dtype, cparams
         cparams['nthreads'] = NTHREADS
-        expr = ia.Expr(eval_flags="iterblosc", **cparams)
+        expr = ia.Expr(eval_flags="iterblosc2", **cparams)
         expr.bind('x', iax)
-        # expr.bind('y', iay)
-        # expr.bind('z', iaz)
+        expr.bind('y', iay)
+        expr.bind('z', iaz)
         expr.compile(command)
         expr.eval(shape, pshape, dtype)
 
     def ia_llvm_serial(command):
         global iax, iay, iaz, shape, pshape, dtype, cparams
         cparams['nthreads'] = 1
-        expr = ia.Expr(eval_flags="iterblosc", **cparams)
+        expr = ia.Expr(eval_flags="iterblosc2", **cparams)
         expr.bind('x', iax)
-        # expr.bind('y', iay)
-        # expr.bind('z', iaz)
+        expr.bind('y', iay)
+        expr.bind('z', iaz)
         expr.compile(command)
         expr.eval(shape, pshape, dtype)
 
@@ -88,8 +86,8 @@ def evaluate(command):
         cparams['nthreads'] = NTHREADS
         expr = ia.Expr(eval_flags="iterblock", **cparams)
         expr.bind('x', iax)
-        # expr.bind('y', iay)
-        # expr.bind('z', iaz)
+        expr.bind('y', iay)
+        expr.bind('z', iaz)
         expr.compile(command)
         expr.eval(shape, pshape, dtype)
 
@@ -98,8 +96,8 @@ def evaluate(command):
         cparams['nthreads'] = 1
         expr = ia.Expr(eval_flags="iterblock", **cparams)
         expr.bind('x', iax)
-        # expr.bind('y', iay)
-        # expr.bind('z', iaz)
+        expr.bind('y', iay)
+        expr.bind('z', iaz)
         expr.compile(command)
         expr.eval(shape, pshape, dtype)
 
@@ -107,6 +105,8 @@ def evaluate(command):
         global zx, zy, zz, shape, pshape, dtype, zcompr
         with dask.config.set({"scheduler": "threads", "pool": ThreadPool(NTHREADS)}):
             x = da.from_zarr(zx)
+            y = da.from_zarr(zy)
+            z = da.from_zarr(zz)
             res = eval(command)
             zout = zarr.empty(shape, dtype=dtype, compressor=zcompr, chunks=pshape)
             da.to_zarr(res, zout)
@@ -115,18 +115,20 @@ def evaluate(command):
         global zx, zy, zz, shape, pshape, dtype, zcompr
         with dask.config.set(scheduler="single-threaded"):
             x = da.from_zarr(zx)
+            y = da.from_zarr(zy)
+            z = da.from_zarr(zz)
             res = eval(command)
             zout = zarr.empty(shape, dtype=dtype, compressor=zcompr, chunks=pshape)
             da.to_zarr(res, zout)
 
     perfplot.show(
         setup=setup,
-        n_range=[int(k) for k in range(int(1e8), int(2e8), int(3e7))],
+        n_range=[int(k) for k in range(int(1e7), int(2e8), int(3e7))],
         # n_range=[int(k) for k in range(int(1e7), int(2e8), int(1e7))],
         kernels=[
             np_serial,
-            # ne_parallel,
-            # ne_serial,
+            ne_parallel,
+            ne_serial,
             ia_llvm_parallel,
             ia_llvm_serial,
             ia_tinyexpr_parallel,
@@ -135,8 +137,8 @@ def evaluate(command):
             dask_serial,
         ],
         labels=[command + " numpy",
-                # command + " numexpr parallel",
-                # command + " numexpr serial",
+                command + " numexpr parallel",
+                command + " numexpr serial",
                 command + " iarray parallel (llvm)",
                 command + " iarray serial (llvm)",
                 command + " iarray parallel (tinyexpr)",
@@ -146,11 +148,12 @@ def evaluate(command):
                 ],
         logx=False,
         logy=False,
-        title="Scalability (nthreads=%s)" % NTHREADS,
+        title="Comparison with other engines (3 operands, nthreads=%s)" % NTHREADS,
         xlabel='len(x)',
         equality_check=None,
         flops=lambda n: 5 * n,
     )
 
 
-evaluate("(x - 1.35) * (x - 4.45) * (x - 8.5)")
+#evaluate("(x - 1.35) * (x - 4.45) * (x - 8.5)")
+evaluate("(x - 1.35) * (y - 4.45) * (z - 8.5)")

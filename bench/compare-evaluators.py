@@ -14,7 +14,7 @@ NITER = 10
 # Vector sizes and partitions
 shape = [20 * 1000 * 1000]
 N = int(np.prod(shape))
-pshape = [2000 * 1000]
+pshape = [4000 * 1000]
 
 block_size = pshape
 expression = '(x - 1.35) * (x - 4.45) * (x - 8.5)'
@@ -66,10 +66,8 @@ def poly_numba2(x, y):
 
 
 @udf.jit(verbose=0)
-def poly_llvm(out: Array(float64, 1), inputs: Array(float64, 1)) -> int64:
+def poly_llvm(out: Array(float64, 1), x: Array(float64, 1)) -> int64:
     n = out.shape[0]
-    x = inputs[0]
-
     for i in range(n):
         out[i] = (x[i] - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
 
