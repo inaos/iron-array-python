@@ -50,7 +50,7 @@ def test_from_file(start, stop, shape, pshape, dtype, filename):
     npdtype = np.float64 if dtype == np.float64 else np.float32
     a = np.linspace(start, stop, size, dtype=npdtype).reshape(shape)
     b = ia.numpy2iarray(a, pshape, filename=filename)
-    c = ia.from_file(filename)
+    c = ia.load(filename)
     d = ia.iarray2numpy(c)
     np.testing.assert_almost_equal(a, d)
     os.remove(filename)

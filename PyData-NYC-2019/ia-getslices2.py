@@ -28,7 +28,7 @@ else:
 
 @profile
 def open_datafile(filename):
-    dataset = ia.from_file(filename, load_in_mem=IN_MEMORY)
+    dataset = ia.load(filename, load_in_mem=IN_MEMORY)
     return dataset
 t0 = time()
 precipitation = open_datafile("ia-data/rea6/tot_prec/2018.iarray")

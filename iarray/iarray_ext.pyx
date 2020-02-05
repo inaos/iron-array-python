@@ -653,7 +653,18 @@ def iarray2numpy(cfg, c):
     return a
 
 
-def from_file(cfg, filename, load_in_mem=False):
+def save(cfg, c, filename):
+    ctx = Context(cfg)
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
+        ctx.to_capsule(), "iarray_context_t*")
+    cdef ciarray.iarray_container_t *c_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(
+        c.to_capsule(), "iarray_container_t*")
+    filename = filename.encode("utf-8") if isinstance(filename, str) else filename
+
+    ciarray.iarray_container_save(ctx_, c_, filename)
+
+
+def load(cfg, filename, load_in_mem=False):
     ctx = Context(cfg)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
         ctx.to_capsule(), "iarray_context_t*")
@@ -663,7 +674,7 @@ def from_file(cfg, filename, load_in_mem=False):
     store.id = filename
 
     cdef ciarray.iarray_container_t *c
-    ciarray.iarray_from_file(ctx_, &store, &c, load_in_mem)
+    ciarray.iarray_container_load(ctx_, &store, &c, load_in_mem)
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     return IArray(ctx, c_c)
