@@ -178,16 +178,16 @@ cdef class Context:
 cdef class _DTShape:
     cdef ciarray.iarray_dtshape_t _dtshape
 
-    def __cinit__(self, shape, pshape=None, dtype=np.float64):
-        self._dtshape.ndim = len(shape)
-        if dtype == np.float64:
+    def __cinit__(self, dtshape):
+        self._dtshape.ndim = len(dtshape.shape)
+        if dtshape.dtype == np.float64:
             self._dtshape.dtype = ciarray.IARRAY_DATA_TYPE_DOUBLE
-        elif dtype == np.float32:
+        elif dtshape.dtype == np.float32:
             self._dtshape.dtype = ciarray.IARRAY_DATA_TYPE_FLOAT
-        for i in range(len(shape)):
-            self._dtshape.shape[i] = shape[i]
-            if pshape is not None:
-               self._dtshape.pshape[i] = pshape[i]
+        for i in range(len(dtshape.shape)):
+            self._dtshape.shape[i] = dtshape.shape[i]
+            if dtshape.pshape is not None:
+               self._dtshape.pshape[i] = dtshape.pshape[i]
             else:
                 self._dtshape.pshape[i] = 0
 
@@ -225,6 +225,27 @@ cdef class _DTShape:
         dtype = f"    Datatype: {self.dtype}"
 
         return res + ndim + shape + pshape + dtype
+
+
+cdef class _StoreProperties:
+    cdef ciarray.iarray_store_properties_t _store
+
+    def __cinit__(self, store):
+        self._store.enforce_frame = store.enfornce_frame
+        if store.backend == 'plainbuffer':
+            self._store.backend = ciarray.IARRAY_STORAGE_PLAINBUFFER
+        elif store.backend == 'blosc':
+            self._store.backend = ciarray.IARRAY_STORAGE_BLOSC
+
+        if store.filename is not None:
+            filename = store.filename.encode("utf-8") if isinstance(store.filename, str) else store.filename
+            self._store.filename = filename
+        else:
+            self._store.filename = NULL
+
+    cdef to_dict(self):
+        return <object> self._store
+
 
 
 cdef class RandomContext:
@@ -409,24 +430,21 @@ def copy(cfg, src, view=False, filename=None):
     return IArray(ctx, c_c)
 
 
-def empty(cfg, shape, pshape=None, dtype=np.float64, filename=None):
+def empty(cfg, dtshape, store):
     ctx = Context(cfg)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
         ctx.to_capsule(), "iarray_context_t*")
-    dtshape = _DTShape(shape, pshape, dtype).to_dict()
+
+    dtshape = _DTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
-    cdef ciarray.iarray_store_properties_t store
-    if filename is not None:
-        filename = filename.encode("utf-8") if isinstance(filename, str) else filename
-        store.id = filename
+    store = _StoreProperties(store).to_dict()
+    cdef ciarray.iarray_store_properties_t store_ = <ciarray.iarray_store_properties_t> store
 
-    flags = 0 if filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if store.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+
     cdef ciarray.iarray_container_t *c
-    if flags == ciarray.IARRAY_CONTAINER_PERSIST:
-        ciarray.iarray_container_new(ctx_, &dtshape_, &store, flags, &c)
-    else:
-        ciarray.iarray_container_new(ctx_, &dtshape_, NULL, flags, &c)
+    ciarray.iarray_container_new(ctx_, &dtshape_, &store_, flags, &c)
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     return IArray(ctx, c_c)

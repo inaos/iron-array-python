@@ -14,6 +14,7 @@ import numexpr as ne
 import iarray as ia
 from iarray import iarray_ext as ext
 from itertools import zip_longest as zip
+from collections import namedtuple
 
 
 def fuse_operands(operands1, operands2):
@@ -386,17 +387,27 @@ class dtshape:
         self.dtype = dtype
 
     def to_tuple(self):
-        return (self.shape, self.pshape, self.dtype)
+        Dtshape = namedtuple('dtshape','shape pshape dtype')
+        return Dtshape(self.shape, self.pshape, self.dtype)
 
+
+class store_properties:
+    def __init__(self, backend=0, enforce_frame=False, filename=None):
+        self.backend = backend
+        self.enforce_frame = enforce_frame
+        self.filename = filename
+
+    def to_tuple(self):
+        StoreProp = namedtuple('store properties', 'backend enforce_frame, filename')
+        return StoreProp(self.backend, self.enforce_frame, self.filename)
 
 #
 # Constructors
 #
 
-def empty(dtshape, **kwargs):
+def empty(dtshape, store=store_properties(), **kwargs):
     cfg = Config(**kwargs)
-    shape, pshape, dtype = dtshape.to_tuple()
-    return ext.empty(cfg, shape, pshape, dtype, cfg.filename)
+    return ext.empty(cfg, dtshape, store)
 
 
 def arange(dtshape, start=None, stop=None, step=None, **kwargs):
