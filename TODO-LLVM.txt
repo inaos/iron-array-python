@@ -1,7 +1,8 @@
+- Vectorize loops with svml (done in py2llvm), v(s,d)(Cos,Sin,Tan)
+- Initialize LLVM once (now it's initialized in iron-array & py2llvm)
+- Fix with 2 udf functions
+- Support multiple dimensions
 - Move py2llvm to iron-array (setuptools find_packages)
-- Test calling C functions
-- Call intrinsics (py2llvm, )
-* Support multiple dimensions
 - Stable API
 - Unit tests
 - Missing features (operators, etc.)

@@ -61,12 +61,12 @@ class udf_array_shape:
 
     def subscript(self, visitor, slice, ctx):
         assert ctx is ast.Load
-#       assert slice == 0 # XXX For now we only support 1 dimension arrays
+        assert slice == 0 # TODO Add support for multiple dimensions
 
         # The dimension size is the same for every dimension in every array
         params = self.params
-        out_size = params.out_size(visitor) # gep
-        out_typesize = params.out_typesize(visitor) # load
+        out_size = params.out_size.Attribute_exit(visitor) # gep
+        out_typesize = params.out_typesize.Attribute_exit(visitor) # load
         out_size = visitor.builder.load(out_size) # gep
         out_typesize = visitor.builder.load(out_typesize) # load
         return visitor.BinOp_exit(None, None, out_size, ast.Div, out_typesize)
@@ -116,7 +116,7 @@ class udf_type(types.StructType):
     def get_input(self, visitor, n, idx):
         # .inputs (uint8_t**)
         inputs = super().__getattr__('inputs')
-        ptr = inputs(visitor)
+        ptr = inputs.Attribute_exit(visitor)
         # .inputs[n] (uint8_t*)
         n_ir = types.value_to_ir_value(n)
         ptr = visitor.builder.gep(ptr, [types.zero, n_ir])
@@ -131,7 +131,7 @@ class udf_type(types.StructType):
     def get_out(self, visitor, idx):
         # .out (uint8_t*)
         out = super().__getattr__('out')
-        ptr = out(visitor)
+        ptr = out.Attribute_exit(visitor)
         # .out (<type>*)
         ptr = visitor.builder.load(ptr)
         typ = self.out_type

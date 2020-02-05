@@ -19,11 +19,8 @@ cparams = dict(clib=ia.LZ4, clevel=5, nthreads=16) #, blocksize=1024)
 
 
 @udf.jit(verbose=0)
-def f(out: Array(float64, 1), inputs: Array(float64, 1)) -> int64:
+def f(out: Array(float64, 1), x: Array(float64, 1)) -> int64:
     n = out.shape[0]
-    x = inputs[0]
-    #y = inputs[1]
-
     for i in range(n):
         out[i] = (x[i] - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
 
