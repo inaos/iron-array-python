@@ -24,7 +24,7 @@ expr = ia.Expr(eval_flags="iterblosc", nthreads=1)
 expr.bind("x", a1)
 expr.compile("(x - 1.35) * (x - 4.45) * (x - 8.5)")
 for i in range(NITER):
-    b1 = expr.eval(shape, pshape, np.float64)
+    b1 = expr.eval(ia.dtshape(shape, pshape, np.float64))
 b1_n = ia.iarray2numpy(b1)
 print(b1_n)
 

@@ -420,7 +420,7 @@ def arange(dtshape, start=None, stop=None, step=None, **kwargs):
     cfg = Config(**kwargs)
 
     if (start, stop, step) == (None, None, None):
-        stop = np.prod(shape)
+        stop = np.prod(dtshape.shape)
         start = 0
         step = 1
     elif (stop, step) == (None, None):

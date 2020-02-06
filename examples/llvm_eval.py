@@ -42,7 +42,7 @@ expr = ia.Expr(eval_flags=eval_method, **cparams)
 expr.bind('x', xa)
 expr.compile('(x - 1.35) * (x - 4.45) * (x - 8.5)')
 for i in range(NITER):
-    ya = expr.eval(shape, pshape, dtype=dtype)
+    ya = expr.eval(ia.dtshape(shape, pshape, dtype=dtype))
 print("Result cratio:", round(ya.cratio, 2))
 print("Block evaluate via iarray.eval:", round((time() - t0) / NITER, 4))
 y1 = ia.iarray2numpy(ya)
