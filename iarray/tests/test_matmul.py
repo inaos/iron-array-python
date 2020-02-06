@@ -16,10 +16,18 @@ import numpy as np
                              ([100, 100], [30, 30], [12, 100], [100], None, [100], np.float32)
                          ])
 def test_matmul(ashape, apshape, abshape, bshape, bpshape, bbshape, dtype):
-    a = ia.linspace(ia.dtshape(ashape, apshape, dtype), -10, 1)
+    if apshape is None:
+        astorage = ia.StorageProperties("plainbuffer")
+    else:
+        astorage = ia.StorageProperties("blosc", False)
+    a = ia.linspace(ia.dtshape(ashape, apshape, dtype), -10, 1, storage=astorage)
     an = ia.iarray2numpy(a)
 
-    b = ia.linspace(ia.dtshape(bshape, bpshape, dtype), -1, 10)
+    if bpshape is None:
+        bstorage = ia.StorageProperties("plainbuffer")
+    else:
+        bstorage = ia.StorageProperties("blosc", False)
+    b = ia.linspace(ia.dtshape(bshape, bpshape, dtype), -1, 10, storage=bstorage)
     bn = ia.iarray2numpy(b)
 
     c = ia.matmul(a, b, abshape, bbshape)
@@ -54,14 +62,22 @@ def test_matmul(ashape, apshape, abshape, bshape, bpshape, bbshape, dtype):
                               [100], None, [25], [35], [10], np.float32)
                          ])
 def test_matmul_slice(ashape, apshape, astart, astop, abshape, bshape, bpshape, bstart, bstop, bbshape, dtype):
-    a = ia.linspace(ia.dtshape(ashape, apshape, dtype), -1, -2)
+    if apshape is None:
+        astorage = ia.StorageProperties("plainbuffer")
+    else:
+        astorage = ia.StorageProperties("blosc", False)
+    a = ia.linspace(ia.dtshape(ashape, apshape, dtype), -1, -2, storage=astorage)
     an = ia.iarray2numpy(a)
     aslices = tuple(slice(astart[i], astop[i]) for i in range(len(astart)))
     if len(astart) == 1:
         aslices = aslices[0]
     asl = a[aslices]
 
-    b = ia.linspace(ia.dtshape(bshape, bpshape, dtype), 1, 200)
+    if bpshape is None:
+        bstorage = ia.StorageProperties("plainbuffer")
+    else:
+        bstorage = ia.StorageProperties("blosc", False)
+    b = ia.linspace(ia.dtshape(bshape, bpshape, dtype), 1, 200, storage=bstorage)
     bn = ia.iarray2numpy(b)
     bslices = tuple(slice(bstart[i], bstop[i]) for i in range(len(bstart)))
     if len(bstart) == 1:

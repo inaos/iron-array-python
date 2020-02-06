@@ -19,8 +19,13 @@ import numpy as np
 ])
 def test_expression(eval_flags, shape, pshape, dtype, expression):
     # The ranges below are important for not overflowing operations
-    x = ia.linspace(ia.dtshape(shape, pshape, dtype), .001, .2)
-    y = ia.linspace(ia.dtshape(shape, pshape, dtype), 0, 1)
+    if pshape is None:
+        storage = ia.StorageProperties(backend = "plainbuffer")
+    else:
+        storage = ia.StorageProperties(backend="blosc", enforce_frame=False, filename=None)
+
+    x = ia.linspace(ia.dtshape(shape, pshape, dtype), .001, .2, storage=storage)
+    y = ia.linspace(ia.dtshape(shape, pshape, dtype), 0, 1, storage=storage)
     npx = ia.iarray2numpy(x)
     npy = ia.iarray2numpy(y)
 
@@ -28,7 +33,8 @@ def test_expression(eval_flags, shape, pshape, dtype, expression):
     expr.bind("x", x)
     expr.bind("y", y)
     expr.compile(expression)
-    iout = expr.eval(shape, pshape, dtype)
+
+    iout = expr.eval(ia.dtshape(shape, pshape, dtype), storage=storage)
     npout = ia.iarray2numpy(iout)
 
     npout2 = ia.Parser().parse(expression).evaluate({"x": npx, "y": npy})
@@ -60,10 +66,16 @@ def test_expression(eval_flags, shape, pshape, dtype, expression):
 def test_ufuncs(ufunc, ia_expr):
     shape = [20, 30]
     pshape = [2, 3]
+
+    if pshape is None:
+        storage = ia.StorageProperties(backend = "plainbuffer")
+    else:
+        storage = ia.StorageProperties(backend="blosc", enforce_frame=False, filename=None)
+
     for dtype in np.float64, np.float32:
         # The ranges below are important for not overflowing operations
-        x = ia.linspace(ia.dtshape(shape, pshape, dtype), .1, .9)
-        y = ia.linspace(ia.dtshape(shape, pshape, dtype), 0, 1)
+        x = ia.linspace(ia.dtshape(shape, pshape, dtype), .1, .9, storage=storage)
+        y = ia.linspace(ia.dtshape(shape, pshape, dtype), 0, 1, storage=storage)
         npx = ia.iarray2numpy(x)
         npy = ia.iarray2numpy(y)
 
@@ -72,7 +84,7 @@ def test_ufuncs(ufunc, ia_expr):
         expr.bind("x", x)
         expr.bind("y", y)
         expr.compile(ia_expr)
-        iout = expr.eval(shape, pshape, dtype)
+        iout = expr.eval(ia.dtshape(shape, pshape, dtype), storage=storage)
         npout = ia.iarray2numpy(iout)
 
         decimal = 6 if dtype is np.float32 else 7

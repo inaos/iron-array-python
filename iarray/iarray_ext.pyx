@@ -24,6 +24,20 @@ from collections import namedtuple
 from .expression import Parser
 
 
+cdef set_store_properties(storage, ciarray.iarray_store_properties_t *cstore):
+    cstore.enforce_frame = storage.enforce_frame
+    if storage.backend == 'plainbuffer':
+        cstore.backend = ciarray.IARRAY_STORAGE_PLAINBUFFER
+    elif storage.backend == 'blosc':
+       cstore.backend = ciarray.IARRAY_STORAGE_BLOSC
+
+    if storage.filename is not None:
+        filename = storage.filename.encode("utf-8") if isinstance(storage.filename, str) else storage.filename
+        cstore.filename = filename
+    else:
+        cstore.filename = NULL
+
+
 cdef class ReadBlockIter:
     cdef ciarray.iarray_iter_read_block_t *_iter
     cdef ciarray.iarray_iter_read_block_value_t _val
@@ -227,11 +241,11 @@ cdef class _DTShape:
         return res + ndim + shape + pshape + dtype
 
 
-cdef class _StoreProperties:
+cdef class _StorageProperties:
     cdef ciarray.iarray_store_properties_t _store
 
     def __cinit__(self, store):
-        self._store.enforce_frame = store.enfornce_frame
+        self._store.enforce_frame = store.enforce_frame
         if store.backend == 'plainbuffer':
             self._store.backend = ciarray.IARRAY_STORAGE_PLAINBUFFER
         elif store.backend == 'blosc':
@@ -245,7 +259,6 @@ cdef class _StoreProperties:
 
     cdef to_dict(self):
         return <object> self._store
-
 
 
 cdef class RandomContext:
@@ -343,7 +356,7 @@ cdef class Container:
             item = [item]
         start = [s.start if s.start is not None else 0 for s in item]
         stop = [s.stop if s.stop is not None else sh for s, sh in zip(item, self.shape)]
-        return _get_slice(self._ctx, self, start, stop)
+        return _get_item(self._ctx, self, start, stop)
 
 
 cdef class Expression:
@@ -374,25 +387,28 @@ cdef class Expression:
             raise ValueError(f"Error in compiling expr: {expr}")
         self.expression = expr2
 
-    def eval(self, shape, pshape=None, dtype=np.float64, filename=None):
-        dtshape = _DTShape(shape, pshape, dtype).to_dict()
+    def eval(self, dtshape, storage=None):
+        dtshape = _DTShape(dtshape).to_dict()
         cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
-        cdef ciarray.iarray_store_properties_t store
-        if filename is not None:
-            filename = filename.encode("utf-8") if isinstance(filename, str) else filename
-            store.id = filename
 
-        flags = 0 if filename is None else ciarray.IARRAY_CONTAINER_PERSIST
-        cdef ciarray.iarray_container_t *c
-        ctx_ = self._ctx._ctx
-        if flags == ciarray.IARRAY_CONTAINER_PERSIST:
-            ciarray.iarray_container_new(ctx_, &dtshape_, &store, flags, &c)
+        cdef ciarray.iarray_store_properties_t store_
+        if storage is None:
+            store_.backend = ciarray.IARRAY_STORAGE_BLOSC
+            store_.enforce_frame = False
+            store_.filename = NULL
+            flags = 0
         else:
-            ciarray.iarray_container_new(ctx_, &dtshape_, NULL, flags, &c)
+            set_store_properties(storage, &store_)
+            flags = 0 if storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+
+        cdef ciarray.iarray_container_t *c
+
+        ctx_ = self._ctx._ctx
+        ciarray.iarray_container_new(ctx_, &dtshape_, &store_, flags, &c)
+
 
         if ciarray.iarray_eval(self._e, c) != 0:
             raise ValueError(f"Error in evaluating expr: {self.expression}")
-
         c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
         return IArray(self._ctx, c_c)
 
@@ -408,29 +424,27 @@ def partition_advice(ctx, dtshape, low=128*1024, high=1024*1024):
     ciarray.iarray_partition_advice(ctx_, &dtshape_, low, high)
     return dict(dtshape_)["pshape"]
 
-def copy(cfg, src, view=False, filename=None):
+def copy(cfg, src, view=False):
     ctx = Context(cfg)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
         ctx.to_capsule(), "iarray_context_t*")
 
-    cdef ciarray.iarray_store_properties_t store
-    if filename is not None:
-        filename = filename.encode("utf-8") if isinstance(filename, str) else filename
-        store.id = filename
+    cdef ciarray.iarray_store_properties_t store_
+    set_store_properties(cfg._storage, &store_)
 
-    flags = 0 if filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg._storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+
     cdef ciarray.iarray_container_t *c
     cdef ciarray.iarray_container_t *src_ = <ciarray.iarray_container_t *> PyCapsule_GetPointer(
         src.to_capsule(), "iarray_container_t*")
-    if flags == ciarray.IARRAY_CONTAINER_PERSIST:
-        ciarray.iarray_copy(ctx_, src_, view, &store, flags, &c)
-    else:
-        ciarray.iarray_copy(ctx_, src_, view, NULL, flags, &c)
+
+    ciarray.iarray_copy(ctx_, src_, view, &store_, flags, &c)
+
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     return IArray(ctx, c_c)
 
 
-def empty(cfg, dtshape, store):
+def empty(cfg, dtshape):
     ctx = Context(cfg)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
         ctx.to_capsule(), "iarray_context_t*")
@@ -438,10 +452,11 @@ def empty(cfg, dtshape, store):
     dtshape = _DTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
-    store = _StoreProperties(store).to_dict()
-    cdef ciarray.iarray_store_properties_t store_ = <ciarray.iarray_store_properties_t> store
+    cdef ciarray.iarray_store_properties_t store_
+    set_store_properties(cfg._storage, &store_)
 
-    flags = 0 if store.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg._storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+
 
     cdef ciarray.iarray_container_t *c
     ciarray.iarray_container_new(ctx_, &dtshape_, &store_, flags, &c)
@@ -450,151 +465,164 @@ def empty(cfg, dtshape, store):
     return IArray(ctx, c_c)
 
 
-def arange(cfg, slice, shape=None, pshape=None, dtype=np.float64, filename=None):
+def arange(cfg, slice, dtshape):
     ctx = Context(cfg)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
         ctx.to_capsule(), "iarray_context_t*")
 
     start, stop, step = slice.start, slice.stop, slice.step
-    if shape is None:
-        shape = [ceil((stop - start)/step)]
-    dtshape = _DTShape(shape, pshape, dtype).to_dict()
+    if dtshape.shape is None:
+        dtshape.shape = [ceil((stop - start)/step)]
+
+    dtshape = _DTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
-    cdef ciarray.iarray_store_properties_t store
-    if filename is not None:
-        filename = filename.encode("utf-8") if isinstance(filename, str) else filename
-        store.id = filename
+    cdef ciarray.iarray_store_properties_t store_
+    set_store_properties(cfg._storage, &store_)
 
-    flags = 0 if filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg._storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+
     cdef ciarray.iarray_container_t *c
-    if flags == ciarray.IARRAY_CONTAINER_PERSIST:
-        ciarray.iarray_arange(ctx_, &dtshape_, start, stop, step, &store, flags, &c)
-    else:
-        ciarray.iarray_arange(ctx_, &dtshape_, start, stop, step, NULL, flags, &c)
+    ciarray.iarray_arange(ctx_, &dtshape_, start, stop, step, &store_, flags, &c)
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     return IArray(ctx, c_c)
 
 
-def linspace(cfg, nelem, start, stop, shape=None, pshape=None, dtype=np.float64, filename=None):
+def linspace(cfg, nelem, start, stop, dtshape):
     ctx = Context(cfg)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
         ctx.to_capsule(), "iarray_context_t*")
 
-    if shape is None:
-        shape = [nelem]
-    dtshape = _DTShape(shape, pshape, dtype).to_dict()
+    if dtshape.shape is None:
+        dtshape.shape = [nelem]
+    dtshape = _DTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
-    cdef ciarray.iarray_store_properties_t store
-    if filename is not None:
-        filename = filename.encode("utf-8") if isinstance(filename, str) else filename
-        store.id = filename
+    cdef ciarray.iarray_store_properties_t store_
+    set_store_properties(cfg._storage, &store_)
 
-    flags = 0 if filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg._storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+
     cdef ciarray.iarray_container_t *c
-    if flags == ciarray.IARRAY_CONTAINER_PERSIST:
-        ciarray.iarray_linspace(ctx_, &dtshape_, nelem, start, stop, &store, flags, &c)
-    else:
-        ciarray.iarray_linspace(ctx_, &dtshape_, nelem, start, stop, NULL, flags, &c)
+    ciarray.iarray_linspace(ctx_, &dtshape_, nelem, start, stop, &store_, flags, &c)
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     return IArray(ctx, c_c)
 
 
-def zeros(cfg, shape, pshape=None, dtype=np.float64, filename=None):
+def zeros(cfg, dtshape):
     ctx = Context(cfg)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
         ctx.to_capsule(), "iarray_context_t*")
-    dtshape = _DTShape(shape, pshape, dtype).to_dict()
+
+    dtshape = _DTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
-    cdef ciarray.iarray_store_properties_t store
-    if filename is not None:
-        filename = filename.encode("utf-8") if isinstance(filename, str) else filename
-        store.id = filename
+    cdef ciarray.iarray_store_properties_t store_
+    set_store_properties(cfg._storage, &store_)
 
-    flags = 0 if filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg._storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+
     cdef ciarray.iarray_container_t *c
-    if flags == ciarray.IARRAY_CONTAINER_PERSIST:
-        ciarray.iarray_zeros(ctx_, &dtshape_, &store, flags, &c)
-    else:
-        ciarray.iarray_zeros(ctx_, &dtshape_, NULL, flags, &c)
+    ciarray.iarray_zeros(ctx_, &dtshape_, &store_, flags, &c)
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     return IArray(ctx, c_c)
 
 
-def ones(cfg, shape, pshape=None, dtype=np.float64, filename=None):
+def ones(cfg, dtshape):
     ctx = Context(cfg)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
         ctx.to_capsule(), "iarray_context_t*")
-    dtshape = _DTShape(shape, pshape, dtype).to_dict()
+
+    dtshape = _DTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
-    cdef ciarray.iarray_store_properties_t store
-    if filename is not None:
-        filename = filename.encode("utf-8") if isinstance(filename, str) else filename
-        store.id = filename
+    cdef ciarray.iarray_store_properties_t store_
+    set_store_properties(cfg._storage, &store_)
 
-    flags = 0 if filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg._storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+
     cdef ciarray.iarray_container_t *c
-    if flags == ciarray.IARRAY_CONTAINER_PERSIST:
-        ciarray.iarray_ones(ctx_, &dtshape_, &store, flags, &c)
-    else:
-        ciarray.iarray_ones(ctx_, &dtshape_, NULL, flags, &c)
+    ciarray.iarray_ones(ctx_, &dtshape_, &store_, flags, &c)
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     return IArray(ctx, c_c)
 
 
-def full(cfg, fill_value, shape, pshape=None, dtype=np.float64, filename=None):
+def full(cfg, fill_value, dtshape):
     ctx = Context(cfg)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
         ctx.to_capsule(), "iarray_context_t*")
-    dtshape = _DTShape(shape, pshape, dtype).to_dict()
+
+    dtshape = _DTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
-    cdef ciarray.iarray_store_properties_t store
-    if filename is not None:
-        filename = filename.encode("utf-8") if isinstance(filename, str) else filename
-        store.id = filename
+    cdef ciarray.iarray_store_properties_t store_
+    set_store_properties(cfg._storage, &store_)
 
-    flags = 0 if filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg._storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+
 
     cdef ciarray.iarray_container_t *c
-    if flags == ciarray.IARRAY_CONTAINER_PERSIST:
-        if dtype == np.float64:
-            ciarray.iarray_fill_double(ctx_, &dtshape_, fill_value, &store, flags, &c)
-        else:
-            ciarray.iarray_fill_float(ctx_, &dtshape_, fill_value, &store, flags, &c)
+    if dtshape["dtype"] == ciarray.IARRAY_DATA_TYPE_DOUBLE:
+        ciarray.iarray_fill_double(ctx_, &dtshape_, fill_value, &store_, flags, &c)
     else:
-        if dtype == np.float64:
-            ciarray.iarray_fill_double(ctx_, &dtshape_, fill_value, NULL, flags, &c)
-        else:
-            ciarray.iarray_fill_float(ctx_, &dtshape_, fill_value, NULL, flags, &c)
+        ciarray.iarray_fill_float(ctx_, &dtshape_, fill_value, &store_, flags, &c)
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     return IArray(ctx, c_c)
 
 
-def _get_slice(ctx, data, start, stop, pshape=None, filename=None, view=True):
+def save(cfg, c, filename):
+    ctx = Context(cfg)
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
+        ctx.to_capsule(), "iarray_context_t*")
+    cdef ciarray.iarray_container_t *c_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(
+        c.to_capsule(), "iarray_container_t*")
+    filename = filename.encode("utf-8") if isinstance(filename, str) else filename
+
+    ciarray.iarray_container_save(ctx_, c_, filename)
+
+
+def load(cfg, filename, load_in_mem=False):
+    ctx = Context(cfg)
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
+        ctx.to_capsule(), "iarray_context_t*")
+
+    cdef ciarray.iarray_store_properties_t store
+    filename = filename.encode("utf-8") if isinstance(filename, str) else filename
+    store.filename = filename
+    store.backend = ciarray.IARRAY_STORAGE_BLOSC
+    store.enforce_frame = load_in_mem
+
+    cdef ciarray.iarray_container_t *c
+    ciarray.iarray_container_load(ctx_, &store, &c, load_in_mem)
+
+    c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
+    return IArray(ctx, c_c)
+
+
+def _get_item(ctx, data, start, stop):
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
         ctx.to_capsule(), "iarray_context_t*")
     cdef ciarray.iarray_container_t *data_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(
         data.to_capsule(), "iarray_container_t*")
 
     shape = [sp%s - st%s for sp, st, s in zip(stop, start, data.shape)]
-    if pshape is None:
-        pshape = partition_advice(ctx, _DTShape(shape, data.pshape, data.dtype).to_dict())
+    DTshape = namedtuple('dtshape', ['shape','pshape','dtype'])
+    dtshape = DTshape(shape, None, data.dtype)
 
-    cdef ciarray.iarray_store_properties_t store
-    if filename is not None:
-        filename = filename.encode("utf-8") if isinstance(filename, str) else filename
-        store.id = filename
+    pshape = partition_advice(ctx, _DTShape(dtshape).to_dict())
 
-    flags = 0 if filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+    cdef ciarray.iarray_store_properties_t store_
+    store_.filename = NULL
+    store_.backend = ciarray.IARRAY_STORAGE_BLOSC
+    store_.enforce_frame = False
+
+    flags = 0
+
     cdef ciarray.int64_t start_[ciarray.IARRAY_DIMENSION_MAX]
     cdef ciarray.int64_t stop_[ciarray.IARRAY_DIMENSION_MAX]
     cdef ciarray.int64_t pshape_[ciarray.IARRAY_DIMENSION_MAX]
@@ -604,44 +632,32 @@ def _get_slice(ctx, data, start, stop, pshape=None, filename=None, view=True):
         pshape_[i] = pshape[i]
 
     cdef ciarray.iarray_container_t *c
-    if flags == ciarray.IARRAY_CONTAINER_PERSIST:
-        ciarray.iarray_get_slice(ctx_, data_, start_, stop_, pshape_, &store, flags, view, &c)
-    else:
-        ciarray.iarray_get_slice(ctx_, data_, start_, stop_, pshape_, NULL, flags, view, &c)
-    c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
 
+    ciarray.iarray_get_slice(ctx_, data_, start_, stop_, pshape_, &store_, flags, True, &c)
+
+    c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     b =  IArray(ctx, c_c)
     return b
 
 
-def numpy2iarray(cfg, a, pshape=None, filename=None):
+def numpy2iarray(cfg, a, dtshape):
     ctx = Context(cfg)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
         ctx.to_capsule(), "iarray_context_t*")
 
-    dtype = None
-    if a.dtype == np.float64:
-        dtype = np.float64
-    elif a.dtype == np.float32:
-        dtype = np.float32
-    else:
-        raise NotImplementedError("Only float32 and float64 types are supported for now")
-
-    dtshape = _DTShape(a.shape, pshape, dtype).to_dict()
+    dtshape = _DTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
-    cdef ciarray.iarray_store_properties_t store
-    if filename is not None:
-        filename = filename.encode("utf-8") if isinstance(filename, str) else filename
-        store.id = filename
 
-    flags = 0 if filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+    cdef ciarray.iarray_store_properties_t store_
+    set_store_properties(cfg._storage, &store_)
+
+    flags = 0 if cfg._storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+
+
     buffer_size = a.size * np.dtype(a.dtype).itemsize
 
     cdef ciarray.iarray_container_t *c
-    if flags == ciarray.IARRAY_CONTAINER_PERSIST:
-        ciarray.iarray_from_buffer(ctx_, &dtshape_, np.PyArray_DATA(a), buffer_size, &store, flags, &c)
-    else:
-        ciarray.iarray_from_buffer(ctx_, &dtshape_, np.PyArray_DATA(a), buffer_size, NULL, flags, &c)
+    ciarray.iarray_from_buffer(ctx_, &dtshape_, np.PyArray_DATA(a), buffer_size, &store_, flags, &c)
 
     c_c =  PyCapsule_New(c, "iarray_container_t*", NULL)
     return IArray(ctx, c_c)
@@ -669,33 +685,6 @@ def iarray2numpy(cfg, c):
     a = np.zeros(size, dtype=npdtype).reshape(shape)
     ciarray.iarray_to_buffer(ctx_, c_, np.PyArray_DATA(a), size * sizeof(npdtype))
     return a
-
-
-def save(cfg, c, filename):
-    ctx = Context(cfg)
-    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
-        ctx.to_capsule(), "iarray_context_t*")
-    cdef ciarray.iarray_container_t *c_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(
-        c.to_capsule(), "iarray_container_t*")
-    filename = filename.encode("utf-8") if isinstance(filename, str) else filename
-
-    ciarray.iarray_container_save(ctx_, c_, filename)
-
-
-def load(cfg, filename, load_in_mem=False):
-    ctx = Context(cfg)
-    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
-        ctx.to_capsule(), "iarray_context_t*")
-
-    cdef ciarray.iarray_store_properties_t store
-    filename = filename.encode("utf-8") if isinstance(filename, str) else filename
-    store.id = filename
-
-    cdef ciarray.iarray_container_t *c
-    ciarray.iarray_container_load(ctx_, &store, &c, load_in_mem)
-
-    c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
-    return IArray(ctx, c_c)
 
 #
 # Expression functions
@@ -726,311 +715,261 @@ def expr_eval(e, c):
 # Random functions
 #
 
-def random_rand(cfg, shape, pshape=None, dtype=np.float64, filename=None):
+def random_rand(cfg, dtshape):
     ctx = Context(cfg)
     r_ctx = RandomContext(ctx)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
     cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(), "iarray_random_ctx_t*")
 
-    dtshape = _DTShape(shape, pshape, dtype).to_dict()
+    dtshape = _DTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
-    cdef ciarray.iarray_store_properties_t store
-    if filename is not None:
-        filename = filename.encode("utf-8") if isinstance(filename, str) else filename
-        store.id = filename
+    cdef ciarray.iarray_store_properties_t store_
+    set_store_properties(cfg._storage, &store_)
 
-    flags = 0 if filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg._storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     cdef ciarray.iarray_container_t *c
-    if flags == ciarray.IARRAY_CONTAINER_PERSIST:
-        ciarray.iarray_random_rand(ctx_, &dtshape_, r_ctx_, &store, flags, &c)
-    else:
-        ciarray.iarray_random_rand(ctx_, &dtshape_, r_ctx_, NULL, flags, &c)
+    ciarray.iarray_random_rand(ctx_, &dtshape_, r_ctx_, &store_, flags, &c)
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     return IArray(ctx, c_c)
 
 
-def random_randn(cfg, shape, pshape=None, dtype=np.float64, filename=None):
+def random_randn(cfg, dtshape):
     ctx = Context(cfg)
     r_ctx = RandomContext(ctx)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
     cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(), "iarray_random_ctx_t*")
 
-    dtshape = _DTShape(shape, pshape, dtype).to_dict()
+    dtshape = _DTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
-    cdef ciarray.iarray_store_properties_t store
-    if filename is not None:
-        filename = filename.encode("utf-8") if isinstance(filename, str) else filename
-        store.id = filename
+    cdef ciarray.iarray_store_properties_t store_
+    set_store_properties(cfg._storage, &store_)
 
-    flags = 0 if filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg._storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     cdef ciarray.iarray_container_t *c
-    if flags == ciarray.IARRAY_CONTAINER_PERSIST:
-        ciarray.iarray_random_randn(ctx_, &dtshape_, r_ctx_, &store, flags, &c)
-    else:
-        ciarray.iarray_random_randn(ctx_, &dtshape_, r_ctx_, NULL, flags, &c)
+    ciarray.iarray_random_randn(ctx_, &dtshape_, r_ctx_, &store_, flags, &c)
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     return IArray(ctx, c_c)
 
 
-def random_beta(cfg, alpha, beta, shape, pshape=None, dtype=np.float64, filename=None):
+def random_beta(cfg, alpha, beta, dtshape):
     ctx = Context(cfg)
     r_ctx = RandomContext(ctx)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
     cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(), "iarray_random_ctx_t*")
 
-    if dtype == np.float64:
+    if dtshape.dtype == np.float64:
         ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_ALPHA, alpha)
         ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_BETA, beta)
     else:
         ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_ALPHA, alpha)
         ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_BETA, beta)
 
-    dtshape = _DTShape(shape, pshape, dtype).to_dict()
+    dtshape = _DTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
-    cdef ciarray.iarray_store_properties_t store
-    if filename is not None:
-        filename = filename.encode("utf-8") if isinstance(filename, str) else filename
-        store.id = filename
+    cdef ciarray.iarray_store_properties_t store_
+    set_store_properties(cfg._storage, &store_)
 
-    flags = 0 if filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg._storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     cdef ciarray.iarray_container_t *c
-    if flags == ciarray.IARRAY_CONTAINER_PERSIST:
-        ciarray.iarray_random_beta(ctx_, &dtshape_, r_ctx_, &store, flags, &c)
-    else:
-        ciarray.iarray_random_beta(ctx_, &dtshape_, r_ctx_, NULL, flags, &c)
+    ciarray.iarray_random_beta(ctx_, &dtshape_, r_ctx_, &store_, flags, &c)
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     return IArray(ctx, c_c)
 
 
-def random_lognormal(cfg, mu, sigma, shape, pshape=None, dtype=np.float64, filename=None):
+def random_lognormal(cfg, mu, sigma, dtshape):
     ctx = Context(cfg)
     r_ctx = RandomContext(ctx)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
     cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(), "iarray_random_ctx_t*")
 
-    if dtype == np.float64:
+    if dtshape.dtype == np.float64:
         ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_MU, mu)
         ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_SIGMA, sigma)
     else:
         ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_MU, mu)
         ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_SIGMA, sigma)
 
-    dtshape = _DTShape(shape, pshape, dtype).to_dict()
+    dtshape = _DTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
-    cdef ciarray.iarray_store_properties_t store
-    if filename is not None:
-        filename = filename.encode("utf-8") if isinstance(filename, str) else filename
-        store.id = filename
+    cdef ciarray.iarray_store_properties_t store_
+    set_store_properties(cfg._storage, &store_)
 
-    flags = 0 if filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg._storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     cdef ciarray.iarray_container_t *c
-    if flags == ciarray.IARRAY_CONTAINER_PERSIST:
-        ciarray.iarray_random_lognormal(ctx_, &dtshape_, r_ctx_, &store, flags, &c)
-    else:
-        ciarray.iarray_random_lognormal(ctx_, &dtshape_, r_ctx_, NULL, flags, &c)
+    ciarray.iarray_random_lognormal(ctx_, &dtshape_, r_ctx_, &store_, flags, &c)
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     return IArray(ctx, c_c)
 
 
-def random_exponential(cfg, beta, shape, pshape=None, dtype=np.float64, filename=None):
+def random_exponential(cfg, beta, dtshape):
     ctx = Context(cfg)
     r_ctx = RandomContext(ctx)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
     cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(), "iarray_random_ctx_t*")
 
-    if dtype == np.float64:
+    if dtshape.dtype == np.float64:
         ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_BETA, beta)
     else:
         ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_BETA, beta)
 
-    dtshape = _DTShape(shape, pshape, dtype).to_dict()
+    dtshape = _DTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
-    cdef ciarray.iarray_store_properties_t store
-    if filename is not None:
-        filename = filename.encode("utf-8") if isinstance(filename, str) else filename
-        store.id = filename
+    cdef ciarray.iarray_store_properties_t store_
+    set_store_properties(cfg._storage, &store_)
 
-    flags = 0 if filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg._storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     cdef ciarray.iarray_container_t *c
-    if flags == ciarray.IARRAY_CONTAINER_PERSIST:
-        ciarray.iarray_random_exponential(ctx_, &dtshape_, r_ctx_, &store, flags, &c)
-    else:
-        ciarray.iarray_random_exponential(ctx_, &dtshape_, r_ctx_, NULL, flags, &c)
+    ciarray.iarray_random_exponential(ctx_, &dtshape_, r_ctx_, &store_, flags, &c)
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     return IArray(ctx, c_c)
 
 
-def random_uniform(cfg, a, b, shape, pshape=None, dtype=np.float64, filename=None):
+def random_uniform(cfg, a, b, dtshape):
     ctx = Context(cfg)
     r_ctx = RandomContext(ctx)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
     cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(), "iarray_random_ctx_t*")
 
-    if dtype == np.float64:
+    if dtshape.dtype == np.float64:
         ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_A, a)
         ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_B, b)
     else:
         ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_A, a)
         ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_B, b)
 
-    dtshape = _DTShape(shape, pshape, dtype).to_dict()
+    dtshape = _DTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
-    cdef ciarray.iarray_store_properties_t store
-    if filename is not None:
-        filename = filename.encode("utf-8") if isinstance(filename, str) else filename
-        store.id = filename
+    cdef ciarray.iarray_store_properties_t store_
+    set_store_properties(cfg._storage, &store_)
 
-    flags = 0 if filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg._storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     cdef ciarray.iarray_container_t *c
-    if flags == ciarray.IARRAY_CONTAINER_PERSIST:
-        ciarray.iarray_random_uniform(ctx_, &dtshape_, r_ctx_, &store, flags, &c)
-    else:
-        ciarray.iarray_random_uniform(ctx_, &dtshape_, r_ctx_, NULL, flags, &c)
+    ciarray.iarray_random_uniform(ctx_, &dtshape_, r_ctx_, &store_, flags, &c)
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     return IArray(ctx, c_c)
 
 
-def random_normal(cfg, mu, sigma, shape, pshape=None, dtype=np.float64, filename=None):
+def random_normal(cfg, mu, sigma, dtshape):
     ctx = Context(cfg)
     r_ctx = RandomContext(ctx)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
     cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(), "iarray_random_ctx_t*")
 
-    if dtype == np.float64:
+    if dtshape.dtype == np.float64:
         ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_MU, mu)
         ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_SIGMA, sigma)
     else:
         ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_MU, mu)
         ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_SIGMA, sigma)
 
-    dtshape = _DTShape(shape, pshape, dtype).to_dict()
+    dtshape = _DTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
-    cdef ciarray.iarray_store_properties_t store
-    if filename is not None:
-        filename = filename.encode("utf-8") if isinstance(filename, str) else filename
-        store.id = filename
+    cdef ciarray.iarray_store_properties_t store_
+    set_store_properties(cfg._storage, &store_)
 
-    flags = 0 if filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg._storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     cdef ciarray.iarray_container_t *c
-    if flags == ciarray.IARRAY_CONTAINER_PERSIST:
-        ciarray.iarray_random_normal(ctx_, &dtshape_, r_ctx_, &store, flags, &c)
-    else:
-        ciarray.iarray_random_normal(ctx_, &dtshape_, r_ctx_, NULL, flags, &c)
+    ciarray.iarray_random_normal(ctx_, &dtshape_, r_ctx_, &store_, flags, &c)
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     return IArray(ctx, c_c)
 
 
-def random_bernoulli(cfg, p, shape, pshape=None, dtype=np.float64, filename=None):
+def random_bernoulli(cfg, p, dtshape):
     ctx = Context(cfg)
     r_ctx = RandomContext(ctx)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
     cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(), "iarray_random_ctx_t*")
 
-    if dtype == np.float64:
+    if dtshape.dtype == np.float64:
         ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_P, p)
     else:
         ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_P, p)
 
-    dtshape = _DTShape(shape, pshape, dtype).to_dict()
+    dtshape = _DTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
-    cdef ciarray.iarray_store_properties_t store
-    if filename is not None:
-        filename = filename.encode("utf-8") if isinstance(filename, str) else filename
-        store.id = filename
+    cdef ciarray.iarray_store_properties_t store_
+    set_store_properties(cfg._storage, &store_)
 
-    flags = 0 if filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg._storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     cdef ciarray.iarray_container_t *c
-    if flags == ciarray.IARRAY_CONTAINER_PERSIST:
-        ciarray.iarray_random_bernoulli(ctx_, &dtshape_, r_ctx_, &store, flags, &c)
-    else:
-        ciarray.iarray_random_bernoulli(ctx_, &dtshape_, r_ctx_, NULL, flags, &c)
+    ciarray.iarray_random_bernoulli(ctx_, &dtshape_, r_ctx_, &store_, flags, &c)
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     return IArray(ctx, c_c)
 
 
-def random_binomial(cfg, m, p, shape, pshape=None, dtype=np.float64, filename=None):
+def random_binomial(cfg, m, p, dtshape):
     ctx = Context(cfg)
     r_ctx = RandomContext(ctx)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
     cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(), "iarray_random_ctx_t*")
 
-    if dtype == np.float64:
+    if dtshape.dtype == np.float64:
         ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_P, p)
         ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_M, m)
     else:
         ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_P, p)
         ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_M, m)
 
-    dtshape = _DTShape(shape, pshape, dtype).to_dict()
+    dtshape = _DTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
-    cdef ciarray.iarray_store_properties_t store
-    if filename is not None:
-        filename = filename.encode("utf-8") if isinstance(filename, str) else filename
-        store.id = filename
+    cdef ciarray.iarray_store_properties_t store_
+    set_store_properties(cfg._storage, &store_)
 
-    flags = 0 if filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg._storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     cdef ciarray.iarray_container_t *c
-    if flags == ciarray.IARRAY_CONTAINER_PERSIST:
-        ciarray.iarray_random_binomial(ctx_, &dtshape_, r_ctx_, &store, flags, &c)
-    else:
-        ciarray.iarray_random_binomial(ctx_, &dtshape_, r_ctx_, NULL, flags, &c)
+    ciarray.iarray_random_binomial(ctx_, &dtshape_, r_ctx_, &store_, flags, &c)
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     return IArray(ctx, c_c)
 
 
-def random_poisson(cfg, l, shape, pshape=None, dtype=np.float64, filename=None):
+def random_poisson(cfg, l, dtshape):
     ctx = Context(cfg)
     r_ctx = RandomContext(ctx)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
     cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(), "iarray_random_ctx_t*")
 
-    if dtype == np.float64:
+    if dtshape.dtype == np.float64:
         ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_LAMBDA, l)
     else:
         ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_LAMBDA, l)
 
-    dtshape = _DTShape(shape, pshape, dtype).to_dict()
+    dtshape = _DTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
-    cdef ciarray.iarray_store_properties_t store
-    if filename is not None:
-        filename = filename.encode("utf-8") if isinstance(filename, str) else filename
-        store.id = filename
+    cdef ciarray.iarray_store_properties_t store_
+    set_store_properties(cfg._storage, &store_)
 
-    flags = 0 if filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg._storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     cdef ciarray.iarray_container_t *c
-    if flags == ciarray.IARRAY_CONTAINER_PERSIST:
-        ciarray.iarray_random_poisson(ctx_, &dtshape_, r_ctx_, &store, flags, &c)
-    else:
-        ciarray.iarray_random_poisson(ctx_, &dtshape_, r_ctx_, NULL, flags, &c)
+    ciarray.iarray_random_poisson(ctx_, &dtshape_, r_ctx_, &store_, flags, &c)
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     return IArray(ctx, c_c)
@@ -1053,19 +992,27 @@ def matmul(cfg, a, b, block_a, block_b):
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
     cdef ciarray.iarray_container_t *c
 
+    Dtshape = namedtuple('dtshape','shape pshape dtype')
+
     if a.pshape is None and b.pshape is None:
         if len(b.shape) == 1:
-            dtshape = _DTShape(tuple([a.shape[0]]), None, a.dtype).to_dict()
+            dtshape = _DTShape(Dtshape(tuple([a.shape[0]]), None, a.dtype)).to_dict()
         else:
-            dtshape = _DTShape((a.shape[0], b.shape[1]), None, a.dtype).to_dict()
+            dtshape = _DTShape(Dtshape((a.shape[0], b.shape[1]), None, a.dtype)).to_dict()
     else:
         if len(b.shape) == 1:
-            dtshape = _DTShape(tuple([a.shape[0]]), tuple([block_a[0]]), a.dtype).to_dict()
+            dtshape = _DTShape(Dtshape(tuple([a.shape[0]]), tuple([block_a[0]]), a.dtype)).to_dict()
         else:
-            dtshape = _DTShape((a.shape[0], b.shape[1]), (block_a[0], block_b[1]), a.dtype).to_dict()
+            dtshape = _DTShape(Dtshape((a.shape[0], b.shape[1]), (block_a[0], block_b[1]), a.dtype)).to_dict()
 
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
-    ciarray.iarray_container_new(ctx_, &dtshape_, NULL, 0, &c)
+
+    cdef ciarray.iarray_store_properties_t store_
+    set_store_properties(cfg._storage, &store_)
+
+    flags = 0 if cfg._storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+
+    ciarray.iarray_container_new(ctx_, &dtshape_, &store_, flags, &c)
 
     cdef ciarray.int64_t *block_a_
     cdef ciarray.int64_t *block_b_

@@ -13,8 +13,12 @@ import numpy as np
                              (-0.1, -0.2, [4, 3, 5, 2], None, np.float32)
                          ])
 def test_linspace(start, stop, shape, pshape, dtype):
+    if pshape is None:
+        storage = ia.StorageProperties("plainbuffer")
+    else:
+        storage = ia.StorageProperties("blosc", False)
     size = int(np.prod(shape))
-    a = ia.linspace(ia.dtshape(shape, pshape, dtype), start, stop)
+    a = ia.linspace(ia.dtshape(shape, pshape, dtype), start, stop, storage=storage)
     b = ia.iarray2numpy(a)
     npdtype = np.float64 if dtype == np.float64 else np.float32
     c = np.linspace(start, stop, size, dtype=npdtype).reshape(shape)
@@ -30,9 +34,13 @@ def test_linspace(start, stop, shape, pshape, dtype):
                              (-0.1, -0.2, [4, 3, 5, 2], None, np.float32)
                          ])
 def test_arange(start, stop, shape, pshape, dtype):
+    if pshape is None:
+        storage = ia.StorageProperties("plainbuffer")
+    else:
+        storage = ia.StorageProperties("blosc", False)
     size = int(np.prod(shape))
     step = (stop - start) / size
-    a = ia.arange(ia.dtshape(shape=shape, pshape=pshape, dtype=dtype), start, stop, step)
+    a = ia.arange(ia.dtshape(shape=shape, pshape=pshape, dtype=dtype), start, stop, step, storage=storage)
     b = ia.iarray2numpy(a)
     npdtype = np.float64 if dtype == np.float64 else np.float32
     c = np.arange(start, stop, step, dtype=npdtype).reshape(shape)
@@ -49,7 +57,7 @@ def test_from_file(start, stop, shape, pshape, dtype, filename):
     size = int(np.prod(shape))
     npdtype = np.float64 if dtype == np.float64 else np.float32
     a = np.linspace(start, stop, size, dtype=npdtype).reshape(shape)
-    b = ia.numpy2iarray(a, pshape, filename=filename)
+    b = ia.numpy2iarray(a, pshape, storage=ia.StorageProperties("blosc", True, filename))
     c = ia.load(filename)
     d = ia.iarray2numpy(c)
     np.testing.assert_almost_equal(a, d)
@@ -65,9 +73,13 @@ def test_from_file(start, stop, shape, pshape, dtype, filename):
                              (-0.1, -0.2, (slice(2, 4), slice(7, 12)), [12, 16], None, np.float32)
                          ])
 def test_slice(start, stop, slice, shape, pshape, dtype):
+    if pshape is None:
+        storage = ia.StorageProperties("plainbuffer")
+    else:
+        storage = ia.StorageProperties("blosc", True)
     size = int(np.prod(shape))
     step = (stop - start) / size
-    a = ia.arange(ia.dtshape(shape=shape, pshape=pshape, dtype=dtype), start, stop, step)
+    a = ia.arange(ia.dtshape(shape=shape, pshape=pshape, dtype=dtype), start, stop, step, storage=storage)
     b = a[slice]
     c = ia.iarray2numpy(b)
     npdtype = np.float64 if dtype == np.float64 else np.float32
@@ -82,7 +94,11 @@ def test_slice(start, stop, slice, shape, pshape, dtype):
                              ([10, 12, 5], None, np.float32),
                          ])
 def test_empty(shape, pshape, dtype):
-    a = ia.empty(ia.dtshape(shape, pshape, dtype))
+    if pshape is None:
+        storage = ia.StorageProperties("plainbuffer")
+    else:
+        storage = ia.StorageProperties("blosc", False)
+    a = ia.empty(ia.dtshape(shape, pshape, dtype), storage=storage)
     b = ia.iarray2numpy(a)
     npdtype = np.float64 if dtype == np.float64 else np.float32
     assert b.dtype == npdtype
@@ -98,7 +114,11 @@ def test_empty(shape, pshape, dtype):
                              ([12, 16], None, np.float32)
                          ])
 def test_zeros(shape, pshape, dtype):
-    a = ia.zeros(ia.dtshape(shape, pshape, dtype))
+    if pshape is None:
+        storage = ia.StorageProperties("plainbuffer")
+    else:
+        storage = ia.StorageProperties("blosc", False)
+    a = ia.zeros(ia.dtshape(shape, pshape, dtype), storage=storage)
     b = ia.iarray2numpy(a)
     npdtype = np.float64 if dtype == np.float64 else np.float32
     c = np.zeros(shape, dtype=npdtype)
@@ -114,7 +134,11 @@ def test_zeros(shape, pshape, dtype):
                              ([12, 16], None, np.float32)
                          ])
 def test_ones(shape, pshape, dtype):
-    a = ia.ones(ia.dtshape(shape, pshape, dtype))
+    if pshape is None:
+        storage = ia.StorageProperties("plainbuffer")
+    else:
+        storage = ia.StorageProperties("blosc", False)
+    a = ia.ones(ia.dtshape(shape, pshape, dtype), storage=storage)
     b = ia.iarray2numpy(a)
     npdtype = np.float64 if dtype == np.float64 else np.float32
     c = np.ones(shape, dtype=npdtype)
@@ -130,7 +154,11 @@ def test_ones(shape, pshape, dtype):
                              (2.00001, [12, 16], None, np.float32)
                          ])
 def test_full(fill_value, shape, pshape, dtype):
-    a = ia.full(ia.dtshape(shape, pshape, dtype), fill_value)
+    if pshape is None:
+        storage = ia.StorageProperties("plainbuffer")
+    else:
+        storage = ia.StorageProperties("blosc", False)
+    a = ia.full(ia.dtshape(shape, pshape, dtype), fill_value, storage=storage)
     b = ia.iarray2numpy(a)
     npdtype = np.float64 if dtype == np.float64 else np.float32
     c = np.full(shape, fill_value, dtype=npdtype)

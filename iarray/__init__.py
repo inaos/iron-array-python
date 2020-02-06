@@ -21,7 +21,7 @@ from . import iarray_ext as ext
 PLAINBUFFER_STORAGE = 'plainbuffer'
 BLOSC_STORAGE = 'blosc'
 
-from .high_level import (IArray, dtshape, Config, RandomContext, Expr, LazyExpr,
+from .high_level import (IArray, dtshape, StorageProperties, Config, RandomContext, Expr, LazyExpr,
                          empty, arange, linspace, zeros, ones, full, load, save,
                          iarray2numpy, numpy2iarray, matmul,
                          # random constructors
