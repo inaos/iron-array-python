@@ -14,6 +14,7 @@ import numexpr as ne
 import iarray as ia
 from iarray import iarray_ext as ext
 from itertools import zip_longest as zip
+from collections import namedtuple
 
 
 def fuse_operands(operands1, operands2):
@@ -71,16 +72,16 @@ class RandomContext(ext.RandomContext):
 class Config(ext._Config):
 
     def __init__(self, clib=ia.LZ4, clevel=5, use_dict=0, filter_flags=ia.SHUFFLE, nthreads=1,
-                 fp_mantissa_bits=0, blocksize=0, filename=None, eval_flags="iterblock"):
+                 fp_mantissa_bits=0, blocksize=0, storage=None, eval_flags="iterblock"):
         self._clib = clib
         self._clevel = clevel
         self._use_dict = use_dict
         self._filter_flags = filter_flags
         self._fp_mantissa_bits = fp_mantissa_bits
         self._blocksize = blocksize
-        self._filename = filename
         self._nthreads = nthreads
         self._eval_flags = eval_flags  # TODO: should we move this to its own eval configuration?
+        self._storage = ia.StorageProperties() if storage is None else storage
         super(Config, self).__init__(clib, clevel, use_dict, filter_flags,
                                      nthreads, fp_mantissa_bits, blocksize, eval_flags)
 
@@ -243,11 +244,12 @@ class LazyExpr:
                 if isinstance(v, IArray):
                     expr.bind(k, v)
             expr.compile(self.expression)
-            if "filename" in kwargs:
-                filename = kwargs["filename"]
-            else:
-                filename = None
-            out = expr.eval(shape_, pshape, dtype, filename=filename)
+
+            cfg = Config(**kwargs)
+            dtshape = ia.dtshape(shape_, pshape, dtype)
+
+            out = expr.eval(dtshape, cfg._storage)
+
         elif method == "numexpr":
             out = ia.empty(ia.dtshape(shape=shape_, pshape=pshape, dtype=dtype), **kwargs)
             operand_iters = tuple(o.iter_read_block(pshape) for o in self.operands.values() if isinstance(o, IArray))
@@ -273,8 +275,8 @@ class LazyExpr:
 class IArray(ext.Container):
 
     def copy(self, view=False, **kwargs):
-        cfg = Config(**kwargs)
-        return ext.copy(cfg, self, view, cfg.filename)
+        cfg = Config(**kwargs)  # TODO: Pass pshape
+        return ext.copy(cfg, self, view)
 
     def __add__(self, value):
         return LazyExpr(new_op=(self, '+', value))
@@ -386,25 +388,39 @@ class dtshape:
         self.dtype = dtype
 
     def to_tuple(self):
-        return (self.shape, self.pshape, self.dtype)
+        Dtshape = namedtuple('dtshape','shape pshape dtype')
+        return Dtshape(self.shape, self.pshape, self.dtype)
 
+
+class StorageProperties:
+
+    def __init__(self, backend="blosc", enforce_frame=False, filename=None):
+        self.backend = backend
+        self.enforce_frame = enforce_frame
+        self.filename = filename
+
+    def to_tuple(self):
+        StoreProp = namedtuple('store properties', 'backend enforce_frame, filename')
+        return StoreProp(self.backend, self.enforce_frame, self.filename)
 
 #
 # Constructors
 #
 
+
 def empty(dtshape, **kwargs):
+    if dtshape.shape is None:
+        return AttributeError
+
     cfg = Config(**kwargs)
-    shape, pshape, dtype = dtshape.to_tuple()
-    return ext.empty(cfg, shape, pshape, dtype, cfg.filename)
+    return ext.empty(cfg, dtshape)
 
 
 def arange(dtshape, start=None, stop=None, step=None, **kwargs):
     cfg = Config(**kwargs)
-    shape, pshape, dtype = dtshape.to_tuple()
 
     if (start, stop, step) == (None, None, None):
-        stop = np.prod(shape)
+        stop = np.prod(dtshape.shape)
         start = 0
         step = 1
     elif (stop, step) == (None, None):
@@ -414,34 +430,44 @@ def arange(dtshape, start=None, stop=None, step=None, **kwargs):
     elif step is None:
         stop = stop
         start = start
-        step = 1
+        if dtshape.shape is None:
+            step = 1
+        else:
+            step = (stop - start) / np.prod(dtshape.shape)
 
     slice_ = slice(start, stop, step)
-    return ext.arange(cfg, slice_, shape, pshape, dtype, cfg.filename)
+
+    return ext.arange(cfg, slice_, dtshape)
 
 
-def linspace(dtshape, start, stop, **kwargs):
+def linspace(dtshape, start, stop, nelem=50, **kwargs):
     cfg = Config(**kwargs)
+
     shape, pshape, dtype = dtshape.to_tuple()
-    nelem = np.prod(shape)
-    return ext.linspace(cfg, nelem, start, stop, shape, pshape, dtype, cfg.filename)
+    nelem = np.prod(shape) if dtshape is not None else nelem
+
+    return ext.linspace(cfg, nelem, start, stop, dtshape)
+
 
 def zeros(dtshape, **kwargs):
     cfg = Config(**kwargs)
-    shape, pshape, dtype = dtshape.to_tuple()
-    return ext.zeros(cfg, shape, pshape, dtype, cfg.filename)
+    if dtshape.shape is None:
+        return AttributeError
+    return ext.zeros(cfg, dtshape)
 
 
 def ones(dtshape, **kwargs):
     cfg = Config(**kwargs)
-    shape, pshape, dtype = dtshape.to_tuple()
-    return ext.ones(cfg, shape, pshape, dtype, cfg.filename)
+    if dtshape.shape is None:
+        return AttributeError
+    return ext.ones(cfg, dtshape)
 
 
 def full(dtshape, fill_value, **kwargs):
     cfg = Config(**kwargs)
-    shape, pshape, dtype = dtshape.to_tuple()
-    return ext.full(cfg, fill_value, shape, pshape, dtype, cfg.filename)
+    if dtshape.shape is None:
+        return AttributeError
+    return ext.full(cfg, fill_value, dtshape)
 
 
 def save(c, filename, **kwargs):
@@ -461,67 +487,66 @@ def iarray2numpy(iarr, **kwargs):
 
 def numpy2iarray(c, pshape=None, **kwargs):
     cfg = Config(**kwargs)
-    return ext.numpy2iarray(cfg, c, pshape, cfg.filename)
+
+    if c.dtype == np.float64:
+        dtype = np.float64
+    elif c.dtype == np.float32:
+        dtype = np.float32
+    else:
+        raise NotImplementedError("Only float32 and float64 types are supported for now")
+
+    dtshape = ia.dtshape(c.shape, pshape, dtype)
+    return ext.numpy2iarray(cfg, c, dtshape)
 
 
 def random_rand(dtshape, **kwargs):
     cfg = Config(**kwargs)
-    shape, pshape, dtype = dtshape.to_tuple()
-    return ext.random_rand(cfg, shape, pshape, dtype, cfg.filename)
+    return ext.random_rand(cfg, dtshape)
 
 
 def random_randn(dtshape, **kwargs):
     cfg = Config(**kwargs)
-    shape, pshape, dtype = dtshape.to_tuple()
-    return ext.random_randn(cfg, shape, pshape, dtype, cfg.filename)
+    return ext.random_randn(cfg, dtshape)
 
 
 def random_beta(dtshape, alpha, beta, **kwargs):
     cfg = Config(**kwargs)
-    shape, pshape, dtype = dtshape.to_tuple()
-    return ext.random_beta(cfg, alpha, beta, shape, pshape, dtype, cfg.filename)
+    return ext.random_beta(cfg, alpha, beta, dtshape)
 
 
 def random_lognormal(dtshape, mu, sigma, **kwargs):
     cfg = Config(**kwargs)
-    shape, pshape, dtype = dtshape.to_tuple()
-    return ext.random_lognormal(cfg, mu, sigma, shape, pshape, dtype, cfg.filename)
+    return ext.random_lognormal(cfg, mu, sigma, dtshape)
 
 
 def random_exponential(dtshape, beta, **kwargs):
     cfg = Config(**kwargs)
-    shape, pshape, dtype = dtshape.to_tuple()
-    return ext.random_exponential(cfg, beta, shape, pshape, dtype, cfg.filename)
+    return ext.random_exponential(cfg, beta, dtshape)
 
 
 def random_uniform(dtshape, a, b, **kwargs):
     cfg = Config(**kwargs)
-    shape, pshape, dtype = dtshape.to_tuple()
-    return ext.random_uniform(cfg, a, b, shape, pshape, dtype, cfg.filename)
+    return ext.random_uniform(cfg, a, b, dtshape)
 
 
 def random_normal(dtshape, mu, sigma, **kwargs):
     cfg = Config(**kwargs)
-    shape, pshape, dtype = dtshape.to_tuple()
-    return ext.random_normal(cfg, mu, sigma, shape, pshape, dtype, cfg.filename)
+    return ext.random_normal(cfg, mu, sigma, dtshape)
 
 
 def random_bernoulli(dtshape, p, **kwargs):
     cfg = Config(**kwargs)
-    shape, pshape, dtype = dtshape.to_tuple()
-    return ext.random_bernoulli(cfg, p, shape, pshape, dtype, cfg.filename)
+    return ext.random_bernoulli(cfg, p, dtshape)
 
 
 def random_binomial(dtshape, m, p, **kwargs):
     cfg = Config(**kwargs)
-    shape, pshape, dtype = dtshape.to_tuple()
-    return ext.random_binomial(cfg, m, p, shape, pshape, dtype, cfg.filename)
+    return ext.random_binomial(cfg, m, p, dtshape)
 
 
 def random_poisson(dtshape, l, **kwargs):
     cfg = Config(**kwargs)
-    shape, pshape, dtype = dtshape.to_tuple()
-    return ext.random_poisson(cfg, l, shape, pshape, dtype, cfg.filename)
+    return ext.random_poisson(cfg, l, dtshape)
 
 
 def random_kstest(a, b, **kwargs):

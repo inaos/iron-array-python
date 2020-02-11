@@ -14,8 +14,14 @@ DELTA = 3
 TRUNC_PREC = 4
 
 
+
 from . import iarray_ext as ext
-from .high_level import (IArray, dtshape, Config, RandomContext, Expr, LazyExpr,
+
+# Storage types
+PLAINBUFFER_STORAGE = 'plainbuffer'
+BLOSC_STORAGE = 'blosc'
+
+from .high_level import (IArray, dtshape, StorageProperties, Config, RandomContext, Expr, LazyExpr,
                          empty, arange, linspace, zeros, ones, full, load, save,
                          iarray2numpy, numpy2iarray, matmul,
                          # random constructors

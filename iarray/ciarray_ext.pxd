@@ -49,8 +49,15 @@ cdef extern from "libiarray/iarray.h":
         int8_t fp_mantissa_bits
         int blocksize
 
+    ctypedef enum iarray_storage_type_t:
+        IARRAY_STORAGE_PLAINBUFFER = 0
+        IARRAY_STORAGE_BLOSC = 1
+
+
     ctypedef struct iarray_store_properties_t:
-        const char *id
+        iarray_storage_type_t backend
+        const char *filename
+        bool enforce_frame
 
     ctypedef struct iarray_dtshape_t:
         iarray_data_type_t dtype
