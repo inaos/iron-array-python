@@ -26,7 +26,6 @@ def f(out: Array(float64, 1), x: Array(float64, 1)) -> int64:
     n = out.shape[0]
     for i in range(n):
         out[i] = (math.sin(x[i]) - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
-        #out[i] = (x[i] - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
 
     return 0
 
