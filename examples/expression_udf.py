@@ -47,15 +47,15 @@ print("Time for py2llvm eval:", round((time() - t0) / NITER, 3))
 b1_n = ia.iarray2numpy(b1)
 print(b1_n)
 
-#expr = ia.Expr(eval_flags="iterblosc", **cparams)
-#expr.bind('x', a1)
-#expr.compile('(x - 1.35) * (x - 4.45) * (x - 8.5)')
-#t0 = time()
-#for i in range(NITER):
-#    b2 = expr.eval(shape, pshape, dtype)
-#print("Time for juggernaut eval:", round((time() - t0) / NITER, 3))
-#b2_n = ia.iarray2numpy(b2)
-#print(b2_n)
+expr = ia.Expr(eval_flags="iterblosc", **cparams)
+expr.bind('x', a1)
+expr.compile('(sin(x) - 1.35) * (x - 4.45) * (x - 8.5)')
+t0 = time()
+for i in range(NITER):
+    b2 = expr.eval(shape, pshape, dtype)
+print("Time for juggernaut eval:", round((time() - t0) / NITER, 3))
+b2_n = ia.iarray2numpy(b2)
+print(b2_n)
 
 print("numpy evaluation...")
 t0 = time()
@@ -67,7 +67,7 @@ print(bn)
 
 try:
     np.testing.assert_almost_equal(bn, b1_n)
-#   np.testing.assert_almost_equal(bn, b2_n)
+    np.testing.assert_almost_equal(bn, b2_n)
     print("OK.  Results are the same.")
 except AssertionError:
     print("ERROR. Results are different.")

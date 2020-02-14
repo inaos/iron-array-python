@@ -1,11 +1,14 @@
+from itertools import zip_longest as zip
+from time import time
+
+from numba import jit
+import numexpr as ne
+import numpy as np
+
 import iarray as ia
 from iarray import udf
-from time import time
-import numpy as np
-import numexpr as ne
-from numba import jit
-from itertools import zip_longest as zip
-from py2llvm import float64, int64, Array
+from iarray.udf import Array
+from py2llvm import float64, int64
 
 
 # Number of iterations per benchmark

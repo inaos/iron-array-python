@@ -1,7 +1,5 @@
-- UDF: Fix IR for vectorization (move arrays gep to preamble)
 - Initialize LLVM once (now it's initialized in iron-array & py2llvm)
-- Fix with 2 udf functions
-- Support multiple dimensions
+- Support multiple dimensions (requires change to blosc2)
 - Move py2llvm to iron-array (setuptools find_packages)
 - Stable API
 - Unit tests
