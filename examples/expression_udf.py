@@ -1,10 +1,12 @@
 import math
 from time import time
-import iarray as ia
-from iarray import udf
+
 import numpy as np
 
-from py2llvm import Array, float64, int64
+import iarray as ia
+from iarray.udf import jit, Array
+from py2llvm import float64, int64
+
 
 # Number of iterations per benchmark
 NITER = 10
@@ -19,7 +21,7 @@ dtype = np.float64
 cparams = dict(clib=ia.LZ4, clevel=5, nthreads=16) #, blocksize=1024)
 
 
-@udf.jit(verbose=0)
+@jit(verbose=0)
 def f(out: Array(float64, 1), x: Array(float64, 1)) -> int64:
     n = out.shape[0]
     for i in range(n):

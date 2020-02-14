@@ -1,9 +1,6 @@
 # Standard Library
 import argparse
 import ast
-import ctypes
-from ctypes import c_int, c_uint8, c_int32
-import inspect
 
 # Requirements
 import iarray as ia
@@ -39,61 +36,6 @@ typedef struct {
 """
 
 BLOSC2_PREFILTER_INPUTS_MAX = 128
-c_uint8_p = ctypes.POINTER(c_uint8)
-inputs_type = c_uint8_p * BLOSC2_PREFILTER_INPUTS_MAX
-input_typesizes_type = c_int32 * BLOSC2_PREFILTER_INPUTS_MAX
-class blosc2_prefilter_params(ctypes.Structure):
-    _fields_ = [
-        ('ninputs', c_int),
-        ('inputs', inputs_type),
-        ('input_typesizes', input_typesizes_type),
-        ('user_data', ctypes.c_void_p),
-        ('out', c_uint8_p),
-        ('out_size', c_int32),
-        ('out_typesize', c_int32),
-    ]
-
-
-class udf_array_shape:
-
-    def __init__(self, params):
-        self.params = params
-
-    def subscript(self, visitor, slice, ctx):
-        assert ctx is ast.Load
-
-        # The dimension size is the same for every dimension in every array
-        params = self.params
-        out_size = params.out_size.Attribute_exit(visitor) # gep
-        out_typesize = params.out_typesize.Attribute_exit(visitor) # load
-        out_size = visitor.builder.load(out_size) # gep
-        out_typesize = visitor.builder.load(out_typesize) # load
-        return visitor.BinOp_exit(None, None, out_size, ast.Div, out_typesize)
-
-class udf_array:
-
-    def __init__(self, params, idx, dtype, ndim):
-        self.params = params
-        self.idx = idx
-        self.dtype = dtype
-        self.ndim = ndim
-
-    @property
-    def shape(self):
-        return udf_array_shape(self.params)
-
-    def subscript(self, visitor, slice, ctx):
-        params = self.params
-        if self.idx is None:
-            assert ctx is ast.Store
-            arr = params.get_out(visitor, slice)
-        else:
-            assert ctx is ast.Load
-            arr = params.get_input(visitor, self.idx, slice)
-
-        return arr
-
-
 class udf_type(types.StructType):
     _name_ = 'blosc2_prefilter_params'
     _fields_ = [
@@ -106,73 +48,73 @@ class udf_type(types.StructType):
         ('out_typesize', int32), # int32_t out_typesize;  // automatically filled
     ]
 
-    def get_locals(self):
-        return {
-            name: udf_array(self, idx, dtype, ndim)
-            for name, idx, dtype, ndim in self.local_vars
-        }
 
-    def get_input(self, visitor, n, idx):
-        # .inputs (uint8_t**)
-        inputs = super().__getattr__('inputs')
-        ptr = inputs.Attribute_exit(visitor)
-        # .inputs[n] (uint8_t*)
-        n_ir = types.value_to_ir_value(n)
-        ptr = visitor.builder.gep(ptr, [types.zero, n_ir])
-        ptr = visitor.builder.load(ptr)
-        # .inputs[n] (<type>*)
-        typ = self.input_types[n]
-        ptr = visitor.builder.bitcast(ptr, typ.as_pointer())
-        # .inputs[n][slice] (<type>)
-        ptr = visitor.builder.gep(ptr, [idx])
-        return visitor.builder.load(ptr)
+class ArrayShape(types.ArrayShape):
 
-    def get_out(self, visitor, idx):
-        # .out (uint8_t*)
-        out = super().__getattr__('out')
-        ptr = out.Attribute_exit(visitor)
-        # .out (<type>*)
-        ptr = visitor.builder.load(ptr)
-        typ = self.out_type
-        ptr = visitor.builder.bitcast(ptr, typ.as_pointer())
-        # .out[n]
-        return visitor.builder.gep(ptr, [idx])
+    def __init__(self, array):
+        self.array = array
+
+    def get(self, visitor, n):
+        # The dimension size is the same for every dimension in every array
+        out_size = self.array.get_field(visitor, 5) # gep
+        out_typesize = self.array.get_field(visitor, 6) # load
+        out_size = visitor.builder.load(out_size) # gep
+        out_typesize = visitor.builder.load(out_typesize) # load
+        return visitor.BinOp_exit(None, None, out_size, ast.Div, out_typesize)
 
 
-def udf_type_factory(local_vars):
-    out_type = local_vars[0][2]
-    input_types = [x[2] for x in local_vars[1:]]
+class ArrayType(types.ArrayType):
 
+    def __init__(self, name, args):
+        self.name = name
+        self.params = args['params']
+        self.shape = ArrayShape(self)
+
+    def get_field(self, visitor, idx):
+        idx = ir.Constant(int32, idx)
+        ptr = visitor.builder.load(self.params)
+        ptr = visitor.builder.gep(ptr, [types.zero32, idx])
+        return ptr
+
+    def get_ptr(self, visitor):
+        if self.idx == 0:
+            # .out (uint8_t*)
+            ptr = self.get_field(visitor, 4)
+            ptr = visitor.builder.load(ptr)
+        else:
+            # .inputs (uint8_t**)
+            ptr = self.get_field(visitor, 1)
+            # .inputs[n] (uint8_t*)
+            idx = ir.Constant(int32, self.idx - 1)
+            ptr = visitor.builder.gep(ptr, [types.zero, idx])
+            ptr = visitor.builder.load(ptr)
+
+        # Cast
+        return visitor.builder.bitcast(ptr, self.dtype.as_pointer())
+
+
+def Array(dtype, ndim):
     return type(
-        f'udf_type[]',
-        (udf_type,),
-        dict(
-            local_vars=local_vars,
-            input_types=input_types,
-            out_type=out_type,
-        )
+        f'Array[{dtype}, {ndim}]',
+        (ArrayType,),
+        dict(dtype=dtype, ndim=ndim)
     )
 
 
 class UDFFunction(Function):
 
-    def _get_signature(self, signature):
-        assert signature is None
-        signature = inspect.signature(self.py_function)
-        parameters = list(signature.parameters.values())
-        assert len(parameters) >= 2
+    def get_ir_signature(self, node, verbose=0, *args):
+        dtype = self.llvm.get_dtype(self.ir_module, udf_type)
+        params = [Parameter('params', dtype)]
 
-        local_vars = []
-        for idx, param in enumerate(parameters):
-            name = param.name
-            annotation = param.annotation
-            assert param.default == inspect.Parameter.empty
-            assert issubclass(annotation, types.ArrayType)
-            idx = (idx - 1) if idx > 0 else None
-            local_vars.append((name, idx, annotation.dtype, annotation.ndim))
+        return_type = types.type_to_ir_type(types.int64)
+        return Signature(params, return_type)
 
-        parameters = [Parameter('params', udf_type_factory(local_vars))]
-        return Signature(parameters, types.int64)
+    def get_py_signature(self, signature):
+        signature = super().get_py_signature(signature)
+        for i, param in enumerate(signature.parameters):
+            param.type.idx = i
+        return signature
 
     def create_expr(self, inputs, **cparams):
         expr = ia.Expr(eval_flags="iterblosc", **cparams)
