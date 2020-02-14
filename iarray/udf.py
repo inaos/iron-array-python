@@ -134,7 +134,7 @@ class Function(py2llvm.Function):
 class LLVM(py2llvm.LLVM):
 
     def jit(self, *args, **kwargs):
-        #kwargs['optimize'] = False # iron-array optimizes, not py2llvm
+        kwargs['optimize'] = False # iron-array optimizes, not py2llvm
         return super().jit(*args, **kwargs)
 
 
