@@ -1,3 +1,4 @@
+import math
 from time import time
 import iarray as ia
 from iarray import udf
@@ -22,7 +23,8 @@ cparams = dict(clib=ia.LZ4, clevel=5, nthreads=16) #, blocksize=1024)
 def f(out: Array(float64, 1), x: Array(float64, 1)) -> int64:
     n = out.shape[0]
     for i in range(n):
-        out[i] = (x[i] - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
+        out[i] = (math.sin(x[i]) - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
+        #out[i] = (x[i] - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
 
     return 0
 
@@ -44,27 +46,27 @@ print("Time for py2llvm eval:", round((time() - t0) / NITER, 3))
 b1_n = ia.iarray2numpy(b1)
 print(b1_n)
 
-expr = ia.Expr(eval_flags="iterblosc", **cparams)
-expr.bind('x', a1)
-expr.compile('(x - 1.35) * (x - 4.45) * (x - 8.5)')
-t0 = time()
-for i in range(NITER):
-    b2 = expr.eval(shape, pshape, dtype)
-print("Time for juggernaut eval:", round((time() - t0) / NITER, 3))
-b2_n = ia.iarray2numpy(b2)
-print(b2_n)
+#expr = ia.Expr(eval_flags="iterblosc", **cparams)
+#expr.bind('x', a1)
+#expr.compile('(x - 1.35) * (x - 4.45) * (x - 8.5)')
+#t0 = time()
+#for i in range(NITER):
+#    b2 = expr.eval(shape, pshape, dtype)
+#print("Time for juggernaut eval:", round((time() - t0) / NITER, 3))
+#b2_n = ia.iarray2numpy(b2)
+#print(b2_n)
 
 print("numpy evaluation...")
 t0 = time()
 for i in range(NITER):
     # bn = eval("(x - 1.35) * (x - 4.45) * (x - 8.5)", {"x": a2})
-    bn = (a2 - 1.35) * (a2 - 4.45) * (a2 - 8.5)
+    bn = (np.sin(a2) - 1.35) * (a2 - 4.45) * (a2 - 8.5)
 print("Time for numpy eval:", round((time() - t0) / NITER, 3))
 print(bn)
 
 try:
     np.testing.assert_almost_equal(bn, b1_n)
-    np.testing.assert_almost_equal(bn, b2_n)
+#   np.testing.assert_almost_equal(bn, b2_n)
     print("OK.  Results are the same.")
 except AssertionError:
     print("ERROR. Results are different.")

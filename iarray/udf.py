@@ -61,7 +61,6 @@ class udf_array_shape:
 
     def subscript(self, visitor, slice, ctx):
         assert ctx is ast.Load
-        assert slice == 0 # TODO Add support for multiple dimensions
 
         # The dimension size is the same for every dimension in every array
         params = self.params
