@@ -238,12 +238,30 @@ def do_block_evaluation(pshape_):
     else:
         # expr.compile_udf(poly_llvm)
         # expr = poly_llvm.create_expr([xa], **cparams)
-        expr = ia.Expr(eval_flags=eval_method, **cparams)
+        cparams_single = dict(clib=clib, clevel=clevel, nthreads=1)
+        expr = ia.Expr(eval_flags=eval_method, **cparams_single)
         expr.bind('x', xa)
         expr.compile(expression)
     for i in range(NITER):
         ya = expr.eval(shape, pshape_, np.float64)
     print("Block evaluate via iarray.eval (method: %s): %.4f" % (eval_method, round((time() - t0) / NITER, 4)))
+    y1 = ia.iarray2numpy(ya)
+    np.testing.assert_almost_equal(y0, y1)
+
+    t0 = time()
+    if pshape_ is None:
+        expr = ia.Expr(eval_flags=eval_method, **cparams)
+        expr.bind('x', xa)
+        expr.compile(expression)
+    else:
+        # expr.compile_udf(poly_llvm)
+        # expr = poly_llvm.create_expr([xa], **cparams)
+        expr = ia.Expr(eval_flags=eval_method, **cparams)
+        expr.bind('x', xa)
+        expr.compile(expression)
+    for i in range(NITER):
+        ya = expr.eval(shape, pshape_, np.float64)
+    print("Block evaluate via iarray.eval (method: %s, multithread): %.4f" % (eval_method, round((time() - t0) / NITER, 4)))
     y1 = ia.iarray2numpy(ya)
     np.testing.assert_almost_equal(y0, y1)
 
