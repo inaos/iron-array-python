@@ -591,14 +591,10 @@ def load(cfg, filename, load_in_mem=False):
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
         ctx.to_capsule(), "iarray_context_t*")
 
-    cdef ciarray.iarray_store_properties_t store
     filename = filename.encode("utf-8") if isinstance(filename, str) else filename
-    store.filename = filename
-    store.backend = ciarray.IARRAY_STORAGE_BLOSC
-    store.enforce_frame = load_in_mem
 
     cdef ciarray.iarray_container_t *c
-    ciarray.iarray_container_load(ctx_, &store, &c, load_in_mem)
+    ciarray.iarray_container_load(ctx_, filename, load_in_mem, &c)
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     return IArray(ctx, c_c)
@@ -633,7 +629,7 @@ def _get_item(ctx, data, start, stop):
 
     cdef ciarray.iarray_container_t *c
 
-    ciarray.iarray_get_slice(ctx_, data_, start_, stop_, pshape_, &store_, flags, True, &c)
+    ciarray.iarray_get_slice(ctx_, data_, start_, stop_, True, pshape_, &store_, flags, &c)
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     b =  IArray(ctx, c_c)

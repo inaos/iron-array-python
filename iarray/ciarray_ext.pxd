@@ -140,20 +140,20 @@ cdef extern from "libiarray/iarray.h":
                                      iarray_container_t **container)
 
     ina_rc_t iarray_copy(iarray_context_t *ctx,
-                              iarray_container_t *src,
-                              bool view,
-                              iarray_store_properties_t *store,
-                              int flags,
-                              iarray_container_t **dest)
+                         iarray_container_t *src,
+                         bool view,
+                         iarray_store_properties_t *store,
+                         int flags,
+                         iarray_container_t **dest)
 
     ina_rc_t iarray_get_slice(iarray_context_t *ctx,
-                              iarray_container_t *c,
+                              iarray_container_t *src,
                               int64_t *start,
                               int64_t *stop,
-                              int64_t *pshape,
+                              bool view,
+                              const int64_t *pshape,
                               iarray_store_properties_t *store,
                               int flags,
-                              bool view,
                               iarray_container_t **container)
 
     ina_rc_t iarray_to_buffer(iarray_context_t *ctx,
@@ -174,9 +174,9 @@ cdef extern from "libiarray/iarray.h":
                                 iarray_container_t **container)
 
     ina_rc_t iarray_container_load(iarray_context_t *ctx,
-                                   iarray_store_properties_t *store,
-                                   iarray_container_t **container,
-                                   bool load_in_mem);
+                                        char *filename,
+                                        bool enforce_frame,
+                                        iarray_container_t **container)
 
     ina_rc_t iarray_container_save(iarray_context_t *ctx,
                                    iarray_container_t *c,
@@ -361,6 +361,6 @@ cdef extern from "libiarray/iarray.h":
                                    iarray_container_t **container)
 
     ina_rc_t iarray_random_kstest(iarray_context_t *ctx,
-                                  iarray_container_t *c1,
-                                  iarray_container_t *c2,
-                                  bool *res)
+                                       iarray_container_t *container1,
+                                       iarray_container_t *container2,
+                                       bool *res)
