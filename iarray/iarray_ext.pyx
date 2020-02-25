@@ -151,13 +151,15 @@ cdef class _Config:
     cdef ciarray.iarray_config_t _cfg
 
     def __init__(self, compression_codec=1, compression_level=5, use_dict=0, filter_flags=1,
-                 max_num_threads=1, fp_mantissa_bits=0, blocksize=0, eval_flags="iterblock"):
+                 max_num_threads=1, fp_mantissa_bits=0, blocksize=0, eval_flags="auto"):
         self._cfg.compression_codec = compression_codec
         self._cfg.compression_level = compression_level
         self._cfg.use_dict = use_dict
         self._cfg.filter_flags = filter_flags
-        if eval_flags == "iterblock":
-            self._cfg.eval_flags = ciarray.IARRAY_EXPR_EVAL_ITERBLOCK
+        if eval_flags == "auto":
+            self._cfg.eval_flags = ciarray.IARRAY_EXPR_EVAL_AUTO
+        elif eval_flags == "iterblosc2":
+            self._cfg.eval_flags = ciarray.IARRAY_EXPR_EVAL_ITERBLOSC2
         elif eval_flags == "iterblosc":
             self._cfg.eval_flags = ciarray.IARRAY_EXPR_EVAL_ITERBLOSC
         elif eval_flags == "iterchunk":
@@ -362,6 +364,7 @@ cdef class Container:
 cdef class Expression:
     cdef object expression
     cdef ciarray.iarray_expression_t *_e
+    cdef ciarray.iarray_container_t *_out
     cdef Context _ctx
 
     def __init__(self, cfg):
@@ -370,6 +373,7 @@ cdef class Expression:
         ciarray.iarray_expr_new(self._ctx._ctx, &e)
         self._e = e
         self.expression = None
+        self.out = None
 
     def __dealloc__(self):
         ciarray.iarray_expr_free(self._ctx._ctx, &self._e)
@@ -380,14 +384,7 @@ cdef class Expression:
             c.to_capsule(), "iarray_container_t*")
         ciarray.iarray_expr_bind(self._e, var2, c_)
 
-    def compile(self, expr):
-        expr = Parser().parse(expr).simplify({}).toString()
-        expr2 = expr.encode("utf-8") if isinstance(expr, str) else expr
-        if ciarray.iarray_expr_compile(self._e, expr2) != 0:
-            raise ValueError(f"Error in compiling expr: {expr}")
-        self.expression = expr2
-
-    def eval(self, dtshape, storage=None):
+    def out_properties(self, dtshape, storage=None):
         dtshape = _DTShape(dtshape).to_dict()
         cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
@@ -405,11 +402,21 @@ cdef class Expression:
 
         ctx_ = self._ctx._ctx
         ciarray.iarray_container_new(ctx_, &dtshape_, &store_, flags, &c)
+        ciarray.iarray_expr_bind_out(self._e, c)
+        self._out = c
 
 
-        if ciarray.iarray_eval(self._e, c) != 0:
+    def compile(self, expr):
+        expr = Parser().parse(expr).simplify({}).toString()
+        expr2 = expr.encode("utf-8") if isinstance(expr, str) else expr
+        if ciarray.iarray_expr_compile(self._e, expr2) != 0:
+            raise ValueError(f"Error in compiling expr: {expr}")
+        self.expression = expr2
+
+    def eval(self):
+        if ciarray.iarray_eval(self._e) != 0:
             raise ValueError(f"Error in evaluating expr: {self.expression}")
-        c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
+        c_c = PyCapsule_New(self._out, "iarray_container_t*", NULL)
         return IArray(self._ctx, c_c)
 
 #
@@ -682,30 +689,6 @@ def iarray2numpy(cfg, c):
     ciarray.iarray_to_buffer(ctx_, c_, np.PyArray_DATA(a), size * sizeof(npdtype))
     return a
 
-#
-# Expression functions
-#
-
-def expr_bind(e, var, c):
-    cdef ciarray.iarray_expression_t* e_= <ciarray.iarray_expression_t*> PyCapsule_GetPointer(
-        e, "iarray_expression_t*")
-    cdef ciarray.iarray_container_t *c_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(
-        c.to_capsule(), "iarray_container_t*")
-    ciarray.iarray_expr_bind(e_, var, c_)
-
-
-def expr_compile(e, expr):
-    cdef ciarray.iarray_expression_t* e_= <ciarray.iarray_expression_t*> PyCapsule_GetPointer(
-        e, "iarray_expression_t*")
-    ciarray.iarray_expr_compile(e_, expr)
-
-
-def expr_eval(e, c):
-    cdef ciarray.iarray_expression_t* e_= <ciarray.iarray_expression_t*> PyCapsule_GetPointer(
-        e, "iarray_expression_t*")
-    cdef ciarray.iarray_container_t *c_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(
-        c.to_capsule(), "iarray_container_t*")
-    ciarray.iarray_eval(e_, c_)
 
 #
 # Random functions

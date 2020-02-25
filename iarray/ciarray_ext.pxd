@@ -35,9 +35,10 @@ cdef extern from "libiarray/iarray.h":
         IARRAY_COMPRESSION_LIZARD
 
     ctypedef enum iarray_eval_flags_t:
-        IARRAY_EXPR_EVAL_ITERBLOCK
-        IARRAY_EXPR_EVAL_ITERBLOSC
+        IARRAY_EXPR_EVAL_AUTO
         IARRAY_EXPR_EVAL_ITERCHUNK
+        IARRAY_EXPR_EVAL_ITERBLOSC
+        IARRAY_EXPR_EVAL_ITERBLOSC2
 
     ctypedef struct iarray_config_t:
         iarray_compression_codec_t compression_codec
@@ -70,6 +71,7 @@ cdef extern from "libiarray/iarray.h":
     ctypedef struct iarray_container_t
 
     ctypedef struct iarray_expression_t
+
 
     ina_rc_t iarray_init()
 
@@ -188,10 +190,11 @@ cdef extern from "libiarray/iarray.h":
     void iarray_expr_free(iarray_context_t *ctx, iarray_expression_t **e)
 
     ina_rc_t iarray_expr_bind(iarray_expression_t *e, const char *var, iarray_container_t *val)
+    ina_rc_t iarray_expr_bind_out(iarray_expression_t *e, iarray_container_t *val)
 
     ina_rc_t iarray_expr_compile(iarray_expression_t *e, const char *expr)
 
-    ina_rc_t iarray_eval(iarray_expression_t *e, iarray_container_t *ret)
+    ina_rc_t iarray_eval(iarray_expression_t *e)
 
 
     # Linear algebra

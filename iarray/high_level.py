@@ -72,7 +72,7 @@ class RandomContext(ext.RandomContext):
 class Config(ext._Config):
 
     def __init__(self, clib=ia.LZ4, clevel=5, use_dict=0, filter_flags=ia.SHUFFLE, nthreads=1,
-                 fp_mantissa_bits=0, blocksize=0, storage=None, eval_flags="iterblock"):
+                 fp_mantissa_bits=0, blocksize=0, storage=None, eval_flags="auto"):
         self._clib = clib
         self._clevel = clevel
         self._use_dict = use_dict
@@ -248,7 +248,9 @@ class LazyExpr:
             cfg = Config(**kwargs)
             dtshape = ia.dtshape(shape_, pshape, dtype)
 
-            out = expr.eval(dtshape, cfg._storage)
+            expr.out_properties(dtshape, cfg._storage)
+
+            out = expr.eval()
 
         elif method == "numexpr":
             out = ia.empty(ia.dtshape(shape=shape_, pshape=pshape, dtype=dtype), **kwargs)
