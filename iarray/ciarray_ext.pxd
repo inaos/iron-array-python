@@ -190,11 +190,10 @@ cdef extern from "libiarray/iarray.h":
     void iarray_expr_free(iarray_context_t *ctx, iarray_expression_t **e)
 
     ina_rc_t iarray_expr_bind(iarray_expression_t *e, const char *var, iarray_container_t *val)
-    ina_rc_t iarray_expr_bind_out(iarray_expression_t *e, iarray_container_t *val)
-
+    ina_rc_t iarray_expr_bind_out_properties(iarray_expression_t *e, iarray_dtshape_t *dtshape, iarray_store_properties_t *store)
     ina_rc_t iarray_expr_compile(iarray_expression_t *e, const char *expr)
 
-    ina_rc_t iarray_eval(iarray_expression_t *e)
+    ina_rc_t iarray_eval(iarray_expression_t *e, iarray_container_t **c)
 
 
     # Linear algebra

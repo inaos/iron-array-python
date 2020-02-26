@@ -32,7 +32,7 @@ def test_expression(eval_flags, shape, pshape, dtype, expression):
     expr = ia.Expr(eval_flags=eval_flags)
     expr.bind("x", x)
     expr.bind("y", y)
-    expr.out_properties(ia.dtshape(shape, pshape, dtype), storage=storage)
+    expr.bind_out_properties(ia.dtshape(shape, pshape, dtype), storage=storage)
 
     expr.compile(expression)
 
@@ -88,7 +88,7 @@ def test_ufuncs(ufunc, ia_expr):
         expr = ia.Expr(eval_flags="iterchunk")
         expr.bind("x", x)
         expr.bind("y", y)
-        expr.out_properties(ia.dtshape(shape, pshape, dtype), storage=storage)
+        expr.bind_out_properties(ia.dtshape(shape, pshape, dtype), storage=storage)
         expr.compile(ia_expr)
         iout = expr.eval()
         npout = ia.iarray2numpy(iout)

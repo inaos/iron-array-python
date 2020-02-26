@@ -364,7 +364,6 @@ cdef class Container:
 cdef class Expression:
     cdef object expression
     cdef ciarray.iarray_expression_t *_e
-    cdef ciarray.iarray_container_t *_out
     cdef Context _ctx
 
     def __init__(self, cfg):
@@ -373,7 +372,8 @@ cdef class Expression:
         ciarray.iarray_expr_new(self._ctx._ctx, &e)
         self._e = e
         self.expression = None
-        self.out = None
+        self.storage = None
+        self.dtshape = None
 
     def __dealloc__(self):
         ciarray.iarray_expr_free(self._ctx._ctx, &self._e)
@@ -384,7 +384,7 @@ cdef class Expression:
             c.to_capsule(), "iarray_container_t*")
         ciarray.iarray_expr_bind(self._e, var2, c_)
 
-    def out_properties(self, dtshape, storage=None):
+    def bind_out_properties(self, dtshape, storage=None):
         dtshape = _DTShape(dtshape).to_dict()
         cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
@@ -393,17 +393,14 @@ cdef class Expression:
             store_.backend = ciarray.IARRAY_STORAGE_BLOSC
             store_.enforce_frame = False
             store_.filename = NULL
-            flags = 0
         else:
             set_store_properties(storage, &store_)
-            flags = 0 if storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
 
-        cdef ciarray.iarray_container_t *c
+        ciarray.iarray_expr_bind_out_properties(self._e, &dtshape_, &store_)
 
-        ctx_ = self._ctx._ctx
-        ciarray.iarray_container_new(ctx_, &dtshape_, &store_, flags, &c)
-        ciarray.iarray_expr_bind_out(self._e, c)
-        self._out = c
+        self.dtshape = dtshape
+        self.storage = storage
+
 
 
     def compile(self, expr):
@@ -414,9 +411,11 @@ cdef class Expression:
         self.expression = expr2
 
     def eval(self):
-        if ciarray.iarray_eval(self._e) != 0:
+        cdef ciarray.iarray_container_t *c;
+        if ciarray.iarray_eval(self._e, &c) != 0:
             raise ValueError(f"Error in evaluating expr: {self.expression}")
-        c_c = PyCapsule_New(self._out, "iarray_container_t*", NULL)
+        c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
+
         return IArray(self._ctx, c_c)
 
 #

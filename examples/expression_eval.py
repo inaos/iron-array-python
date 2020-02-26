@@ -24,7 +24,7 @@ print("iarray evaluation...")
 # And now, the expression
 expr = ia.Expr(eval_flags="iterblosc2", nthreads=2)
 expr.bind("x", a1)
-expr.out_properties(ia.dtshape(shape, pshape, np.float64), storage=storage)
+expr.bind_out_properties(ia.dtshape(shape, pshape, np.float64), storage=storage)
 expr.compile("(x - 1.35) * (x - 4.45) * (x - 8.5)")
 b1 = expr.eval()
 b1_n = ia.iarray2numpy(b1)

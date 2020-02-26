@@ -243,12 +243,13 @@ class LazyExpr:
             for k, v in self.operands.items():
                 if isinstance(v, IArray):
                     expr.bind(k, v)
-            expr.compile(self.expression)
 
             cfg = Config(**kwargs)
             dtshape = ia.dtshape(shape_, pshape, dtype)
 
-            expr.out_properties(dtshape, cfg._storage)
+            expr.bind_out_properties(dtshape, cfg._storage)
+
+            expr.compile(self.expression)
 
             out = expr.eval()
 
