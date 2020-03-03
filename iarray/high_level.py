@@ -69,10 +69,21 @@ class RandomContext(ext.RandomContext):
         super(RandomContext, self).__init__(cfg)
 
 
+class EvalFlags:
+
+    def __init__(self, method="auto", engine="auto"):
+        self.method = method
+        self.engine = engine
+
+    def to_tuple(self):
+        EvalFlags = namedtuple('eval_flags', 'method engine')
+        return EvalFlags(self.method, self.engine)
+
+
 class Config(ext._Config):
 
     def __init__(self, clib=ia.LZ4, clevel=5, use_dict=0, filter_flags=ia.SHUFFLE, nthreads=1,
-                 fp_mantissa_bits=0, blocksize=0, storage=None, eval_flags="iterblock"):
+                 fp_mantissa_bits=0, blocksize=0, storage=None, eval_flags=None):
         self._clib = clib
         self._clevel = clevel
         self._use_dict = use_dict
@@ -80,10 +91,10 @@ class Config(ext._Config):
         self._fp_mantissa_bits = fp_mantissa_bits
         self._blocksize = blocksize
         self._nthreads = nthreads
-        self._eval_flags = eval_flags  # TODO: should we move this to its own eval configuration?
+        self._eval_flags = ia.EvalFlags() if eval_flags is None else eval_flags  # TODO: should we move this to its own eval configuration?
         self._storage = ia.StorageProperties() if storage is None else storage
         super(Config, self).__init__(clib, clevel, use_dict, filter_flags,
-                                     nthreads, fp_mantissa_bits, blocksize, eval_flags)
+                                     nthreads, fp_mantissa_bits, blocksize, self._eval_flags)
 
     @property
     def clib(self):
@@ -243,12 +254,15 @@ class LazyExpr:
             for k, v in self.operands.items():
                 if isinstance(v, IArray):
                     expr.bind(k, v)
-            expr.compile(self.expression)
 
             cfg = Config(**kwargs)
             dtshape = ia.dtshape(shape_, pshape, dtype)
 
-            out = expr.eval(dtshape, cfg._storage)
+            expr.bind_out_properties(dtshape, cfg._storage)
+
+            expr.compile(self.expression)
+
+            out = expr.eval()
 
         elif method == "numexpr":
             out = ia.empty(ia.dtshape(shape=shape_, pshape=pshape, dtype=dtype), **kwargs)

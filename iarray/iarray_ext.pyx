@@ -150,20 +150,36 @@ cdef class IArrayInit:
 cdef class _Config:
     cdef ciarray.iarray_config_t _cfg
 
-    def __init__(self, compression_codec=1, compression_level=5, use_dict=0, filter_flags=1,
-                 max_num_threads=1, fp_mantissa_bits=0, blocksize=0, eval_flags="iterblock"):
+    def __init__(self, compression_codec, compression_level, use_dict, filter_flags,
+                 max_num_threads, fp_mantissa_bits, blocksize, eval_flags):
         self._cfg.compression_codec = compression_codec
         self._cfg.compression_level = compression_level
         self._cfg.use_dict = use_dict
         self._cfg.filter_flags = filter_flags
-        if eval_flags == "iterblock":
-            self._cfg.eval_flags = ciarray.IARRAY_EXPR_EVAL_ITERBLOCK
-        elif eval_flags == "iterblosc":
-            self._cfg.eval_flags = ciarray.IARRAY_EXPR_EVAL_ITERBLOSC
-        elif eval_flags == "iterchunk":
-            self._cfg.eval_flags = ciarray.IARRAY_EXPR_EVAL_ITERCHUNK
+
+        eval_flags = eval_flags.to_tuple()  # TODO: should we move this to its own eval configuration?
+
+        if eval_flags.method == "auto":
+            method = ciarray.IARRAY_EXPR_EVAL_METHOD_AUTO
+        elif eval_flags.method == "iterblosc2":
+            method = ciarray.IARRAY_EXPR_EVAL_METHOD_ITERBLOSC2
+        elif eval_flags.method == "iterblosc":
+            method = ciarray.IARRAY_EXPR_EVAL_METHOD_ITERBLOSC
+        elif eval_flags.method == "iterchunk":
+            method = ciarray.IARRAY_EXPR_EVAL_METHOD_ITERCHUNK
         else:
-            raise ValueError("eval_flags not recognized:", eval_flags)
+            raise ValueError("eval_flags method not recognized:", eval_flags.method)
+
+        if eval_flags.engine == "auto":
+            engine = ciarray.IARRAY_EXPR_EVAL_ENGINE_AUTO
+        elif eval_flags.engine == "tinyexpr":
+            engine = ciarray.IARRAY_EXPR_EVAL_ENGINE_TINYEXPR
+        elif eval_flags.engine == "juggernaut":
+            engine = ciarray.IARRAY_EXPR_EVAL_ENGINE_JUGGERNAUT
+        else:
+            raise ValueError("eval_flags engine not recognized:", eval_flags.engine)
+
+        self._cfg.eval_flags = method | (engine << 3)
         self._cfg.max_num_threads = max_num_threads
         self._cfg.fp_mantissa_bits = fp_mantissa_bits
         self._cfg.blocksize = blocksize
@@ -370,6 +386,8 @@ cdef class Expression:
         ciarray.iarray_expr_new(self._ctx._ctx, &e)
         self._e = e
         self.expression = None
+        self.storage = None
+        self.dtshape = None
 
     def __dealloc__(self):
         ciarray.iarray_expr_free(self._ctx._ctx, &self._e)
@@ -380,14 +398,7 @@ cdef class Expression:
             c.to_capsule(), "iarray_container_t*")
         ciarray.iarray_expr_bind(self._e, var2, c_)
 
-    def compile(self, expr):
-        expr = Parser().parse(expr).simplify({}).toString()
-        expr2 = expr.encode("utf-8") if isinstance(expr, str) else expr
-        if ciarray.iarray_expr_compile(self._e, expr2) != 0:
-            raise ValueError(f"Error in compiling expr: {expr}")
-        self.expression = expr2
-
-    def eval(self, dtshape, storage=None):
+    def bind_out_properties(self, dtshape, storage=None):
         dtshape = _DTShape(dtshape).to_dict()
         cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
@@ -396,20 +407,29 @@ cdef class Expression:
             store_.backend = ciarray.IARRAY_STORAGE_BLOSC
             store_.enforce_frame = False
             store_.filename = NULL
-            flags = 0
         else:
             set_store_properties(storage, &store_)
-            flags = 0 if storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
 
-        cdef ciarray.iarray_container_t *c
+        ciarray.iarray_expr_bind_out_properties(self._e, &dtshape_, &store_)
 
-        ctx_ = self._ctx._ctx
-        ciarray.iarray_container_new(ctx_, &dtshape_, &store_, flags, &c)
+        self.dtshape = dtshape
+        self.storage = storage
 
 
-        if ciarray.iarray_eval(self._e, c) != 0:
+
+    def compile(self, expr):
+        expr = Parser().parse(expr).simplify({}).toString()
+        expr2 = expr.encode("utf-8") if isinstance(expr, str) else expr
+        if ciarray.iarray_expr_compile(self._e, expr2) != 0:
+            raise ValueError(f"Error in compiling expr: {expr}")
+        self.expression = expr2
+
+    def eval(self):
+        cdef ciarray.iarray_container_t *c;
+        if ciarray.iarray_eval(self._e, &c) != 0:
             raise ValueError(f"Error in evaluating expr: {self.expression}")
         c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
+
         return IArray(self._ctx, c_c)
 
 #
@@ -682,30 +702,6 @@ def iarray2numpy(cfg, c):
     ciarray.iarray_to_buffer(ctx_, c_, np.PyArray_DATA(a), size * sizeof(npdtype))
     return a
 
-#
-# Expression functions
-#
-
-def expr_bind(e, var, c):
-    cdef ciarray.iarray_expression_t* e_= <ciarray.iarray_expression_t*> PyCapsule_GetPointer(
-        e, "iarray_expression_t*")
-    cdef ciarray.iarray_container_t *c_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(
-        c.to_capsule(), "iarray_container_t*")
-    ciarray.iarray_expr_bind(e_, var, c_)
-
-
-def expr_compile(e, expr):
-    cdef ciarray.iarray_expression_t* e_= <ciarray.iarray_expression_t*> PyCapsule_GetPointer(
-        e, "iarray_expression_t*")
-    ciarray.iarray_expr_compile(e_, expr)
-
-
-def expr_eval(e, c):
-    cdef ciarray.iarray_expression_t* e_= <ciarray.iarray_expression_t*> PyCapsule_GetPointer(
-        e, "iarray_expression_t*")
-    cdef ciarray.iarray_container_t *c_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(
-        c.to_capsule(), "iarray_container_t*")
-    ciarray.iarray_eval(e_, c_)
 
 #
 # Random functions
