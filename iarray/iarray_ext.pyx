@@ -150,22 +150,36 @@ cdef class IArrayInit:
 cdef class _Config:
     cdef ciarray.iarray_config_t _cfg
 
-    def __init__(self, compression_codec=1, compression_level=5, use_dict=0, filter_flags=1,
-                 max_num_threads=1, fp_mantissa_bits=0, blocksize=0, eval_flags="auto"):
+    def __init__(self, compression_codec, compression_level, use_dict, filter_flags,
+                 max_num_threads, fp_mantissa_bits, blocksize, eval_flags):
         self._cfg.compression_codec = compression_codec
         self._cfg.compression_level = compression_level
         self._cfg.use_dict = use_dict
         self._cfg.filter_flags = filter_flags
-        if eval_flags == "auto":
-            self._cfg.eval_flags = ciarray.IARRAY_EXPR_EVAL_AUTO
-        elif eval_flags == "iterblosc2":
-            self._cfg.eval_flags = ciarray.IARRAY_EXPR_EVAL_ITERBLOSC2
-        elif eval_flags == "iterblosc":
-            self._cfg.eval_flags = ciarray.IARRAY_EXPR_EVAL_ITERBLOSC
-        elif eval_flags == "iterchunk":
-            self._cfg.eval_flags = ciarray.IARRAY_EXPR_EVAL_ITERCHUNK
+
+        eval_flags = eval_flags.to_tuple()  # TODO: should we move this to its own eval configuration?
+
+        if eval_flags.method == "auto":
+            method = ciarray.IARRAY_EXPR_EVAL_METHOD_AUTO
+        elif eval_flags.method == "iterblosc2":
+            method = ciarray.IARRAY_EXPR_EVAL_METHOD_ITERBLOSC2
+        elif eval_flags.method == "iterblosc":
+            method = ciarray.IARRAY_EXPR_EVAL_METHOD_ITERBLOSC
+        elif eval_flags.method == "iterchunk":
+            method = ciarray.IARRAY_EXPR_EVAL_METHOD_ITERCHUNK
         else:
-            raise ValueError("eval_flags not recognized:", eval_flags)
+            raise ValueError("eval_flags method not recognized:", eval_flags.method)
+
+        if eval_flags.engine == "auto":
+            engine = ciarray.IARRAY_EXPR_EVAL_ENGINE_AUTO
+        elif eval_flags.engine == "tinyexpr":
+            engine = ciarray.IARRAY_EXPR_EVAL_ENGINE_TINYEXPR
+        elif eval_flags.engine == "juggernaut":
+            engine = ciarray.IARRAY_EXPR_EVAL_ENGINE_JUGGERNAUT
+        else:
+            raise ValueError("eval_flags engine not recognized:", eval_flags.engine)
+
+        self._cfg.eval_flags = method | (engine << 3)
         self._cfg.max_num_threads = max_num_threads
         self._cfg.fp_mantissa_bits = fp_mantissa_bits
         self._cfg.blocksize = blocksize
