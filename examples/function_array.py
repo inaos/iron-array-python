@@ -9,8 +9,8 @@ dtype = np.float64
 shape = [10000, 2000]
 pshape = [1000, 200]
 nthreads = 4
-eval_method = "iterblock"
-kwargs = dict(eval_flags=eval_method, nthreads=nthreads, clevel=1, clib=ia.LZ4)
+eval_flags = ia.EvalFlags(method="iterblosc2", engine="auto")
+kwargs = dict(eval_flags=eval_flags, nthreads=nthreads, clevel=1, clib=ia.LZ4)
 
 # Create initial containers
 ia1 = ia.linspace(ia.dtshape(shape, pshape, dtype), 0, 10, **kwargs)
@@ -19,8 +19,9 @@ np1 = ia.iarray2numpy(ia1)
 t0 = time()
 expr = ia.Expr(**kwargs)
 expr.bind("x", ia1)
+expr.bind_out_properties(ia.dtshape(shape, pshape, dtype))
 expr.compile("cos(x)")
-ia2 = expr.eval(ia.dtshape(shape, pshape, dtype))
+ia2 = expr.eval()
 t1 = time()
 print("Time for iarray evaluation: %.3f (cratio: %.2fx)" % ((t1 - t0), ia2.cratio))
 np2 = ia.iarray2numpy(ia2)
