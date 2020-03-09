@@ -5,13 +5,14 @@ import numpy as np
 
 # Expression
 @pytest.mark.parametrize("method, engine, shape, pshape, dtype, expression", [
-     #("iterblosc2", "juggernaut", [100, 100], [99, 99], np.float64, "x"),  # TODO: Fix this
-     #("iterblosc2", "juggernaut", [100, 100], [10, 99], np.float64, "x"),  # TODO: Fix this
+     ("iterblosc2", "juggernaut", [100, 100], [23, 32], np.float64, "cos(x)"),
+     ("iterblosc2", "juggernaut", [100, 100], [10, 99], np.float64, "x"),
      ("iterblosc2", "tinyexpr", [1000], [110], np.float32, "x"),
      ("iterblosc", "juggernaut", [1000], [100], np.float64, "(cos(x) - 1.35) * (sin(x) - 4.45) * tan(x - 8.5)"),
      ("auto", "auto", [1000], [100], np.float64, "(cos(x) - 1.35) * (sin(x) - 4.45) * tan(x - 8.5)"),
      ("iterchunk", "tinyexpr", [1000], [123], np.float32, "(abs(-x) - 1.35) * ceil(x) * floor(x - 8.5)"),
-     # ("iterblosc2", "juggernaut", [100, 100], [23, 32], np.float64, "sinh(x) + (cosh(x) - 1.35) - tanh(x + .2)"),  # TODO: Fix this
+     ("iterblosc2", "juggernaut", [100, 100, 100], [5, 12, 10], np.float64, "sinh(x) + (cosh(x) - 1.35) - tanh(x + .2) + 1"),
+     ("iterblosc", "juggernaut", [100], [23], np.float64, "sinh(x) + (cosh(x) - 1.35) - tanh(x + .2)"),
      ("iterchunk", "auto", [100, 100, 55], [10, 5, 10], np.float64, "asin(x) + (acos(x) - 1.35) - atan(x + .2)"),
      ("auto", "tinyexpr", [1000], None, np.float64, "exp(x) + (log(x) - 1.35) - log10(x + .2)"),
      ("iterchunk", "auto", [1000], None, np.float32, "sqrt(x) + atan2(x, x) + pow(x, x)"),
@@ -45,7 +46,7 @@ def test_expression(method, engine, shape, pshape, dtype, expression):
     npout = ia.iarray2numpy(iout)
     npout2 = ia.Parser().parse(expression).evaluate({"x": npx, "y": npy})
 
-    rtol = 1e-6 if dtype == np.dtype(np.float32) else 1e-14
+    rtol = 1e-6 if dtype == np.dtype(np.float32) else 1e-13
 
     np.testing.assert_allclose(npout, npout2, rtol=rtol)
 
@@ -211,3 +212,4 @@ def test_expr_fusion(expr):
 
         decimal = 6 if dtype is np.float32 else 7
         np.testing.assert_almost_equal(npout, npout2, decimal=decimal)
+
