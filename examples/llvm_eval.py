@@ -32,17 +32,14 @@ print("Operand cratio:", round(xa.cratio, 2))
 
 ya = None
 
-if pshape is None:
-    eval_method = "iterblock"
-else:
-    eval_method = "iterblosc"
-
 t0 = time()
-expr = ia.Expr(eval_flags=eval_method, **cparams)
+eval_flags = ia.EvalFlags(method="auto", engine="auto")  # FIX: ('auto', 'auto') is slow (juggernaut is not selected)
+expr = ia.Expr(eval_flags=eval_flags, **cparams)
 expr.bind('x', xa)
+expr.bind_out_properties(ia.dtshape(shape, pshape, dtype=dtype))
 expr.compile('(x - 1.35) * (x - 4.45) * (x - 8.5)')
 for i in range(NITER):
-    ya = expr.eval(shape, pshape, dtype=dtype)
+    ya = expr.eval()
 print("Result cratio:", round(ya.cratio, 2))
 print("Block evaluate via iarray.eval:", round((time() - t0) / NITER, 4))
 y1 = ia.iarray2numpy(ya)
@@ -52,7 +49,7 @@ t0 = time()
 x = xa
 for i in range(NITER):
     ya = ((x - 1.35) * (x - 4.45) * (x - 8.5)).eval(method="iarray_eval", pshape=pshape,
-                                                    dtype=dtype, eval_flags=eval_method, **cparams)
+                                                    dtype=dtype, eval_flags=eval_flags, **cparams)
 print("Block evaluate via iarray.LazyExpr.eval('iarray_eval')):", round((time() - t0) / NITER, 4))
 y1 = ia.iarray2numpy(ya)
 np.testing.assert_almost_equal(y0, y1)

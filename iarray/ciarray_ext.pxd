@@ -34,11 +34,16 @@ cdef extern from "libiarray/iarray.h":
         IARRAY_COMPRESSION_ZSTD,
         IARRAY_COMPRESSION_LIZARD
 
-    ctypedef enum iarray_eval_flags_t:
-        IARRAY_EXPR_EVAL_ITERBLOCK
-        IARRAY_EXPR_EVAL_ITERCHUNK
-        IARRAY_EXPR_EVAL_ITERBLOSC
-        IARRAY_EXPR_EVAL_ITERBLOSC2
+    ctypedef enum iarray_eval_method_t:
+        IARRAY_EXPR_EVAL_METHOD_AUTO
+        IARRAY_EXPR_EVAL_METHOD_ITERCHUNK
+        IARRAY_EXPR_EVAL_METHOD_ITERBLOSC
+        IARRAY_EXPR_EVAL_METHOD_ITERBLOSC2
+
+    ctypedef enum iarray_eval_engine_t:
+        IARRAY_EXPR_EVAL_ENGINE_AUTO
+        IARRAY_EXPR_EVAL_ENGINE_TINYEXPR
+        IARRAY_EXPR_EVAL_ENGINE_JUGGERNAUT
 
     ctypedef struct iarray_config_t:
         iarray_compression_codec_t compression_codec
@@ -50,8 +55,15 @@ cdef extern from "libiarray/iarray.h":
         int8_t fp_mantissa_bits
         int blocksize
 
+    ctypedef enum iarray_storage_type_t:
+        IARRAY_STORAGE_PLAINBUFFER = 0
+        IARRAY_STORAGE_BLOSC = 1
+
+
     ctypedef struct iarray_store_properties_t:
-        const char *id
+        iarray_storage_type_t backend
+        const char *filename
+        bool enforce_frame
 
     ctypedef struct iarray_dtshape_t:
         iarray_data_type_t dtype
@@ -64,6 +76,7 @@ cdef extern from "libiarray/iarray.h":
     ctypedef struct iarray_container_t
 
     ctypedef struct iarray_expression_t
+
 
     ina_rc_t iarray_init()
 
@@ -134,20 +147,20 @@ cdef extern from "libiarray/iarray.h":
                                      iarray_container_t **container)
 
     ina_rc_t iarray_copy(iarray_context_t *ctx,
-                              iarray_container_t *src,
-                              bool view,
-                              iarray_store_properties_t *store,
-                              int flags,
-                              iarray_container_t **dest)
+                         iarray_container_t *src,
+                         bool view,
+                         iarray_store_properties_t *store,
+                         int flags,
+                         iarray_container_t **dest)
 
     ina_rc_t iarray_get_slice(iarray_context_t *ctx,
-                              iarray_container_t *c,
+                              iarray_container_t *src,
                               int64_t *start,
                               int64_t *stop,
-                              int64_t *pshape,
+                              bool view,
+                              const int64_t *pshape,
                               iarray_store_properties_t *store,
                               int flags,
-                              bool view,
                               iarray_container_t **container)
 
     ina_rc_t iarray_to_buffer(iarray_context_t *ctx,
@@ -168,9 +181,13 @@ cdef extern from "libiarray/iarray.h":
                                 iarray_container_t **container)
 
     ina_rc_t iarray_container_load(iarray_context_t *ctx,
-                              iarray_store_properties_t *store,
-                              iarray_container_t **container,
-                              bool load_in_mem)
+                                        char *filename,
+                                        bool enforce_frame,
+                                        iarray_container_t **container)
+
+    ina_rc_t iarray_container_save(iarray_context_t *ctx,
+                                   iarray_container_t *c,
+                                   char *filename);
 
     bool iarray_is_empty(iarray_container_t *container)
 
@@ -178,7 +195,7 @@ cdef extern from "libiarray/iarray.h":
     void iarray_expr_free(iarray_context_t *ctx, iarray_expression_t **e)
 
     ina_rc_t iarray_expr_bind(iarray_expression_t *e, const char *var, iarray_container_t *val)
-
+    ina_rc_t iarray_expr_bind_out_properties(iarray_expression_t *e, iarray_dtshape_t *dtshape, iarray_store_properties_t *store)
     ina_rc_t iarray_expr_compile(iarray_expression_t *e, const char *expr)
 
     ina_rc_t iarray_expr_compile_udf(iarray_expression_t *e,
@@ -186,7 +203,7 @@ cdef extern from "libiarray/iarray.h":
                                      const char *llvm_bc,
                                      const char *name)
 
-    ina_rc_t iarray_eval(iarray_expression_t *e, iarray_container_t *ret)
+    ina_rc_t iarray_eval(iarray_expression_t *e, iarray_container_t **c)
 
 
     # Linear algebra
@@ -356,6 +373,6 @@ cdef extern from "libiarray/iarray.h":
                                    iarray_container_t **container)
 
     ina_rc_t iarray_random_kstest(iarray_context_t *ctx,
-                                  iarray_container_t *c1,
-                                  iarray_container_t *c2,
-                                  bool *res)
+                                       iarray_container_t *container1,
+                                       iarray_container_t *container2,
+                                       bool *res)

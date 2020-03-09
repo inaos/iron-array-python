@@ -10,7 +10,7 @@ a2 = ia.iarray2numpy(a1)
 
 b1 = np.random.uniform(0, 1, size).astype(np.float32)
 
-b2 = ia.numpy2iarray(b1, pshape=pshape, filename="test_poisson_f_06.iarray")
+b2 = ia.numpy2iarray(b1, pshape=pshape, storage=ia.StorageProperties("blosc", True, "test_poisson_f_06.iarray"))
 
 # Check that distributions are equal
 print(ia.random_kstest(a1, b2))

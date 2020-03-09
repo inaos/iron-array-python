@@ -12,11 +12,11 @@ a = np.arange(size, dtype=np.float64).reshape(shape)
 
 if not os.path.isfile(filename):
     print(f"Creating {filename}")
-    b = ia.numpy2iarray(a, pshape, filename=filename)
-else:
-    print(f"Reading {filename}")
-    c = ia.from_file(filename)
-    d = ia.iarray2numpy(c)
+    b = ia.numpy2iarray(a, pshape, storage=ia.StorageProperties("blosc", True, filename))
 
-    np.testing.assert_array_equal(a, d)
-    print("Correct values read!")
+print(f"Reading {filename}")
+c = ia.load(filename)
+d = ia.iarray2numpy(c)
+
+np.testing.assert_array_equal(a, d)
+print("Correct values read!")

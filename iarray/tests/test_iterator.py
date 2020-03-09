@@ -17,10 +17,14 @@ from itertools import zip_longest as izip
                              ([10, 10, 10, 10], None, [3, 4, 3, 4], np.float32)
                          ])
 def test_iterator(shape, pshape, bshape, dtype):
-    a = ia.linspace(ia.dtshape(shape, pshape, dtype), -10, 10)
+    if pshape is None:
+        storage = ia.StorageProperties("plainbuffer")
+    else:
+        storage = ia.StorageProperties("blosc", False)
+    a = ia.linspace(ia.dtshape(shape, pshape, dtype), -10, 10, storage=storage)
     an = ia.iarray2numpy(a)
 
-    b = ia.empty(ia.dtshape(shape, pshape))
+    b = ia.empty(ia.dtshape(shape, pshape), storage=storage)
 
     for i, ((ainfo, aslice), (binfo, bslice)) in enumerate(izip(a.iter_read_block(bshape), b.iter_write_block(bshape))):
         bslice[:] = aslice
