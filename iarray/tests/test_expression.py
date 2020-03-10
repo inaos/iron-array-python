@@ -5,13 +5,13 @@ import numpy as np
 
 # Expression
 @pytest.mark.parametrize("method, engine, shape, pshape, dtype, expression", [
-     #("iterblosc2", "juggernaut", [100, 100], [99, 99], np.float64, "x"),  # TODO: Fix this
-     #("iterblosc2", "juggernaut", [100, 100], [10, 99], np.float64, "x"),  # TODO: Fix this
+     ("iterblosc2", "juggernaut", [100, 100], [99, 99], np.float64, "x"),  # TODO: Fix this
+     ("iterblosc2", "juggernaut", [100, 100], [10, 99], np.float64, "x"),  # TODO: Fix this
      ("iterblosc2", "tinyexpr", [1000], [110], np.float32, "x"),
      ("iterblosc", "juggernaut", [1000], [100], np.float64, "(cos(x) - 1.35) * (sin(x) - 4.45) * tan(x - 8.5)"),
      ("auto", "auto", [1000], [100], np.float64, "(cos(x) - 1.35) * (sin(x) - 4.45) * tan(x - 8.5)"),
      ("iterchunk", "tinyexpr", [1000], [123], np.float32, "(abs(-x) - 1.35) * ceil(x) * floor(x - 8.5)"),
-     # ("iterblosc2", "juggernaut", [100, 100], [23, 32], np.float64, "sinh(x) + (cosh(x) - 1.35) - tanh(x + .2)"),  # TODO: Fix this
+     ("iterblosc2", "juggernaut", [100, 100], [23, 32], np.float64, "sinh(x) + (cosh(x) - 1.35) - tanh(x + .2)"),  # TODO: Fix this
      ("iterchunk", "auto", [100, 100, 55], [10, 5, 10], np.float64, "asin(x) + (acos(x) - 1.35) - atan(x + .2)"),
      ("auto", "tinyexpr", [1000], None, np.float64, "exp(x) + (log(x) - 1.35) - log10(x + .2)"),
      ("iterchunk", "auto", [1000], None, np.float32, "sqrt(x) + atan2(x, x) + pow(x, x)"),
