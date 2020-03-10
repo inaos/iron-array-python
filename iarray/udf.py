@@ -127,8 +127,8 @@ class Function(py2llvm.Function):
         expr = ia.Expr(eval_flags=eval_flags, **cparams)
         for a in inputs:
             expr.bind("", a)
-
-        expr.bind_out_properties(dtshape, **cparams)
+        cfg = ia.Config(**cparams)
+        expr.bind_out_properties(dtshape, cfg._storage)
         expr.compile_udf(self)
         return expr
 
