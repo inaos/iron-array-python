@@ -36,13 +36,13 @@ a2 = np.linspace(0, 10, shape[0], dtype=dtype).reshape(shape)
 
 
 print("iarray evaluation ...")
-expr = f.create_expr([a1], **cparams)
+expr = f.create_expr([a1], ia.dtshape(shape, pshape, dtype), **cparams)
 # expr = ia.Expr(eval_flags="iterblosc", **cparams)
 # expr.bind('x', a1)
 # expr.compile_udf(f)
 t0 = time()
 for i in range(NITER):
-    b1 = expr.eval(shape, pshape, dtype)
+    b1 = expr.eval()
 print("Time for py2llvm eval:", round((time() - t0) / NITER, 3))
 b1_n = ia.iarray2numpy(b1)
 print(b1_n)

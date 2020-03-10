@@ -122,12 +122,13 @@ class Function(py2llvm.Function):
             param.type.idx = i
         return signature
 
-    def create_expr(self, inputs, **cparams):
+    def create_expr(self, inputs, dtshape, **cparams):
         eval_flags = ia.EvalFlags(method="iterblosc", engine="juggernaut")
         expr = ia.Expr(eval_flags=eval_flags, **cparams)
         for a in inputs:
             expr.bind("", a)
 
+        expr.bind_out_properties(dtshape, **cparams)
         expr.compile_udf(self)
         return expr
 
