@@ -20,12 +20,13 @@ a2 = np.linspace(0, 10, shape[0], dtype=dtype).reshape(shape)
 print("iarray evaluation...")
 
 # And now, the expression
-expr = ia.Expr(eval_flags="iterblosc", nthreads=1)
+expr = ia.Expr(eval_flags=ia.EvalFlags(method="iterblosc", engine="juggernaut"), nthreads=1)
 expr.bind("x", a1)
+expr.bind_out_properties(ia.dtshape(shape, pshape, dtype))
 bc = open('examples/expression.bc', 'rb').read()
 expr.compile_bc(bc, "expr_func")
 for i in range(NITER):
-    b1 = expr.eval(shape, pshape, dtype)
+    b1 = expr.eval()
 b1_n = ia.iarray2numpy(b1)
 print(b1_n)
 
