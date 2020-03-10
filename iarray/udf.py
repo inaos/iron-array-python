@@ -123,7 +123,8 @@ class Function(py2llvm.Function):
         return signature
 
     def create_expr(self, inputs, **cparams):
-        expr = ia.Expr(eval_flags="iterblosc", **cparams)
+        eval_flags = ia.EvalFlags(method="iterblosc", engine="juggernaut")
+        expr = ia.Expr(eval_flags=eval_flags, **cparams)
         for a in inputs:
             expr.bind("", a)
 
