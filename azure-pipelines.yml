@@ -59,7 +59,6 @@ steps:
     
 - script: |
       python -m pip install --retries 3 -U pip setuptools setuptools-scm
-      pip install --retries 3 -r requirements.txt
   displayName: 'Install dependencies'
     
 - script: |
