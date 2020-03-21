@@ -1,8 +1,5 @@
 trigger:
-- develop
-
-variables:
-- group: jfrog-artifactory
+- ci-wheels
 
 strategy:
   matrix:
@@ -56,18 +53,18 @@ steps:
 #  displayName: Download dependencies
 
 - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '$(python.version)'
-    displayName: 'Use Python $(python.version)'
+  inputs:
+    versionSpec: '$(python.version)'
+  displayName: 'Use Python $(python.version)'
     
 - script: |
       python -m pip install --retries 3 -U pip setuptools setuptools-scm
       pip install --retries 3 -r requirements.txt
-    displayName: 'Install dependencies'
+  displayName: 'Install dependencies'
     
 - script: |
       python setup.py build_ext -i --build-type RelWithDebInfo
-    displayName: 'Compile package'
+  displayName: 'Compile package'
 
     
     #- bash: |
