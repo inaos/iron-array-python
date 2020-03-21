@@ -12,7 +12,7 @@
 # Information and shall use it only in accordance with the terms of the license agreement.
 ###########################################################################################
 
-from . cimport ciarray_ext as ciarray
+cimport ciarray_ext as ciarray
 import numpy as np
 cimport numpy as np
 import cython
