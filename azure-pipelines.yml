@@ -11,6 +11,8 @@ strategy:
       python.version: '3.6'
     windows:
       imageName: 'vs2017-win2016'
+      VSINSTALL: "Microsoft Visual Studio\\2017\\Enterprise\\VC\\Auxiliary\\Build"
+      MSVC_PLATFORM: amd64
       python.version: '3.6'
 
 pool:
@@ -44,6 +46,7 @@ steps:
   condition: ne( variables['Agent.OS'], 'Windows_NT' )
 
 - script: |
+      call "C:\Program Files (x86)\%VSINSTALL%\vcvarsall.bat" %MSVC_PLATFORM%
       python setup.py build_ext -i --build-type RelWithDebInfo --generator "Visual Studio 15 2017 Win64"
   displayName: 'Compile package'
   condition: eq( variables['Agent.OS'], 'Windows_NT' )
