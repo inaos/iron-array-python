@@ -61,11 +61,16 @@ steps:
 - script: |
       python -m pip install --retries 3 -U pip setuptools setuptools-scm scikit-build Cython numpy
   displayName: 'Install dependencies'
-    
+
 - script: |
       python setup.py build_ext -i --build-type RelWithDebInfo
   displayName: 'Compile package'
+  condition: neq( variables['Agent.OS'], 'Windows_NT' )
 
+- script: |
+      python setup.py build_ext -i --build-type RelWithDebInfo --generator "Visual Studio 15 2017 Win64"
+  displayName: 'Compile package'
+  condition: eq( variables['Agent.OS'], 'Windows_NT' )
     
     #- bash: |
 #    mkdir cmake-build-$BUILD_CONFIGURATION
