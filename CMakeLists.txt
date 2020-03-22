@@ -32,4 +32,10 @@ add_library(iarray_ext MODULE ${iarray_ext})
 target_link_libraries(iarray_ext ${INAC_DEPENDENCY_LIBS})
 
 python_extension_module(iarray_ext)
+
+add_custom_command(TARGET iarray_ext POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:iarray_ext> ${CMAKE_SOURCE_DIR}/iarray
+)
+
 install(TARGETS iarray_ext LIBRARY DESTINATION iarray)
+
