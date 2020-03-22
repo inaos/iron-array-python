@@ -65,7 +65,7 @@ steps:
 - script: |
       python setup.py build_ext -i --build-type RelWithDebInfo
   displayName: 'Compile package'
-  condition: neq( variables['Agent.OS'], 'Windows_NT' )
+  condition: ne( variables['Agent.OS'], 'Windows_NT' )
 
 - script: |
       python setup.py build_ext -i --build-type RelWithDebInfo --generator "Visual Studio 15 2017 Win64"
