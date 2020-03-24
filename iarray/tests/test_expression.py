@@ -45,7 +45,7 @@ def test_expression(method, engine, shape, pshape, dtype, expression):
     npout = ia.iarray2numpy(iout)
     npout2 = ia.Parser().parse(expression).evaluate({"x": npx, "y": npy})
 
-    rtol = 1e-6 if dtype == np.dtype(np.float32) else 1e-14
+    rtol = 1e-6 if dtype == np.dtype(np.float32) else 1e-13
 
     np.testing.assert_allclose(npout, npout2, rtol=rtol)
 
