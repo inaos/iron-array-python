@@ -6,7 +6,7 @@ import numpy as np
 NITER = 10
 
 # Vector sizes and partitions
-shape = [10 * 1000 * 1000]
+shape = [100 * 1000 * 1000]
 N = int(np.prod(shape))
 pshape = [200 * 1000]
 # pshape = None  # for enforcing a plain buffer
@@ -16,7 +16,7 @@ block_size = pshape
 expression = '(x - 1.35) * (x - 4.45) * (x - 8.5)'
 clevel = 1   # compression level
 clib = ia.BLOSCLZ  # compression codec
-nthreads = 4  # number of threads for the evaluation and/or compression
+nthreads = 8  # number of threads for the evaluation and/or compression
 
 x = np.linspace(0, 10, N, dtype=dtype).reshape(shape)
 

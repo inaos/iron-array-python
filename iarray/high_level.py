@@ -171,6 +171,7 @@ class LazyExpr:
         else:
             if value1 == value2:
                 self.operands = {"o0": value1}
+                self.operands = {"o0": value1}
                 self.expression = f"(o0 {op} o0)"
             elif isinstance(value1, LazyExpr) or isinstance(value2, LazyExpr):
                 if isinstance(value1, LazyExpr):

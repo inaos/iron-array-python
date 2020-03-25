@@ -424,6 +424,15 @@ cdef class Expression:
             raise ValueError(f"Error in compiling expr: {expr}")
         self.expression = expr2
 
+    def compile_bc(self, bc, name):
+        name = name.encode()
+        if ciarray.iarray_expr_compile_udf(self._e, len(bc), bc, name) != 0:
+            raise ValueError(f"Error in compiling udf...")
+        self.expression = "user_defined_function"
+
+    def compile_udf(self, func):
+        self.compile_bc(func.bc, func.name)
+
     def eval(self):
         cdef ciarray.iarray_container_t *c;
         if ciarray.iarray_eval(self._e, &c) != 0:

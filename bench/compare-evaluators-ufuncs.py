@@ -13,13 +13,13 @@ NITER = 10
 # Vector sizes and partitions
 shape = [10 * 1000 * 1000]
 N = int(np.prod(shape))
-pshape = [200 * 1000]
+pshape = [500 * 1000]
 
 block_size = pshape
 expression = '(cos(x) - 1.35) * (x - 4.45) * (sin(x) - 8.5)'
-clevel = 5   # compression level
+clevel = 6   # compression level
 clib = ia.LZ4  # compression codec
-nthreads = 4  # number of threads for the evaluation and/or compression
+nthreads = 14  # number of threads for the evaluation and/or compression
 
 
 # Make this True if you want to test the pre-compilation in Numba (not necessary, really)
@@ -120,9 +120,12 @@ def do_regular_evaluation():
 
 
 def do_block_evaluation(pshape_):
-    storage = "superchunk" if pshape_ is not None else "plain buffer"
-    print(f"Block ({storage}) evaluation of the expression:", expression, "with %d elements" % N)
-    cparams = dict(clib=clib, clevel=clevel, nthreads=nthreads)
+    if pshape_ is None:
+        storage = ia.StorageProperties(backend="plainbuffer")
+    else:
+        storage = ia.StorageProperties(backend="blosc", enforce_frame=False, filename=None)
+    print(f"Block ({storage.backend}) evaluation of the expression:", expression, "with %d elements" % N)
+    cparams = dict(clib=clib, clevel=clevel, nthreads=nthreads, storage=storage)
 
     x = np.linspace(0, 10, N, dtype=np.double).reshape(shape)
     # TODO: looks like nelem is not in the same position than numpy
@@ -186,17 +189,20 @@ def do_block_evaluation(pshape_):
         np.testing.assert_almost_equal(y0, y1)
 
     if pshape_ is None:
-        # eval_method = "iterchunk"
-        eval_method = "iterblock"
+        eval_method = "auto"
+        eval_engine = "auto"
     else:
-        eval_method = "iterblock"
+        eval_method = "iterblosc2"
+        eval_engine = "juggernaut"
 
     t0 = time()
-    expr = ia.Expr(eval_flags=eval_method, **cparams)
+    eval_flags = ia.EvalFlags(method=eval_method, engine=eval_engine)
+    expr = ia.Expr(eval_flags=eval_flags, **cparams)
     expr.bind('x', xa)
+    expr.bind_out_properties(ia.dtshape(shape, pshape_, np.float64), storage=storage)
     expr.compile(expression)
     for i in range(NITER):
-        ya = expr.eval(shape, pshape_, np.float64)
+        ya = expr.eval()
     print("Block evaluate via iarray.eval (method: %s): %.4f" % (eval_method, round((time() - t0) / NITER, 4)))
     y1 = ia.iarray2numpy(ya)
     np.testing.assert_almost_equal(y0, y1)
@@ -205,7 +211,7 @@ def do_block_evaluation(pshape_):
     x = xa
     for i in range(NITER):
         ya = ((x.cos() - 1.35) * (x - 4.45) * (x.sin() - 8.5)).eval(
-            method="iarray_eval", pshape=pshape_, eval_flags=eval_method, **cparams)
+            method="iarray_eval", pshape=pshape_, eval_flags=eval_flags, **cparams)
     print("Block evaluate via iarray.LazyExpr.eval (method: %s): %.4f" % (eval_method, round((time() - t0) / NITER, 4)))
     y1 = ia.iarray2numpy(ya)
     np.testing.assert_almost_equal(y0, y1)
