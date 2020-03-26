@@ -17,8 +17,8 @@ if(NOT EXISTS "${CMAKE_BINARY_DIR}/inac.cmake")
 endif()
 include("${CMAKE_BINARY_DIR}/inac.cmake")
 
-inac_add_dependency(inac "1.0.6")
-inac_add_dependency(iarray "0.1.3" SEMANTIC true)
+inac_add_dependency(inac "1.0.7")
+inac_add_dependency(iarray "0.1.4" SEMANTIC true)
 
 find_package(PythonExtensions REQUIRED)
 find_package(Cython)
