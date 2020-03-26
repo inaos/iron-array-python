@@ -53,5 +53,5 @@ steps:
     
 - script: |
       pip install pytest
-      LD_LIBRARY_PATH=$HOME/.inaos/cmake/iarray-linux-x86_64-relwithdebinfo-0.1.3/lib pytest
+      LD_LIBRARY_PATH=$HOME/.inaos/cmake/iarray-linux-x86_64-relwithdebinfo-0.1.4/lib pytest
   displayName: 'Run Tests'
