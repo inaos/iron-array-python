@@ -1,13 +1,12 @@
 # Standard Library
 import argparse
-import ast
 import math
 
 # Requirements
 import iarray as ia
 from llvmlite import ir
 import py2llvm
-from py2llvm import int8p, int32, int64
+from py2llvm import int8, int8p, int32, int64, int64p
 from py2llvm import types
 
 
@@ -20,27 +19,30 @@ verbose = args.verbose
 
 
 """
-typedef struct {
-  int ninputs;  // number of data inputs
-  uint8_t* inputs[BLOSC2_PREFILTER_INPUTS_MAX];  // the data inputs
-  int32_t input_typesizes[BLOSC2_PREFILTER_INPUTS_MAX];  // the typesizes for data inputs
-  void *user_data;  // user-provided info (optional)
-  uint8_t *out;  // automatically filled
-  int32_t out_size;  // automatically filled
-  int32_t out_typesize;  // automatically filled
-} blosc2_prefilter_params;
+typedef struct iarray_eval_pparams_s {
+    int ninputs;  // number of data inputs
+    uint8_t* inputs[IARRAY_EXPR_OPERANDS_MAX];  // the data inputs
+    int32_t input_typesizes[IARRAY_EXPR_OPERANDS_MAX];  // the typesizes for data inputs
+    void *user_data;  // a pointer to an iarray_expr_pparams_t struct
+    uint8_t *out;  // the output buffer
+    int32_t out_size;  // the size of output buffer (in bytes)
+    int32_t out_typesize;  // the typesize of output
+    int8_t ndim;  // the number of dimensions for inputs / output arrays
+    int64_t *vis_shape;  // the visible shape of the input arrays (NULL if not available)
+    int64_t *elem_index; // the starting index for the visible shape (NULL
+} iarray_eval_pparams_t;
 
 /**
  * @brief The type of the prefilter function.
  *
  * If the function call is successful, the return value should be 0; else, a negative value.
  */
-#typedef int (*blosc2_prefilter_fn)(blosc2_prefilter_params* params);
+#typedef int (*blosc2_prefilter_fn)(iarray_eval_pparams_t* params);
 """
 
 BLOSC2_PREFILTER_INPUTS_MAX = 128
 class udf_type(types.StructType):
-    _name_ = 'blosc2_prefilter_params'
+    _name_ = 'iarray_eval_pparams_t'
     _fields_ = [
         ('ninputs', int32), # int32 may not be the same as int
         ('inputs', ir.ArrayType(int8p, BLOSC2_PREFILTER_INPUTS_MAX)),
@@ -49,6 +51,9 @@ class udf_type(types.StructType):
         ('out', int8p), # LLVM doesn't make the difference between signed and unsigned
         ('out_size', int32),
         ('out_typesize', int32), # int32_t out_typesize;  // automatically filled
+        ('ndim', int8),
+        ('vis_shape', int64p),
+        ('elem_index', int64p),
     ]
 
 
@@ -58,42 +63,57 @@ class ArrayShape(types.ArrayShape):
         self.array = array
 
     def get(self, visitor, n):
-        # The dimension size is the same for every dimension in every array
         builder = visitor.builder
-        out_size = self.array.get_field(builder, 5) # gep
-        out_typesize = self.array.get_field(builder, 6) # load
-        out_size = builder.load(out_size) # gep
-        out_typesize = builder.load(out_typesize) # load
-        return visitor.BinOp_exit(None, None, out_size, ast.Div, out_typesize)
+
+        # XXX Old code, when we didn't have access to the pshape
+        if self.array.idx == 0:
+            import ast
+            out_size = self.array.get_field(builder, 5)                    # i32*
+            out_size = builder.load(out_size, name='out_size')             # i32
+            out_typesize = self.array.get_field(builder, 6)                # i32*
+            out_typesize = builder.load(out_typesize, name='out_typesize') # i32
+            return visitor.BinOp_exit(None, None, out_size, ast.Div, out_typesize)
+
+        # All arrays, input and output have the same phsape
+        n = ir.Constant(int32, n)
+        size = builder.gep(self.array.pshape, [n]) # i64*
+        size = builder.load(size)                  # i64
+        return size
+
+        # We don't use this yet, anywhere, ndim is got from the type hint
+#       ndim = self.array.get_field(builder, 7) # i8*
+#       ndim = builder.load(ndim, name='ndim')  # i8
 
 
 class ArrayType(types.ArrayType):
 
     def __init__(self, name, args):
         self.name = name
-        self.params = args['params']
+        self.params = args['params'] # iarray_eval_pparams_t**
         self.shape = ArrayShape(self)
 
     def preamble(self, builder):
+        self.params_ptr = builder.load(self.params)      # iarray_eval_pparams_t*
+        pshape = self.get_field(builder, 8)              # i64**
+        self.pshape = builder.load(pshape, name='shape') # i64*
         if self.idx == 0:
             # .out (uint8_t*)
             ptr = self.get_field(builder, 4)
             ptr = builder.load(ptr)
         else:
             # .inputs (uint8_t**)
-            ptr = self.get_field(builder, 1)
+            ptr = self.get_field(builder, 1, name='inputs')
             # .inputs[n] (uint8_t*)
             idx = ir.Constant(int32, self.idx - 1)
             ptr = builder.gep(ptr, [types.zero, idx])
             ptr = builder.load(ptr)
 
         # Cast
-        self.ptr = builder.bitcast(ptr, self.dtype.as_pointer())
+        self.ptr = builder.bitcast(ptr, self.dtype.as_pointer(), name=self.name)
 
-    def get_field(self, builder, idx):
+    def get_field(self, builder, idx, name=''):
         idx = ir.Constant(int32, idx)
-        ptr = builder.load(self.params)
-        return builder.gep(ptr, [types.zero32, idx])
+        return builder.gep(self.params_ptr, [types.zero32, idx], name=name)
 
     def get_ptr(self, visitor):
         return self.ptr
