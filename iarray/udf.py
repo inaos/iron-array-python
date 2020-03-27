@@ -68,9 +68,9 @@ class ArrayShape(types.ArrayShape):
         # XXX Old code, when we didn't have access to the pshape
         if self.array.idx == 0:
             import ast
-            out_size = self.array.get_field(builder, 5)                    # i32*
+            out_size = self.array.function.get_field(builder, 5)           # i32*
             out_size = builder.load(out_size, name='out_size')             # i32
-            out_typesize = self.array.get_field(builder, 6)                # i32*
+            out_typesize = self.array.function.get_field(builder, 6)       # i32*
             out_typesize = builder.load(out_typesize, name='out_typesize') # i32
             return visitor.BinOp_exit(None, None, out_size, ast.Div, out_typesize)
 
@@ -81,28 +81,25 @@ class ArrayShape(types.ArrayShape):
         return size
 
         # We don't use this yet, anywhere, ndim is got from the type hint
-#       ndim = self.array.get_field(builder, 7) # i8*
-#       ndim = builder.load(ndim, name='ndim')  # i8
+#       ndim = self.array.function.get_field(builder, 7) # i8*
+#       ndim = builder.load(ndim, name='ndim')           # i8
 
 
 class ArrayType(types.ArrayType):
 
-    def __init__(self, name, args):
+    def __init__(self, function, name, args):
+        self.function = function
         self.name = name
-        self.params = args['params'] # iarray_eval_pparams_t**
         self.shape = ArrayShape(self)
 
     def preamble(self, builder):
-        self.params_ptr = builder.load(self.params)      # iarray_eval_pparams_t*
-        pshape = self.get_field(builder, 8)              # i64**
-        self.pshape = builder.load(pshape, name='shape') # i64*
         if self.idx == 0:
             # .out (uint8_t*)
-            ptr = self.get_field(builder, 4)
+            ptr = self.function.get_field(builder, 4)
             ptr = builder.load(ptr)
         else:
             # .inputs (uint8_t**)
-            ptr = self.get_field(builder, 1, name='inputs')
+            ptr = self.function.get_field(builder, 1, name='inputs')
             # .inputs[n] (uint8_t*)
             idx = ir.Constant(int32, self.idx - 1)
             ptr = builder.gep(ptr, [types.zero, idx])
@@ -111,9 +108,9 @@ class ArrayType(types.ArrayType):
         # Cast
         self.ptr = builder.bitcast(ptr, self.dtype.as_pointer(), name=self.name)
 
-    def get_field(self, builder, idx, name=''):
-        idx = ir.Constant(int32, idx)
-        return builder.gep(self.params_ptr, [types.zero32, idx], name=name)
+    @property
+    def pshape(self):
+        return self.function.pshape
 
     def get_ptr(self, visitor):
         return self.ptr
@@ -129,6 +126,12 @@ def Array(dtype, ndim):
 
 class Function(py2llvm.Function):
 
+    def get_py_signature(self, signature):
+        signature = super().get_py_signature(signature)
+        for i, param in enumerate(signature.parameters):
+            param.type.idx = i
+        return signature
+
     def get_ir_signature(self, node, verbose=0, *args):
         dtype = self.llvm.get_dtype(self.ir_module, udf_type)
         params = [py2llvm.Parameter('params', dtype)]
@@ -136,11 +139,15 @@ class Function(py2llvm.Function):
         return_type = types.type_to_ir_type(int64)
         return py2llvm.Signature(params, return_type)
 
-    def get_py_signature(self, signature):
-        signature = super().get_py_signature(signature)
-        for i, param in enumerate(signature.parameters):
-            param.type.idx = i
-        return signature
+    def preamble(self, builder, args):
+        params = args['params']
+        self.params_ptr = builder.load(params)           # iarray_eval_pparams_t*
+        pshape = self.get_field(builder, 8)              # i64**
+        self.pshape = builder.load(pshape, name='shape') # i64*
+
+    def get_field(self, builder, idx, name=''):
+        idx = ir.Constant(int32, idx)
+        return builder.gep(self.params_ptr, [types.zero32, idx], name=name)
 
     def create_expr(self, inputs, dtshape, **cparams):
         eval_flags = ia.EvalFlags(method="iterblosc", engine="compiler")
