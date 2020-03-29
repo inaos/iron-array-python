@@ -21,11 +21,12 @@ dtype = np.float64
 cparams = dict(clib=ia.LZ4, clevel=5, nthreads=16) #, blocksize=1024)
 
 
-@jit(verbose=0)
+@jit(verbose=1)
 def f(out: Array(float64, 1), x: Array(float64, 1)) -> int64:
-    n = out.shape[0]
+    n = x.shape[0]
     for i in range(n):
-        out[i] = (math.sin(x[i]) - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
+        out[i] = x[i]
+        #out[i] = (math.sin(x[i]) - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
 
     return 0
 
@@ -37,9 +38,6 @@ a2 = np.linspace(0, 10, shape[0], dtype=dtype).reshape(shape)
 
 print("iarray evaluation ...")
 expr = f.create_expr([a1], ia.dtshape(shape, pshape, dtype), **cparams)
-# expr = ia.Expr(eval_flags="iterblosc", **cparams)
-# expr.bind('x', a1)
-# expr.compile_udf(f)
 t0 = time()
 for i in range(NITER):
     b1 = expr.eval()
@@ -62,7 +60,6 @@ print(b2_n)
 print("numpy evaluation...")
 t0 = time()
 for i in range(NITER):
-    # bn = eval("(x - 1.35) * (x - 4.45) * (x - 8.5)", {"x": a2})
     bn = (np.sin(a2) - 1.35) * (a2 - 4.45) * (a2 - 8.5)
 print("Time for numpy eval:", round((time() - t0) / NITER, 3))
 print(bn)

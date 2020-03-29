@@ -66,18 +66,19 @@ class ArrayShape(types.ArrayShape):
         builder = visitor.builder
 
         # XXX Old code, when we didn't have access to the pshape
-        if self.array.idx == 0:
-            import ast
-            out_size = self.array.function.get_field(builder, 5)           # i32*
-            out_size = builder.load(out_size, name='out_size')             # i32
-            out_typesize = self.array.function.get_field(builder, 6)       # i32*
-            out_typesize = builder.load(out_typesize, name='out_typesize') # i32
-            return visitor.BinOp_exit(None, None, out_size, ast.Div, out_typesize)
+#       if self.array.idx == 0:
+#           import ast
+#           out_size = self.array.function.get_field(builder, 5)           # i32*
+#           out_size = builder.load(out_size, name='out_size')             # i32
+#           out_typesize = self.array.function.get_field(builder, 6)       # i32*
+#           out_typesize = builder.load(out_typesize, name='out_typesize') # i32
+#           return visitor.BinOp_exit(None, None, out_size, ast.Div, out_typesize)
 
         # All arrays, input and output have the same phsape
+        name = f'shape_{n}'
         n = ir.Constant(int32, n)
         size = builder.gep(self.array.pshape, [n]) # i64*
-        size = builder.load(size)                  # i64
+        size = builder.load(size, name=name)       # i64
         return size
 
         # We don't use this yet, anywhere, ndim is got from the type hint
