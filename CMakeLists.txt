@@ -26,6 +26,10 @@ find_package(NumPy)
 
 include_directories(${NumPy_INCLUDE_DIRS})
 
+if (WIN32)
+add_definitions(-DINA_OS_WINDOWS_SKIP_POSIX_TIME_DEFS)
+endif (WIN32)
+
 add_cython_target(iarray_ext.pyx)
 
 add_library(iarray_ext MODULE ${iarray_ext})
