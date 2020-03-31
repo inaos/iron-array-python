@@ -54,9 +54,13 @@ steps:
 
 - script: |
     ls -l iarray
-    nm iarray/iarray_ext.cpython-37m-x86_64-linux-gnu.soo | grep __reduce_cython__
+    nm iarray/iarray_ext.cpython-37m-x86_64-linux-gnu.so | grep __reduce_cython__
+  displayName: 'nm ext __reduce_cython__'
 
-  displayName: 'Cat C ext'
+- script: |
+    ls -l iarray
+    nm iarray/iarray_ext.cpython-37m-x86_64-linux-gnu.so
+  displayName: 'nm ext'
 
 - script: |
       pip install pytest
