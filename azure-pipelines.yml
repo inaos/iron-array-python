@@ -43,11 +43,11 @@ steps:
     eq( variables['Agent.OS'], 'Darwin' )
 
 - bash: |
-      conda install -y --name iArrayEnv -c anaconda setuptools
-      conda install -y --name iArrayEnv -c anaconda numpy
-      conda install -y --name iArrayEnv -c conda-forge scikit-build
-      conda install -y --name iArrayEnv -c conda-forge setuptools_scm
-      conda install -y --name iArrayEnv -c anaconda cython
+      conda install -c anaconda setuptools
+      conda install -c anaconda numpy
+      conda install -c conda-forge scikit-build
+      conda install -c conda-forge setuptools_scm
+      conda install -c anaconda cython
   displayName: 'Install dependencies'
 
 - script: |
