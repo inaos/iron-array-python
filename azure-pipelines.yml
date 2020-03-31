@@ -53,7 +53,7 @@ steps:
   condition: eq( variables['Agent.OS'], 'Windows_NT' )
 
 - script: |
-    ls -l
+    ls -l iarray
     cat iarray/iarray_ext.c
   displayName: 'Cat C ext'
 
