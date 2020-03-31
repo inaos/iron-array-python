@@ -36,12 +36,11 @@ steps:
     versionSpec: '$(python.version)'
   displayName: 'Use Python $(python.version)'
 
-  - bash: |
-      if [ "$AGENT_OS" == "Darwin" ]
-        then
+- script: |
           sudo chown -R $USER $CONDA
-        fi
-    displayName: Take ownership of conda installation
+  displayName: Take ownership of conda installation
+  condition:
+    ne( variables['Agent.OS'], 'Darwin' )
 
 - script: |
       conda create --yes --quiet --name iArrayEnv
