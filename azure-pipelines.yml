@@ -36,7 +36,7 @@ steps:
     versionSpec: '$(python.version)'
   displayName: 'Use Python $(python.version)'
 
-  - script: |
+  - bash: |
       if [ "$AGENT_OS" == "Darwin" ]
         then
           sudo chown -R $USER $CONDA
