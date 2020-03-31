@@ -35,10 +35,18 @@ steps:
   inputs:
     versionSpec: '$(python.version)'
   displayName: 'Use Python $(python.version)'
-    
+
+  - script: |
+      if [ "$AGENT_OS" == "Darwin" ]
+        then
+          sudo chown -R $USER $CONDA
+        fi
+    displayName: Take ownership of conda installation
+
 - script: |
-      python -m pip install --retries 3 -U pip setuptools setuptools-scm scikit-build numpy
-      python -m pip install -Iv Cython==0.25.2
+      conda create --yes --quiet --name iArrayEnv
+      source activate iArrayEnv
+      conda install setuptools setuptools-scm scikit-build numpy cython
   displayName: 'Install dependencies'
 
 - script: |
