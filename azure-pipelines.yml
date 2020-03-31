@@ -43,8 +43,6 @@ steps:
     eq( variables['Agent.OS'], 'Darwin' )
 
 - bash: |
-      conda create --yes --quiet --name iArrayEnv
-      conda activate iArrayEnv
       conda install -y --name iArrayEnv -c anaconda setuptools
       conda install -y --name iArrayEnv -c anaconda numpy
       conda install -y --name iArrayEnv -c conda-forge scikit-build
