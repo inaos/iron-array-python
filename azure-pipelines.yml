@@ -40,11 +40,11 @@ steps:
           sudo chown -R $USER $CONDA
   displayName: Take ownership of conda installation
   condition:
-    ne( variables['Agent.OS'], 'Darwin' )
+    eq( variables['Agent.OS'], 'Darwin' )
 
 - bash: |
       conda create --yes --quiet --name iArrayEnv
-      source activate iArrayEnv
+      conda activate iArrayEnv
       conda install -y --name iArrayEnv -c anaconda setuptools
       conda install -y --name iArrayEnv -c anaconda numpy
       conda install -y --name iArrayEnv -c conda-forge scikit-build
