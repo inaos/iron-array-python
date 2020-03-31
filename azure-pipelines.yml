@@ -53,6 +53,11 @@ steps:
   condition: eq( variables['Agent.OS'], 'Windows_NT' )
 
 - script: |
+    ls -l
+    cat iarray/iarray_ext.c
+  displayName: 'Cat C ext'
+
+- script: |
       pip install pytest
       LD_LIBRARY_PATH=$HOME/.inaos/cmake/iarray-linux-x86_64-relwithdebinfo-0.1.4/lib pytest
   displayName: 'Run Tests'
