@@ -54,7 +54,8 @@ steps:
 
 - script: |
     ls -l iarray
-    cat iarray/iarray_ext.c
+    nm iarray/iarray_ext.cpython-37m-x86_64-linux-gnu.soo | grep __reduce_cython__
+
   displayName: 'Cat C ext'
 
 - script: |
