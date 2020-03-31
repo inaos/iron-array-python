@@ -42,10 +42,14 @@ steps:
   condition:
     ne( variables['Agent.OS'], 'Darwin' )
 
-- script: |
+- bash: |
       conda create --yes --quiet --name iArrayEnv
       source activate iArrayEnv
-      conda install -y --name iArrayEnv setuptools setuptools-scm scikit-build numpy cython
+      conda install -y --name iArrayEnv -c anaconda setuptools
+      conda install -y --name iArrayEnv -c anaconda numpy
+      conda install -y --name iArrayEnv -c conda-forge scikit-build
+      conda install -y --name iArrayEnv -c conda-forge setuptools_scm
+      conda install -y --name iArrayEnv -c anaconda cython
   displayName: 'Install dependencies'
 
 - script: |
