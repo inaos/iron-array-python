@@ -46,7 +46,7 @@ steps:
 - script: |
       conda create --yes --quiet --name iArrayEnv
       source activate iArrayEnv
-      conda install setuptools setuptools-scm scikit-build numpy cython
+      conda install -y --name iArrayEnv setuptools setuptools-scm scikit-build numpy cython
   displayName: 'Install dependencies'
 
 - script: |
