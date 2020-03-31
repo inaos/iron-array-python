@@ -25,7 +25,7 @@ steps:
 - bash: |
     mkdir -p $HOME/.inaos/cmake
     mkdir -p $HOME/INAOS
-    echo "INAC_REPOSITORY_LOCAL=$HOME/INAOS" > $HOME/.inaos/cmake/repository.txt 
+    echo "INAC_REPOSITORY_LOCAL=$HOME/INAOS" > $HOME/.inaos/cmake/repository.txt
     echo "INAC_REPOSITORY_REMOTE=https://inaos.jfrog.io/inaos/libs-release-local/inaos" >> $HOME/.inaos/cmake/repository.txt
     echo "INAC_REPOSITORY_USRPWD=licensed:AKCp5bBraH7CasbsYCURsjzkbjXwVwdYcT7u39EiuL6GjnK1VKfKQWCd1E2E64mHokU5YUHku" >> $HOME/.inaos/cmake/repository.txt
     git submodule update --init --recursive
@@ -36,29 +36,9 @@ steps:
     versionSpec: '$(python.version)'
   displayName: 'Use Python $(python.version)'
 
-- bash: |
-    if [ "$AGENT_OS" == "Darwin" ]
-      then
-        echo "##vso[task.prependpath]$CONDA/bin"
-    fi
-    if [ "$AGENT_OS" == "Windows_NT" ]
-      then
-        echo "##vso[task.prependpath]$CONDA/Scripts"
-    fi
-  displayName: Add conda to PATH
-
 - script: |
-          sudo chown -R $USER $CONDA
-  displayName: Take ownership of conda installation
-  condition:
-    eq( variables['Agent.OS'], 'Darwin' )
-
-- bash: |
-      conda install -y -c anaconda setuptools
-      conda install -y -c anaconda numpy
-      conda install -y -c conda-forge scikit-build
-      conda install -y -c conda-forge setuptools_scm
-      conda install -y -c anaconda cython
+      python -m pip install --retries 3 -U pip setuptools setuptools-scm scikit-build numpy
+      python -m pip install -Iv Cython==0.25.2
   displayName: 'Install dependencies'
 
 - script: |
@@ -71,14 +51,14 @@ steps:
       python setup.py build_ext -i --build-type RelWithDebInfo --generator "Visual Studio 15 2017 Win64"
   displayName: 'Compile package'
   condition: eq( variables['Agent.OS'], 'Windows_NT' )
-    
+
 - script: |
       pip install pytest
       LD_LIBRARY_PATH=$HOME/.inaos/cmake/iarray-linux-x86_64-relwithdebinfo-0.1.4/lib pytest
   displayName: 'Run Tests'
   condition:
     ne( variables['Agent.OS'], 'Windows_NT' )
-    
+
 - script: |
       pip install pytest
       set PATH=%PATH%;%USERPROFILE%\.inaos\cmake\iarray-linux-x86_64-relwithdebinfo-0.1.4\lib
