@@ -34,6 +34,8 @@ setup(
         'pytest',
         'hypothesis',
     ],
+    package_dir={'': '.'},
+    packages=find_packages(),
     extras_require={
         'doc': [
             'sphinx >= 1.5',
