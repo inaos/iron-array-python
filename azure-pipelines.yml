@@ -36,6 +36,17 @@ steps:
     versionSpec: '$(python.version)'
   displayName: 'Use Python $(python.version)'
 
+- bash: |
+    if [ "$AGENT_OS" == "Darwin" ]
+      then
+        echo "##vso[task.prependpath]$CONDA/bin"
+    fi
+    if [ "$AGENT_OS" == "Windows_NT" ]
+      then
+        echo "##vso[task.prependpath]$CONDA/Scripts"
+    fi
+  displayName: Add conda to PATH
+
 - script: |
           sudo chown -R $USER $CONDA
   displayName: Take ownership of conda installation
@@ -43,11 +54,11 @@ steps:
     eq( variables['Agent.OS'], 'Darwin' )
 
 - bash: |
-      conda install -c anaconda setuptools
-      conda install -c anaconda numpy
-      conda install -c conda-forge scikit-build
-      conda install -c conda-forge setuptools_scm
-      conda install -c anaconda cython
+      conda install -y -c anaconda setuptools
+      conda install -y -c anaconda numpy
+      conda install -y -c conda-forge scikit-build
+      conda install -y -c conda-forge setuptools_scm
+      conda install -y -c anaconda cython
   displayName: 'Install dependencies'
 
 - script: |
