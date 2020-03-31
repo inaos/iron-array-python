@@ -1,5 +1,6 @@
 # Hey Cython, this is Python 3!
 # cython: language_level=3
+# cython: auto_pickle=False
 
 ###########################################################################################
 # Copyright INAOS GmbH, Thalwil, 2018.
