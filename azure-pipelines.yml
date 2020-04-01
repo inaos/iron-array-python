@@ -36,8 +36,32 @@ steps:
     versionSpec: '$(python.version)'
   displayName: 'Use Python $(python.version)'
 
+- bash: |
+    if [ "$AGENT_OS" == "Darwin" ]
+      then
+        echo "##vso[task.prependpath]$CONDA/bin"
+    fi
+    if [ "$AGENT_OS" == "Windows_NT" ]
+      then
+        echo "##vso[task.prependpath]$CONDA/Scripts"
+    fi
+  displayName: Add conda to PATH
+
+- bash: |
+    if [ "$AGENT_OS" == "Darwin" ]
+      then
+        sudo chown -R $USER $CONDA
+      fi
+  displayName: Take ownership of conda installation
+
+- bash: |
+    conda install -y -c intel icc_rt
+
+  displayName: Download dependencies
+
+
 - script: |
-      python -m pip install --retries 3 -U pip setuptools setuptools-scm scikit-build numpy icc_rt numexpr
+      python -m pip install --retries 3 -U pip setuptools setuptools-scm scikit-build numpy numexpr
       python -m pip install -Iv Cython==0.29.13
   displayName: 'Install dependencies'
 
