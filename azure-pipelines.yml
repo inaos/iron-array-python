@@ -70,7 +70,7 @@ steps:
 
 - script: |
       pip install pytest
-      set PATH=%PATH%;%USERPROFILE%\.inaos\cmake\iarray-windows_vs-x86_64-relwithdebinfo-0.1.4\lib
+      set PATH=%PATH%;%USERPROFILE%\.inaos\cmake\iarray-windows_vs17-x86_64-relwithdebinfo-0.1.4\lib
       pytest
   displayName: 'Run Tests'
   condition:
