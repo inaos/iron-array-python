@@ -42,7 +42,7 @@ steps:
   displayName: 'Install dependencies'
 
 - script: |
-      python setup.py build_ext -i --build-type RelWithDebInfo
+      python setup.py build_ext -i --build-type Debug
   displayName: 'Compile package'
   condition: ne( variables['Agent.OS'], 'Windows_NT' )
 
