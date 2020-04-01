@@ -56,14 +56,13 @@ steps:
 
 - script: |
       pip install pytest
-      LD_LIBRARY_PATH=$HOME/.inaos/cmake/iarray-linux-x86_64-relwithdebinfo-0.1.4/lib pytest
+      pytest
   displayName: 'Run Tests'
   condition:
     ne( variables['Agent.OS'], 'Windows_NT' )
 
 - script: |
       pip install pytest
-      set PATH=%PATH%;%USERPROFILE%\.inaos\cmake\iarray-linux-x86_64-relwithdebinfo-0.1.4\lib
       pytest
   displayName: 'Run Tests'
   condition:
