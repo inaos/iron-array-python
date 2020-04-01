@@ -5,15 +5,15 @@ strategy:
   matrix:
     linux:
       imageName: 'ubuntu-18.04'
-      python.version: '3.7'
+      python.version: '3.7.3'
     mac:
       imageName: 'macos-10.14'
-      python.version: '3.7'
+      python.version: '3.7.3'
     windows:
       imageName: 'vs2017-win2016'
       VSINSTALL: "Microsoft Visual Studio\\2017\\Enterprise\\VC\\Auxiliary\\Build"
       MSVC_PLATFORM: amd64
-      python.version: '3.7'
+      python.version: '3.7.3'
 
 pool:
   vmImage: $(imageName)
@@ -56,8 +56,7 @@ steps:
 
 
 - script: |
-      conda install -y -c intel icc_rt
-      python -m pip install --retries 3 -U pip setuptools setuptools-scm scikit-build numpy
+      python -m pip install --retries 3 -U pip setuptools setuptools-scm scikit-build numpy icc_rt
       python -m pip install -Iv Cython==0.29.13
   displayName: 'Install dependencies'
 
