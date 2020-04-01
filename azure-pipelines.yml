@@ -36,31 +36,43 @@ steps:
     versionSpec: '$(python.version)'
   displayName: 'Use Python $(python.version)'
 
+- bash: |
+    if [ "$AGENT_OS" == "Darwin" ]
+      then
+        echo "##vso[task.prependpath]$CONDA/bin"
+    fi
+    if [ "$AGENT_OS" == "Windows_NT" ]
+      then
+        echo "##vso[task.prependpath]$CONDA/Scripts"
+    fi
+  displayName: Add conda to PATH
+
+- bash: |
+    if [ "$AGENT_OS" == "Darwin" ]
+      then
+        sudo chown -R $USER $CONDA
+      fi
+  displayName: Take ownership of conda installation
+
+
 - script: |
-      python -m pip install --retries 3 -U pip setuptools setuptools-scm scikit-build numpy icc_rt
+      conda install -y -c intel icc_rt
+      python -m pip install --retries 3 -U pip setuptools setuptools-scm scikit-build numpy
       python -m pip install -Iv Cython==0.29.13
   displayName: 'Install dependencies'
 
 - script: |
       python setup.py build_ext -i --build-type Debug
   displayName: 'Compile package'
-  condition: ne( variables['Agent.OS'], 'Windows_NT' )
+  condition:
+    ne( variables['Agent.OS'], 'Windows_NT' )
 
 - script: |
       call "C:\Program Files (x86)\%VSINSTALL%\vcvarsall.bat" %MSVC_PLATFORM%
       python setup.py build_ext -i --build-type RelWithDebInfo --generator "Visual Studio 15 2017 Win64"
   displayName: 'Compile package'
-  condition: eq( variables['Agent.OS'], 'Windows_NT' )
-
-- script: |
-    ls -l iarray
-    nm iarray/iarray_ext.cpython-37m-x86_64-linux-gnu.so | grep __reduce_cython__
-  displayName: 'nm ext __reduce_cython__'
-
-- script: |
-    ls -l iarray
-    nm iarray/iarray_ext.cpython-37m-x86_64-linux-gnu.so
-  displayName: 'nm ext'
+  condition:
+    eq( variables['Agent.OS'], 'Windows_NT' )
 
 - script: |
       pip install pytest
