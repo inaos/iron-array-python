@@ -5,15 +5,15 @@ strategy:
   matrix:
     linux:
       imageName: 'ubuntu-18.04'
-      python.version: '3.7.3'
+      python.version: '3.7'
     mac:
       imageName: 'macos-10.14'
-      python.version: '3.7.3'
+      python.version: '3.7'
     windows:
       imageName: 'vs2017-win2016'
       VSINSTALL: "Microsoft Visual Studio\\2017\\Enterprise\\VC\\Auxiliary\\Build"
       MSVC_PLATFORM: amd64
-      python.version: '3.7.3'
+      python.version: '3.7'
 
 pool:
   vmImage: $(imageName)
@@ -35,25 +35,6 @@ steps:
   inputs:
     versionSpec: '$(python.version)'
   displayName: 'Use Python $(python.version)'
-
-- bash: |
-    if [ "$AGENT_OS" == "Darwin" ]
-      then
-        echo "##vso[task.prependpath]$CONDA/bin"
-    fi
-    if [ "$AGENT_OS" == "Windows_NT" ]
-      then
-        echo "##vso[task.prependpath]$CONDA/Scripts"
-    fi
-  displayName: Add conda to PATH
-
-- bash: |
-    if [ "$AGENT_OS" == "Darwin" ]
-      then
-        sudo chown -R $USER $CONDA
-      fi
-  displayName: Take ownership of conda installation
-
 
 - script: |
       python -m pip install --retries 3 -U pip setuptools setuptools-scm scikit-build numpy icc_rt
