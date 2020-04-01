@@ -55,21 +55,21 @@ steps:
     eq( variables['Agent.OS'], 'Windows_NT' )
 
 - script: |
-      pip install pytest
+      pip install pytest -V
       LD_LIBRARY_PATH=$HOME/.inaos/cmake/iarray-linux-x86_64-relwithdebinfo-0.1.4/lib pytest
   displayName: 'Run Tests'
   condition:
     eq( variables['Agent.OS'], 'Linux' )
 
 - script: |
-      pip install pytest
+      pip install pytest -V
       LD_LIBRARY_PATH=$HOME/.inaos/cmake/iarray-Darwin-x86_64-relwithdebinfo-0.1.4/lib pytest
   displayName: 'Run Tests'
   condition:
     eq( variables['Agent.OS'], 'Darwin' )
 
 - script: |
-      pip install pytest
+      pip install pytest -V
       set PATH=%PATH%;%USERPROFILE%\.inaos\cmake\iarray-windows_vs17-x86_64-relwithdebinfo-0.1.4\lib
       pytest
   displayName: 'Run Tests'
