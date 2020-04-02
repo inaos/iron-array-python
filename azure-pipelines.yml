@@ -59,6 +59,8 @@ steps:
       pip install pytest
       LD_LIBRARY_PATH=$HOME/.inaos/cmake/iarray-linux-x86_64-relwithdebinfo-0.1.4/lib pytest -vv
   displayName: 'Run Tests'
+  env:
+    INAC_TRACE: "*"
   condition:
     eq( variables['Agent.OS'], 'Linux' )
 
@@ -66,6 +68,8 @@ steps:
       pip install pytest
       LD_LIBRARY_PATH=$HOME/.inaos/cmake/iarray-darwin-x86_64-relwithdebinfo-0.1.4/lib pytest -vv
   displayName: 'Run Tests'
+  env:
+    INAC_TRACE: "*"
   condition:
     eq( variables['Agent.OS'], 'Darwin' )
 
@@ -74,5 +78,7 @@ steps:
       set PATH=%PATH%;%USERPROFILE%\.inaos\cmake\iarray-windows_vs17-x86_64-relwithdebinfo-0.1.4\lib
       pytest -vv
   displayName: 'Run Tests'
+  env:
+    INAC_TRACE: "*"
   condition:
     eq( variables['Agent.OS'], 'Windows_NT' )
