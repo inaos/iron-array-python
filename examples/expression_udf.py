@@ -1,3 +1,4 @@
+import functools
 import math
 from time import time
 
@@ -18,15 +19,15 @@ shape = [20 * 1000 * 1000]
 pshape = [4 * 1000 * 1000]
 dtype = np.float64
 
-cparams = dict(clib=ia.LZ4, clevel=5, nthreads=16) #, blocksize=1024)
+blocksize = functools.reduce(lambda x, y: x * y, pshape) * dtype(0).itemsize
+cparams = dict(clib=ia.LZ4, clevel=5, nthreads=16, blocksize=blocksize)
 
 
-@jit(verbose=1)
+@jit(verbose=0)
 def f(out: Array(float64, 1), x: Array(float64, 1)) -> int64:
     n = x.shape[0]
     for i in range(n):
-        out[i] = x[i]
-        #out[i] = (math.sin(x[i]) - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
+        out[i] = (math.sin(x[i]) - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
 
     return 0
 
