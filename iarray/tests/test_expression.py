@@ -6,6 +6,7 @@ import numpy as np
 # Expression
 @pytest.mark.parametrize("method, engine, shape, pshape, dtype, expression", [
      #("iterblosc2", "juggernaut", [100, 100], [23, 32], np.float64, "cos(x)"),
+     ("iterblosc2", "juggernaut", [100, 100], [10, 99], np.float64, "cos(x)"),
      ("iterblosc2", "juggernaut", [100, 100], [10, 99], np.float64, "x"),
      ("iterblosc2", "tinyexpr", [1000], [110], np.float32, "x"),
      ("iterblosc", "juggernaut", [100, 100], [10, 99], np.float64, "(x - 1.35) * (x - 4.45) * (x - 8.5)"),
