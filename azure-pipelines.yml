@@ -6,9 +6,9 @@ strategy:
     linux:
       imageName: 'ubuntu-18.04'
       python.version: '3.7'
-    mac:
-      imageName: 'macos-10.14'
-      python.version: '3.7'
+#    mac:
+#      imageName: 'macos-10.14'
+#      python.version: '3.7'
     windows:
       imageName: 'vs2017-win2016'
       VSINSTALL: "Microsoft Visual Studio\\2017\\Enterprise\\VC\\Auxiliary\\Build"

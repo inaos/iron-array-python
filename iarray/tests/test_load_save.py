@@ -7,9 +7,9 @@ import numpy as np
 @pytest.mark.parametrize("shape, pshape, dtype, load_in_mem",
                          [
                              ([67], [20], np.float64, True),
-                             #([100, 123], [12, 21], np.float32, True),
-                             #([100, 100], [5, 17], np.float64, False),
-                             #([104, 121, 212], [5, 46, 10], np.float32, False)
+                             ([100, 123], [12, 21], np.float32, True),
+                             ([100, 100], [5, 17], np.float64, False),
+                             ([104, 121, 212], [5, 46, 10], np.float32, False)
 
                          ])
 def test_load_save(shape, pshape, dtype, load_in_mem):
