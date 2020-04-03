@@ -10,7 +10,7 @@ import numpy as np
      ("iterblosc2", "juggernaut", [100, 100], [10, 99], np.float64, "x"),
      ("iterblosc2", "tinyexpr", [1000], [110], np.float32, "x"),
      ("iterblosc", "juggernaut", [100, 100], [10, 99], np.float64, "(x - 1.35) * (x - 4.45) * (x - 8.5)"),
-     ("iterblosc", "juggernaut", [1000], [100], np.float64, "(cos(x) - 1.35) * (sin(x) - 4.45) * tan(x - 8.5)"),
+     #("iterblosc", "juggernaut", [1000], [100], np.float64, "(cos(x) - 1.35) * (sin(x) - 4.45) * tan(x - 8.5)"),
      # ("auto", "auto", [1000], [100], np.float64, "(cos(x) - 1.35) * (sin(x) - 4.45) * tan(x - 8.5)"),
      ("iterchunk", "tinyexpr", [1000], [123], np.float32, "(abs(-x) - 1.35) * ceil(x) * floor(x - 8.5)"),
      # ("iterblosc2", "juggernaut", [100, 100, 100], [5, 12, 10], np.float64, "sinh(x) + (cosh(x) - 1.35) - tanh(x + .2) + 1"),
