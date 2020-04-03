@@ -34,6 +34,7 @@ setup(
         'pytest',
         'hypothesis',
     ],
+    tests_require=['numpy', 'numexpr'],
     extras_require={
         'doc': [
             'sphinx >= 1.5',
@@ -45,4 +46,5 @@ setup(
             'numexpr',
             'numba',
         ]},
+    packages = ['iarray'],
 )

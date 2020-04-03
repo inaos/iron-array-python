@@ -5,7 +5,7 @@ import numpy as np
 
 # Expression
 @pytest.mark.parametrize("method, engine, shape, pshape, dtype, expression", [
-     ("iterblosc2", "juggernaut", [100, 100], [23, 32], np.float64, "cos(x)"),
+     #("iterblosc2", "juggernaut", [100, 100], [23, 32], np.float64, "cos(x)"),
      ("iterblosc2", "juggernaut", [100, 100], [10, 99], np.float64, "x"),
      ("iterblosc2", "tinyexpr", [1000], [110], np.float32, "x"),
      ("iterblosc", "juggernaut", [1000], [100], np.float64, "(cos(x) - 1.35) * (sin(x) - 4.45) * tan(x - 8.5)"),
@@ -42,7 +42,7 @@ def test_expression(method, engine, shape, pshape, dtype, expression):
     expr.compile(expression)
 
     iout = expr.eval()
-    
+
     npout = ia.iarray2numpy(iout)
     npout2 = ia.Parser().parse(expression).evaluate({"x": npx, "y": npy})
 
