@@ -22,7 +22,6 @@ setup(
         'setuptools>18.0',
         'setuptools-scm>3.0'
         'numpy>=1.15',
-        'numexpr>=2.6',
         'cython>=0.23',
 		'scikit-build',
     ],
