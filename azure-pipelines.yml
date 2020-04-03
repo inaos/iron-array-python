@@ -40,6 +40,7 @@ steps:
 - script: |
       python -m pip install --retries 3 -U pip setuptools setuptools-scm scikit-build numpy numexpr
       python -m pip install -Iv Cython==0.29.13
+      python -m pip install -Iv icc_rt
   displayName: 'Install dependencies'
 
 - script: |
