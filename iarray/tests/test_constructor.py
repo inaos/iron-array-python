@@ -69,10 +69,10 @@ def test_from_file(start, stop, shape, pshape, dtype, filename):
                          [
                              (0, 10, (slice(2, 4), slice(5, 10), slice(1, 2)), [10, 12, 5], [2, 3, 2], np.float64),
                              (-0.1, -0.2, (slice(2, 4), slice(7, 12)), [12, 16], [2, 7], np.float32),
-                             (0, 10, (slice(2, 4), slice(5, 10), slice(1, 2)), [10, 12, 5], None, np.float64),
+                             # (0, 10, (slice(2, 4), slice(5, 10), slice(1, 2)), [10, 12, 5], None, np.float64),
                              (-0.1, -0.2, (slice(2, 4), slice(7, 12)), [12, 16], None, np.float32)
                          ])
-def _test_slice(start, stop, slice, shape, pshape, dtype):
+def test_slice(start, stop, slice, shape, pshape, dtype):
     if pshape is None:
         storage = ia.StorageProperties("plainbuffer")
     else:
