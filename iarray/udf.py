@@ -28,8 +28,8 @@ typedef struct iarray_eval_pparams_s {
     int32_t out_size;  // the size of output buffer (in bytes)
     int32_t out_typesize;  // the typesize of output
     int8_t ndim;  // the number of dimensions for inputs / output arrays
-    int64_t *vis_shape;  // the visible shape of the input arrays (NULL if not available)
-    int64_t *elem_index; // the starting index for the visible shape (NULL
+    int64_t *window_shape;  // the shape of the window for the input arrays (NULL if not available)
+    int64_t *window_start; // the start coordinates for the window shape (NULL if not available)
 } iarray_eval_pparams_t;
 
 /**
@@ -52,20 +52,21 @@ class udf_type(types.StructType):
         ('out_size', int32),
         ('out_typesize', int32), # int32_t out_typesize;  // automatically filled
         ('ndim', int8),
-        ('vis_shape', int64p),
-        ('elem_index', int64p),
+        ('window_shape', int64p),
+        ('window_start', int64p),
     ]
 
 
 class ArrayShape(types.ArrayShape):
 
-    def __init__(self, array):
+    def __init__(self, shape, array):
+        self.shape = shape
         self.array = array
 
     def get(self, visitor, n):
         builder = visitor.builder
 
-        # XXX Old code, when we didn't have access to the pshape
+        # XXX Old code, when we didn't have access to the window shape
 #       if self.array.idx == 0:
 #           import ast
 #           out_size = self.array.function.get_field(builder, 5)           # i32*
@@ -75,10 +76,10 @@ class ArrayShape(types.ArrayShape):
 #           return visitor.BinOp_exit(None, None, out_size, ast.Div, out_typesize)
 
         # All arrays, input and output have the same phsape
-        name = f'shape_{n}'
+        name = f'window_shape_{n}'
         n = ir.Constant(int32, n)
-        size = builder.gep(self.array.pshape, [n]) # i64*
-        size = builder.load(size, name=name)       # i64
+        size = builder.gep(self.shape, [n])  # i64*
+        size = builder.load(size, name=name) # i64
         return size
 
         # We don't use this yet, anywhere, ndim is got from the type hint
@@ -91,7 +92,8 @@ class ArrayType(types.ArrayType):
     def __init__(self, function, name, args):
         self.function = function
         self.name = name
-        self.shape = ArrayShape(self)
+        self.window_shape = ArrayShape(self._shape, self)
+        self.window_start = ArrayShape(self._start, self)
 
     def preamble(self, builder):
         if self.idx == 0:
@@ -110,8 +112,12 @@ class ArrayType(types.ArrayType):
         self.ptr = builder.bitcast(ptr, self.dtype.as_pointer(), name=self.name)
 
     @property
-    def pshape(self):
-        return self.function.pshape
+    def _shape(self):
+        return self.function._shape
+
+    @property
+    def _start(self):
+        return self.function._start
 
     def get_ptr(self, visitor):
         return self.ptr
@@ -142,9 +148,11 @@ class Function(py2llvm.Function):
 
     def preamble(self, builder, args):
         params = args['params']
-        self.params_ptr = builder.load(params)           # iarray_eval_pparams_t*
-        pshape = self.get_field(builder, 8)              # i64**
-        self.pshape = builder.load(pshape, name='shape') # i64*
+        self.params_ptr = builder.load(params)                        # iarray_eval_pparams_t*
+        window_shape = self.get_field(builder, 8)                     # i64**
+        self._shape = builder.load(window_shape, name='window_shape') # i64*
+        window_start = self.get_field(builder, 9)                     # i64**
+        self._start = builder.load(window_start, name='window_start') # i64*
 
     def get_field(self, builder, idx, name=''):
         idx = ir.Constant(int32, idx)
