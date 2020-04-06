@@ -54,7 +54,7 @@ After setting up the build mode, we can proceed with the compilation of the actu
 
 ```bash
 rm -rf build iarray/*.so    # *.pyd if on windows.  This step is a cleanup and purely optional.
-python setup.py build_ext -i
+python setup.py build_ext -i --build-type RelWithDebInfo   # (or Debug)
 ```
 
 and  execute the tests with:
@@ -80,4 +80,4 @@ When in release mode, you may want to install this package in the system.  For d
 python setup.py install
 ```
 
-The setup.py can be used to produce wheels, where all the libraries are included (see https://pythonwheels.com).
+The setup.py can be used to produce wheels, where all the dependency libraries will be included (see https://pythonwheels.com).

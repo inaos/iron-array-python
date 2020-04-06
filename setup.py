@@ -23,7 +23,7 @@ setup(
         'setuptools-scm>3.0'
         'numpy>=1.15',
         'cython>=0.23',
-		'scikit-build',
+        'scikit-build',
     ],
     python_requires=">=3.6",
     install_requires=[
