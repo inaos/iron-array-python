@@ -160,22 +160,22 @@ cdef class _Config:
         eval_flags = eval_flags.to_tuple()  # TODO: should we move this to its own eval configuration?
 
         if eval_flags.method == "auto":
-            method = ciarray.IARRAY_EXPR_EVAL_METHOD_AUTO
+            method = ciarray.IARRAY_EVAL_METHOD_AUTO
         elif eval_flags.method == "iterblosc2":
-            method = ciarray.IARRAY_EXPR_EVAL_METHOD_ITERBLOSC2
+            method = ciarray.IARRAY_EVAL_METHOD_ITERBLOSC2
         elif eval_flags.method == "iterblosc":
-            method = ciarray.IARRAY_EXPR_EVAL_METHOD_ITERBLOSC
+            method = ciarray.IARRAY_EVAL_METHOD_ITERBLOSC
         elif eval_flags.method == "iterchunk":
-            method = ciarray.IARRAY_EXPR_EVAL_METHOD_ITERCHUNK
+            method = ciarray.IARRAY_EVAL_METHOD_ITERCHUNK
         else:
             raise ValueError("eval_flags method not recognized:", eval_flags.method)
 
         if eval_flags.engine == "auto":
-            engine = ciarray.IARRAY_EXPR_EVAL_ENGINE_AUTO
-        elif eval_flags.engine == "tinyexpr":
-            engine = ciarray.IARRAY_EXPR_EVAL_ENGINE_TINYEXPR
-        elif eval_flags.engine == "juggernaut":
-            engine = ciarray.IARRAY_EXPR_EVAL_ENGINE_JUGGERNAUT
+            engine = ciarray.IARRAY_EVAL_ENGINE_AUTO
+        elif eval_flags.engine == "interpreter":
+            engine = ciarray.IARRAY_EVAL_ENGINE_INTERPRETER
+        elif eval_flags.engine == "compiler":
+            engine = ciarray.IARRAY_EVAL_ENGINE_COMPILER
         else:
             raise ValueError("eval_flags engine not recognized:", eval_flags.engine)
 

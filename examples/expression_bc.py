@@ -20,7 +20,7 @@ a2 = np.linspace(0, 10, shape[0], dtype=dtype).reshape(shape)
 print("iarray evaluation...")
 
 # And now, the expression
-expr = ia.Expr(eval_flags=ia.EvalFlags(method="iterblosc", engine="juggernaut"), nthreads=1)
+expr = ia.Expr(eval_flags=ia.EvalFlags(method="iterblosc", engine="compiler"), nthreads=1)
 expr.bind("x", a1)
 expr.bind_out_properties(ia.dtshape(shape, pshape, dtype))
 bc = open('examples/expression.bc', 'rb').read()

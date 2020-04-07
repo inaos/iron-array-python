@@ -61,40 +61,44 @@ def evaluate(command):
         ne.set_num_threads(1)
         ne.evaluate(command)
 
-    def ia_llvm_parallel(command):
+    def ia_compiler_parallel(command):
         global iax, iay, iaz, shape, pshape, dtype, cparams
         cparams['nthreads'] = NTHREADS
-        expr = ia.Expr(eval_flags="iterblosc2", **cparams)
+        eval_flags = ia.EvalFlags(method="iterblosc2", engine="compiler")
+        expr = ia.Expr(eval_flags=eval_flags, **cparams)
         expr.bind('x', iax)
         expr.bind('y', iay)
         expr.bind('z', iaz)
         expr.compile(command)
         expr.eval(shape, pshape, dtype)
 
-    def ia_llvm_serial(command):
+    def ia_compiler_serial(command):
         global iax, iay, iaz, shape, pshape, dtype, cparams
         cparams['nthreads'] = 1
-        expr = ia.Expr(eval_flags="iterblosc2", **cparams)
+        eval_flags = ia.EvalFlags(method="iterblosc2", engine="compiler")
+        expr = ia.Expr(eval_flags=eval_flags, **cparams)
         expr.bind('x', iax)
         expr.bind('y', iay)
         expr.bind('z', iaz)
         expr.compile(command)
         expr.eval(shape, pshape, dtype)
 
-    def ia_tinyexpr_parallel(command):
+    def ia_interpreter_parallel(command):
         global iax, iay, iaz, shape, pshape, dtype, cparams
         cparams['nthreads'] = NTHREADS
-        expr = ia.Expr(eval_flags="iterblock", **cparams)
+        eval_flags = ia.EvalFlags(method="iterblosc2", engine="interpreter")
+        expr = ia.Expr(eval_flags=eval_flags, **cparams)
         expr.bind('x', iax)
         expr.bind('y', iay)
         expr.bind('z', iaz)
         expr.compile(command)
         expr.eval(shape, pshape, dtype)
 
-    def ia_tinyexpr_serial(command):
+    def ia_interpreter_serial(command):
         global iax, iay, iaz, shape, pshape, dtype, cparams
         cparams['nthreads'] = 1
-        expr = ia.Expr(eval_flags="iterblock", **cparams)
+        eval_flags = ia.EvalFlags(method="iterblosc2", engine="interpreter")
+        expr = ia.Expr(eval_flags=eval_flags, **cparams)
         expr.bind('x', iax)
         expr.bind('y', iay)
         expr.bind('z', iaz)
@@ -129,20 +133,20 @@ def evaluate(command):
             np_serial,
             ne_parallel,
             ne_serial,
-            ia_llvm_parallel,
-            ia_llvm_serial,
-            ia_tinyexpr_parallel,
-            ia_tinyexpr_serial,
+            ia_compiler_parallel,
+            ia_compiler_serial,
+            ia_interpreter_parallel,
+            ia_interpreter_serial,
             dask_parallel,
             dask_serial,
         ],
         labels=[command + " numpy",
                 command + " numexpr parallel",
                 command + " numexpr serial",
-                command + " iarray parallel (llvm)",
-                command + " iarray serial (llvm)",
-                command + " iarray parallel (tinyexpr)",
-                command + " iarray serial (tinyexpr)",
+                command + " iarray parallel (compiler)",
+                command + " iarray serial (compiler)",
+                command + " iarray parallel (interpreter)",
+                command + " iarray serial (interpreter)",
                 command + " dask parallel (threads)",
                 command + " dask serial",
                 ],

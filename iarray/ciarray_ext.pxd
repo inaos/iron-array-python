@@ -35,15 +35,15 @@ cdef extern from "libiarray/iarray.h":
         IARRAY_COMPRESSION_LIZARD
 
     ctypedef enum iarray_eval_method_t:
-        IARRAY_EXPR_EVAL_METHOD_AUTO
-        IARRAY_EXPR_EVAL_METHOD_ITERCHUNK
-        IARRAY_EXPR_EVAL_METHOD_ITERBLOSC
-        IARRAY_EXPR_EVAL_METHOD_ITERBLOSC2
+        IARRAY_EVAL_METHOD_AUTO
+        IARRAY_EVAL_METHOD_ITERCHUNK
+        IARRAY_EVAL_METHOD_ITERBLOSC
+        IARRAY_EVAL_METHOD_ITERBLOSC2
 
     ctypedef enum iarray_eval_engine_t:
-        IARRAY_EXPR_EVAL_ENGINE_AUTO
-        IARRAY_EXPR_EVAL_ENGINE_TINYEXPR
-        IARRAY_EXPR_EVAL_ENGINE_JUGGERNAUT
+        IARRAY_EVAL_ENGINE_AUTO
+        IARRAY_EVAL_ENGINE_INTERPRETER
+        IARRAY_EVAL_ENGINE_COMPILER
 
     ctypedef struct iarray_config_t:
         iarray_compression_codec_t compression_codec

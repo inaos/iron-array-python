@@ -47,7 +47,7 @@ print("Time for py2llvm eval:", round((time() - t0) / NITER, 3))
 b1_n = ia.iarray2numpy(b1)
 print(b1_n)
 
-eval_flags = ia.EvalFlags(method="iterblosc", engine="juggernaut")
+eval_flags = ia.EvalFlags(method="iterblosc", engine="compiler")
 expr = ia.Expr(eval_flags=eval_flags, **cparams)
 expr.bind('x', a1)
 expr.bind_out_properties(ia.dtshape(shape, pshape, dtype))
@@ -55,7 +55,7 @@ expr.compile('(sin(x) - 1.35) * (x - 4.45) * (x - 8.5)')
 t0 = time()
 for i in range(NITER):
     b2 = expr.eval()
-print("Time for juggernaut eval:", round((time() - t0) / NITER, 3))
+print("Time for iarray compiler eval:", round((time() - t0) / NITER, 3))
 b2_n = ia.iarray2numpy(b2)
 print(b2_n)
 

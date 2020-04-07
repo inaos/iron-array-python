@@ -106,7 +106,7 @@ expr.bind('z', iaz)
 expr.compile('(x - 1.35) * (y - 4.45) * (z - 8.5)')
 for i in range(NITER):
     b2 = expr.eval(shape, pshape, dtype)
-print("Time for juggernaut eval:", round((time() - t0) / NITER, 3))
+print("Time for internal compiler eval engine:", round((time() - t0) / NITER, 3))
 b2_n = ia.iarray2numpy(b2)
 print(b2_n)
 

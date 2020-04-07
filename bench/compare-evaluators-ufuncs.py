@@ -193,7 +193,7 @@ def do_block_evaluation(pshape_):
         eval_engine = "auto"
     else:
         eval_method = "iterblosc2"
-        eval_engine = "juggernaut"
+        eval_engine = "compiler"
 
     t0 = time()
     eval_flags = ia.EvalFlags(method=eval_method, engine=eval_engine)
