@@ -1,5 +1,4 @@
 from functools import reduce
-import math
 from time import time
 
 import numpy as np
@@ -10,14 +9,15 @@ from py2llvm import float64, int64
 
 
 # Number of iterations per benchmark
-NITER = 10
+NITER = 1
 
 # Define array params
-shape = [1000, 200]
-pshape = [100, 20]
+shape = [100]
+pshape = [6]
 dtype = np.float64
 
-cparams = dict(clib=ia.LZ4, clevel=5, nthreads=16) #, blocksize=1024)
+blocksize = reduce(lambda x, y: x * y, pshape) * dtype(0).itemsize
+cparams = dict(clib=ia.LZ4, clevel=5, nthreads=16, blocksize=blocksize)
 
 
 def cmp(a, b, success=None):
@@ -32,13 +32,16 @@ def cmp(a, b, success=None):
         print(success)
 
 
-@jit(verbose=0)
-def f(out: Array(float64, 2), x: Array(float64, 2)) -> int64:
+@jit(verbose=1)
+def f(out: Array(float64, 1), x: Array(float64, 1)) -> int64:
     n = x.window_shape[0]
-    m = x.window_shape[1]
+    #base = x.window_start[0]
     for i in range(n):
-        for j in range(m):
-            out[i,j] = (math.sin(x[i,j]) - 1.35) * (x[i,j] - 4.45) * (x[i,j] - 8.5)
+        #i_abs = base + i # Absolute i(ndex) within the whole array
+        value = x[i]
+        value += x[i-1] if i > 0 else x[i]
+        value += x[i+1] if i < n-1 else x[i]
+        out[i] = value / 3
 
     return 0
 
@@ -61,13 +64,13 @@ if __name__ == '__main__':
     ia_out = ia.iarray2numpy(ia_out)
     print(ia_out)
 
-    # numpy evaluation
-    print("numpy evaluation...")
-    t0 = time()
-    for i in range(NITER):
-        np_out = (np.sin(np_in) - 1.35) * (np_in - 4.45) * (np_in - 8.5)
-    print("Time for numpy eval:", round((time() - t0) / NITER, 3))
-    print(np_out)
+#   # numpy evaluation
+#   print("numpy evaluation...")
+#   t0 = time()
+#   for i in range(NITER):
+#       np_out = (np.sin(np_in) - 1.35) * (np_in - 4.45) * (np_in - 8.5)
+#   print("Time for numpy eval:", round((time() - t0) / NITER, 3))
+#   print(np_out)
 
-    # compare
-    cmp(np_out, ia_out, success='OK. Results are the same.')
+#   # compare
+#   cmp(np_out, ia_out, success='OK. Results are the same.')

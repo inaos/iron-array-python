@@ -1,4 +1,4 @@
-import functools
+from functools import reduce
 import math
 from time import time
 
@@ -19,7 +19,7 @@ shape = [20 * 1000 * 1000]
 pshape = [4 * 1000 * 1000]
 dtype = np.float64
 
-blocksize = functools.reduce(lambda x, y: x * y, pshape) * dtype(0).itemsize
+blocksize = reduce(lambda x, y: x * y, pshape) * dtype(0).itemsize
 cparams = dict(clib=ia.LZ4, clevel=5, nthreads=16, blocksize=blocksize)
 
 
