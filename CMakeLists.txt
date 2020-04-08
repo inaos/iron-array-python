@@ -1,10 +1,14 @@
-cmake_minimum_required(VERSION 3.2)
-project(iarray-python VERSION 1.0.0)
+cmake_minimum_required(VERSION 3.11)
+project(iarray VERSION 0.1.0)
+
+if(SKBUILD)
+  message(STATUS "The project is being built using scikit-build on ${CMAKE_SOURCE_DIR}")
+endif()
 
 if(NOT EXISTS "${CMAKE_BINARY_DIR}/inac.cmake")
     if (NOT EXISTS "${CMAKE_SOURCE_DIR}/inac.cmake")
         message(STATUS "Downloading inac.cmake from https://github.com/inaos/inac-cmake")
-        file(DOWNLOAD "https://raw.githubusercontent.com/inaos/inac-cmake/0.2/inac.cmake"
+        file(DOWNLOAD "https://raw.githubusercontent.com/inaos/inac-cmake/0.3/inac.cmake"
                 "${CMAKE_BINARY_DIR}/inac.cmake" STATUS DS)
         if(NOT "${DS}"  MATCHES "0;")
             file(REMOVE "${CMAKE_BINARY_DIR}/inac.cmake")
@@ -16,6 +20,13 @@ if(NOT EXISTS "${CMAKE_BINARY_DIR}/inac.cmake")
     endif()
 endif()
 include("${CMAKE_BINARY_DIR}/inac.cmake")
+inac_add_dependency(inac "1.0.7")
 
-inac_add_dependency(iarray "0.1.2" SEMANTIC true)
+find_package(PythonExtensions REQUIRED)
+find_package(Cython REQUIRED)
+find_package(NumPy REQUIRED)
+include_directories(${NumPy_INCLUDE_DIRS})
+include_directories("iarray-c-develop/include")
+link_directories("iarray-c-develop/build")
 
+add_subdirectory("iarray")
