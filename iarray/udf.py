@@ -122,6 +122,10 @@ class ArrayType(types.ArrayType):
     def get_ptr(self, visitor):
         return self.ptr
 
+    @property
+    def shape(self):
+        return self.window_shape
+
 
 def Array(dtype, ndim):
     return type(

@@ -33,8 +33,8 @@ def cmp(a, b, success=None):
 
 @jit(verbose=0)
 def f(out: Array(float64, 2), x: Array(float64, 2)) -> int64:
-    n = x.shape[0]
-    m = x.shape[1]
+    n = x.window_shape[0]
+    m = x.window_shape[1]
     for i in range(n):
         for j in range(m):
             out[i,j] = (math.sin(x[i,j]) - 1.35) * (x[i,j] - 4.45) * (x[i,j] - 8.5)
