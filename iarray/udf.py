@@ -77,7 +77,7 @@ class ArrayShape(types.ArrayShape):
 
         # All arrays, input and output have the same phsape
         name = f'window_shape_{n}'
-        n = ir.Constant(int32, n)
+        n = types.value_to_ir_value(n)
         size = builder.gep(self.shape, [n])  # i64*
         size = builder.load(size, name=name) # i64
         return size
