@@ -69,22 +69,26 @@ class ArrayShape(types.ArrayShape):
         # XXX Old code, when we didn't have access to the window shape
 #       if self.array.idx == 0:
 #           import ast
-#           out_size = self.array.function.get_field(builder, 5)           # i32*
-#           out_size = builder.load(out_size, name='out_size')             # i32
-#           out_typesize = self.array.function.get_field(builder, 6)       # i32*
-#           out_typesize = builder.load(out_typesize, name='out_typesize') # i32
+#           out_size = self.array.function._out_size
+#           out_typesize = self.array.function._out_typesize
 #           return visitor.BinOp_exit(None, None, out_size, ast.Div, out_typesize)
 
         # All arrays, input and output have the same phsape
         name = f'window_shape_{n}'
-        n = types.value_to_ir_value(n)
+        n = types.value_to_ir_value(builder, n, type_=int8)
+
+        # Check bounds
+        ndim = self.array.function._ndim
+        test = builder.icmp_signed('>=', n, ndim)
+        with builder.if_then(test, likely=False):
+            return_type = builder.function.type.pointee.return_type
+            error = ir.Constant(return_type, -1)
+            builder.ret(error)
+
+        # Ok
         size = builder.gep(self.shape, [n])  # i64*
         size = builder.load(size, name=name) # i64
         return size
-
-        # We don't use this yet, anywhere, ndim is got from the type hint
-#       ndim = self.array.function.get_field(builder, 7) # i8*
-#       ndim = builder.load(ndim, name='ndim')           # i8
 
 
 class ArrayType(types.ArrayType):
@@ -98,8 +102,7 @@ class ArrayType(types.ArrayType):
     def preamble(self, builder):
         if self.idx == 0:
             # .out (uint8_t*)
-            ptr = self.function.get_field(builder, 4)
-            ptr = builder.load(ptr)
+            ptr = self.function._out
         else:
             # .inputs (uint8_t**)
             ptr = self.function.get_field(builder, 1, name='inputs')
@@ -152,15 +155,25 @@ class Function(py2llvm.Function):
 
     def preamble(self, builder, args):
         params = args['params']
-        self.params_ptr = builder.load(params)                        # iarray_eval_pparams_t*
-        window_shape = self.get_field(builder, 8)                     # i64**
-        self._shape = builder.load(window_shape, name='window_shape') # i64*
-        window_start = self.get_field(builder, 9)                     # i64**
-        self._start = builder.load(window_start, name='window_start') # i64*
+        self.params_ptr = builder.load(params) # iarray_eval_pparams_t*
+#       self._ninputs = self.load_field(builder, 0, name='ninputs')
+#       self._inputs = self.load_field(builder, 1, name='ninputs')                  # i8**
+#       self._input_typesizes = self.load_field(builder, 2, name='input_typesizes') # i8*
+#       self._user_data = self.load_field(builder, 3, name='user_data')             # i8*
+        self._out = self.load_field(builder, 4, name='out')                         # i8*
+#       self._out_size = self.load_field(builder, 5, name='out_size')               # i32
+#       self._out_typesize = self.load_field(builder, 6, name='out_typesize')       # i32
+        self._ndim = self.load_field(builder, 7, name='ndim')                       # i8
+        self._shape = self.load_field(builder, 8, name='window_shape')              # i64*
+        self._start = self.load_field(builder, 9, name='window_start')              # i64*
 
     def get_field(self, builder, idx, name=''):
         idx = ir.Constant(int32, idx)
         return builder.gep(self.params_ptr, [types.zero32, idx], name=name)
+
+    def load_field(self, builder, idx, name=''):
+        ptr = self.get_field(builder, idx)
+        return builder.load(ptr, name=name)
 
     def create_expr(self, inputs, dtshape, **cparams):
         eval_flags = ia.EvalFlags(method="iterblosc", engine="compiler")
