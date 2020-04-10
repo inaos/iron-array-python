@@ -22,7 +22,7 @@ pool:
 steps:
 - checkout: self
   submodules: recursive
-#  persistCredentials: true
+  persistCredentials: true
 
 - powershell: gci env:* | sort-object name
 
