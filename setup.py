@@ -1,6 +1,6 @@
 from skbuild import setup
 
-DESCRIPTION = 'The Math Array Accelerator for Python.'
+DESCRIPTION = 'The Math Array Accelerator for Python'
 
 with open('README.md') as f:
     LONG_DESCRIPTION = f.read()
