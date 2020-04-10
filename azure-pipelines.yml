@@ -20,6 +20,10 @@ pool:
 
 
 steps:
+- checkout: self
+  submodules: recursive
+#  persistCredentials: true
+
 - powershell: gci env:* | sort-object name
 
 - bash: |
