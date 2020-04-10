@@ -35,6 +35,58 @@ steps:
     git submodule update --init --recursive
   displayName: Clone repos
 
+- bash: |
+    if [ "$AGENT_OS" == "Darwin" ]
+      then
+        echo "##vso[task.prependpath]$CONDA/bin"
+    fi
+    if [ "$AGENT_OS" == "Windows_NT" ]
+      then
+        echo "##vso[task.prependpath]$CONDA/Scripts"
+    fi
+  displayName: Add conda to PATH
+
+- bash: |
+    if [ "$AGENT_OS" == "Darwin" ]
+      then
+        sudo chown -R $USER $CONDA
+      fi
+  displayName: Take ownership of conda installation
+
+- bash: |
+    conda create --yes --quiet --name iArrayEnv
+    source activate iArrayEnv
+    conda install -y --name iArrayEnv -c intel mkl-include
+    conda install -y --name iArrayEnv -c intel mkl-static
+    conda install -y --name iArrayEnv -c intel icc_rt
+    if [ "$AGENT_OS" != "Windows_NT" ]
+      then
+        conda install -y --name iArrayEnv -c numba llvmdev
+    fi
+  displayName: Download dependencies
+
+- task: UniversalPackages@0
+  inputs:
+    command: 'download'
+    downloadDirectory: '$(System.DefaultWorkingDirectory)'
+    feedsToUse: 'internal'
+    vstsFeed: '91c218bd-84d1-4796-85e7-b9adfd3d51ac/3eedad50-ec7f-4115-8ba9-09bbcc76f8f5'
+    vstsFeedPackage: '$(LLVM_PKG_NAME)'
+    vstsPackageVersion: '$(LLVM_PKG_VERSION)'
+  env:
+    LLVM_PKG_NAME: $(LLVM_PKG_NAME)
+    LLVM_PKG_VERSION: $(LLVM_PKG_VERSION)
+  condition:
+    eq( variables['Agent.OS'], 'Windows_NT' )
+
+- bash: |
+    unzip ${LLVM_PKG_NAME}-${LLVM_PKG_VERSION}.zip
+  env:
+    LLVM_PKG_NAME: $(LLVM_PKG_NAME)
+    LLVM_PKG_VERSION: $(LLVM_PKG_VERSION)
+  condition:
+    eq( variables['Agent.OS'], 'Windows_NT' )
+
 - task: UsePythonVersion@0
   inputs:
     versionSpec: '$(python.version)'
