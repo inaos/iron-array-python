@@ -13,6 +13,8 @@ strategy:
       imageName: 'vs2017-win2016'
       VSINSTALL: "Microsoft Visual Studio\\2017\\Enterprise\\VC\\Auxiliary\\Build"
       MSVC_PLATFORM: amd64
+      LLVM_PKG_NAME: 'llvm-windows_vs17-x86_64-relwithdebinfo'
+      LLVM_PKG_VERSION: '7.0.1'
       python.version: '3.7'
 
 pool:
