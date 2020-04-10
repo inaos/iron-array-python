@@ -1,9 +1,6 @@
 trigger:
 - develop
 
-variables:
-- group: jfrog-artifactory
-
 strategy:
   matrix:
     linux:
