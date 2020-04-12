@@ -23,7 +23,7 @@ add_custom_command(
 endif(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/iarray-c-develop/build")
 add_custom_command(
     TARGET iarray_ext PRE_BUILD
-    COMMAND ${CMAKE_COMMAND} .. -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+    COMMAND ${CMAKE_COMMAND} .. -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} -DINAC_TARGET_ARCH=${INAC_TARGET_ARCH}
     WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/iarray-c-develop/build"
 )
 add_custom_command(
