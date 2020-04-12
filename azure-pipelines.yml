@@ -59,30 +59,8 @@ steps:
     conda install -y --name iArrayEnv -c intel mkl-include
     conda install -y --name iArrayEnv -c intel mkl-static
     conda install -y --name iArrayEnv -c intel icc_rt
-    if [ "$AGENT_OS" != "Windows_NT" ]
-      then
-        conda install -y --name iArrayEnv -c numba llvmdev
-    fi
+    conda install -y --name iArrayEnv -c numba llvmdev
   displayName: Download dependencies
-
-- task: UniversalPackages@0
-  inputs:
-    command: 'download'
-    downloadDirectory: '$(System.DefaultWorkingDirectory)'
-    feedsToUse: 'internal'
-    vstsFeed: '91c218bd-84d1-4796-85e7-b9adfd3d51ac/3eedad50-ec7f-4115-8ba9-09bbcc76f8f5'
-    vstsFeedPackage: '5dc56cfe-b125-487d-a381-f96ec3defb80'
-    vstsPackageVersion: '7.0.1'
-  condition:
-    eq( variables['Agent.OS'], 'Windows_NT' )
-
-- bash: |
-    unzip ${LLVM_PKG_NAME}-${LLVM_PKG_VERSION}.zip
-  env:
-    LLVM_PKG_NAME: $(LLVM_PKG_NAME)
-    LLVM_PKG_VERSION: $(LLVM_PKG_VERSION)
-  condition:
-    eq( variables['Agent.OS'], 'Windows_NT' )
 
 - task: UsePythonVersion@0
   inputs:
@@ -101,7 +79,7 @@ steps:
 
 - script: |
       call "C:\Program Files (x86)\%VSINSTALL%\vcvarsall.bat" %MSVC_PLATFORM%
-      python setup.py build_ext -i --build-type RelWithDebInfo --generator "Visual Studio 15 2017 Win64" -DLLVM_DIR=llvm-windows_vs17-x86_64-relwithdebinfo-7.0.1/lib/cmake/llvm
+      python setup.py build_ext -i --build-type RelWithDebInfo --generator "Visual Studio 15 2017 Win64" -DLLVM_ROOT=%CONDA%/envs/iArrayEnv/Library
   displayName: 'Compile package'
   condition: eq( variables['Agent.OS'], 'Windows_NT' )
     
