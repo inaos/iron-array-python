@@ -73,13 +73,13 @@ steps:
   displayName: 'Install dependencies'
 
 - script: |
-      python setup.py build_ext -j 4 --build-type=RelWithDebInfo -DDISABLE_LLVM_CONFIG=True -DLLVM_ROOT=$CONDA/envs/iArrayEnv
+      python setup.py build_ext -j 4 --build-type=RelWithDebInfo -DDISABLE_LLVM_CONFIG=True -DLLVM_DIR=$CONDA/envs/iArrayEnv/lib/cmake/llvm
   displayName: 'Compile package'
   condition: ne( variables['Agent.OS'], 'Windows_NT' )
 
 - script: |
       call "C:\Program Files (x86)\%VSINSTALL%\vcvarsall.bat" %MSVC_PLATFORM%
-      python setup.py build_ext -i --build-type RelWithDebInfo --generator "Visual Studio 15 2017 Win64" -DINAC_TARGET_ARCH=x86_64 -DLLVM_ROOT=%CONDA%/envs/iArrayEnv/Library
+      python setup.py build_ext -i --build-type RelWithDebInfo --generator "Visual Studio 15 2017 Win64" -DINAC_TARGET_ARCH=x86_64 -DLLVM_DIR=%CONDA%/envs/iArrayEnv/Library/lib/cmake/llvm
   displayName: 'Compile package'
   condition: eq( variables['Agent.OS'], 'Windows_NT' )
     
