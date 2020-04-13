@@ -21,10 +21,21 @@ add_custom_command(
     WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/iarray-c-develop"
 )
 endif(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/iarray-c-develop/build")
-message(STATUS "DEBUG - LLVM-DIR: ${LLVM_DIR}")
+if (WIN32)
 add_custom_command(
     TARGET iarray_ext PRE_BUILD
-    COMMAND ${CMAKE_COMMAND} .. -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} -DDISABLE_LLVM_CONFIG=True -DINAC_TARGET_ARCH=${INAC_TARGET_ARCH} -DLLVM_DIR=${LLVM_DIR}
+    COMMAND ${CMAKE_COMMAND} .. -G ${WINGEN} -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} -DINAC_TARGET_ARCH=${INAC_TARGET_ARCH} -DLLVM_DIR=${LLVM_DIR}
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/iarray-c-develop/build"
+)
+add_custom_command(
+    TARGET iarray_ext PRE_BUILD
+    COMMAND ${CMAKE_COMMAND} --build . --target iarray
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/iarray-c-develop/build"
+)
+else(WIN32)
+add_custom_command(
+    TARGET iarray_ext PRE_BUILD
+    COMMAND ${CMAKE_COMMAND} .. -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} -DDISABLE_LLVM_CONFIG=True -DLLVM_DIR=${LLVM_DIR}
     WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/iarray-c-develop/build"
 )
 add_custom_command(
@@ -32,6 +43,7 @@ add_custom_command(
     COMMAND ${CMAKE_COMMAND} --build . --target iarray -- -j 4
     WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/iarray-c-develop/build"
 )
+endif(WIN32)
 
 # Now, build the extension itself
 target_link_libraries(iarray_ext "iarray")
