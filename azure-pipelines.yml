@@ -79,7 +79,7 @@ steps:
 
 - script: |
       call "C:\Program Files (x86)\%VSINSTALL%\vcvarsall.bat" %MSVC_PLATFORM%
-      python setup.py build_ext -i --build-type RelWithDebInfo --generator "Visual Studio 15 2017 Win64" -- -DINAC_TARGET_ARCH=x86_64 -DLLVM_DIR=%CONDA%/envs/iArrayEnv/Library/lib/cmake/llvm -DWINGEN="Visual Studio 15 2017 Win64"
+      python setup.py build_ext -i --build-type RelWithDebInfo --generator "NMake Makefiles" -- -DINAC_TARGET_ARCH=x86_64 -DLLVM_DIR=%CONDA%/envs/iArrayEnv/Library/lib/cmake/llvm -DWINGEN="NMake Makefiles"
   displayName: 'Compile package'
   condition: eq( variables['Agent.OS'], 'Windows_NT' )
     
