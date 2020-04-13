@@ -9,6 +9,10 @@ include_directories(${NumPy_INCLUDE_DIRS})
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/iarray-c-develop/include")
 link_directories("${CMAKE_CURRENT_SOURCE_DIR}/iarray-c-develop/build")
 
+if (WIN32)
+add_definitions(-DINA_OS_WINDOWS_SKIP_POSIX_TIME_DEFS)
+endif (WIN32)
+
 # Declare the target for the iarray extension
 add_cython_target(iarray_ext "iarray_ext.pyx")
 add_library(iarray_ext MODULE ${iarray_ext})
