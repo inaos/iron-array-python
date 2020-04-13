@@ -25,6 +25,12 @@ source ~/intel/bin/compilervars.sh intel64
 
 so as to allow the iarray library to find the IPP libraries.
 
+We rely on scikit-build to build the package, so please be sure that this is installed on your environment:
+
+```bash
+conda install -c conda-forge scikit-build
+```
+
 We can proceed now with the compilation of the actual Python wrapper for iarray:
 
 ```bash
