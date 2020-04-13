@@ -21,6 +21,7 @@ add_custom_command(
     WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/iarray-c-develop"
 )
 endif(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/iarray-c-develop/build")
+message(STATUS "DEBUG - LLVM-DIR: ${LLVM_DIR}")
 add_custom_command(
     TARGET iarray_ext PRE_BUILD
     COMMAND ${CMAKE_COMMAND} .. -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} -DDISABLE_LLVM_CONFIG=True -DINAC_TARGET_ARCH=${INAC_TARGET_ARCH} -DLLVM_DIR=${LLVM_DIR}
