@@ -13,11 +13,12 @@ from py2llvm import float64, int64
 NITER = 10
 
 # Define array params
-shape = [1000, 200]
-pshape = [100, 20]
+shape = [4000, 800]
+pshape = [1000, 200]
 dtype = np.float64
 
-cparams = dict(clib=ia.LZ4, clevel=5, nthreads=16) #, blocksize=1024)
+blocksize = reduce(lambda x, y: x * y, pshape) * dtype(0).itemsize
+cparams = dict(clib=ia.LZ4, clevel=5, blocksize=blocksize)
 
 
 @jit(verbose=0)

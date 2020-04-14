@@ -67,28 +67,26 @@ class ArrayShape(types.ArrayShape):
 
     def get(self, visitor, n):
         builder = visitor.builder
-
-        # XXX Old code, when we didn't have access to the window shape
-#       if self.array.idx == 0:
-#           import ast
-#           out_size = self.array.function._out_size
-#           out_typesize = self.array.function._out_typesize
-#           return visitor.BinOp_exit(None, None, out_size, ast.Div, out_typesize)
-
-        # All arrays, input and output have the same phsape
-        name = f'window_shape_{n}'
-        n = types.value_to_ir_value(builder, n, type_=int8)
+        n_ir = types.value_to_ir_value(builder, n, type_=int8)
 
         # Check bounds
         ndim = self.array.function._ndim
-        test = builder.icmp_signed('>=', n, ndim)
+        test = builder.icmp_signed('>=', n_ir, ndim)
         with builder.if_then(test, likely=False):
             return_type = builder.function.type.pointee.return_type
             error = ir.Constant(return_type, iarray_ext.IARRAY_ERR_EVAL_ENGINE_OUT_OF_RANGE)
             builder.ret(error)
 
-        # Ok
-        size = builder.gep(self.shape, [n])  # i64*
+        # If out has 1 dimension, then its length is defined by the blocksize
+        if self.array.idx == 0 and self.array.ndim == 1:
+            import ast
+            out_size = self.array.function._out_size
+            out_typesize = self.array.function._out_typesize
+            return visitor.BinOp_exit(None, None, out_size, ast.Div, out_typesize)
+
+        # General case
+        name = f'window_shape_{n}'
+        size = builder.gep(self.shape, [n_ir])  # i64*
         size = builder.load(size, name=name) # i64
         return size
 
@@ -163,8 +161,8 @@ class Function(py2llvm.Function):
 #       self._input_typesizes = self.load_field(builder, 2, name='input_typesizes') # i8*
 #       self._user_data = self.load_field(builder, 3, name='user_data')             # i8*
         self._out = self.load_field(builder, 4, name='out')                         # i8*
-#       self._out_size = self.load_field(builder, 5, name='out_size')               # i32
-#       self._out_typesize = self.load_field(builder, 6, name='out_typesize')       # i32
+        self._out_size = self.load_field(builder, 5, name='out_size')               # i32
+        self._out_typesize = self.load_field(builder, 6, name='out_typesize')       # i32
         self._ndim = self.load_field(builder, 7, name='ndim')                       # i8
         self._shape = self.load_field(builder, 8, name='window_shape')              # i64*
         self._start = self.load_field(builder, 9, name='window_start')              # i64*
