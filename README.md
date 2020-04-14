@@ -1,83 +1,91 @@
 # iron-array-python
 IronArray for Python
 
-## Build modes
+## Clone repository and iron-array C library
 
-This package supports two modes for building the Python extension: develop and release.
-
-* The develop mode uses the `iarray` repo locallly so as to find the headers and libraries.  This allows to develop both packages (the C library and the Python wrapper) in parallel without the need to re-install the C library in every iteration.
-
-* The release mode assumes that both the `iarray` library is installed in the system.
-
-The two modes are setup and driven by environment variables.  Here are examples for Linux/Mac OSX:
-
-### Develop mode
-
-### Linux
-```bash
-export LD_LIBRARY_PATH=/opt/intel/compilers_and_libraries/linux/mkl/lib:$HOME/inaos/iron-array/build
-export IARRAY_DEVELOP_MODE=True
-export INAC_DIR=$HOME/.inaos/cmake/inac-linux-x86_64-relwithdebinfo-1.0.6
-export PYTHONPATH=$HOME/inaos/iron-array-python/
-export IARRAY_DIR=$HOME/inaos/iron-array
-export KMP_DUPLICATE_LIB_OK=TRUE  # for allowing the MKL in NumPy to run in parallel to the one in IronArray
-```
-
-### MacOS
-```bash
-export LD_LIBRARY_PATH=/opt/intel/compilers_and_libraries/mac/mkl/lib:$HOME/inaos/iron-array/build
-export IARRAY_DEVELOP_MODE=True
-export INAC_DIR=$HOME/.inaos/cmake/inac-darwin-x86_64-relwithdebinfo-1.0.6
-export PYTHONPATH=$HOME/inaos/iron-array-python/
-export IARRAY_DIR=$HOME/inaos/iron-array
-export KMP_DUPLICATE_LIB_OK=TRUE  # for allowing the MKL in NumPy to run in parallel to the one in IronArray
-```
-
-### Release mode
+First, clone the Python wrapper repo with:
 
 ```bash
-unset IARRAY_DEVELOP_MODE
-export INAC_DIR=$HOME/.inaos/cmake/inac-darwin-x86_64-relwithdebinfo-1.0.6
+git clone git@github.com:/inaos/iron-array-python
 ```
 
-## Compile
+Now, clone the C library repo in the iarray/ directory:
 
-In case you have Intel IPP libraries installed (for a turbo-enabled LZ4 codec within C-Blosc2), make sure that you run:
+```bash
+cd iron-array-python/iarray
+git clone git@github.com:/inaos/iron-array
+cd iron-array
+git submodule update --init
+cd ../..
+```
+
+### Build
+
+For linking with Intel libraries (MKL, IPP...), make sure that you run:
 
 ```bash
 source ~/intel/bin/compilervars.sh intel64
 ```
 
-so as to allow the iarray library to find the IPP libraries.  This applies to both develop and release modes.
-
-After setting up the build mode, we can proceed with the compilation of the actual Python wrapper for iarray:
+We rely on scikit-build to build the package, so please be sure that this is installed on your environment:
 
 ```bash
-rm -rf build iarray/*.so    # *.pyd if on windows.  This step is a cleanup and purely optional.
-python setup.py build_ext -i
+conda install -c conda-forge scikit-build
 ```
 
-and  execute the tests with:
+We can proceed now with the compilation of the actual Python wrapper for iarray:
 
 ```bash
-pytest
-====================================================================================== test session starts =======================================================================================
-platform darwin -- Python 3.7.1, pytest-4.3.0, py-1.8.0, pluggy-0.9.0
+rm -rf _skbuild iarray/iron-array/build  # this step is a cmake cache cleanup and purely optional
+python setup.py build_ext -j 4   # build with RelWithDebInfo by default
+# python setup.py build_ext -j 4 --build-type=Debug  # enforce the Debug mode
+```
+
+This will compile the iron-array C library and the Python extension in one go and will put both libraries in the iarray/ directory, so the wrapper is ready to go.  As the whole process is cmake driven, making small changes in either the C library or the Python extension will just trigger the re-compilation of the affected modules, making the re-compilation process pretty fast.
+
+Also note the `-j 4` flag; this is a way to specify the number of processes in parallel that you want to use during the build process; adjust it to your own preferences.
+
+You can even pass [cmake configure options directly from commandline](https://scikit-build.readthedocs.io/en/latest/usage.html#cmake-configure-options).
+
+### Test
+
+```bash
+pytest                                                                                           (base)
+=================================================================== test session starts ====================================================================
+platform darwin -- Python 3.7.4, pytest-4.3.0, py-1.8.1, pluggy-0.13.1
+hypothesis profile 'default' -> database=DirectoryBasedExampleDatabase('/Users/faltet/inaos/iron-array-python/.hypothesis/examples')
 rootdir: /Users/faltet/inaos/iron-array-python, inifile:
-collected 16 items
+plugins: hypothesis-4.18.3
+collected 164 items
 
-iarray/tests/test_constructor.py ..............                                                                                                                                            [ 87%]
-iarray/tests/test_expression.py ..                                                                                                                                                         [100%]
+iarray/tests/test_constructor.py ............................                                                                                        [ 17%]
+iarray/tests/test_copy.py .......                                                                                                                    [ 21%]
+iarray/tests/test_expression.py .........................................................                                                            [ 56%]
+iarray/tests/test_iterator.py ........                                                                                                               [ 60%]
+iarray/tests/test_load_save.py ....                                                                                                                  [ 63%]
+iarray/tests/test_matmul.py ................                                                                                                         [ 73%]
+iarray/tests/test_random.py ........................................                                                                                 [ 97%]
+iarray/tests/test_slice.py ....                                                                                                                      [100%]
 
-=================================================================================== 16 passed in 0.29 seconds ====================================================================================
+========================================================== 164 passed, 0 warnings in 7.13 seconds ==========================================================```
 ```
+
+## Build wheels
+
+One can build wheels for the current platform with 
+
+```bash
+python setup.py bdist_wheel
+```
+
+The wheels will appear in dist/ directory.
+
+Note: see https://github.com/pypa/auditwheel package on how to audit and amend wheels for compatibility with a wide variety of Linux distributions.
 
 ## Install
 
-When in release mode, you may want to install this package in the system.  For doing this, use:
+You may want to install this package in the system.  For doing this, use:
 
 ```bash
 python setup.py install
 ```
-
-The setup.py can be used to produce wheels, where all the libraries are included (see https://pythonwheels.com).
