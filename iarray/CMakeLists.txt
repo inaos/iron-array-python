@@ -18,7 +18,6 @@ add_cython_target(iarray_ext "iarray_ext.pyx")
 add_library(iarray_ext MODULE ${iarray_ext})
 
 # Build the C library (only the shared one is necessary) *before* the extension
-message(STATUS "source_dir -> ${CMAKE_CURRENT_SOURCE_DIR} / ${LLVM_DIR}")
 if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/iron-array/build")
 add_custom_command(
     TARGET iarray_ext PRE_BUILD
@@ -40,7 +39,7 @@ add_custom_command(
 else(WIN32)
 add_custom_command(
     TARGET iarray_ext PRE_BUILD
-    COMMAND ${CMAKE_COMMAND} .. -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} -DLLVM_DIR=${LLVM_DIR}
+    COMMAND ${CMAKE_COMMAND} .. -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} -DDISABLE_LLVM_CONFIG=${DISABLE_LLVM_CONFIG} -DLLVM_DIR=${LLVM_DIR}
     WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/iron-array/build"
 )
 add_custom_command(

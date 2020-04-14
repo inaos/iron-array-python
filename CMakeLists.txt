@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.11)
 project(iarray VERSION 0.1.0)
 
+option(DISABLE_LLVM_CONFIG "Disable the use of llvm-config for finding libraries" OFF)
+
 if(NOT SKBUILD)
   message(FATAL_ERROR "This project is only meant to be built with scikit-build")
 endif()
