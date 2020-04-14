@@ -25,6 +25,11 @@ from .expression import Parser
 from libc.stdio cimport printf
 
 
+IARRAY_ERR_EVAL_ENGINE_FAILED = ciarray.IARRAY_ERR_EVAL_ENGINE_FAILED
+IARRAY_ERR_EVAL_ENGINE_NOT_COMPILED = ciarray.IARRAY_ERR_EVAL_ENGINE_NOT_COMPILED
+IARRAY_ERR_EVAL_ENGINE_OUT_OF_RANGE  = ciarray.IARRAY_ERR_EVAL_ENGINE_OUT_OF_RANGE
+
+
 cdef set_store_properties(storage, ciarray.iarray_store_properties_t *cstore):
     cstore.enforce_frame = storage.enforce_frame
     if storage.backend == 'plainbuffer':

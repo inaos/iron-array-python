@@ -9,6 +9,8 @@ import py2llvm
 from py2llvm import int8, int8p, int32, int64, int64p
 from py2llvm import types
 
+from . import iarray_ext
+
 
 assert math # Silence pyflakes warning
 
@@ -82,7 +84,7 @@ class ArrayShape(types.ArrayShape):
         test = builder.icmp_signed('>=', n, ndim)
         with builder.if_then(test, likely=False):
             return_type = builder.function.type.pointee.return_type
-            error = ir.Constant(return_type, -1)
+            error = ir.Constant(return_type, iarray_ext.IARRAY_ERR_EVAL_ENGINE_OUT_OF_RANGE)
             builder.ret(error)
 
         # Ok
