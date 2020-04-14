@@ -38,14 +38,15 @@ from . import iarray_ext as ext
 
 from .high_level import (IArray, dtshape, StorageProperties, EvalFlags, Config, RandomContext, Expr, LazyExpr,
                          empty, arange, linspace, zeros, ones, full, load, save,
-                         iarray2numpy, numpy2iarray, matmul,
+                         cmp_arrays, iarray2numpy, numpy2iarray, matmul,
                          # random constructors
                          random_rand, random_randn, random_beta, random_lognormal, random_exponential,
                          random_uniform, random_normal, random_bernoulli, random_binomial, random_poisson,
                          random_kstest,
                          # ufuncs
-                         abs, arccos, arcsin, arctan, arctan2, ceil, cos, cosh, exp, floor, log, log10, negative, power,
-                         sin, sinh, sqrt, tan, tanh
+                         abs, arccos, arcsin, arctan, arctan2, ceil, cos, cosh,
+                         exp, floor, log, log10, negative, power, sin, sinh,
+                         sqrt, tan, tanh,
                          )
 
 from .expression import Parser

@@ -20,19 +20,7 @@ blocksize = reduce(lambda x, y: x * y, pshape) * dtype(0).itemsize
 cparams = dict(clib=ia.LZ4, clevel=5, nthreads=16, blocksize=blocksize)
 
 
-def cmp(a, b, success=None):
-    if type(a) is ia.high_level.IArray:
-        a = ia.iarray2numpy(a)
-
-    if type(b) is ia.high_level.IArray:
-        b = ia.iarray2numpy(b)
-
-    np.testing.assert_almost_equal(a, b)
-    if success is not None:
-        print(success)
-
-
-@jit(verbose=1)
+@jit(verbose=0)
 def f(out: Array(float64, 1), x: Array(float64, 1)) -> int64:
     n = x.window_shape[0]
     #base = x.window_start[0]
@@ -50,7 +38,7 @@ if __name__ == '__main__':
     # Create input arrays
     ia_in = ia.linspace(ia.dtshape(shape, pshape, dtype), 0, 10, **cparams)
     np_in = np.linspace(0, 10, reduce(lambda x,y: x*y, shape), dtype=dtype).reshape(shape)
-    cmp(np_in, ia_in)
+    ia.cmp_arrays(np_in, ia_in)
 
     print(np_in)
 
@@ -73,4 +61,4 @@ if __name__ == '__main__':
 #   print(np_out)
 
 #   # compare
-#   cmp(np_out, ia_out, success='OK. Results are the same.')
+#   ia.cmp_arrays(np_out, ia_out, success='OK. Results are the same.')
