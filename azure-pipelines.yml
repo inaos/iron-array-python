@@ -84,7 +84,6 @@ steps:
   condition: eq( variables['Agent.OS'], 'Windows_NT' )
 
 - script: |
-      ls -R $CONDA
       pip install pytest
       LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/share/miniconda/envs/iArrayEnv/lib pytest -vv
   displayName: 'Run Tests'
@@ -92,6 +91,7 @@ steps:
     eq( variables['Agent.OS'], 'Linux' )
 
 - script: |
+      ls -R $CONDA
       pip install pytest
       pytest -vv
   displayName: 'Run Tests'
@@ -99,6 +99,7 @@ steps:
     eq( variables['Agent.OS'], 'Darwin' )
 
 - script: |
+      ls -R $CONDA
       pip install pytest
       pytest -vv
   displayName: 'Run Tests'
