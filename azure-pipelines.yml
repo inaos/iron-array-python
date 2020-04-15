@@ -84,7 +84,7 @@ steps:
   condition: eq( variables['Agent.OS'], 'Windows_NT' )
 
 - script: |
-      ls -R $HOME/miniconda3 | grep libsvml
+      ls -R $CONDA | grep libsvml
       pip install pytest
       pytest -vv
   displayName: 'Run Tests'
