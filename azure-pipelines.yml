@@ -86,7 +86,7 @@ steps:
 - script: |
       ls -R $CONDA
       pip install pytest
-      pytest -vv
+      LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/share/miniconda/envs/iArrayEnv/lib pytest -vv
   displayName: 'Run Tests'
   condition:
     eq( variables['Agent.OS'], 'Linux' )
