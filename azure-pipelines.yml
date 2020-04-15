@@ -82,18 +82,26 @@ steps:
       python setup.py build_ext -i --build-type RelWithDebInfo --generator "NMake Makefiles" -- -DINAC_TARGET_ARCH=x86_64 -DLLVM_DIR=%CONDA%/envs/iArrayEnv/Library/lib/cmake/llvm -DWINGEN="NMake Makefiles"
   displayName: 'Compile package'
   condition: eq( variables['Agent.OS'], 'Windows_NT' )
-    
+
 - script: |
       pip install pytest
-      LD_LIBRARY_PATH=$HOME/.inaos/cmake/iarray-linux-x86_64-relwithdebinfo-0.1.4/lib pytest
+      INAC_TRACE=* LD_LIBRARY_PATH=$HOME/.inaos/cmake/iarray-linux-x86_64-relwithdebinfo-0.1.4/lib pytest -vv
   displayName: 'Run Tests'
   condition:
-    ne( variables['Agent.OS'], 'Windows_NT' )
-    
+    eq( variables['Agent.OS'], 'Linux' )
+
 - script: |
       pip install pytest
-      set PATH=%PATH%;%USERPROFILE%\.inaos\cmake\iarray-linux-x86_64-relwithdebinfo-0.1.4\lib
-      pytest
+      INAC_TRACE=* LD_LIBRARY_PATH=$HOME/.inaos/cmake/iarray-darwin-x86_64-relwithdebinfo-0.1.4/lib pytest -vv
+  displayName: 'Run Tests'
+  condition:
+    eq( variables['Agent.OS'], 'Darwin' )
+
+- script: |
+      pip install pytest
+      set PATH=%PATH%;%USERPROFILE%\.inaos\cmake\iarray-windows_vs17-x86_64-relwithdebinfo-0.1.4\lib
+      set INAC_TRACE=*
+      pytest -vv
   displayName: 'Run Tests'
   condition:
     eq( variables['Agent.OS'], 'Windows_NT' )
