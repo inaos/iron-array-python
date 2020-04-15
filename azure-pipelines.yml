@@ -6,9 +6,11 @@ strategy:
     linux:
       imageName: 'ubuntu-18.04'
       python.version: '3.7'
+      DISABLE_LLVM_CONFIG: True
     mac:
       imageName: 'macos-10.14'
       python.version: '3.7'
+      DISABLE_LLVM_CONFIG: True
     windows:
       imageName: 'vs2017-win2016'
       VSINSTALL: "Microsoft Visual Studio\\2017\\Enterprise\\VC\\Auxiliary\\Build"
@@ -73,7 +75,7 @@ steps:
   displayName: 'Install dependencies'
 
 - script: |
-      python setup.py build_ext -j 4 --build-type=RelWithDebInfo -- -DDISABLE_LLVM_CONFIG=True -DLLVM_DIR=$CONDA/envs/iArrayEnv/lib/cmake/llvm
+      python setup.py build_ext -j 4 --build-type=RelWithDebInfo -- -DDISABLE_LLVM_CONFIG=$DISABLE_LLVM_CONFIG -DLLVM_DIR=$CONDA/envs/iArrayEnv/lib/cmake/llvm
   displayName: 'Compile package'
   condition: ne( variables['Agent.OS'], 'Windows_NT' )
 
