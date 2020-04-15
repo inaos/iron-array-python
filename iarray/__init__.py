@@ -1,3 +1,21 @@
+from llvmlite import binding
+import platform
+
+binding.initialize()
+binding.initialize_native_target()
+binding.initialize_native_asmprinter()
+
+platform_system = platform.system()
+if platform_system == 'Linux':
+    binding.load_library_permanently("libsvml.so")
+elif platform_system == 'Darwin':
+    binding.load_library_permanently("libsvml.dylib")
+else:
+    binding.load_library_permanently("libsvml.dll")
+
+# Probably needed by py2llvm
+binding.set_option('', '-vector-library=SVML')
+
 # Codecs
 BLOSCLZ = 0
 LZ4 = 1
@@ -13,13 +31,11 @@ BITSHUFFLE = 2
 DELTA = 3
 TRUNC_PREC = 4
 
-
-
-from . import iarray_ext as ext
-
 # Storage types
 PLAINBUFFER_STORAGE = 'plainbuffer'
 BLOSC_STORAGE = 'blosc'
+
+from . import iarray_ext as ext
 
 from .high_level import (IArray, dtshape, StorageProperties, EvalFlags, Config, RandomContext, Expr, LazyExpr,
                          empty, arange, linspace, zeros, ones, full, load, save,
