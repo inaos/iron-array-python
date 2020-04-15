@@ -29,7 +29,7 @@ steps:
 - bash: |
     mkdir -p $HOME/.inaos/cmake
     mkdir -p $HOME/INAOS
-    echo "INAC_REPOSITORY_LOCAL=$HOME/INAOS" > $HOME/.inaos/cmake/repository.txt 
+    echo "INAC_REPOSITORY_LOCAL=$HOME/INAOS" > $HOME/.inaos/cmake/repository.txt
     echo "INAC_REPOSITORY_REMOTE=https://inaos.jfrog.io/inaos/libs-release-local/inaos" >> $HOME/.inaos/cmake/repository.txt
     echo "INAC_REPOSITORY_USRPWD=licensed:AKCp5bBraH7CasbsYCURsjzkbjXwVwdYcT7u39EiuL6GjnK1VKfKQWCd1E2E64mHokU5YUHku" >> $HOME/.inaos/cmake/repository.txt
     git submodule update --init --recursive
@@ -54,8 +54,9 @@ steps:
   displayName: Take ownership of conda installation
 
 - bash: |
+    conda init bash
     conda create --yes --quiet --name iArrayEnv
-    source activate iArrayEnv
+    conda activate iArrayEnv
     conda install -y --name iArrayEnv -c intel mkl-include
     conda install -y --name iArrayEnv -c intel mkl-static
     conda install -y --name iArrayEnv -c intel icc_rt
@@ -66,10 +67,10 @@ steps:
   inputs:
     versionSpec: '$(python.version)'
   displayName: 'Use Python $(python.version)'
-    
+
 - script: |
-      python -m pip install --retries 3 -U pip setuptools setuptools-scm scikit-build numpy numexpr
-      python -m pip install -Iv Cython==0.29.13
+      python -m pip install --retries 3 -U pip setuptools setuptools-scm scikit-build numpy llvmlite cython numexpr
+      # python -m pip install -Iv Cython==0.29.13
   displayName: 'Install dependencies'
 
 - script: |
