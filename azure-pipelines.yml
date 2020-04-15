@@ -97,10 +97,9 @@ steps:
   condition:
     eq( variables['Agent.OS'], 'Darwin' )
 
-- bash: |
-      ls -R $CONDA
+- script: |
       pip install pytest
-      pytest -vv
+      PATH=PATH=%PATH%;C:\Miniconda/envs/iArrayEnv/Library/bin pytest -vv
   displayName: 'Run Tests'
   condition:
     eq( variables['Agent.OS'], 'Windows_NT' )

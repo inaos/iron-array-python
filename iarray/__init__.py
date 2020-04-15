@@ -11,7 +11,7 @@ if platform_system == 'Linux':
 elif platform_system == 'Darwin':
     binding.load_library_permanently("libsvml.dylib")
 else:
-    binding.load_library_permanently("libsvml.dll")
+    binding.load_library_permanently("svml_dispmd.dll")
 
 # Probably needed by py2llvm
 binding.set_option('', '-vector-library=SVML')
