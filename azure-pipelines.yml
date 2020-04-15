@@ -29,7 +29,7 @@ steps:
 - bash: |
     mkdir -p $HOME/.inaos/cmake
     mkdir -p $HOME/INAOS
-    echo "INAC_REPOSITORY_LOCAL=$HOME/INAOS" > $HOME/.inaos/cmake/repository.txt 
+    echo "INAC_REPOSITORY_LOCAL=$HOME/INAOS" > $HOME/.inaos/cmake/repository.txt
     echo "INAC_REPOSITORY_REMOTE=https://inaos.jfrog.io/inaos/libs-release-local/inaos" >> $HOME/.inaos/cmake/repository.txt
     echo "INAC_REPOSITORY_USRPWD=licensed:AKCp5bBraH7CasbsYCURsjzkbjXwVwdYcT7u39EiuL6GjnK1VKfKQWCd1E2E64mHokU5YUHku" >> $HOME/.inaos/cmake/repository.txt
     git submodule update --init --recursive
@@ -66,10 +66,10 @@ steps:
   inputs:
     versionSpec: '$(python.version)'
   displayName: 'Use Python $(python.version)'
-    
+
 - script: |
-      python -m pip install --retries 3 -U pip setuptools setuptools-scm scikit-build numpy numexpr
-      python -m pip install -Iv Cython==0.29.13
+      python -m pip install --retries 3 -U pip setuptools setuptools-scm scikit-build numpy llvmlite cython numexpr
+      # python -m pip install -Iv Cython==0.29.13
   displayName: 'Install dependencies'
 
 - script: |
@@ -82,14 +82,14 @@ steps:
       python setup.py build_ext -i --build-type RelWithDebInfo --generator "NMake Makefiles" -- -DINAC_TARGET_ARCH=x86_64 -DLLVM_DIR=%CONDA%/envs/iArrayEnv/Library/lib/cmake/llvm -DWINGEN="NMake Makefiles"
   displayName: 'Compile package'
   condition: eq( variables['Agent.OS'], 'Windows_NT' )
-    
+
 - script: |
       pip install pytest
       LD_LIBRARY_PATH=$HOME/.inaos/cmake/iarray-linux-x86_64-relwithdebinfo-0.1.4/lib pytest
   displayName: 'Run Tests'
   condition:
     ne( variables['Agent.OS'], 'Windows_NT' )
-    
+
 - script: |
       pip install pytest
       set PATH=%PATH%;%USERPROFILE%\.inaos\cmake\iarray-linux-x86_64-relwithdebinfo-0.1.4\lib
