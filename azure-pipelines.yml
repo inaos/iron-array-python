@@ -85,22 +85,20 @@ steps:
 
 - script: |
       pip install pytest
-      INAC_TRACE=* LD_LIBRARY_PATH=$HOME/.inaos/cmake/iarray-linux-x86_64-relwithdebinfo-0.1.4/lib pytest -vv
+      pytest -vv
   displayName: 'Run Tests'
   condition:
     eq( variables['Agent.OS'], 'Linux' )
 
 - script: |
       pip install pytest
-      INAC_TRACE=* LD_LIBRARY_PATH=$HOME/.inaos/cmake/iarray-darwin-x86_64-relwithdebinfo-0.1.4/lib pytest -vv
+      pytest -vv
   displayName: 'Run Tests'
   condition:
     eq( variables['Agent.OS'], 'Darwin' )
 
 - script: |
       pip install pytest
-      set PATH=%PATH%;%USERPROFILE%\.inaos\cmake\iarray-windows_vs17-x86_64-relwithdebinfo-0.1.4\lib
-      set INAC_TRACE=*
       pytest -vv
   displayName: 'Run Tests'
   condition:
