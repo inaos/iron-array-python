@@ -54,6 +54,7 @@ steps:
   displayName: Take ownership of conda installation
 
 - bash: |
+    conda init bash
     conda create --yes --quiet --name iArrayEnv
     conda activate iArrayEnv
     conda install -y --name iArrayEnv -c intel mkl-include
