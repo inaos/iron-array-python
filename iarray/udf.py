@@ -1,6 +1,6 @@
 # Standard Library
-import argparse
 import math
+assert math # Silence pyflakes warning
 
 # Requirements
 import iarray as ia
@@ -10,14 +10,6 @@ from py2llvm import int8, int8p, int32, int64, int64p
 from py2llvm import types
 
 from . import iarray_ext
-
-
-assert math # Silence pyflakes warning
-
-parser = argparse.ArgumentParser()
-parser.add_argument('-v', '--verbose', action='count', default=0)
-args = parser.parse_args()
-verbose = args.verbose
 
 
 """
