@@ -7,6 +7,7 @@ This package has iron-array C library (develop branch) integrated as a submodule
 
 ```bash
 git clone --recurse-submodules https://github.com/inaos/iron-array-python
+git submodule update --init --recursive
 ```
 
 Having the C library integrated as a submodule allows to quickly update to its latest commits in develop branch easily:
