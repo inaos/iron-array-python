@@ -18,7 +18,6 @@ def test_slice(shape, pshape, start, stop, dtype):
     slices = tuple(slice(start[i], stop[i]) for i in range(len(start)))
     if len(start) == 1:
         slices = slices[0]
-    print("Create a linspace")
     a = ia.linspace(ia.dtshape(shape, pshape, dtype), -10, 10, storage=storage)
     an = ia.iarray2numpy(a)
     b = a[slices]
