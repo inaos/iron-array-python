@@ -94,7 +94,7 @@ steps:
 
 - script: |
       pip install pytest
-      LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/miniconda/envs/iArrayEnv/lib pytest -vv -k test_slice.py -s
+      INAC_TRACE=* LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/miniconda/envs/iArrayEnv/lib pytest -vv -k test_slice.py -s
   displayName: 'Run Tests'
   condition:
     eq( variables['Agent.OS'], 'Darwin' )
