@@ -334,7 +334,7 @@ def test_poisson(lamb, shape, pshape, dtype):
     if pshape is None:
         storage = ia.StorageProperties("plainbuffer")
     else:
-        storage = ia.StorageProperties("blosc", False)
+        storage = ia.StorageProperties("blosc", enforce_frame=False)
 
     size = int(np.prod(shape))
     a = ia.random_poisson(ia.dtshape(shape, pshape, dtype), lamb, storage=storage)
@@ -342,10 +342,9 @@ def test_poisson(lamb, shape, pshape, dtype):
     npdtype = np.float64 if dtype == np.float64 else np.float32
     b = np.random.poisson(lamb, size).reshape(shape).astype(npdtype)
 
-    function_name = inspect.currentframe().f_code.co_name
-    extra_args = f"_{str(lamb).replace('.', '')}"
-    dtype_symbol = "f" if dtype == np.float32 else "d"
-
+    # function_name = inspect.currentframe().f_code.co_name
+    # extra_args = f"_{str(lamb).replace('.', '')}"
+    # dtype_symbol = "f" if dtype == np.float32 else "d"
     # filename = f"{function_name}_{dtype_symbol}{extra_args}.iarray"
     # if pshape is not None:
     #     storage.enforce_frame = False
