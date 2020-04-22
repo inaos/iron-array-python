@@ -415,7 +415,7 @@ class StorageProperties:
         self.filename = filename
 
     def to_tuple(self):
-        StoreProp = namedtuple('store properties', 'backend enforce_frame, filename')
+        StoreProp = namedtuple('store properties', 'backend enforce_frame filename')
         return StoreProp(self.backend, self.enforce_frame, self.filename)
 
 #
