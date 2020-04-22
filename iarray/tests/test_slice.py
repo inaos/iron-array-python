@@ -9,10 +9,11 @@ import numpy as np
                              ([100, 100], [20, 20], [0, 0], [10, 10], np.float64),
                          ])
 def test_slice(shape, pshape, start, stop, dtype):
+    print("Create storage properties")
     if pshape is None:
         storage = ia.StorageProperties("plainbuffer")
     else:
-        storage = ia.StorageProperties("blosc", True)
+        storage = ia.StorageProperties("blosc", False)
 
     slices = tuple(slice(start[i], stop[i]) for i in range(len(start)))
     if len(start) == 1:
