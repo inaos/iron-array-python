@@ -27,15 +27,15 @@ def test_rand(shape, pshape, dtype):
     npdtype = np.float64 if dtype == np.float64 else np.float32
     b = np.random.rand(size).reshape(shape).astype(npdtype)
 
-    function_name = inspect.currentframe().f_code.co_name
-    extra_args = f""
-    dtype_symbol = "f" if dtype == np.float32 else "d"
-
-    filename = f"{function_name}_{dtype_symbol}{extra_args}.iarray"
-
-    if pshape is not None:
-        storage.enforce_frame = True
-        storage.filename = filename
+    # function_name = inspect.currentframe().f_code.co_name
+    # extra_args = f""
+    # dtype_symbol = "f" if dtype == np.float32 else "d"
+    #
+    # filename = f"{function_name}_{dtype_symbol}{extra_args}.iarray"
+    #
+    # if pshape is not None:
+    #     storage.enforce_frame = True
+    #     storage.filename = filename
 
     c = ia.numpy2iarray(b, pshape, storage=storage)
 
@@ -62,15 +62,15 @@ def test_randn(shape, pshape, dtype):
     npdtype = np.float64 if dtype == np.float64 else np.float32
     b = np.random.randn(size).reshape(shape).astype(npdtype)
 
-    function_name = inspect.currentframe().f_code.co_name
-    extra_args = f""
-    dtype_symbol = "f" if dtype == np.float32 else "d"
-
-    filename = f"{function_name}_{dtype_symbol}{extra_args}.iarray"
-
-    if pshape is not None:
-        storage.enforce_frame = True
-        storage.filename = filename
+    # function_name = inspect.currentframe().f_code.co_name
+    # extra_args = f""
+    # dtype_symbol = "f" if dtype == np.float32 else "d"
+    #
+    # filename = f"{function_name}_{dtype_symbol}{extra_args}.iarray"
+    #
+    # if pshape is not None:
+    #     storage.enforce_frame = True
+    #     storage.filename = filename
 
     c = ia.numpy2iarray(b, pshape, storage=storage)
 
@@ -97,15 +97,15 @@ def test_beta(alpha, beta, shape, pshape, dtype):
     npdtype = np.float64 if dtype == np.float64 else np.float32
     b = np.random.beta(alpha, beta, size).reshape(shape).astype(npdtype)
 
-    function_name = inspect.currentframe().f_code.co_name
-    extra_args = f"_{str(alpha).replace('.', '')}_{str(beta).replace('.', '')}"
-    dtype_symbol = "f" if dtype == np.float32 else "d"
-
-    filename = f"{function_name}_{dtype_symbol}{extra_args}.iarray"
-
-    if pshape is not None:
-        storage.enforce_frame = True
-        storage.filename = filename
+    # function_name = inspect.currentframe().f_code.co_name
+    # extra_args = f"_{str(alpha).replace('.', '')}_{str(beta).replace('.', '')}"
+    # dtype_symbol = "f" if dtype == np.float32 else "d"
+    #
+    # filename = f"{function_name}_{dtype_symbol}{extra_args}.iarray"
+    #
+    # if pshape is not None:
+    #     storage.enforce_frame = True
+    #     storage.filename = filename
 
     c = ia.numpy2iarray(b, pshape, storage=storage)
 
@@ -132,15 +132,15 @@ def test_lognormal(mu, sigma, shape, pshape, dtype):
     npdtype = np.float64 if dtype == np.float64 else np.float32
     b = np.random.lognormal(mu, sigma, size).reshape(shape).astype(npdtype)
 
-    function_name = inspect.currentframe().f_code.co_name
-    extra_args = f"_{str(mu).replace('.', '')}_{str(sigma).replace('.', '')}"
-    dtype_symbol = "f" if dtype == np.float32 else "d"
-
-    filename = f"{function_name}_{dtype_symbol}{extra_args}.iarray"
-
-    if pshape is not None:
-        storage.enforce_frame = True
-        storage.filename = filename
+    # function_name = inspect.currentframe().f_code.co_name
+    # extra_args = f"_{str(mu).replace('.', '')}_{str(sigma).replace('.', '')}"
+    # dtype_symbol = "f" if dtype == np.float32 else "d"
+    #
+    # filename = f"{function_name}_{dtype_symbol}{extra_args}.iarray"
+    #
+    # if pshape is not None:
+    #     storage.enforce_frame = True
+    #     storage.filename = filename
 
     c = ia.numpy2iarray(b, pshape, storage=storage)
 
@@ -167,15 +167,15 @@ def test_exponential(beta, shape, pshape, dtype):
     npdtype = np.float64 if dtype == np.float64 else np.float32
     b = np.random.exponential(beta, size).reshape(shape).astype(npdtype)
 
-    function_name = inspect.currentframe().f_code.co_name
-    extra_args = f"_{str(beta).replace('.', '')}"
-    dtype_symbol = "f" if dtype == np.float32 else "d"
-
-    filename = f"{function_name}_{dtype_symbol}{extra_args}.iarray"
-
-    if pshape is not None:
-        storage.enforce_frame = True
-        storage.filename = filename
+    # function_name = inspect.currentframe().f_code.co_name
+    # extra_args = f"_{str(beta).replace('.', '')}"
+    # dtype_symbol = "f" if dtype == np.float32 else "d"
+    #
+    # filename = f"{function_name}_{dtype_symbol}{extra_args}.iarray"
+    #
+    # if pshape is not None:
+    #     storage.enforce_frame = True
+    #     storage.filename = filename
 
     c = ia.numpy2iarray(b, pshape, storage=storage)
 
@@ -202,15 +202,15 @@ def test_uniform(a_, b_, shape, pshape, dtype):
     npdtype = np.float64 if dtype == np.float64 else np.float32
     b = np.random.uniform(a_, b_, size).reshape(shape).astype(npdtype)
 
-    function_name = inspect.currentframe().f_code.co_name
-    extra_args = f"_{str(a_).replace('.', '')}_{str(b_).replace('.', '')}"
-    dtype_symbol = "f" if dtype == np.float32 else "d"
-
-    filename = f"{function_name}_{dtype_symbol}{extra_args}.iarray"
-
-    if pshape is not None:
-        storage.enforce_frame = True
-        storage.filename = filename
+    # function_name = inspect.currentframe().f_code.co_name
+    # extra_args = f"_{str(a_).replace('.', '')}_{str(b_).replace('.', '')}"
+    # dtype_symbol = "f" if dtype == np.float32 else "d"
+    #
+    # filename = f"{function_name}_{dtype_symbol}{extra_args}.iarray"
+    #
+    # if pshape is not None:
+    #     storage.enforce_frame = True
+    #     storage.filename = filename
 
     c = ia.numpy2iarray(b, pshape, storage=storage)
 
@@ -237,15 +237,15 @@ def test_normal(mu, sigma, shape, pshape, dtype):
     npdtype = np.float64 if dtype == np.float64 else np.float32
     b = np.random.normal(mu, sigma, size).reshape(shape).astype(npdtype)
 
-    function_name = inspect.currentframe().f_code.co_name
-    extra_args = f"_{str(mu).replace('.', '')}_{str(sigma).replace('.', '')}"
-    dtype_symbol = "f" if dtype == np.float32 else "d"
-
-    filename = f"{function_name}_{dtype_symbol}{extra_args}.iarray"
-
-    if pshape is not None:
-        storage.enforce_frame = True
-        storage.filename = filename
+    # function_name = inspect.currentframe().f_code.co_name
+    # extra_args = f"_{str(mu).replace('.', '')}_{str(sigma).replace('.', '')}"
+    # dtype_symbol = "f" if dtype == np.float32 else "d"
+    #
+    # filename = f"{function_name}_{dtype_symbol}{extra_args}.iarray"
+    #
+    # if pshape is not None:
+    #     storage.enforce_frame = True
+    #     storage.filename = filename
 
     c = ia.numpy2iarray(b, pshape, storage=storage)
 
@@ -272,15 +272,15 @@ def test_bernoulli(p, shape, pshape, dtype):
     npdtype = np.float64 if dtype == np.float64 else np.float32
     b = np.random.binomial(1, p, size).reshape(shape).astype(npdtype)
 
-    function_name = inspect.currentframe().f_code.co_name
-    extra_args = f"_{str(p).replace('.', '')}"
-    dtype_symbol = "f" if dtype == np.float32 else "d"
-
-    filename = f"{function_name}_{dtype_symbol}{extra_args}.iarray"
-
-    if pshape is not None:
-        storage.enforce_frame = True
-        storage.filename = filename
+    # function_name = inspect.currentframe().f_code.co_name
+    # extra_args = f"_{str(p).replace('.', '')}"
+    # dtype_symbol = "f" if dtype == np.float32 else "d"
+    #
+    # filename = f"{function_name}_{dtype_symbol}{extra_args}.iarray"
+    #
+    # if pshape is not None:
+    #     storage.enforce_frame = True
+    #     storage.filename = filename
 
     c = ia.numpy2iarray(b, pshape, storage=storage)
 
@@ -307,15 +307,15 @@ def test_binomial(n, p, shape, pshape, dtype):
     npdtype = np.float64 if dtype == np.float64 else np.float32
     b = np.random.binomial(n, p, size).reshape(shape).astype(npdtype)
 
-    function_name = inspect.currentframe().f_code.co_name
-    extra_args = f"_{str(n).replace('.', '')}_{str(p).replace('.', '')}"
-    dtype_symbol = "f" if dtype == np.float32 else "d"
-
-    filename = f"{function_name}_{dtype_symbol}{extra_args}.iarray"
-
-    if pshape is not None:
-        storage.enforce_frame = True
-        storage.filename = filename
+    # function_name = inspect.currentframe().f_code.co_name
+    # extra_args = f"_{str(n).replace('.', '')}_{str(p).replace('.', '')}"
+    # dtype_symbol = "f" if dtype == np.float32 else "d"
+    #
+    # filename = f"{function_name}_{dtype_symbol}{extra_args}.iarray"
+    #
+    # if pshape is not None:
+    #     storage.enforce_frame = True
+    #     storage.filename = filename
 
     c = ia.numpy2iarray(b, pshape, storage=storage)
 
@@ -334,7 +334,7 @@ def test_poisson(lamb, shape, pshape, dtype):
     if pshape is None:
         storage = ia.StorageProperties("plainbuffer")
     else:
-        storage = ia.StorageProperties("blosc", enforce_frame=False)
+        storage = ia.StorageProperties("blosc", False)
 
     size = int(np.prod(shape))
     a = ia.random_poisson(ia.dtshape(shape, pshape, dtype), lamb, storage=storage)
@@ -345,7 +345,9 @@ def test_poisson(lamb, shape, pshape, dtype):
     # function_name = inspect.currentframe().f_code.co_name
     # extra_args = f"_{str(lamb).replace('.', '')}"
     # dtype_symbol = "f" if dtype == np.float32 else "d"
+    #
     # filename = f"{function_name}_{dtype_symbol}{extra_args}.iarray"
+    #
     # if pshape is not None:
     #     storage.enforce_frame = False
     #     storage.filename = filename
