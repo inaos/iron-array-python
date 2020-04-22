@@ -22,6 +22,7 @@ from libc.stdlib cimport malloc, free
 from iarray.high_level import IArray
 from collections import namedtuple
 from .expression import Parser
+from libc.stdio cimport printf
 
 
 cdef set_store_properties(storage, ciarray.iarray_store_properties_t *cstore):
@@ -533,8 +534,17 @@ def linspace(cfg, nelem, start, stop, dtshape):
 
     flags = 0 if cfg._storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
 
-    cdef ciarray.iarray_container_t *c
-    ciarray.iarray_linspace(ctx_, &dtshape_, nelem, start, stop, &store_, flags, &c)
+    print(cfg._storage.backend)
+    print(cfg._storage.enforce_frame)
+    print(cfg._storage.filename)
+
+    print(store_.backend)
+    print(store_.enforce_frame)
+    printf("%s\n", store_.filename)
+    print(flags)
+
+    #cdef ciarray.iarray_container_t *c
+    #ciarray.iarray_linspace(ctx_, &dtshape_, nelem, start, stop, &store_, flags, &c)
     #
     # c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     # return IArray(ctx, c_c)

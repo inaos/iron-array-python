@@ -13,7 +13,7 @@ def test_slice(shape, pshape, start, stop, dtype):
     if pshape is None:
         storage = ia.StorageProperties("plainbuffer")
     else:
-        storage = ia.StorageProperties("blosc", enforce_frame=True)
+        storage = ia.StorageProperties("blosc", enforce_frame=True, filename="pepe")
 
     slices = tuple(slice(start[i], stop[i]) for i in range(len(start)))
     if len(start) == 1:
