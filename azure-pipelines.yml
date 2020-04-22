@@ -3,19 +3,19 @@ trigger:
 
 strategy:
   matrix:
-    linux:
-      imageName: 'ubuntu-18.04'
-      python.version: '3.7'
-      DISABLE_LLVM_CONFIG: True
+#    linux:
+#      imageName: 'ubuntu-18.04'
+#      python.version: '3.7'
+#      DISABLE_LLVM_CONFIG: True
     mac:
       imageName: 'macos-10.14'
       python.version: '3.7'
       DISABLE_LLVM_CONFIG: True
-    windows:
-      imageName: 'vs2017-win2016'
-      VSINSTALL: "Microsoft Visual Studio\\2017\\Enterprise\\VC\\Auxiliary\\Build"
-      MSVC_PLATFORM: amd64
-      python.version: '3.7'
+#    windows:
+#      imageName: 'vs2017-win2016'
+#      VSINSTALL: "Microsoft Visual Studio\\2017\\Enterprise\\VC\\Auxiliary\\Build"
+#      MSVC_PLATFORM: amd64
+#      python.version: '3.7'
 
 pool:
   vmImage: $(imageName)
@@ -94,7 +94,7 @@ steps:
 
 - script: |
       pip install pytest
-      LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/miniconda/envs/iArrayEnv/lib pytest -vv
+      LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/miniconda/envs/iArrayEnv/lib pytest -vv -k test_slice.py
   displayName: 'Run Tests'
   condition:
     eq( variables['Agent.OS'], 'Darwin' )
