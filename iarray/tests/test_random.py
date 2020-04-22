@@ -346,11 +346,10 @@ def test_poisson(lamb, shape, pshape, dtype):
     extra_args = f"_{str(lamb).replace('.', '')}"
     dtype_symbol = "f" if dtype == np.float32 else "d"
 
-    filename = f"{function_name}_{dtype_symbol}{extra_args}.iarray"
-
-    if pshape is not None:
-        storage.enforce_frame = True
-        storage.filename = filename
+    # filename = f"{function_name}_{dtype_symbol}{extra_args}.iarray"
+    # if pshape is not None:
+    #     storage.enforce_frame = False
+    #     storage.filename = filename
 
     c = ia.numpy2iarray(b, pshape, storage=storage)
 
