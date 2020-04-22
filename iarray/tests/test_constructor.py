@@ -76,7 +76,7 @@ def test_slice(start, stop, slice, shape, pshape, dtype):
     if pshape is None:
         storage = ia.StorageProperties("plainbuffer")
     else:
-        storage = ia.StorageProperties("blosc", True)
+        storage = ia.StorageProperties("blosc", False)
     size = int(np.prod(shape))
     step = (stop - start) / size
     a = ia.arange(ia.dtshape(shape=shape, pshape=pshape, dtype=dtype), start, stop, step, storage=storage)
