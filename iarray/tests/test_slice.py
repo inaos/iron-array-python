@@ -19,7 +19,7 @@ def test_slice(shape, pshape, start, stop, dtype):
     if len(start) == 1:
         slices = slices[0]
     print("Create a linspace")
-    # a = ia.linspace(ia.dtshape(shape, pshape, dtype), -10, 10, storage=storage)
+    a = ia.linspace(ia.dtshape(shape, pshape, dtype), -10, 10, storage=storage)
     # print("Convert an array to numpy")
     # an = ia.iarray2numpy(a)
     # print("Create a caterva slice")
