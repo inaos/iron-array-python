@@ -533,11 +533,12 @@ def linspace(cfg, nelem, start, stop, dtshape):
 
     flags = 0 if cfg._storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
 
-    cdef ciarray.iarray_container_t *c
-    ciarray.iarray_linspace(ctx_, &dtshape_, nelem, start, stop, &store_, flags, &c)
-
-    c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
-    return IArray(ctx, c_c)
+    # cdef ciarray.iarray_container_t *c
+    # ciarray.iarray_linspace(ctx_, &dtshape_, nelem, start, stop, &store_, flags, &c)
+    #
+    # c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
+    # return IArray(ctx, c_c)
+    return True
 
 
 def zeros(cfg, dtshape):
