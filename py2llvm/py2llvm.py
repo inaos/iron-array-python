@@ -1311,12 +1311,12 @@ class LLVM:
 
 
 # All these initializations are required for code generation!
-binding.initialize()
-binding.initialize_native_target()
-binding.initialize_native_asmprinter()
+#binding.initialize()
+#binding.initialize_native_target()
+#binding.initialize_native_asmprinter()
 
-binding.load_library_permanently("libsvml.so")
-binding.set_option('', '-vector-library=SVML')
+#binding.load_library_permanently("libsvml.so")
+#binding.set_option('', '-vector-library=SVML')
 
 
 llvm = LLVM(CTypesFunction)
