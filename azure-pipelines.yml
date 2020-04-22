@@ -11,11 +11,11 @@ strategy:
       imageName: 'macos-10.14'
       python.version: '3.7'
       DISABLE_LLVM_CONFIG: True
-    windows:
-      imageName: 'vs2017-win2016'
-      VSINSTALL: "Microsoft Visual Studio\\2017\\Enterprise\\VC\\Auxiliary\\Build"
-      MSVC_PLATFORM: amd64
-      python.version: '3.7'
+    # windows:
+    #   imageName: 'vs2017-win2016'
+    #   VSINSTALL: "Microsoft Visual Studio\\2017\\Enterprise\\VC\\Auxiliary\\Build"
+    #   MSVC_PLATFORM: amd64
+    #   python.version: '3.7'
 
 pool:
   vmImage: $(imageName)
@@ -71,7 +71,6 @@ steps:
 
 - script: |
       python -m pip install --retries 3 -U pip setuptools setuptools-scm scikit-build numpy llvmlite cython numexpr
-      # python -m pip install -Iv Cython==0.29.13
   displayName: 'Install dependencies'
 
 - script: |
