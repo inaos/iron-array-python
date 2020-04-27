@@ -97,12 +97,14 @@ steps:
 
 - script: |
       pip install pytest
+      ls -l iarray/
       LD_LIBRARY_PATH=$CONDA/envs/iArrayEnv/lib:$LD_LIBRARY_PATH pytest -vv
   displayName: 'Run Tests'
-  condition: nq( variables['Agent.OS'], 'Windows_NT' )
+  condition: ne( variables['Agent.OS'], 'Windows_NT' )
 
 - script: |
       pip install pytest
+      ls -l iarray/
       pytest -vv
   displayName: 'Run Tests'
   condition: eq( variables['Agent.OS'], 'Windows_NT' )
