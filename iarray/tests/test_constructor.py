@@ -137,7 +137,7 @@ def test_ones(shape, pshape, dtype):
     if pshape is None:
         storage = ia.StorageProperties("plainbuffer")
     else:
-        storage = ia.StorageProperties("blosc", False)
+        storage = ia.StorageProperties("blosc", True)
     a = ia.ones(ia.dtshape(shape, pshape, dtype), storage=storage)
     b = ia.iarray2numpy(a)
     npdtype = np.float64 if dtype == np.float64 else np.float32
