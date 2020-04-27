@@ -94,8 +94,8 @@ steps:
 - script: |
       pip install pytest
       ls -l iarray/
-      PATH=%PATH%;$CONDA/envs/iArrayEnv/Library/bin
       cd iarray/
+      PATH=%PATH%;C:\Miniconda/envs/iArrayEnv/Library/bin
       pytest -vv
   displayName: 'Run Tests'
   condition: eq( variables['Agent.OS'], 'Windows_NT' )
