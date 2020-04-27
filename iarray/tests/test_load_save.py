@@ -4,7 +4,6 @@ import numpy as np
 
 
 # Test load and save
-@pytest.mark.skip(reason="Problem with Azure OSX")
 @pytest.mark.parametrize("shape, pshape, dtype, load_in_mem",
                          [
                              ([67], [20], np.float64, True),
