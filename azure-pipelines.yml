@@ -11,7 +11,7 @@ strategy:
       imageName: 'macos-10.14'
       python.version: '3.7'
       DISABLE_LLVM_CONFIG: True
-     windows:
+    windows:
        imageName: 'vs2017-win2016'
        VSINSTALL: "Microsoft Visual Studio\\2017\\Enterprise\\VC\\Auxiliary\\Build"
        MSVC_PLATFORM: amd64
