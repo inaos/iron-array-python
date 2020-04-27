@@ -84,24 +84,18 @@ steps:
   displayName: 'Compile package'
   condition: eq( variables['Agent.OS'], 'Windows_NT' )
 
-- script: |
-      pip install pytest
-      LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/share/miniconda/envs/iArrayEnv/lib pytest -vv
-  displayName: 'Run Tests'
-  condition:
-    eq( variables['Agent.OS'], 'Linux' )
+- bash: |
+    if [ "$AGENT_OS" == "Darwin" ]
+      then
+        echo "##vso[task.prependpath]$CONDA/envs/iArrayEnv/lib"
+    fi
+    if [ "$AGENT_OS" == "Windows_NT" ]
+      then
+        echo "##vso[task.prependpath]$CONDA/envs/iArrayEnv/Library/bin"
+    fi
+  displayName: Add conda to PATH
 
 - script: |
       pip install pytest
-      INAC_TRACE=* LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/miniconda/envs/iArrayEnv/lib pytest -vv -s
-  displayName: 'Run Tests'
-  condition:
-    eq( variables['Agent.OS'], 'Darwin' )
-
-- script: |
-      pip install pytest
-      PATH=%PATH%;C:\Miniconda/envs/iArrayEnv/Library/bin
       pytest -vv
   displayName: 'Run Tests'
-  condition:
-    eq( variables['Agent.OS'], 'Windows_NT' )
