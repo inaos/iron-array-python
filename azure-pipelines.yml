@@ -84,17 +84,6 @@ steps:
   displayName: 'Compile package'
   condition: eq( variables['Agent.OS'], 'Windows_NT' )
 
-- bash: |
-    if [ "$AGENT_OS" != "Windows_NT" ]
-      then
-        echo "##vso[task.prependpath]$CONDA/envs/iArrayEnv/lib"
-    fi
-    if [ "$AGENT_OS" == "Windows_NT" ]
-      then
-        echo "##vso[task.prependpath]$CONDA/envs/iArrayEnv/Library/bin"
-    fi
-  displayName: Add SVML dir
-
 - script: |
       pip install pytest
       ls -l iarray/
@@ -105,6 +94,8 @@ steps:
 - script: |
       pip install pytest
       ls -l iarray/
+      PATH=%PATH%;$CONDA/envs/iArrayEnv/Library/bin
+      cd iarray/
       pytest -vv
   displayName: 'Run Tests'
   condition: eq( variables['Agent.OS'], 'Windows_NT' )
