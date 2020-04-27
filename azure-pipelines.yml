@@ -85,7 +85,7 @@ steps:
   condition: eq( variables['Agent.OS'], 'Windows_NT' )
 
 - bash: |
-    if [ "$AGENT_OS" == "Darwin" ]
+    if [ "$AGENT_OS" != "Windows_NT" ]
       then
         echo "##vso[task.prependpath]$CONDA/envs/iArrayEnv/lib"
     fi
@@ -93,7 +93,7 @@ steps:
       then
         echo "##vso[task.prependpath]$CONDA/envs/iArrayEnv/Library/bin"
     fi
-  displayName: Add conda to PATH
+  displayName: Add SVML dir
 
 - script: |
       pip install pytest
