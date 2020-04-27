@@ -99,7 +99,7 @@ steps:
       pip install pytest
       LD_LIBRARY_PATH=$CONDA/envs/iArrayEnv/lib:$LD_LIBRARY_PATH pytest -vv
   displayName: 'Run Tests'
-  condition: neq( variables['Agent.OS'], 'Windows_NT' )
+  condition: nq( variables['Agent.OS'], 'Windows_NT' )
 
 - script: |
       pip install pytest
