@@ -10,7 +10,6 @@ setup(
     description=DESCRIPTION,
     # long_description=LONG_DESCRIPTION,
     python_requires=">=3.6",
-    package_dir={'': '.'},
     extras_require={
         'doc': [
             'sphinx >= 1.5',
