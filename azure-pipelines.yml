@@ -87,7 +87,7 @@ steps:
 - script: |
       pip install pytest
       ls -l iarray/
-      LD_LIBRARY_PATH=$CONDA/envs/iArrayEnv/lib:$LD_LIBRARY_PATH pytest -vv
+      LD_LIBRARY_PATH=$CONDA/envs/iArrayEnv/lib:$LD_LIBRARY_PATH PYTHONPATH=. python -m pytest -vv
   displayName: 'Run Tests'
   condition: ne( variables['Agent.OS'], 'Windows_NT' )
 
@@ -95,7 +95,6 @@ steps:
       pip install pytest
       ls -l iarray/
       cd iarray/
-      PATH=%PATH%;$CONDA/envs/iArrayEnv/Library/bin
-      python -m pytest -vv
+      PATH=%PATH%;$CONDA/envs/iArrayEnv/Library/bin PYTHONPATH=. python -m pytest -vv
   displayName: 'Run Tests'
   condition: eq( variables['Agent.OS'], 'Windows_NT' )
