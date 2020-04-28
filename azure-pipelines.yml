@@ -47,7 +47,10 @@ steps:
 
 - script: |
     call activate iArrayEnv
-    conda install -y --name iArrayEnv -c intel mkl-include mkl-static icc-rt
+    conda install --yes --quiet --name iArrayEnv -c intel mkl-include
+    call activate iArrayEnv
+    conda install --yes --quiet --name iArrayEnv -c intel mkl-static
+    conda install -y --name iArrayEnv -c intel icc_rt
     conda install -y --name iArrayEnv -c numba llvmdev
   displayName: Download dependencies
 
