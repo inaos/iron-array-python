@@ -91,7 +91,7 @@ steps:
   displayName: 'Run Tests'
   condition: ne( variables['Agent.OS'], 'Windows_NT' )
 
-- script: |
+- bash: |
       pip install pytest
       ls -l iarray/
       PATH=%PATH%;$CONDA/envs/iArrayEnv/Library/bin
