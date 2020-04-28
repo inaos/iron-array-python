@@ -11,8 +11,6 @@ steps:
   submodules: recursive
   persistCredentials: true
 
-- powershell: gci env:* | sort-object name
-
 - bash: |
     mkdir -p $HOME/.inaos/cmake
     mkdir -p $HOME/INAOS
