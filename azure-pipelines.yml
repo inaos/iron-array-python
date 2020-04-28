@@ -37,19 +37,21 @@ steps:
     git submodule update --init --recursive
   displayName: Clone repos
 
-- powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
+- powershell: |
+    Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
   displayName: Add conda to PATH
 
-- script: conda create --yes --quiet --name iArrayEnv
+- script: |
+    conda create --yes --quiet --name iArrayEnv
   displayName: Create Anaconda environment
 
- - script: |
+- script: |
     call activate iArrayEnv
     conda install -y --name iArrayEnv -c intel mkl-include
     conda install -y --name iArrayEnv -c intel mkl-static
     conda install -y --name iArrayEnv -c intel icc_rt
     conda install -y --name iArrayEnv -c numba llvmdev
-   displayName: Download dependencies
+  displayName: Download dependencies
 
 - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\envs\iArrayEnv\Library\bin"
   displayName: Add SVML to PATH
@@ -60,16 +62,15 @@ steps:
   displayName: 'Use Python $(python.version)'
 
 - script: |
-      python -m pip install --retries 3 -U pip setuptools setuptools-scm scikit-build numpy llvmlite cython numexpr
+    python -m pip install --retries 3 -U pip setuptools setuptools-scm scikit-build numpy llvmlite cython numexpr
   displayName: 'Install dependencies'
 
 - script: |
-      call "C:\Program Files (x86)\%VSINSTALL%\vcvarsall.bat" %MSVC_PLATFORM%
-      python setup.py build_ext -i --build-type RelWithDebInfo --generator "NMake Makefiles" -- -DINAC_TARGET_ARCH=x86_64 -DLLVM_DIR=%CONDA%/envs/iArrayEnv/Library/lib/cmake/llvm -DWINGEN="NMake Makefiles"
+    call "C:\Program Files (x86)\%VSINSTALL%\vcvarsall.bat" %MSVC_PLATFORM%
+    python setup.py build_ext -i --build-type RelWithDebInfo --generator "NMake Makefiles" -- -DINAC_TARGET_ARCH=x86_64 -DLLVM_DIR=%CONDA%/envs/iArrayEnv/Library/lib/cmake/llvm -DWINGEN="NMake Makefiles"
   displayName: 'Compile package'
 
 - script: |
-      pip install pytest
-      pytest tests
+    pip install pytest
+    pytest tests
   displayName: 'Run Tests'
-  condition: eq( variables['Agent.OS'], 'Windows_NT' )
