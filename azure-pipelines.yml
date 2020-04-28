@@ -48,11 +48,24 @@ steps:
 - script: |
     call activate iArrayEnv
     conda install --yes --quiet --name iArrayEnv -c intel mkl-include
+  displayName: Download mkl-iclude
+
+- script: |
     call activate iArrayEnv
     conda install --yes --quiet --name iArrayEnv -c intel mkl-static
-    conda install -y --name iArrayEnv -c intel icc_rt
-    conda install -y --name iArrayEnv -c numba llvmdev
-  displayName: Download dependencies
+  displayName: Download mkl-iclude
+
+
+- script: |
+    call activate iArrayEnv
+    conda install --yes --quiet --name iArrayEnv -c intel icc_rt
+  displayName: Download mkl-iclude
+
+  - script: |
+      call activate iArrayEnv
+      conda install --yes --quiet --name iArrayEnv -c numba llvmdev
+    displayName: Download llvm
+
 
 - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\envs\iArrayEnv\Library\bin"
   displayName: Add SVML to PATH
