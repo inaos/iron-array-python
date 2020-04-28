@@ -10,7 +10,14 @@ git clone --recurse-submodules https://github.com/inaos/iron-array-python
 git submodule update --init --recursive
 ```
 
-Having the C library integrated as a submodule allows to quickly update to its latest commits in develop branch easily:
+In general, you can update your local repo with:
+
+```bash
+git pull
+git submodule update --recursive
+```
+
+Also, having the iorn-array C library integrated as a submodule allows to quickly update to its latest commits in develop branch easily (even if the iron-array-python repo has not been updated to use the latest version yet):
 
 ```bash
 git submodule update --remote --recursive
