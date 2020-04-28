@@ -37,32 +37,22 @@ steps:
     git submodule update --init --recursive
   displayName: Clone repos
 
-- bash: |
-    if [ "$AGENT_OS" == "Darwin" ]
-      then
-        echo "##vso[task.prependpath]$CONDA/bin"
-    fi
-    if [ "$AGENT_OS" == "Windows_NT" ]
-      then
-        echo "##vso[task.prependpath]$CONDA/Scripts"
-    fi
+- powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
   displayName: Add conda to PATH
 
-- bash: |
-    if [ "$AGENT_OS" == "Darwin" ]
-      then
-        sudo chown -R $USER $CONDA
-      fi
-  displayName: Take ownership of conda installation
+- script: conda create --yes --quiet --name iArrayEnv
+  displayName: Create Anaconda environment
 
-- bash: |
-    conda create --yes --quiet --name iArrayEnv
-    source activate iArrayEnv
+ - script: |
+    call activate iArrayEnv
     conda install -y --name iArrayEnv -c intel mkl-include
     conda install -y --name iArrayEnv -c intel mkl-static
     conda install -y --name iArrayEnv -c intel icc_rt
     conda install -y --name iArrayEnv -c numba llvmdev
-  displayName: Download dependencies
+   displayName: Download dependencies
+
+- powershell: Write-Host "##vso[task.prependpath]$env:CONDA\envs\iArrayEnv\Library\bin"
+  displayName: Add SVML to PATH
 
 - task: UsePythonVersion@0
   inputs:
@@ -74,31 +64,12 @@ steps:
   displayName: 'Install dependencies'
 
 - script: |
-      python setup.py build_ext -j 4 --build-type=RelWithDebInfo -- -DDISABLE_LLVM_CONFIG=$DISABLE_LLVM_CONFIG -DLLVM_DIR=$CONDA/envs/iArrayEnv/lib/cmake/llvm
-  displayName: 'Compile package'
-  condition: ne( variables['Agent.OS'], 'Windows_NT' )
-
-- script: |
       call "C:\Program Files (x86)\%VSINSTALL%\vcvarsall.bat" %MSVC_PLATFORM%
       python setup.py build_ext -i --build-type RelWithDebInfo --generator "NMake Makefiles" -- -DINAC_TARGET_ARCH=x86_64 -DLLVM_DIR=%CONDA%/envs/iArrayEnv/Library/lib/cmake/llvm -DWINGEN="NMake Makefiles"
   displayName: 'Compile package'
-  condition: eq( variables['Agent.OS'], 'Windows_NT' )
 
 - script: |
       pip install pytest
-      ls -l iarray/
-      LD_LIBRARY_PATH=$CONDA/envs/iArrayEnv/lib:$LD_LIBRARY_PATH PYTHONPATH=. python -m pytest -vv
-  displayName: 'Run Tests'
-  condition: ne( variables['Agent.OS'], 'Windows_NT' )
-
-- powershell: |
-      Write-Host "##vso[task.setvariable variable=PATH;]${env:PYTHON};${env:PYTHON}\Scripts;${env:PATH}";
-  displayName: 'Add Python paths to PATH'
-  condition: eq( variables['Agent.OS'], 'Windows_NT' )
-- bash: |
-      pip install pytest
-      ls -l iarray/
-      PATH=%PATH%;$CONDA/envs/iArrayEnv/Library/bin
-      PYTHONPATH=. python -m pytest
+      pytest tests
   displayName: 'Run Tests'
   condition: eq( variables['Agent.OS'], 'Windows_NT' )
