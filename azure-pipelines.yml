@@ -47,24 +47,24 @@ steps:
 
 - script: |
     call activate iArrayEnv
-    conda install --yes --quiet --name iArrayEnv -c intel mkl-include
+    conda install --yes --name iArrayEnv -c intel mkl-include
   displayName: Download mkl-iclude
 
 - script: |
     call activate iArrayEnv
-    conda install --yes --quiet --name iArrayEnv -c intel mkl-static
-  displayName: Download mkl-iclude
+    conda install --yes --name iArrayEnv -c intel mkl-static
+  displayName: Download mkl-static
 
 
 - script: |
     call activate iArrayEnv
-    conda install --yes --quiet --name iArrayEnv -c intel icc_rt
-  displayName: Download mkl-iclude
+    conda install --yes --name iArrayEnv -c intel icc_rt
+  displayName: Download icc_rt
 
 - script: |
     call activate iArrayEnv
-    conda install --yes --quiet --name iArrayEnv -c numba llvmdev
-  displayName: Download llvm
+    conda install --yes --name iArrayEnv -c numba llvmdev
+  displayName: Download llvmdev
 
 
 - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\envs\iArrayEnv\Library\bin"
@@ -86,5 +86,5 @@ steps:
 
 - script: |
     pip install pytest
-    pytest tests
+    pytest iarray/tests
   displayName: 'Run Tests'
