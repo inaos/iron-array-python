@@ -96,5 +96,5 @@ steps:
       ls -l iarray/
       PATH=%PATH%;$CONDA/envs/iArrayEnv/Library/bin
       PYTHONPATH=. python -m pytest
-- displayName: 'Run Tests'
+  displayName: 'Run Tests'
   condition: eq( variables['Agent.OS'], 'Windows_NT' )
