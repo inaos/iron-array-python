@@ -93,8 +93,8 @@ steps:
 
 - powershell: |
       Write-Host "##vso[task.setvariable variable=PATH;]${env:PYTHON};${env:PYTHON}\Scripts;${env:PATH}";
-    displayName: 'Add Python paths to PATH'
-
+  displayName: 'Add Python paths to PATH'
+  condition: eq( variables['Agent.OS'], 'Windows_NT' )
 - bash: |
       pip install pytest
       ls -l iarray/
