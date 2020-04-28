@@ -18,7 +18,7 @@ shape = [20 * 1000 * 1000]
 pshape = [4 * 1000 * 1000]
 dtype = np.float64
 
-cparams = dict(clib=ia.LZ4, clevel=5, nthreads=16) #, blocksize=1024)
+cparams = dict(clib=ia.LZ4, clevel=5, nthreads=16)
 
 
 @jit(verbose=0)
@@ -37,9 +37,6 @@ a2 = np.linspace(0, 10, shape[0], dtype=dtype).reshape(shape)
 
 print("iarray evaluation ...")
 expr = f.create_expr([a1], ia.dtshape(shape, pshape, dtype), **cparams)
-# expr = ia.Expr(eval_flags="iterblosc", **cparams)
-# expr.bind('x', a1)
-# expr.compile_udf(f)
 t0 = time()
 for i in range(NITER):
     b1 = expr.eval()
@@ -62,7 +59,6 @@ print(b2_n)
 print("numpy evaluation...")
 t0 = time()
 for i in range(NITER):
-    # bn = eval("(x - 1.35) * (x - 4.45) * (x - 8.5)", {"x": a2})
     bn = (np.sin(a2) - 1.35) * (a2 - 4.45) * (a2 - 8.5)
 print("Time for numpy eval:", round((time() - t0) / NITER, 3))
 print(bn)

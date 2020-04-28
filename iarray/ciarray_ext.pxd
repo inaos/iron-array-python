@@ -14,6 +14,45 @@ cdef extern from "<stdint.h>":
 cdef extern from "libiarray/iarray.h":
     ctypedef uint64_t ina_rc_t
 
+    # Stuff from "libinac/ina.h"
+    cdef enum:
+        INA_ES_USER_DEFINED = 1024UL
+
+    cdef enum:
+        INA_RC_BIT_C = 16U
+
+    cdef enum:
+        INA_ERR_COMPILED            = 18ULL << INA_RC_BIT_C
+        INA_ERR_FAILED              = 43ULL << INA_RC_BIT_C
+        INA_ERR_OUT_OF_RANGE        = 84ULL << INA_RC_BIT_C
+    # End of stuff from "libinac/ina.h"
+
+    cdef enum:
+        IARRAY_ES_CONTAINER = INA_ES_USER_DEFINED + 1
+        IARRAY_ES_DTSHAPE
+        IARRAY_ES_SHAPE
+        IARRAY_ES_PSHAPE
+        IARRAY_ES_NDIM
+        IARRAY_ES_DTYPE
+        IARRAY_ES_STORAGE
+        IARRAY_ES_PERSISTENCY
+        IARRAY_ES_BUFFER
+        IARRAY_ES_CATERVA
+        IARRAY_ES_BLOSC
+        IARRAY_ES_ASSERTION
+        IARRAY_ES_BSHAPE
+        IARRAY_ES_RNG_METHOD
+        IARRAY_ES_RAND_METHOD
+        IARRAY_ES_RAND_PARAM
+        IARRAY_ES_ITER
+        IARRAY_ES_EVAL_METHOD
+        IARRAY_ES_EVAL_ENGINE
+
+    cdef enum:
+        IARRAY_ERR_EVAL_ENGINE_FAILED = INA_ERR_FAILED | IARRAY_ES_EVAL_ENGINE
+        IARRAY_ERR_EVAL_ENGINE_NOT_COMPILED = INA_ERR_COMPILED | IARRAY_ES_EVAL_ENGINE
+        IARRAY_ERR_EVAL_ENGINE_OUT_OF_RANGE = INA_ERR_OUT_OF_RANGE | IARRAY_ES_EVAL_ENGINE
+
     cdef enum:
         IARRAY_DIMENSION_MAX = 8
 

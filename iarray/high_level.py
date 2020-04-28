@@ -17,6 +17,18 @@ from itertools import zip_longest as zip
 from collections import namedtuple
 
 
+def cmp_arrays(a, b, success=None):
+    if type(a) is ia.high_level.IArray:
+        a = ia.iarray2numpy(a)
+
+    if type(b) is ia.high_level.IArray:
+        b = ia.iarray2numpy(b)
+
+    np.testing.assert_almost_equal(a, b)
+    if success is not None:
+        print(success)
+
+
 def fuse_operands(operands1, operands2):
     new_operands = {}
     dup_operands = {}
