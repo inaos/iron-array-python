@@ -21,10 +21,10 @@ steps:
   displayName: Clone repos
 
 - bash: |
-    sudo yum install wget
+    yum install wget
     wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
     chmod +x Miniconda3-latest-Linux-x86_64.sh
-    sudo ./Miniconda3-latest-Linux-x86_64.sh
+    sh Miniconda3-latest-Linux-x86_64.sh
     conda create --yes --quiet --name iArrayEnv
     source activate iArrayEnv
     conda install -y --name iArrayEnv -c intel mkl-include
