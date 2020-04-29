@@ -1,4 +1,0 @@
-- Unit tests
-- Initialize LLVM once (now it's initialized in iron-array & py2llvm)
-- Stable API
-- Missing features (operators, etc.)

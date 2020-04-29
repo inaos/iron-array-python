@@ -1,0 +1,3 @@
+- More unit tests for UDF
+- Tutorial with Jupyter
+- QA: pylint, etc.
