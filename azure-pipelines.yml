@@ -1,6 +1,9 @@
 trigger:
 - develop
 
+variables:
+  CONDA_CACHE_FOLDER: $CONDA
+
 strategy:
   matrix:
     linux:
@@ -55,6 +58,13 @@ steps:
       fi
   displayName: Take ownership of conda installation
 
+- task: CacheBeta@0
+    inputs:
+      key: v3 | conda | $(Agent.OS)
+      path: $(CONDA_CACHE_FOLDER)
+      cacheHitVar: CACHE_RESTORED
+    displayName: 'Cache CONDA'
+
 - bash: |
     conda create --yes --quiet --name iArrayEnv
     source activate iArrayEnv
@@ -63,6 +73,7 @@ steps:
     conda install -y --name iArrayEnv -c intel icc_rt
     conda install -y --name iArrayEnv -c numba llvmdev
   displayName: Download dependencies
+  condition: ne(variables.CACHE_RESTORED, 'true')
 
 - task: UsePythonVersion@0
   inputs:
