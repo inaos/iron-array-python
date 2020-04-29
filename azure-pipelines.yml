@@ -59,11 +59,11 @@ steps:
   displayName: Take ownership of conda installation
 
 - task: CacheBeta@0
-    inputs:
-      key: v3 | conda | $(Agent.OS)
-      path: $(CONDA_CACHE_FOLDER)
-      cacheHitVar: CACHE_RESTORED
-    displayName: 'Cache CONDA'
+  inputs:
+    key: v3 | conda | $(Agent.OS)
+    path: $(CONDA_CACHE_FOLDER)
+    cacheHitVar: CACHE_RESTORED
+  displayName: 'Cache CONDA'
 
 - bash: |
     conda create --yes --quiet --name iArrayEnv
