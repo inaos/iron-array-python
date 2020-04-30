@@ -88,7 +88,6 @@ steps:
       python setup.py build_ext -j 4 --build-type=RelWithDebInfo -- -DDISABLE_LLVM_CONFIG=$DISABLE_LLVM_CONFIG -DLLVM_DIR=$CONDA/envs/iArrayEnv/lib/cmake/llvm
       ls -l iarray/iarray-c-develop/build/
       cp iarray/iarray-c-develop/build/libiarray.so iarray
-      cp $CONDA/envs/iArrayEnv/lib/libsvml.so iarray
   displayName: 'Compile package'
   condition: eq( variables['Agent.OS'], 'Linux' )
 
@@ -96,7 +95,6 @@ steps:
       python setup.py build_ext -j 4 --build-type=RelWithDebInfo -- -DDISABLE_LLVM_CONFIG=$DISABLE_LLVM_CONFIG -DLLVM_DIR=$CONDA/envs/iArrayEnv/lib/cmake/llvm
       ls -l iarray/iarray-c-develop/build/
       cp iarray/iarray-c-develop/build/libiarray.dylib iarray
-      cp $CONDA/envs/iArrayEnv/lib/libsvml.dylib iarray
   displayName: 'Compile package'
   condition: eq( variables['Agent.OS'], 'Darwin' )
 
@@ -112,20 +110,21 @@ steps:
 
 - script: |
       pip install pytest pytest-azurepipelines
-      LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(System.DefaultWorkingDirectory)/iarray pytest -vv -s --test-run-title="Linux test suite"
+      LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/miniconda/envs/iArrayEnv/lib pytest -vv -s --test-run-title="Linux test suite"
   displayName: 'Run Tests'
   condition:
     eq( variables['Agent.OS'], 'Linux' )
 
 - script: |
       pip install pytest pytest-azurepipelines
-      pytest -vv -s --test-run-title="Mac test suite"
+      LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/miniconda/envs/iArrayEnv/lib pytest -vv -s --test-run-title="Mac test suite"
   displayName: 'Run Tests'
   condition:
     eq( variables['Agent.OS'], 'Darwin' )
 
 - script: |
       pip install pytest pytest-azurepipelines
+      PATH=%PATH%;C:\Miniconda/envs/iArrayEnv/Library/bin
       pytest -vv -s --test-run-title="Windows test suite"
   displayName: 'Run Tests'
   condition:
