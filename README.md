@@ -1,3 +1,5 @@
+[![Build Status](https://inaos.visualstudio.com/iron-array-python/_apis/build/status/inaos.iron-array-python?branchName=develop)](https://inaos.visualstudio.com/iron-array-python/_build/latest?definitionId=17&branchName=develop)
+
 # iron-array-python
 IronArray for Python
 
