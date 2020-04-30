@@ -112,7 +112,7 @@ steps:
 
 - script: |
       pip install pytest pytest-azurepipelines
-
+      cd iarray/
       pytest -vv -s --test-run-title="Linux test suite"
   displayName: 'Run Tests'
   condition:
@@ -120,6 +120,7 @@ steps:
 
 - script: |
       pip install pytest pytest-azurepipelines
+      cd iarray/
       pytest -vv -s --test-run-title="Mac test suite"
   displayName: 'Run Tests'
   condition:
@@ -127,6 +128,7 @@ steps:
 
 - script: |
       pip install pytest pytest-azurepipelines
+      cd iarray/
       pytest -vv -s --test-run-title="Windows test suite"
   displayName: 'Run Tests'
   condition:
