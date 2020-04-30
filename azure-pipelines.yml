@@ -101,14 +101,14 @@ steps:
 
 - script: |
       pip install pytest pytest-azurepipelines pytest-cov
-      LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/share/miniconda/envs/iArrayEnv/lib pytest -vv -s --test-run-title="Linux test suite" --cov=iarray --cov-report=xml --cov-report=html
+      LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/share/miniconda/envs/iArrayEnv/lib pytest -vv -s --test-run-title="Linux test suite" --cov-config=.coveragerc --cov=iarray --cov-report=xml --cov-report=html
   displayName: 'Run Tests'
   condition:
     eq( variables['Agent.OS'], 'Linux' )
 
 - script: |
       pip install pytest pytest-azurepipelines pytest-cov
-      LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/miniconda/envs/iArrayEnv/lib pytest -vv -s --test-run-title="Mac test suite" --cov=iarray --cov-report=xml --cov-report=html
+      LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/miniconda/envs/iArrayEnv/lib pytest -vv -s --test-run-title="Mac test suite" --cov-config=.coveragerc --cov=iarray --cov-report=xml --cov-report=html
   displayName: 'Run Tests'
   condition:
     eq( variables['Agent.OS'], 'Darwin' )
@@ -116,7 +116,7 @@ steps:
 - script: |
       pip install pytest pytest-azurepipelines pytest-cov pytest-cov
       PATH=%PATH%;C:\Miniconda/envs/iArrayEnv/Library/bin
-      pytest -vv -s --test-run-title="Windows test suite" --cov=iarray --cov-report=xml --cov-report=html
+      pytest -vv -s --test-run-title="Windows test suite" --cov-config=.coveragerc --cov=iarray --cov-report=xml --cov-report=html
   displayName: 'Run Tests'
   condition:
     eq( variables['Agent.OS'], 'Windows_NT' )
