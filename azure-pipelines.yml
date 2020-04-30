@@ -2,7 +2,7 @@ trigger:
 - develop
 
 variables:
-  CONDA_CACHE_FOLDER: $(CONDA)
+  CONDA_CACHE_FOLDER: $(CONDA)/envs/iArrayEnv
 
 strategy:
   matrix:
@@ -60,7 +60,7 @@ steps:
 
 - task: CacheBeta@0
   inputs:
-    key: v3 | conda | $(Agent.OS)
+    key: v1 | conda | $(Agent.OS)
     path: $(CONDA_CACHE_FOLDER)
     cacheHitVar: CACHE_RESTORED
   displayName: 'Cache CONDA'
