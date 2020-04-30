@@ -121,6 +121,7 @@ steps:
   condition:
     eq( variables['Agent.OS'], 'Windows_NT' )
 
+
 - task: PublishCodeCoverageResults@1
   inputs:
     codeCoverageTool: Cobertura
