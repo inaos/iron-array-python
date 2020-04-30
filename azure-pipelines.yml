@@ -86,6 +86,7 @@ steps:
 
 - script: |
       python setup.py build_ext -j 4 --build-type=RelWithDebInfo -- -DDISABLE_LLVM_CONFIG=$DISABLE_LLVM_CONFIG -DLLVM_DIR=$CONDA/envs/iArrayEnv/lib/cmake/llvm
+      ls -l iarray/iarray-c-develop/build/
       cp iarray/iarray-c-develop/build/libiarray.so iarray
       cp iarray/iarray-c-develop/build/libsvml.so iarray
   displayName: 'Compile package'
@@ -93,6 +94,7 @@ steps:
 
 - script: |
       python setup.py build_ext -j 4 --build-type=RelWithDebInfo -- -DDISABLE_LLVM_CONFIG=$DISABLE_LLVM_CONFIG -DLLVM_DIR=$CONDA/envs/iArrayEnv/lib/cmake/llvm
+      ls -l iarray/iarray-c-develop/build/
       cp iarray/iarray-c-develop/build/libiarray.dylib iarray
       cp iarray/iarray-c-develop/build/libsvml.dylib iarray
   displayName: 'Compile package'
