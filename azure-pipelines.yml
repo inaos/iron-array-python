@@ -2,7 +2,7 @@ trigger:
 - develop
 
 variables:
-  CONDA_CACHE_FOLDER: $CONDA
+  CONDA_CACHE_FOLDER: $(CONDA)
 
 strategy:
   matrix:
