@@ -107,6 +107,7 @@ steps:
   displayName: 'Compile package'
   condition: eq( variables['Agent.OS'], 'Windows_NT' )
 
+
 - script: |
       pip install pytest pytest-azurepipelines
       pytest -vv -s --test-run-title="Linux test suite"
