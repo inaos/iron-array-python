@@ -41,6 +41,15 @@ We rely on scikit-build, numpy and others to build and test the package, so plea
 python -m pip install -r requirements.txt
 ```
 
+In addition, we need LLVM development and SVML packages that can be easily installed from conda:
+
+```bash
+conda install -c intel mkl-include  # MKL
+conda install -c intel mkl-static  # MKL
+conda install -c numba llvmdev
+conda install -c intel icc_rt
+```
+
 We can proceed now with the compilation of the actual Python wrapper for iarray:
 
 ```bash
