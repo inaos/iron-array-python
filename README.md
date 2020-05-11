@@ -44,7 +44,7 @@ python -m pip install -r requirements.txt
 We can proceed now with the compilation of the actual Python wrapper for iarray:
 
 ```bash
-rm -rf _skbuild iarray/iarray-c-develop/build/* iarray/*.so    # *.pyd if on windows.  This step is a total cleanup and purely optional.
+rm -rf _skbuild iarray/iarray-c-develop/build/* iarray/*.so*    # *.pyd* if on windows (total cleanup and optional)
 python setup.py build_ext -j 4 --build-type=RelWithDebInfo  # choose Debug if you like
 ```
 
