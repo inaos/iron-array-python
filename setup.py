@@ -10,7 +10,12 @@ setup(
     description=DESCRIPTION,
     # long_description=LONG_DESCRIPTION,
     python_requires=">=3.6",
-    package_dir={'': '.'},
+    #package_dir={'': '.'},
+    package_dir={'iarray': 'iarray'},
+    packages=['iarray'],
+    package_data={
+        'iarray': ['libsvml.so', 'libintlc.so', 'libintlc.so.5', 'libiarray.so'],
+    },
     extras_require={
         'doc': [
             'sphinx >= 1.5',
