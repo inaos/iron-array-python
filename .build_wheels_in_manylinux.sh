@@ -24,12 +24,19 @@ for version in "${versions[@]}"; do
   /opt/python/${version}/bin/python setup.py build -j 4 --build-type RelWithDebInfo  -- -DDISABLE_LLVM_CONFIG=True -DLLVM_DIR=$CONDA_PREFIX/lib/cmake/llvm
   # Copy the necessary shared libraries 
   /bin/cp -f iarray/iarray-c-develop/build/libiarray.so iarray/
+  pushd iarray
+  patchelf --remove-needed libintlc.so.5 libiarray.so
+  patchelf --remove-needed libsvml.so libsvml.so
+  patchelf --add-needed ./libintlc.so.5 libiarray.so
+  patchelf --add-needed ./libsvml.so libsvml.so
+  popd
   /opt/python/${version}/bin/python setup.py bdist_wheel
 done
 
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:iarray
 for whl in dist/*linux_*.whl; do
-  /opt/python/cp37-cp37m/bin/auditwheel repair ${whl} -w /work/dist/
-  #rm ${whl}
+  /opt/python/cp37-cp37m/bin/auditwheel repair ${whl} -w /work/dist/  --plat manylinux2014_x86_64
+  rm ${whl}
 done
 
 for version in "${versions[@]}"; do
