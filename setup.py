@@ -12,7 +12,7 @@ setup(
     python_requires=">=3.6",
     #package_dir={'': '.'},
     package_dir={'iarray': 'iarray'},
-    packages=['iarray'],
+    packages=['iarray', 'iarray.tests'],
     package_data={
         'iarray': ['libsvml.so', 'libintlc.so', 'libintlc.so.5', 'libiarray.so'],
     },
