@@ -8,7 +8,7 @@ import pytest
 
 import iarray as ia
 from iarray import udf
-from py2llvm import float64, int64
+from iarray.py2llvm import float64, int64
 
 
 def cmp_udf_np(f, start, stop, shape, pshape, dtype, cparams):

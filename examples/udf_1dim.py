@@ -5,7 +5,7 @@ import numpy as np
 
 import iarray as ia
 from iarray.udf import jit, Array
-from py2llvm import float64, int64
+from iarray.py2llvm import float64, int64
 
 
 # Number of iterations per benchmark

@@ -5,9 +5,9 @@ assert math # Silence pyflakes warning
 # Requirements
 import iarray as ia
 from llvmlite import ir
-import py2llvm
-from py2llvm import int8, int8p, int32, int64, int64p
-from py2llvm import types
+from . import py2llvm
+from .py2llvm import int8, int8p, int32, int64, int64p
+from .py2llvm import types
 
 from . import iarray_ext
 

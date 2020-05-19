@@ -1132,12 +1132,6 @@ class Function:
 
         # Compile
         self.mod = self.llvm.compile_ir(self.ir, self.name, verbose, self.optimize)
-        address = self.llvm.engine.get_function_address(self.name)
-        assert address
-
-        # (10) C function
-        self.cfunction_ptr = address
-        self.prepare() # prepare libffi to call the function
 
         # (11) Done
         self.compiled = True
@@ -1209,7 +1203,6 @@ class CTypesFunction(Function):
 class LLVM:
 
     def __init__(self, fclass):
-        self.engine = self.create_execution_engine()
         self.fclass = fclass
         self.dtypes = {}
 
@@ -1271,13 +1264,11 @@ class LLVM:
         Compile the LLVM IR string with the given engine.
         The compiled module object is returned.
         """
-        engine = self.engine
 
         # Create a LLVM module object from the IR
         mod = binding.parse_assembly(llvm_ir)
         mod.verify()
         # Assign triple, so the IR can be saved and compiled with llc
-        mod.triple = self.triple
         if verbose:
             print('====== IR (parsed) ======')
             print(mod)
@@ -1302,24 +1293,8 @@ class LLVM:
                 print('====== IR (optimized) ======')
                 print(mod)
 
-        # Now add the module and make sure it is ready for execution
-        engine.add_module(mod)
-        engine.finalize_object()
-        engine.run_static_constructors()
-
         return mod
 
-
-# All these initializations are required for code generation!
-#binding.initialize()
-#binding.initialize_native_target()
-#binding.initialize_native_asmprinter()
-
-#binding.load_library_permanently("libsvml.so")
-#binding.set_option('', '-vector-library=SVML')
-
-
-llvm = LLVM(CTypesFunction)
 
 # Plugins
 plugins = []
