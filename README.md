@@ -19,7 +19,7 @@ git pull
 git submodule update --recursive
 ```
 
-Also, having the iorn-array C library integrated as a submodule allows to quickly update to its latest commits in develop branch easily (even if the iron-array-python repo has not been updated to use the latest version yet):
+Also, for developers it is good to konw that having the iron-array C library integrated as a submodule allows to quickly update to its latest commits in develop branch easily (even if the iron-array-python repo has not been updated to use the latest version yet):
 
 ```bash
 git submodule update --remote --recursive
@@ -35,16 +35,25 @@ source ~/intel/bin/compilervars.sh intel64
 
 so as to allow the iarray library to find the IPP libraries.
 
-We rely on scikit-build to build the package, so please be sure that this is installed on your environment:
+We rely on scikit-build, numpy and others to build and test the package, so please be sure to install the requisites in your environment:
 
 ```bash
-conda install -c conda-forge scikit-build
+python -m pip install -r requirements.txt
+```
+
+In addition, we need LLVM development and SVML packages that can be easily installed from conda:
+
+```bash
+conda install -c intel mkl-include  # MKL
+conda install -c intel mkl-static  # MKL
+conda install -c numba llvmdev
+conda install -c intel icc_rt
 ```
 
 We can proceed now with the compilation of the actual Python wrapper for iarray:
 
 ```bash
-rm -rf _skbuild iarray/*.so    # *.pyd if on windows.  This step is a total cleanup and purely optional.
+rm -rf _skbuild iarray/iarray-c-develop/build/* iarray/*.so*    # *.pyd* if on windows (total cleanup and optional)
 python setup.py build_ext -j 4 --build-type=RelWithDebInfo  # choose Debug if you like
 ```
 
