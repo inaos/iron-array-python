@@ -5,6 +5,7 @@ cmake
 cython
 ninja
 numpy
+icc-rt
 llvmlite
 numexpr
 pytest

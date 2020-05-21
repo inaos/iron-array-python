@@ -14,7 +14,9 @@ setup(
     package_dir={'iarray': 'iarray'},
     packages=['iarray', 'iarray.py2llvm', 'iarray.tests'],
     package_data={
-        'iarray': ['libsvml.so', 'libintlc.so', 'libintlc.so.5', 'libiarray.so'],
+        #'iarray': ['libsvml.so', 'libintlc.so', 'libintlc.so.5', 'libiarray.so'],
+        #'iarray': ['libintlc.so.5', 'libiarray.so'],  # for 'repairing' wheels
+        'iarray': ['libiarray.so'],  # leads to less heavier wheels (i.e. not 'repaired')
     },
     extras_require={
         'doc': [
