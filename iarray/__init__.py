@@ -1,3 +1,5 @@
+import os
+from ctypes import cdll
 from llvmlite import binding
 import platform
 
@@ -5,12 +7,20 @@ binding.initialize()
 binding.initialize_native_target()
 binding.initialize_native_asmprinter()
 
+install_dir = os.path.dirname(__file__)
 platform_system = platform.system()
 if platform_system == 'Linux':
+    # Force the load of shared libs with no need to mess with LD_LIBRARY_PATH
+    # https://stackoverflow.com/questions/6543847/setting-ld-library-path-from-inside-python
+    # We can disable this when/if we can package iron-array into its own wheel
+    # and make a dependency of it.  The same goes for other platforms.
+    lib0 = cdll.LoadLibrary(os.path.join(install_dir, 'libiarray.so'))
     binding.load_library_permanently("libsvml.so")
 elif platform_system == 'Darwin':
+    lib0 = cdll.LoadLibrary(os.path.join(install_dir, 'libiarray.dylib'))
     binding.load_library_permanently("libsvml.dylib")
 else:
+    lib1 = cdll.LoadLibrary(os.path.join(install_dir, "iarray.dll"))
     binding.load_library_permanently("svml_dispmd.dll")
 
 # Probably needed by py2llvm
