@@ -78,7 +78,7 @@ class RandomContext(ext.RandomContext):
 
     def __init__(self, **kwargs):
         cfg = Config(**kwargs)
-        super(RandomContext, self).__init__(cfg)
+        super().__init__(cfg)
 
 
 class EvalFlags:
@@ -105,8 +105,8 @@ class Config(ext._Config):
         self._nthreads = nthreads
         self._eval_flags = ia.EvalFlags() if eval_flags is None else eval_flags  # TODO: should we move this to its own eval configuration?
         self._storage = ia.StorageProperties() if storage is None else storage
-        super(Config, self).__init__(clib, clevel, use_dict, filter_flags,
-                                     nthreads, fp_mantissa_bits, blocksize, self._eval_flags)
+        super().__init__(clib, clevel, use_dict, filter_flags, nthreads,
+                         fp_mantissa_bits, blocksize, self._eval_flags)
 
     @property
     def clib(self):
@@ -404,7 +404,7 @@ class Expr(ext.Expression):
 
     def __init__(self, **kwargs):
         cfg = Config(**kwargs)
-        super(Expr, self).__init__(cfg)
+        super().__init__(cfg)
 
 
 class dtshape:
