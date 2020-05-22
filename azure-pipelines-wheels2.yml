@@ -3,99 +3,99 @@ trigger:
 
 jobs:
 
-# - job: 'Linux'
-#   displayName: 'Linux'
-
-#   pool:
-#     vmImage: 'ubuntu-latest'
-
-#   steps:
-#   - task: UsePythonVersion@0
-#     inputs:
-#       versionSpec: '3.X'
-#       architecture: 'x64'
-#   - checkout: self
-#     submodules: recursive
-#     persistCredentials: true
-
-#   - bash: |
-#       git submodule update --init --recursive
-#     displayName: Clone repos
-
-#   - script: |
-#       docker pull dockcross/manylinux2014-x64
-#       docker run dockcross/manylinux2014-x64 > ./dockcross-manylinux2014-x64
-#       chmod +x ./dockcross-manylinux2014-x64
-#       ./dockcross-manylinux2014-x64 ./.build_wheels_in_manylinux.sh
-#     displayName: 'Build wheels'
-
-#   - task: PublishPipelineArtifact@0
-#     inputs:
-#       artifactName: 'LinuxWheels'
-#       targetPath: './dist'
-
-- job: 'macOS'
-  displayName: 'macOS'
+- job: 'Linux'
+  displayName: 'Linux'
 
   pool:
-    vmImage: 'macos-10.14'
-
-  strategy:
-    matrix:
-      Python36:
-        python.version: '3.6'
-      Python37:
-        python.version: '3.7'
-      Python38:
-        python.version: '3.8'
+    vmImage: 'ubuntu-latest'
 
   steps:
   - task: UsePythonVersion@0
     inputs:
-      versionSpec: '$(python.version)'
+      versionSpec: '3.X'
       architecture: 'x64'
+  - checkout: self
+    submodules: recursive
+    persistCredentials: true
 
-  - script: |
-      mkdir -p $HOME/.inaos/cmake
-      mkdir -p $HOME/INAOS
-      echo "INAC_REPOSITORY_LOCAL=$HOME/INAOS" > $HOME/.inaos/cmake/repository.txt
-      echo "INAC_REPOSITORY_REMOTE=https://inaos.jfrog.io/inaos/libs-release-local/inaos" >> $HOME/.inaos/cmake/repository.txt
-      echo "INAC_REPOSITORY_USRPWD=licensed:AKCp5bBraH7CasbsYCURsjzkbjXwVwdYcT7u39EiuL6GjnK1VKfKQWCd1E2E64mHokU5YUHku" >> $HOME/.inaos/cmake/repository.txt
+  - bash: |
       git submodule update --init --recursive
     displayName: Clone repos
 
-  - bash: |
-      echo "##vso[task.prependpath]$CONDA/bin"  # Add conda to PATH
-      sudo chown -R $USER $CONDA  # Take ownership of conda installation
-      conda install -y -c intel mkl-include
-      conda install -y -c intel mkl-static
-      conda install -y -c intel icc_rt
-      conda install -y -c numba llvmdev
-      python -m pip install --upgrade pip
-      python -m pip install cython numpy ninja cmake scikit-build wheel delocate
-    displayName: 'Install build dependencies'
-
   - script: |
-      python setup.py clean
-      python setup.py bdist_wheel \
-        --build-type RelWithDebInfo \
-        --plat-name macosx-10.9-x86_64 \
-        -G Ninja -- \
-        -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=10.9 \
-        -DCMAKE_OSX_ARCHITECTURES:STRING=x86_64 \
-        -DDISABLE_LLVM_CONFIG=True \
-        -DLLVM_DIR=$CONDA_PREFIX/lib/cmake/llvm
-      delocate-listdeps ./dist/*.whl
-      delocate-wheel ./dist/*.whl
-    displayName: 'Build wheel'
-
-  - script: |
-      python -m pip install pytest llvmlite numexpr
-      python -m pip install iarray --force-reinstall --no-index --no-cache-dir -f ./dist/
-      python -m pytest iarray/tests
-    displayName: 'Test wheel'
+      docker pull dockcross/manylinux2014-x64
+      docker run dockcross/manylinux2014-x64 > ./dockcross-manylinux2014-x64
+      chmod +x ./dockcross-manylinux2014-x64
+      ./dockcross-manylinux2014-x64 ./.build_wheels_in_manylinux.sh
+    displayName: 'Build wheels'
 
   - task: PublishPipelineArtifact@0
     inputs:
-      artifactName: 'MacWheel$(python.version)'
+      artifactName: 'LinuxWheels'
       targetPath: './dist'
+
+# - job: 'macOS'
+#   displayName: 'macOS'
+
+#   pool:
+#     vmImage: 'macos-10.14'
+
+#   strategy:
+#     matrix:
+#       Python36:
+#         python.version: '3.6'
+#       Python37:
+#         python.version: '3.7'
+#       Python38:
+#         python.version: '3.8'
+
+#   steps:
+#   - task: UsePythonVersion@0
+#     inputs:
+#       versionSpec: '$(python.version)'
+#       architecture: 'x64'
+
+#   - script: |
+#       mkdir -p $HOME/.inaos/cmake
+#       mkdir -p $HOME/INAOS
+#       echo "INAC_REPOSITORY_LOCAL=$HOME/INAOS" > $HOME/.inaos/cmake/repository.txt
+#       echo "INAC_REPOSITORY_REMOTE=https://inaos.jfrog.io/inaos/libs-release-local/inaos" >> $HOME/.inaos/cmake/repository.txt
+#       echo "INAC_REPOSITORY_USRPWD=licensed:AKCp5bBraH7CasbsYCURsjzkbjXwVwdYcT7u39EiuL6GjnK1VKfKQWCd1E2E64mHokU5YUHku" >> $HOME/.inaos/cmake/repository.txt
+#       git submodule update --init --recursive
+#     displayName: Clone repos
+
+#   - bash: |
+#       echo "##vso[task.prependpath]$CONDA/bin"  # Add conda to PATH
+#       sudo chown -R $USER $CONDA  # Take ownership of conda installation
+#       conda install -y -c intel mkl-include
+#       conda install -y -c intel mkl-static
+#       conda install -y -c intel icc_rt
+#       conda install -y -c numba llvmdev
+#       python -m pip install --upgrade pip
+#       python -m pip install cython numpy ninja cmake scikit-build wheel delocate
+#     displayName: 'Install build dependencies'
+
+#   - script: |
+#       python setup.py clean
+#       python setup.py bdist_wheel \
+#         --build-type RelWithDebInfo \
+#         --plat-name macosx-10.9-x86_64 \
+#         -G Ninja -- \
+#         -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=10.9 \
+#         -DCMAKE_OSX_ARCHITECTURES:STRING=x86_64 \
+#         -DDISABLE_LLVM_CONFIG=True \
+#         -DLLVM_DIR=$CONDA_PREFIX/lib/cmake/llvm
+#       delocate-listdeps ./dist/*.whl
+#       delocate-wheel ./dist/*.whl
+#     displayName: 'Build wheel'
+
+#   - script: |
+#       python -m pip install pytest llvmlite numexpr
+#       python -m pip install iarray --force-reinstall --no-index --no-cache-dir -f ./dist/
+#       python -m pytest iarray/tests
+#     displayName: 'Test wheel'
+
+#   - task: PublishPipelineArtifact@0
+#     inputs:
+#       artifactName: 'MacWheel$(python.version)'
+#       targetPath: './dist'
