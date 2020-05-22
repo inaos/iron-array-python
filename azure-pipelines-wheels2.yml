@@ -30,7 +30,7 @@ jobs:
     displayName: 'Build wheels'
 
   - task: PublishPipelineArtifact@0
-  inputs:
-    artifactName: 'LinuxWheels'
-    targetPath: './dist'
+    inputs:
+      artifactName: 'LinuxWheels'
+      targetPath: './dist'
 
