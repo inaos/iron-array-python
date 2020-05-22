@@ -25,7 +25,7 @@ jobs:
   - script: |
       docker pull dockcross/manylinux2014-x64
       docker run dockcross/manylinux2014-x64 > ./dockcross-manylinux2014-x64
-      chmod +x ./dockcross-manylinux-x64
+      chmod +x ./dockcross-manylinux2014-x64
       ./dockcross-manylinux2014-x64 ./.build_wheels_in_manylinux.sh
     displayName: 'Build wheels'
 
