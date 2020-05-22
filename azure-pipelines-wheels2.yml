@@ -55,7 +55,7 @@ jobs:
       versionSpec: '$(python.version)'
       architecture: 'x64'
 
-  - bash: |
+  - script: |
       mkdir -p $HOME/.inaos/cmake
       mkdir -p $HOME/INAOS
       echo "INAC_REPOSITORY_LOCAL=$HOME/INAOS" > $HOME/.inaos/cmake/repository.txt
