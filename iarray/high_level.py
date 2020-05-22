@@ -143,17 +143,17 @@ class Config(ext._Config):
         return self._eval_flags
 
     def __str__(self):
-        res = f"IArray Config object:\n"
-        clib = f"    Compression library: {self.clib}\n"
-        clevel = f"    Compression level: {self.clevel}\n"
-        filter_flags = f"    Filter flags: {self.filter_flags}\n"
-        nthreads = f"    Number of threads: {self.nthreads}\n"
-        fp_mantissa_bits = f"    Floating point mantissa bits: {self.fp_mantissa_bits}\n"
-        blocksize = f"    Blocksize: {self.blocksize}"
-        filename = f"    Filename: {self.filename}"
-        eval_flags = f"    Eval flags: {self.eval_flags}\n"
-        return res + clib + clevel + filter_flags + \
-               nthreads + fp_mantissa_bits + blocksize + filename + eval_flags
+        return (
+            "IArray Config object:\n"
+            f"    Compression library: {self.clib}\n"
+            f"    Compression level: {self.clevel}\n"
+            f"    Filter flags: {self.filter_flags}\n"
+            f"    Number of threads: {self.nthreads}\n"
+            f"    Floating point mantissa bits: {self.fp_mantissa_bits}\n"
+            f"    Blocksize: {self.blocksize}\n"
+            f"    Filename: {self.filename}\n"
+            f"    Eval flags: {self.eval_flags}\n"
+        )
 
 
 class LazyExpr:
@@ -646,9 +646,9 @@ def tanh(iarr):
 
 if __name__ == "__main__":
     # Create initial containers
-    dtshape = ia.dtshape([40], [20])
-    a1 = ia.linspace(dtshape, 0, 10)
-    a2 = ia.linspace(dtshape, 0, 20)
+    shape = ia.dtshape([40], [20])
+    a1 = ia.linspace(shape, 0, 10)
+    a2 = ia.linspace(shape, 0, 20)
 
     # Evaluate with different methods
     # a3 = a1 + a2 + a1 - 2 * a1 + 1

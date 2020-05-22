@@ -120,7 +120,6 @@ class Expression():
     def evaluate(self, values):
         values = values or {}
         nstack = []
-        L = len(self.tokens)
         for item in self.tokens:
             type_ = item.type_
             if type_ == TNUMBER:

@@ -57,7 +57,7 @@ def test_from_file(start, stop, shape, pshape, dtype, filename):
     size = int(np.prod(shape))
     npdtype = np.float64 if dtype == np.float64 else np.float32
     a = np.linspace(start, stop, size, dtype=npdtype).reshape(shape)
-    b = ia.numpy2iarray(a, pshape, storage=ia.StorageProperties("blosc", True, filename))
+    ia.numpy2iarray(a, pshape, storage=ia.StorageProperties("blosc", True, filename))
     c = ia.load(filename)
     d = ia.iarray2numpy(c)
     np.testing.assert_almost_equal(a, d)

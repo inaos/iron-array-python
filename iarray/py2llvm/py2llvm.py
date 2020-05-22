@@ -891,7 +891,7 @@ class GenVisitor(NodeVisitor):
 
     def Assign_exit(self, node, parent, targets, value, *args):
         if len(targets) > 1:
-            raise NotImplementedError(f'unpacking not supported')
+            raise NotImplementedError('unpacking not supported')
 
         builder = self.builder
         value = types.value_to_ir_value(builder, value)
