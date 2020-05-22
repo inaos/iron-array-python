@@ -54,19 +54,31 @@ jobs:
     inputs:
       versionSpec: '$(python.version)'
       architecture: 'x64'
+  - checkout: self
+      submodules: recursive
+      persistCredentials: true
 
   - bash: |
+      git submodule update --init --recursive
+    displayName: Clone repos
+
+  - script: |
       mkdir -p $HOME/.inaos/cmake
       mkdir -p $HOME/INAOS
       echo "INAC_REPOSITORY_LOCAL=$HOME/INAOS" > $HOME/.inaos/cmake/repository.txt
       echo "INAC_REPOSITORY_REMOTE=https://inaos.jfrog.io/inaos/libs-release-local/inaos" >> $HOME/.inaos/cmake/repository.txt
       echo "INAC_REPOSITORY_USRPWD=licensed:AKCp5bBraH7CasbsYCURsjzkbjXwVwdYcT7u39EiuL6GjnK1VKfKQWCd1E2E64mHokU5YUHku" >> $HOME/.inaos/cmake/repository.txt
-      git submodule update --init --recursive
     displayName: Clone repos
 
   - bash: |
       echo "##vso[task.prependpath]$CONDA/bin"  # Add conda to PATH
-      sudo chown -R $USER $CONDA  # Take ownership of conda installation
+    displayName: Add conda to PATH
+
+  - bash: |
+      sudo chown -R $USER $CONDA
+    displayName: Take ownership of conda installation
+
+  - script: |
       conda install -y -c intel mkl-include
       conda install -y -c intel mkl-static
       conda install -y -c intel icc_rt
