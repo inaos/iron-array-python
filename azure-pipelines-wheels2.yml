@@ -1,0 +1,36 @@
+trigger:
+- wheels2
+
+jobs:
+
+- job: 'Linux'
+  displayName: 'Linux'
+
+  pool:
+    vmImage: 'ubuntu-latest'
+
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.X'
+      architecture: 'x64'  
+  - checkout: self
+    submodules: recursive
+    persistCredentials: true
+
+  - bash: |
+      git submodule update --init --recursive
+    displayName: Clone repos
+
+  - script: |
+    docker pull dockcross/manylinux2014-x64
+    docker run dockcross/manylinux2014-x64 > ./dockcross-manylinux2014-x64
+    chmod +x ./dockcross-manylinux-x64
+    ./dockcross-manylinux2014-x64 ./.build_wheels_in_manylinux.sh
+  displayName: 'Build wheels'
+
+  - task: PublishPipelineArtifact@0
+  inputs:
+    artifactName: 'LinuxWheels'
+    targetPath: './dist'
+
