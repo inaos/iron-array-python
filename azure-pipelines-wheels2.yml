@@ -35,7 +35,7 @@ jobs:
 #       targetPath: './dist'
 
 - job: 'macOS'
-displayName: 'macOS'
+  displayName: 'macOS'
 
   pool:
     vmImage: 'macos-10.14'
@@ -55,7 +55,7 @@ displayName: 'macOS'
       versionSpec: '$(python.version)'
       architecture: 'x64'
 
-  - bash: |
+  - script: |
       git submodule update --init --recursive
       mkdir -p $HOME/.inaos/cmake
       mkdir -p $HOME/INAOS
