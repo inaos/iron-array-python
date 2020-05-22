@@ -8,7 +8,7 @@ if [ "$(uname -m)" = "x86_64" ]; then
    export supkg="su-exec"
    #export condapkg="https://github.com/conda-forge/miniforge/releases/download/4.8.3-0/Miniforge3-4.8.3-0-Linux-x86_64.sh"
    #export conda_chksum="1db6013e836da2ea817a53c44b0fd9beea521013bcb94b2b5440b1a61ba8b338"
-   export condapkg="https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh"
+   export condapkg="https://repo.anaconda.com/miniconda/Miniconda3-py37_4.8.2-Linux-x86_64.sh"
    export conda_chksum="957d2f0f0701c3d1335e3b39f235d197837ad69a944fa6f5d8ad2c686b69df3b"
 else
    exit 1
@@ -22,11 +22,11 @@ fi
 curl -s -L $condapkg > miniconda.sh
 sha256sum miniconda.sh | grep $conda_chksum
 
-rm -rf $PWD/conda
-bash miniconda.sh -b -p $PWD/conda
+rm -rf /work/conda
+bash miniconda.sh -b -p /work/conda
 rm -f miniconda.sh
-touch $PWD/conda/conda-meta/pinned
-source $PWD/conda/etc/profile.d/conda.sh
+touch /work/conda/conda-meta/pinned
+source /work/conda/etc/profile.d/conda.sh
 conda activate
 #conda config --set show_channel_urls True
 #conda config ${additional_channel} --add channels conda-forge
