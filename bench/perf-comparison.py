@@ -159,5 +159,4 @@ def evaluate(command):
     )
 
 
-#evaluate("(x - 1.35) * (x - 4.45) * (x - 8.5)")
 evaluate("(x - 1.35) * (y - 4.45) * (z - 8.5)")

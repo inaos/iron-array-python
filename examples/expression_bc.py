@@ -13,7 +13,6 @@ dtype = np.float64
 
 # Create initial containers
 a1 = ia.linspace(ia.dtshape(shape, pshape, dtype), 0, 10)
-#a2 = ia.iarray2numpy(a1)
 a2 = np.linspace(0, 10, shape[0], dtype=dtype).reshape(shape)
 
 

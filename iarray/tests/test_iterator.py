@@ -26,7 +26,8 @@ def test_iterator(shape, pshape, bshape, dtype):
 
     b = ia.empty(ia.dtshape(shape, pshape), storage=storage)
 
-    for i, ((ainfo, aslice), (_, bslice)) in enumerate(izip(a.iter_read_block(bshape), b.iter_write_block(bshape))):
+    zip = izip(a.iter_read_block(bshape), b.iter_write_block(bshape))
+    for i, ((ainfo, aslice), (_, bslice)) in enumerate(zip):
         bslice[:] = aslice
         start = ainfo.elemindex
         stop = tuple(ainfo.elemindex[i] + ainfo.shape[i] for i in range(len(ainfo.elemindex)))

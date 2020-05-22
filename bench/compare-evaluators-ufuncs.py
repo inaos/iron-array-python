@@ -203,7 +203,8 @@ def do_block_evaluation(pshape_):
     expr.compile(expression)
     for i in range(NITER):
         ya = expr.eval()
-    print("Block evaluate via iarray.eval (method: %s): %.4f" % (eval_method, round((time() - t0) / NITER, 4)))
+    avg = round((time() - t0) / NITER, 4)
+    print(f"Block evaluate via iarray.eval (method: {eval_method}): {avg:.4f}")
     y1 = ia.iarray2numpy(ya)
     np.testing.assert_almost_equal(y0, y1)
 
@@ -212,7 +213,8 @@ def do_block_evaluation(pshape_):
     for i in range(NITER):
         ya = ((x.cos() - 1.35) * (x - 4.45) * (x.sin() - 8.5)).eval(
             method="iarray_eval", pshape=pshape_, eval_flags=eval_flags, **cparams)
-    print("Block evaluate via iarray.LazyExpr.eval (method: %s): %.4f" % (eval_method, round((time() - t0) / NITER, 4)))
+    avg = round((time() - t0) / NITER, 4)
+    print(f"Block evaluate via iarray.LazyExpr.eval (method: {eval_method}): {avg:.4f}")
     y1 = ia.iarray2numpy(ya)
     np.testing.assert_almost_equal(y0, y1)
 

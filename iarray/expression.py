@@ -35,8 +35,7 @@ class Token():
         self.type_ = type_
         self.index_ = index_ or 0
         self.prio_ = prio_ or 0
-        self.number_ = number_ if number_ != None else 0
-
+        self.number_ = number_ if number_ is not None else 0
 
     def toString(self):
         if self.type_ == TNUMBER:
@@ -50,12 +49,12 @@ class Token():
 
 
 class Expression():
+
     def __init__(self, tokens, ops1, ops2, functions):
         self.tokens = tokens
         self.ops1 = ops1
         self.ops2 = ops2
         self.functions = functions
-
 
     def simplify(self, values):
         values = values or {}
@@ -90,7 +89,6 @@ class Expression():
 
         return Expression(newexpression, self.ops1, self.ops2, self.functions)
 
-
     def substitute(self, variable, expr):
         if not isinstance(expr, Expression):
             expr = Parser().parse(str(expr))
@@ -114,7 +112,6 @@ class Expression():
 
         ret = Expression(newexpression, self.ops1, self.ops2, self.functions)
         return ret
-
 
     def evaluate(self, values):
         values = values or {}
@@ -155,7 +152,6 @@ class Expression():
             raise Exception('invalid Expression (parity)')
         return nstack[0]
 
-
     def toString(self, toJS=False):
         nstack = []
         L = len(self.tokens)
@@ -184,7 +180,6 @@ class Expression():
                         f=f,
                     ))
 
-
             elif type_ == TVAR:
                 nstack.append(item.index_)
             elif type_ == TOP1:
@@ -204,19 +199,16 @@ class Expression():
             raise Exception('invalid Expression (parity)')
         return nstack[0]
 
-
     def __str__(self):
         return self.toString()
-
 
     def symbols(self):
         vars = []
         for i in range(0, len(self.tokens)):
             item = self.tokens[i]
-            if item.type_ == TVAR and not item.index_ in vars:
+            if item.type_ == TVAR and item.index_ not in vars:
                 vars.append(item.index_)
         return vars
-
 
     def variables(self):
         return [
@@ -225,6 +217,7 @@ class Expression():
 
 
 class Parser:
+
     class Expression(Expression):
         pass
 
@@ -238,26 +231,20 @@ class Parser:
     CALL = 128
     NULLARY_CALL = 256
 
-
     def add(self, a, b):
         return a + b
-
 
     def sub(self, a, b):
         return a - b
 
-
     def mul(self, a, b):
         return a * b
-
 
     def div(self, a, b):
         return a / b
 
-
     def mod(self, a, b):
         return a % b
-
 
     def concat(self, a, b, *args):
         result = u'{0}{1}'.format(a, b)
@@ -265,54 +252,41 @@ class Parser:
             result = u'{0}{1}'.format(result, arg)
         return result
 
-
     def equal(self, a, b):
         return a == b
-
 
     def notEqual(self, a, b):
         return a != b
 
-
     def greaterThan(self, a, b):
         return a > b
-
 
     def lessThan(self, a, b):
         return a < b
 
-
     def greaterThanEqual(self, a, b):
         return a >= b
-
 
     def lessThanEqual(self, a, b):
         return a <= b
 
-
     def andOperator(self, a, b):
         return (a and b)
-
 
     def orOperator(self, a, b):
         return (a or b)
 
-
     def neg(self, a):
         return -a
-
 
     def random(self, a):
         return np.random.rand() * (a or 1)
 
-
     def fac(self, a):  # a!
         return math.factorial(a)
 
-
     def pyt(self, a, b):
         return np.sqrt(a * a + b * b)
-
 
     def roll(self, a, b):
         rolls = []
@@ -321,17 +295,14 @@ class Parser:
             rolls.append(roll)
         return rolls
 
-
     def ifFunction(self, a, b, c):
         return b if a else c
-
 
     def append(self, a, b):
         if type(a) != list:
             return [a, b]
         a.append(b)
         return a
-
 
     def __init__(self):
         self.success = False
@@ -432,7 +403,6 @@ class Parser:
             'e': np.e,
             'pi': np.pi
         }
-
 
     def parse(self, expr):
         self.errormsg = ''
@@ -546,16 +516,13 @@ class Parser:
 
         return Expression(tokenstack, self.ops1, self.ops2, self.functions)
 
-
     def evaluate(self, expr, variables):
         return self.parse(expr).evaluate(variables)
-
 
     def error_parsing(self, column, msg):
         self.success = False
         self.errormsg = 'parse error [column ' + str(column) + ']: ' + msg
         raise Exception(self.errormsg)
-
 
     def addfunc(self, tokenstack, operstack, type_):
         operator = Token(
@@ -570,7 +537,6 @@ class Parser:
             else:
                 break
         operstack.append(operator)
-
 
     def isNumber(self):
         r = False
@@ -603,7 +569,6 @@ class Parser:
             else:
                 break
         return r
-
 
     def unescape(self, v, pos):
         buffer = []
@@ -657,7 +622,6 @@ class Parser:
 
         return ''.join(buffer)
 
-
     def isString(self):
         r = False
         str = ''
@@ -677,7 +641,6 @@ class Parser:
                     break
         return r
 
-
     def isConst(self):
         for i in self.consts:
             L = len(i)
@@ -692,7 +655,6 @@ class Parser:
                     self.pos += L
                     return True
         return False
-
 
     def isOperator(self):
         ops = (
@@ -723,21 +685,17 @@ class Parser:
                 return True
         return False
 
-
     def isSign(self):
         code = self.expression[self.pos - 1]
         return (code == '+') or (code == '-')
-
 
     def isPositiveSign(self):
         code = self.expression[self.pos - 1]
         return code == '+'
 
-
     def isNegativeSign(self):
         code = self.expression[self.pos - 1]
         return code == '-'
-
 
     def isLeftParenth(self):
         code = self.expression[self.pos]
@@ -747,7 +705,6 @@ class Parser:
             return True
         return False
 
-
     def isRightParenth(self):
         code = self.expression[self.pos]
         if code == ')':
@@ -755,7 +712,6 @@ class Parser:
             self.tmpprio -= 10
             return True
         return False
-
 
     def isComma(self):
         code = self.expression[self.pos]
@@ -766,14 +722,12 @@ class Parser:
             return True
         return False
 
-
     def isWhite(self):
         code = self.expression[self.pos]
         if code.isspace():
             self.pos += 1
             return True
         return False
-
 
     def isOp1(self):
         str = ''
@@ -790,7 +744,6 @@ class Parser:
             return True
         return False
 
-
     def isOp2(self):
         str = ''
         for i in range(self.pos, len(self.expression)):
@@ -806,14 +759,14 @@ class Parser:
             return True
         return False
 
-
     def isVar(self):
         str = ''
         inQuotes = False
         for i in range(self.pos, len(self.expression)):
             c = self.expression[i]
             if c.lower() == c.upper():
-                if ((i == self.pos and c != '"') or (not (c in '_."') and (c < '0' or c > '9'))) and not inQuotes:
+                if ((i == self.pos and c != '"') or (not (c in '_."') and (c < '0' or c > '9'))) \
+                   and not inQuotes:
                     break
             if c == '"':
                 inQuotes = not inQuotes
@@ -824,7 +777,6 @@ class Parser:
             self.pos += len(str)
             return True
         return False
-
 
     def isComment(self):
         code = self.expression[self.pos - 1]

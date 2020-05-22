@@ -7,6 +7,7 @@ import pytest
 import iarray as ia
 import numpy as np
 
+
 # Rand
 @pytest.mark.parametrize("shape, pshape, dtype",
                          [
@@ -45,7 +46,7 @@ def test_randn(shape, pshape, dtype):
         storage = ia.StorageProperties("blosc", False)
 
     size = int(np.prod(shape))
-    a = ia.random_randn(ia.dtshape(shape, pshape, dtype),storage=storage)
+    a = ia.random_randn(ia.dtshape(shape, pshape, dtype), storage=storage)
 
     npdtype = np.float64 if dtype == np.float64 else np.float32
     b = np.random.randn(size).reshape(shape).astype(npdtype)

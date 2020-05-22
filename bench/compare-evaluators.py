@@ -234,15 +234,18 @@ def do_block_evaluation(pshape_):
         expr = poly_llvm.create_expr([xa], **cparams)
     for i in range(NITER):
         ya = expr.eval(shape, pshape_, np.float64)
-    print("Block evaluate via iarray.eval (method: %s): %.4f" % (eval_method, round((time() - t0) / NITER, 4)))
+    avg = round((time() - t0) / NITER, 4)
+    print("Block evaluate via iarray.eval (method: {eval_method}): {avg:.4f}")
     y1 = ia.iarray2numpy(ya)
     np.testing.assert_almost_equal(y0, y1)
 
     t0 = time()
     x = xa
     for i in range(NITER):
-        ya = ((x - 1.35) * (x - 4.45) * (x - 8.5)).eval(method="iarray_eval", pshape=pshape_, eval_flags=eval_method, **cparams)
-    print("Block evaluate via iarray.LazyExpr.eval (method: %s): %.4f" % (eval_method, round((time() - t0) / NITER, 4)))
+        ya = ((x - 1.35) * (x - 4.45) * (x - 8.5))
+        ya = ya.eval(method="iarray_eval", pshape=pshape_, eval_flags=eval_method, **cparams)
+    avg = round((time() - t0) / NITER, 4)
+    print("Block evaluate via iarray.LazyExpr.eval (method: {eval_method}): {avg:.4f}")
     y1 = ia.iarray2numpy(ya)
     np.testing.assert_almost_equal(y0, y1)
 

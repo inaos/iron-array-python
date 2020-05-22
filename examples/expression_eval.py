@@ -15,7 +15,6 @@ storage = ia.StorageProperties(backend="blosc", enforce_frame=False, filename=No
 
 # Create initial containers
 a1 = ia.linspace(ia.dtshape(shape, pshape, dtype), .01, .2, storage=storage)
-#a2 = ia.iarray2numpy(a1)
 a2 = np.linspace(.01, .2, shape[0], dtype=dtype).reshape(shape)
 
 

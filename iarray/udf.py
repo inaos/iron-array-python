@@ -1,6 +1,5 @@
 # Standard Library
 import math
-assert math # Silence pyflakes warning
 
 # Requirements
 import iarray as ia
@@ -10,6 +9,8 @@ from .py2llvm import int8, int8p, int32, int64, int64p
 from .py2llvm import types
 
 from . import iarray_ext
+
+assert math  # Silence pyflakes warning
 
 
 """
@@ -35,16 +36,18 @@ typedef struct iarray_eval_pparams_s {
 """
 
 BLOSC2_PREFILTER_INPUTS_MAX = 128
+
+
 class udf_type(types.StructType):
     _name_ = 'iarray_eval_pparams_t'
     _fields_ = [
-        ('ninputs', int32), # int32 may not be the same as int
+        ('ninputs', int32),  # int32 may not be the same as int
         ('inputs', ir.ArrayType(int8p, BLOSC2_PREFILTER_INPUTS_MAX)),
         ('input_typesizes', ir.ArrayType(int32, BLOSC2_PREFILTER_INPUTS_MAX)),
-        ('user_data', int8p), # LLVM does not have the concept of void*
-        ('out', int8p), # LLVM doesn't make the difference between signed and unsigned
+        ('user_data', int8p),  # LLVM does not have the concept of void*
+        ('out', int8p),  # LLVM doesn't make the difference between signed and unsigned
         ('out_size', int32),
-        ('out_typesize', int32), # int32_t out_typesize;  // automatically filled
+        ('out_typesize', int32),  # int32_t out_typesize;  // automatically filled
         ('ndim', int8),
         ('window_shape', int64p),
         ('window_start', int64p),
@@ -79,7 +82,7 @@ class ArrayShape(types.ArrayShape):
         # General case
         name = f'window_shape_{n}'
         size = builder.gep(self.shape, [n_ir])  # i64*
-        size = builder.load(size, name=name) # i64
+        size = builder.load(size, name=name)  # i64
         return size
 
 
@@ -147,11 +150,11 @@ class Function(py2llvm.Function):
 
     def preamble(self, builder, args):
         params = args['params']
-        self.params_ptr = builder.load(params) # iarray_eval_pparams_t*
-#       self._ninputs = self.load_field(builder, 0, name='ninputs')
-#       self._inputs = self.load_field(builder, 1, name='ninputs')                  # i8**
-#       self._input_typesizes = self.load_field(builder, 2, name='input_typesizes') # i8*
-#       self._user_data = self.load_field(builder, 3, name='user_data')             # i8*
+        self.params_ptr = builder.load(params)  # iarray_eval_pparams_t*
+        # self._ninputs = self.load_field(builder, 0, name='ninputs')
+        # self._inputs = self.load_field(builder, 1, name='ninputs')                  # i8**
+        # self._input_typesizes = self.load_field(builder, 2, name='input_typesizes') # i8*
+        # self._user_data = self.load_field(builder, 3, name='user_data')             # i8*
         self._out = self.load_field(builder, 4, name='out')                         # i8*
         self._out_size = self.load_field(builder, 5, name='out_size')               # i32
         self._out_typesize = self.load_field(builder, 6, name='out_typesize')       # i32
@@ -181,7 +184,7 @@ class Function(py2llvm.Function):
 class LLVM(py2llvm.LLVM):
 
     def jit(self, *args, **kwargs):
-        kwargs['optimize'] = False # iron-array optimizes, not py2llvm
+        kwargs['optimize'] = False  # iron-array optimizes, not py2llvm
         return super().jit(*args, **kwargs)
 
 

@@ -8,7 +8,7 @@ import numpy as np
                          [
                              ([100, 100], [20, 20], [23, 32], [100, 100], [30, 30], [32, 23], np.float64),
                              ([100, 100], None, [100, 100], [100, 100], None, [100, 100], np.float32),
-                             ([100, 100],  [40, 40], [23, 32], [100], [12], [32], np.float64),
+                             ([100, 100], [40, 40], [23, 32], [100], [12], [32], np.float64),
                              ([100, 100], None, [100, 100], [100], None, [100], np.float32),
                              ([100, 100], None, [100, 100], [100, 100], [20, 20], [100, 23], np.float64),
                              ([100, 100], [20, 20], [80, 100], [100, 100], None, [100, 100], np.float32),
@@ -40,28 +40,29 @@ def test_matmul(ashape, apshape, abshape, bshape, bpshape, bbshape, dtype):
     np.testing.assert_allclose(cn, cn_2, rtol=rtol)
 
 
-
 # Matmul slice
-@pytest.mark.parametrize("ashape, apshape, astart, astop, abshape, bshape, bpshape, bstart, bstop, bbshape, dtype",
-                         [
-                             ([100, 100], [20, 20], [20, 40], [70, 90], [23, 32],
-                              [100, 100], [30, 30], [10, 20], [60, 70], [32, 23], np.float64),
-                             ([100, 100], None, [3, 43], [43, 83], [40, 40],
-                              [100, 100], None, [12, 13], [52, 53], [40, 40], np.float32),
-                             ([100, 100],  [40, 40],  [20, 1], [60, 61], [23, 32],
-                              [100], [12], [3], [63], [32], np.float64),
-                             ([100, 100], None, [32, 32], [52, 62], [20, 30],
-                              [100], None, [12], [42], [30], np.float32),
-                             ([100, 100], None, [43, 23], [93, 93], [50, 70],
-                              [100, 100], [20, 20], [12, 42], [82, 82], [70, 23], np.float64),
-                             ([100, 100], [20, 20], [15, 15], [75, 85], [60, 70],
-                              [100, 100], None, [22, 22], [92, 32], [70, 10], np.float32),
-                             ([100, 100], None, [44, 55], [64, 65], [20, 10],
-                              [100], [5], [12], [22], [10], np.float64),
-                             ([100, 100], [30, 30], [12, 20], [32, 30], [10, 10],
-                              [100], None, [25], [35], [10], np.float32)
-                         ])
-def test_matmul_slice(ashape, apshape, astart, astop, abshape, bshape, bpshape, bstart, bstop, bbshape, dtype):
+@pytest.mark.parametrize(
+    "ashape, apshape, astart, astop, abshape, bshape, bpshape, bstart, bstop, bbshape, dtype",
+    [
+        ([100, 100], [20, 20], [20, 40], [70, 90], [23, 32],
+         [100, 100], [30, 30], [10, 20], [60, 70], [32, 23], np.float64),
+        ([100, 100], None, [3, 43], [43, 83], [40, 40],
+         [100, 100], None, [12, 13], [52, 53], [40, 40], np.float32),
+        ([100, 100], [40, 40], [20, 1], [60, 61], [23, 32],
+         [100], [12], [3], [63], [32], np.float64),
+        ([100, 100], None, [32, 32], [52, 62], [20, 30],
+         [100], None, [12], [42], [30], np.float32),
+        ([100, 100], None, [43, 23], [93, 93], [50, 70],
+         [100, 100], [20, 20], [12, 42], [82, 82], [70, 23], np.float64),
+        ([100, 100], [20, 20], [15, 15], [75, 85], [60, 70],
+         [100, 100], None, [22, 22], [92, 32], [70, 10], np.float32),
+        ([100, 100], None, [44, 55], [64, 65], [20, 10],
+         [100], [5], [12], [22], [10], np.float64),
+        ([100, 100], [30, 30], [12, 20], [32, 30], [10, 10],
+         [100], None, [25], [35], [10], np.float32)
+    ])
+def test_matmul_slice(ashape, apshape, astart, astop, abshape, bshape, bpshape,
+                      bstart, bstop, bbshape, dtype):
     if apshape is None:
         astorage = ia.StorageProperties("plainbuffer")
     else:

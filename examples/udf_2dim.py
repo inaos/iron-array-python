@@ -27,7 +27,7 @@ def f(out: Array(float64, 2), x: Array(float64, 2)) -> int64:
     m = x.window_shape[1]
     for i in range(n):
         for j in range(m):
-            out[i,j] = (math.sin(x[i,j]) - 1.35) * (x[i,j] - 4.45) * (x[i,j] - 8.5)
+            out[i, j] = (math.sin(x[i, j]) - 1.35) * (x[i, j] - 4.45) * (x[i, j] - 8.5)
 
     return 0
 
@@ -35,7 +35,7 @@ def f(out: Array(float64, 2), x: Array(float64, 2)) -> int64:
 if __name__ == '__main__':
     # Create input arrays
     ia_in = ia.linspace(ia.dtshape(shape, pshape, dtype), 0, 10, **cparams)
-    np_in = np.linspace(0, 10, reduce(lambda x,y: x*y, shape), dtype=dtype).reshape(shape)
+    np_in = np.linspace(0, 10, reduce(lambda x, y: x * y, shape), dtype=dtype).reshape(shape)
     ia.cmp_arrays(np_in, ia_in)
 
     print(np_in)

@@ -34,7 +34,6 @@ def evaluate(command):
         expr.compile(command)
         expr.eval(shape, pshape, dtype)
 
-
     perfplot.show(
         setup=setup,
         # n_range=[int(k) for k in range(int(1e8), int(2e8), int(3e7))],
