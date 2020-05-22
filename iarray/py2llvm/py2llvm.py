@@ -201,7 +201,7 @@ class BaseNodeVisitor:
             if event == 'enter':
                 line = f'<{name}>'
                 if node._fields:
-                    attrs = ' '.join(f'{k}' for k, v in ast.iter_fields(node))
+                    attrs = ' '.join(f'{k}' for k, _ in ast.iter_fields(node))
                     line = f'<{name} {attrs}>'
 
                 if value is False:
@@ -215,7 +215,7 @@ class BaseNodeVisitor:
 #                   line = f'</{name}>'
             elif event == 'visit':
                 if node._fields:
-                    attrs = ' '.join(f'{k}' for k, v in ast.iter_fields(node))
+                    attrs = ' '.join(f'{k}' for k, _ in ast.iter_fields(node))
                     line = f'<{name} {attrs} />'
                 else:
                     line = f'<{name} />'
@@ -1172,32 +1172,8 @@ class Function:
 
         return value
 
-    def prepare(self):
-        pass
-
     def call(self, c_args):
         raise NotImplementedError
-
-
-class CTypesFunction(Function):
-
-    def prepare(self):
-        type2ctypes = {
-            'i64': ctypes.c_int64,
-            'f64': ctypes.c_double,
-            'p': ctypes.c_void_p,
-            '': None,
-        }
-
-        rtype = type2ctypes[self.rtype]
-        argtypes = [type2ctypes[x] for x in self.argtypes]
-        assert self.nargs == len(argtypes)
-        func_ptr = self.cfunction_ptr
-
-        self.cfunc = ctypes.CFUNCTYPE(rtype, *argtypes)(func_ptr)
-
-    def call(self, c_args):
-        return self.cfunc(*c_args)
 
 
 class LLVM:
@@ -1234,30 +1210,6 @@ class LLVM:
             return function
 
         return wrapper
-
-    def create_execution_engine(self):
-        """
-        Create an ExecutionEngine suitable for JIT code generation on
-        the host CPU.  The engine is reusable for an arbitrary number of
-        modules.
-        """
-        # Create a target machine representing the host
-        target = binding.Target.from_default_triple()
-        self.triple = target.triple # Keep the triple for later
-        # Passing cpu, freatures and opt has not proved to be faster, but do it
-        # anyway, just to show it.
-        cpu = binding.get_host_cpu_name()
-        features = binding.get_host_cpu_features()
-        target_machine = target.create_target_machine(
-            cpu=cpu,
-            features=features.flatten(),
-            opt=3,
-        )
-
-        # And an execution engine with an empty backing module
-        backing_mod = binding.parse_assembly("")
-        engine = binding.create_mcjit_compiler(backing_mod, target_machine)
-        return engine
 
     def compile_ir(self, llvm_ir, name, verbose, optimize=True):
         """

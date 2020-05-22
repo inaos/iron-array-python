@@ -648,7 +648,7 @@ if __name__ == "__main__":
     # Create initial containers
     shape = ia.dtshape([40], [20])
     a1 = ia.linspace(shape, 0, 10)
-    a2 = ia.linspace(shape, 0, 20)
+    #a2 = ia.linspace(shape, 0, 20)
 
     # Evaluate with different methods
     # a3 = a1 + a2 + a1 - 2 * a1 + 1
