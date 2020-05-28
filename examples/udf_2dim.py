@@ -27,7 +27,7 @@ def f(out: Array(float64, 2), x: Array(float64, 2)) -> int64:
     m = x.window_shape[1]
     for i in range(n):
         for j in range(m):
-            out[i, j] = (math.sin(x[i, j]) - 1.35) * (x[i, j] - 4.45) * (x[i, j] - 8.5)
+            out[i,j] = (math.sin(x[i,j]) - 1.35) * (x[i,j] - 4.45) * (x[i,j] - 8.5)
 
     return 0
 

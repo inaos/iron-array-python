@@ -3,7 +3,6 @@ from time import time
 import ctypes
 import dask
 import dask.array as da
-from memory_profiler import profile
 from numcodecs import Blosc
 import numpy as np
 import zarr
@@ -16,6 +15,14 @@ mkl_get_max_threads = mkl_rt.mkl_get_max_threads
 
 def mkl_set_num_threads(cores):
     mkl_rt.mkl_set_num_threads(ctypes.byref(ctypes.c_int(cores)))
+
+
+MEMPROF = True
+if MEMPROF:
+    from memory_profiler import profile
+else:
+    def profile(f):
+        return f
 
 
 DTYPE = np.float32

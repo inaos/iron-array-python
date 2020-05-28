@@ -60,7 +60,7 @@ def fuse_expressions(expr, new_base, dup_op):
                 j = expr[i + 1:].index(')')
             if expr[i + j] == ')':
                 j -= 1
-            old_pos = int(expr[i + 1:i + j + 1])
+            old_pos = int(expr[i+1:i+j+1])
             old_op = f"o{old_pos}"
             if old_op not in dup_op:
                 new_pos = old_base + new_base
