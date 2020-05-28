@@ -2,7 +2,6 @@
 import ast
 import builtins
 import collections
-import ctypes
 import inspect
 import math
 import operator

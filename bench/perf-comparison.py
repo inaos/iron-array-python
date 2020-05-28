@@ -1,4 +1,3 @@
-import threading
 from multiprocessing.pool import ThreadPool
 import perfplot
 import numpy as np
@@ -108,9 +107,9 @@ def evaluate(command):
     def dask_parallel(command):
         global zx, zy, zz, shape, pshape, dtype, zcompr
         with dask.config.set({"scheduler": "threads", "pool": ThreadPool(NTHREADS)}):
-            x = da.from_zarr(zx)
-            y = da.from_zarr(zy)
-            z = da.from_zarr(zz)
+            da.from_zarr(zx)
+            da.from_zarr(zy)
+            da.from_zarr(zz)
             res = eval(command)
             zout = zarr.empty(shape, dtype=dtype, compressor=zcompr, chunks=pshape)
             da.to_zarr(res, zout)
@@ -118,9 +117,9 @@ def evaluate(command):
     def dask_serial(command):
         global zx, zy, zz, shape, pshape, dtype, zcompr
         with dask.config.set(scheduler="single-threaded"):
-            x = da.from_zarr(zx)
-            y = da.from_zarr(zy)
-            z = da.from_zarr(zz)
+            da.from_zarr(zx)
+            da.from_zarr(zy)
+            da.from_zarr(zz)
             res = eval(command)
             zout = zarr.empty(shape, dtype=dtype, compressor=zcompr, chunks=pshape)
             da.to_zarr(res, zout)
