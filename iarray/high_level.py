@@ -78,7 +78,7 @@ class RandomContext(ext.RandomContext):
 
     def __init__(self, **kwargs):
         cfg = Config(**kwargs)
-        super(RandomContext, self).__init__(cfg)
+        super().__init__(cfg)
 
 
 class EvalFlags:
@@ -103,10 +103,11 @@ class Config(ext._Config):
         self._fp_mantissa_bits = fp_mantissa_bits
         self._blocksize = blocksize
         self._nthreads = nthreads
-        self._eval_flags = ia.EvalFlags() if eval_flags is None else eval_flags  # TODO: should we move this to its own eval configuration?
+        # TODO: should we move this to its own eval configuration?
+        self._eval_flags = ia.EvalFlags() if eval_flags is None else eval_flags
         self._storage = ia.StorageProperties() if storage is None else storage
-        super(Config, self).__init__(clib, clevel, use_dict, filter_flags,
-                                     nthreads, fp_mantissa_bits, blocksize, self._eval_flags)
+        super().__init__(clib, clevel, use_dict, filter_flags, nthreads,
+                         fp_mantissa_bits, blocksize, self._eval_flags)
 
     @property
     def clib(self):
@@ -143,17 +144,17 @@ class Config(ext._Config):
         return self._eval_flags
 
     def __str__(self):
-        res = f"IArray Config object:\n"
-        clib = f"    Compression library: {self.clib}\n"
-        clevel = f"    Compression level: {self.clevel}\n"
-        filter_flags = f"    Filter flags: {self.filter_flags}\n"
-        nthreads = f"    Number of threads: {self.nthreads}\n"
-        fp_mantissa_bits = f"    Floating point mantissa bits: {self.fp_mantissa_bits}\n"
-        blocksize = f"    Blocksize: {self.blocksize}"
-        filename = f"    Filename: {self.filename}"
-        eval_flags = f"    Eval flags: {self.eval_flags}\n"
-        return res + clib + clevel + filter_flags + \
-               nthreads + fp_mantissa_bits + blocksize + filename + eval_flags
+        return (
+            "IArray Config object:\n"
+            f"    Compression library: {self.clib}\n"
+            f"    Compression level: {self.clevel}\n"
+            f"    Filter flags: {self.filter_flags}\n"
+            f"    Number of threads: {self.nthreads}\n"
+            f"    Floating point mantissa bits: {self.fp_mantissa_bits}\n"
+            f"    Blocksize: {self.blocksize}\n"
+            f"    Filename: {self.filename}\n"
+            f"    Eval flags: {self.eval_flags}\n"
+        )
 
 
 class LazyExpr:
@@ -279,9 +280,11 @@ class LazyExpr:
 
         elif method == "numexpr":
             out = ia.empty(ia.dtshape(shape=shape_, pshape=pshape, dtype=dtype), **kwargs)
-            operand_iters = tuple(o.iter_read_block(pshape) for o in self.operands.values() if isinstance(o, IArray))
-            all_iters = operand_iters + (out.iter_write_block(pshape),)   # put the iterator for the output at the end
-            # all_iters =  (out.iter_write_block(pshape_),) + operand_iters  # put the iterator for the output at the front
+            operand_iters = tuple(o.iter_read_block(pshape)
+                                  for o in self.operands.values()
+                                  if isinstance(o, IArray))
+            # put the iterator for the output at the end
+            all_iters = operand_iters + (out.iter_write_block(pshape),)
             for block in zip(*all_iters):
                 block_operands = {o: block[i][1] for (i, o) in enumerate(self.operands.keys(), start=0)}
                 out_block = block[-1][1]  # the block for output is at the end, by construction
@@ -404,7 +407,7 @@ class Expr(ext.Expression):
 
     def __init__(self, **kwargs):
         cfg = Config(**kwargs)
-        super(Expr, self).__init__(cfg)
+        super().__init__(cfg)
 
 
 class dtshape:
@@ -415,7 +418,7 @@ class dtshape:
         self.dtype = dtype
 
     def to_tuple(self):
-        Dtshape = namedtuple('dtshape','shape pshape dtype')
+        Dtshape = namedtuple('dtshape', 'shape pshape dtype')
         return Dtshape(self.shape, self.pshape, self.dtype)
 
 
@@ -427,7 +430,7 @@ class StorageProperties:
         self.filename = filename
 
     def to_tuple(self):
-        StoreProp = namedtuple('store properties', 'backend enforce_frame filename')
+        StoreProp = namedtuple('store_properties', 'backend enforce_frame filename')
         return StoreProp(self.backend, self.enforce_frame, self.filename)
 
 #
@@ -571,9 +574,9 @@ def random_binomial(dtshape, m, p, **kwargs):
     return ext.random_binomial(cfg, m, p, dtshape)
 
 
-def random_poisson(dtshape, l, **kwargs):
+def random_poisson(dtshape, lamb, **kwargs):
     cfg = Config(**kwargs)
-    return ext.random_poisson(cfg, l, dtshape)
+    return ext.random_poisson(cfg, lamb, dtshape)
 
 
 def random_kstest(a, b, **kwargs):
@@ -585,78 +588,94 @@ def matmul(a, b, block_a, block_b, **kwargs):
     cfg = Config(**kwargs)
     return ext.matmul(cfg, a, b, block_a, block_b)
 
+
 def abs(iarr):
     return iarr.abs()
+
 
 def arccos(iarr):
     return iarr.arccos()
 
+
 def arcsin(iarr):
     return iarr.arcsin()
+
 
 def arctan(iarr):
     return iarr.arctan()
 
+
 def arctan2(iarr1, iarr2):
     return iarr1.arctan2(iarr2)
+
 
 def ceil(iarr):
     return iarr.ceil()
 
+
 def cos(iarr):
     return iarr.cos()
+
 
 def cosh(iarr):
     return iarr.cosh()
 
+
 def exp(iarr):
     return iarr.exp()
+
 
 def floor(iarr):
     return iarr.floor()
 
+
 def log(iarr):
     return iarr.log()
+
 
 def log10(iarr):
     return iarr.log10()
 
+
 def negative(iarr):
     return iarr.negative()
+
 
 def power(iarr1, iarr2):
     return iarr1.power(iarr2)
 
+
 def sin(iarr):
     return iarr.sin()
+
 
 def sinh(iarr):
     return iarr.sinh()
 
+
 def sqrt(iarr):
     return iarr.sqrt()
 
+
 def tan(iarr):
     return iarr.tan()
+
 
 def tanh(iarr):
     return iarr.tanh()
 
 
-
 if __name__ == "__main__":
     # Create initial containers
-    dtshape = ia.dtshape([40], [20])
-    a1 = ia.linspace(dtshape, 0, 10)
-    a2 = ia.linspace(dtshape, 0, 20)
+    shape = ia.dtshape([40], [20])
+    a1 = ia.linspace(shape, 0, 10)
 
     # Evaluate with different methods
-    # a3 = a1 + a2 + a1 - 2 * a1 + 1
     a3 = a1.sin() + 2 * a1 + 1
     print(a3)
     a3 += 2
     print(a3)
-    a3_np = np.sin(ia.iarray2numpy(a1))  + 2 * ia.iarray2numpy(a1) + 1 + 2
+    a3_np = np.sin(ia.iarray2numpy(a1)) + 2 * ia.iarray2numpy(a1) + 1 + 2
     # a4 = a3.eval(method="numexpr")
     a4 = a3.eval(method="iarray_eval")
     a4_np = ia.iarray2numpy(a4)

@@ -22,7 +22,6 @@ shapes = np.logspace(5, 8, 10, dtype=np.int64)
 pshape = (100 * 1000,)
 # pshape = None
 
-#sexpr = "((x) - 3.2) * ((x) + 1.2)"
 sexpr = "(x - 1.35) * (x - 4.45) * (x - 8.5)"
 
 t_iarray = []
@@ -32,7 +31,8 @@ t_ratio = []
 for i, shape in enumerate(shapes):
     shape = (shape,)
     print(shape)
-    ia.arange(ia.dtshape(shape, pshape=pshape, dtype=DTYPE), filename="iarray_infile.iarray", clib=CLIB, clevel=CLEVEL)
+    ia.arange(ia.dtshape(shape, pshape=pshape, dtype=DTYPE),
+              filename="iarray_infile.iarray", clib=CLIB, clevel=CLEVEL)
 
     t0 = time()
     data = ia.load("iarray_infile.iarray", load_in_mem=False)
@@ -58,7 +58,8 @@ for i, shape in enumerate(shapes):
         # res = ((d) - 3.2) * ((d) + 1.2)
         res = (d - 1.35) * (d - 4.45) * (d - 8.5)
         # z2 = zarr.empty(shape, dtype=DTYPE, compressor=compressor, chunks=pshape)
-        z2 = zarr.open("zarr_outfile.zarr", "w", shape=shape, chunks=pshape, dtype=DTYPE, compressor=compressor)
+        z2 = zarr.open("zarr_outfile.zarr", "w", shape=shape, chunks=pshape,
+                       dtype=DTYPE, compressor=compressor)
         da.to_zarr(res, z2)
     t1 = time()
     t_dask.append(t1 - t0)

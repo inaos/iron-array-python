@@ -2,7 +2,6 @@
 import ast
 import builtins
 import collections
-import ctypes
 import inspect
 import math
 import operator
@@ -12,7 +11,12 @@ import typing
 # Requirements
 from llvmlite import binding, ir
 
+from . import default
 from . import types
+
+
+# Plugins
+plugins = [default]
 
 
 class Range:
@@ -80,9 +84,9 @@ def values_to_type(left, right):
 #
 
 LEAFS = {
-    ast.Constant, # 3.8
+    ast.Constant,  # 3.8
     ast.Name,
-    ast.NameConstant, ast.Num, # 3.7
+    ast.NameConstant, ast.Num,  # 3.7
     # boolop
     ast.And, ast.Or,
     # operator
@@ -96,6 +100,7 @@ LEAFS = {
     # expr_context
     ast.Load, ast.Store, ast.Del, ast.AugLoad, ast.AugStore, ast.Param,
 }
+
 
 class BaseNodeVisitor:
     """
@@ -201,7 +206,7 @@ class BaseNodeVisitor:
             if event == 'enter':
                 line = f'<{name}>'
                 if node._fields:
-                    attrs = ' '.join(f'{k}' for k, v in ast.iter_fields(node))
+                    attrs = ' '.join(f'{k}' for k, _ in ast.iter_fields(node))
                     line = f'<{name} {attrs}>'
 
                 if value is False:
@@ -215,7 +220,7 @@ class BaseNodeVisitor:
 #                   line = f'</{name}>'
             elif event == 'visit':
                 if node._fields:
-                    attrs = ' '.join(f'{k}' for k, v in ast.iter_fields(node))
+                    attrs = ' '.join(f'{k}' for k, _ in ast.iter_fields(node))
                     line = f'<{name} {attrs} />'
                 else:
                     line = f'<{name} />'
@@ -411,7 +416,8 @@ class BlockVisitor(NodeVisitor):
         for param in self.function.py_signature.parameters:
             if type(param.type) is type and issubclass(param.type, types.ComplexType):
                 value = param.type(self.function, param.name, args)
-                value.preamble(builder) # The params can inject IR at the beginning
+                # The params can inject IR at the beginning
+                value.preamble(builder)
             else:
                 value = args[param.name]
 
@@ -490,8 +496,8 @@ class GenVisitor(NodeVisitor):
     function = None
     args = None
     builder = None
-    f_rtype = None # Type of the return value
-    ltype = None # Type of the local variable
+    f_rtype = None  # Type of the return value
+    ltype = None  # Type of the local variable
 
     def print(self, line):
         print(self.depth * ' ' + line)
@@ -562,7 +568,8 @@ class GenVisitor(NodeVisitor):
         py_types = {type(x) for x in elts}
         n = len(py_types)
         if n == 0:
-            py_type = int # any type will do because the list is empty
+            # any type will do because the list is empty
+            py_type = int
         elif n == 1:
             py_type = py_types.pop()
         else:
@@ -625,18 +632,18 @@ class GenVisitor(NodeVisitor):
         right = self.convert(right, type_)
 
         d = {
-            (ast.Add,  ir.IntType): self.builder.add,
-            (ast.Sub,  ir.IntType): self.builder.sub,
+            (ast.Add, ir.IntType): self.builder.add,
+            (ast.Sub, ir.IntType): self.builder.sub,
             (ast.Mult, ir.IntType): self.builder.mul,
-            (ast.Div,  ir.IntType): self.builder.sdiv,
-            (ast.Add,  ir.FloatType): self.builder.fadd,
-            (ast.Sub,  ir.FloatType): self.builder.fsub,
+            (ast.Div, ir.IntType): self.builder.sdiv,
+            (ast.Add, ir.FloatType): self.builder.fadd,
+            (ast.Sub, ir.FloatType): self.builder.fsub,
             (ast.Mult, ir.FloatType): self.builder.fmul,
-            (ast.Div,  ir.FloatType): self.builder.fdiv,
-            (ast.Add,  ir.DoubleType): self.builder.fadd,
-            (ast.Sub,  ir.DoubleType): self.builder.fsub,
+            (ast.Div, ir.FloatType): self.builder.fdiv,
+            (ast.Add, ir.DoubleType): self.builder.fadd,
+            (ast.Sub, ir.DoubleType): self.builder.fsub,
             (ast.Mult, ir.DoubleType): self.builder.fmul,
-            (ast.Div,  ir.DoubleType): self.builder.fdiv,
+            (ast.Div, ir.DoubleType): self.builder.fdiv,
         }
         base_type = type(type_)
         ir_op = d.get((op, base_type))
@@ -724,8 +731,8 @@ class GenVisitor(NodeVisitor):
 
         d = {
             ir.IntType: self.builder.icmp_signed,
-            ir.FloatType: self.builder.fcmp_unordered, # XXX fcmp_ordered
-            ir.DoubleType: self.builder.fcmp_unordered, # XXX fcmp_ordered
+            ir.FloatType: self.builder.fcmp_unordered,  # XXX fcmp_ordered
+            ir.DoubleType: self.builder.fcmp_unordered,  # XXX fcmp_ordered
         }
         base_type = type(type_)
         ir_op = d.get(base_type)
@@ -808,11 +815,11 @@ class GenVisitor(NodeVisitor):
         self.builder.branch(node.block_for)                       # br %for
 
         # Stop condition
-        self.builder.position_at_end(node.block_for)              # %for
-        idx = self.builder.load(node.i)                           # %idx = i
-        test = self.builder.icmp_unsigned('<', idx, stop)         # %idx < stop
-        self.builder.cbranch(test, node.block_body, node.block_next) # br %test %body %next
-        self.builder.position_at_end(node.block_body)             # %body
+        self.builder.position_at_end(node.block_for)                  # %for
+        idx = self.builder.load(node.i)                               # %idx = i
+        test = self.builder.icmp_unsigned('<', idx, stop)             # %idx < stop
+        self.builder.cbranch(test, node.block_body, node.block_next)  # br %test %body %next
+        self.builder.position_at_end(node.block_body)                 # %body
 
         # Keep variable to use within the loop
         if isinstance(expr, Range):
@@ -891,7 +898,7 @@ class GenVisitor(NodeVisitor):
 
     def Assign_exit(self, node, parent, targets, value, *args):
         if len(targets) > 1:
-            raise NotImplementedError(f'unpacking not supported')
+            raise NotImplementedError('unpacking not supported')
 
         builder = self.builder
         value = types.value_to_ir_value(builder, value)
@@ -920,8 +927,8 @@ class GenVisitor(NodeVisitor):
         """
         # Translate "a += b" to "a = a + b"
         left = self.load(target)
-        value = self.BinOp_exit(node, parent, left, op, value) # a + b
-        return self.Assign_exit(node, parent, [target], value) # a =
+        value = self.BinOp_exit(node, parent, left, op, value)  # a + b
+        return self.Assign_exit(node, parent, [target], value)  # a =
 
     def Return_enter(self, node, parent):
         self.ltype = self.f_rtype
@@ -952,10 +959,12 @@ class GenVisitor(NodeVisitor):
 
 Parameter = collections.namedtuple('Parameter', ['name', 'type'])
 
+
 class Signature:
     def __init__(self, parameters, return_type):
         self.parameters = parameters
         self.return_type = return_type
+
 
 class Function:
     """
@@ -1104,7 +1113,6 @@ class Function:
             if load_functions is not None:
                 node.compiled.update(load_functions(self.ir_module))
 
-
         # (6) The IR module and function
         f_type = ir.FunctionType(
             ir_signature.return_type,
@@ -1118,11 +1126,13 @@ class Function:
         node.ir_signature = ir_signature
         node.ir_function = ir_function
 
-        if verbose > 1: print('====== Debug: 1st pass ======')
+        if verbose > 1:
+            print('====== Debug: 1st pass ======')
         BlockVisitor(verbose, self).traverse(node)
 
         # (8) AST pass: generate
-        if verbose > 1: print('====== Debug: 2nd pass ======')
+        if verbose > 1:
+            print('====== Debug: 2nd pass ======')
         GenVisitor(verbose).traverse(node)
 
         # (9) IR code
@@ -1160,7 +1170,6 @@ class Function:
 
         return tuple(c_args)
 
-
     def __call__(self, *args, verbose=0):
         c_args = self.call_args(*args, verbose=verbose)
 
@@ -1172,32 +1181,8 @@ class Function:
 
         return value
 
-    def prepare(self):
-        pass
-
     def call(self, c_args):
         raise NotImplementedError
-
-
-class CTypesFunction(Function):
-
-    def prepare(self):
-        type2ctypes = {
-            'i64': ctypes.c_int64,
-            'f64': ctypes.c_double,
-            'p': ctypes.c_void_p,
-            '': None,
-        }
-
-        rtype = type2ctypes[self.rtype]
-        argtypes = [type2ctypes[x] for x in self.argtypes]
-        assert self.nargs == len(argtypes)
-        func_ptr = self.cfunction_ptr
-
-        self.cfunc = ctypes.CFUNCTYPE(rtype, *argtypes)(func_ptr)
-
-    def call(self, c_args):
-        return self.cfunc(*c_args)
 
 
 class LLVM:
@@ -1235,30 +1220,6 @@ class LLVM:
 
         return wrapper
 
-    def create_execution_engine(self):
-        """
-        Create an ExecutionEngine suitable for JIT code generation on
-        the host CPU.  The engine is reusable for an arbitrary number of
-        modules.
-        """
-        # Create a target machine representing the host
-        target = binding.Target.from_default_triple()
-        self.triple = target.triple # Keep the triple for later
-        # Passing cpu, freatures and opt has not proved to be faster, but do it
-        # anyway, just to show it.
-        cpu = binding.get_host_cpu_name()
-        features = binding.get_host_cpu_features()
-        target_machine = target.create_target_machine(
-            cpu=cpu,
-            features=features.flatten(),
-            opt=3,
-        )
-
-        # And an execution engine with an empty backing module
-        backing_mod = binding.parse_assembly("")
-        engine = binding.create_mcjit_compiler(backing_mod, target_machine)
-        return engine
-
     def compile_ir(self, llvm_ir, name, verbose, optimize=True):
         """
         Compile the LLVM IR string with the given engine.
@@ -1276,7 +1237,7 @@ class LLVM:
         # Optimize
         if optimize:
             pmb = binding.PassManagerBuilder()
-            pmb.opt_level = 2 # 0-3 (default=2)
+            pmb.opt_level = 2  # 0-3 (default=2)
             pmb.loop_vectorize = True
 
             mpm = binding.ModulePassManager()
@@ -1294,10 +1255,3 @@ class LLVM:
                 print(mod)
 
         return mod
-
-
-# Plugins
-plugins = []
-
-from . import default
-plugins.append(default)

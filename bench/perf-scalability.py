@@ -34,7 +34,6 @@ def evaluate(command):
         expr.compile(command)
         expr.eval(shape, pshape, dtype)
 
-
     perfplot.show(
         setup=setup,
         # n_range=[int(k) for k in range(int(1e8), int(2e8), int(3e7))],
@@ -47,13 +46,13 @@ def evaluate(command):
                  lambda x: ia_llvm_parallel(x, 16),
                  lambda x: ia_llvm_parallel(x, 20),
                  ],
-        labels=[command + f" nthreads=1",
-                command + f" nthreads=2",
-                command + f" nthreads=4",
-                command + f" nthreads=8",
-                command + f" nthreads=12",
-                command + f" nthreads=16",
-                command + f" nthreads=20",
+        labels=[command + " nthreads=1",
+                command + " nthreads=2",
+                command + " nthreads=4",
+                command + " nthreads=8",
+                command + " nthreads=12",
+                command + " nthreads=16",
+                command + " nthreads=20",
                 ],
         logx=False,
         logy=False,
