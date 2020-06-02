@@ -147,7 +147,7 @@ def f_error_user(out: udf.Array(float64, 1), x: udf.Array(float64, 1)):
     return 1
 
 
-@pytest.mark.skip('The test pass, but there is a segfault on finalization')
+# @pytest.mark.skip('The test pass, but there is a segfault on finalization')
 @pytest.mark.parametrize('f', [f_error_bug, f_error_user])
 def test_error(f):
     shape = [20 * 1000]
