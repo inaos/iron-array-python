@@ -60,7 +60,7 @@ def f_1dim(out: udf.Array(float64, 1), x: udf.Array(float64, 1)) -> int64:
     for i in range(n):
         if i % 4 == 0:
             out[i] = 0.0
-        elif i % 4 == 2:
+        elif x[i] > 1.0 or x[i] <= 3.0 and i % 2 == 0:
             out[i] = (math.sin(x[i]) + 1.35) * (x[i] + 4.45) * (x[i] + 8.5)
         else:
             out[i] = (math.sin(x[i]) - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
