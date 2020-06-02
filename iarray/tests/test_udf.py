@@ -124,3 +124,37 @@ def test_avg(f):
     start, stop = 0, 10
 
     cmp_udf_np_strict(f, start, stop, shape, pshape, dtype, cparams)
+
+
+#
+# The tests in this section show up bugs, and so they're skipped for now.
+#
+
+
+@udf.jit
+def f_error_bug(out: udf.Array(float64, 1), x: udf.Array(float64, 1)) -> int64:
+    n = out.shape[1]
+    for i in range(n):
+        out[i] = (math.sin(x[i]) - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
+
+    return 0
+
+@udf.jit
+def f_error_user(out: udf.Array(float64, 1), x: udf.Array(float64, 1)) -> int64:
+    return 1
+
+@pytest.mark.skip('The test pass, but there is a segfault on finalization')
+@pytest.mark.parametrize('f', [f_error_bug, f_error_user])
+def test_error(f):
+    shape = [20 * 1000]
+    pshape = [4 * 1000]
+    dtype = np.float64
+    cparams = dict(clib=ia.LZ4, clevel=5, nthreads=16)
+    start, stop = 0, 10
+
+    x = ia.linspace(ia.dtshape(shape, pshape, dtype), start, stop, **cparams)
+    expr = f.create_expr([x], ia.dtshape(shape, pshape, dtype), **cparams)
+    with pytest.raises(ValueError) as excinfo:
+        out = expr.eval()
+
+    assert "Error in evaluating expr: user_defined_function" in str(excinfo.value)
