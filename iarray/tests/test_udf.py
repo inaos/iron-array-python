@@ -58,7 +58,7 @@ def cmp_udf_np_strict(f, start, stop, shape, pshape, dtype, cparams):
 def f_1dim(out: udf.Array(float64, 1), x: udf.Array(float64, 1)):
     n = out.shape[0]
     for i in range(n):
-        if i % 4 == 0:
+        if i % 3 == 0:
             out[i] = 0.0
         elif x[i] > 1.0 or x[i] <= 3.0 and i % 2 == 0:
             out[i] = (math.sin(x[i]) + 1.35) * (x[i] + 4.45) * (x[i] + 8.5)
@@ -71,12 +71,19 @@ def f_1dim(out: udf.Array(float64, 1), x: udf.Array(float64, 1)):
 @pytest.mark.parametrize('f', [f_1dim])
 def test_1dim(f):
     shape = [20 * 1000]
-    pshape = [4 * 1000]
+    pshape = [3 * 1000]
     dtype = np.float64
     cparams = dict(clib=ia.LZ4, clevel=5, nthreads=16)
     start, stop = 0, 10
 
     cmp_udf_np(f, start, stop, shape, pshape, dtype, cparams)
+
+    # For the test function to return the same output as the Python function
+    # the partition size must be multiple of 3. This is just an example of
+    # how the result is not always the same as in the Python function.
+    pshape = [4 * 1000]
+    with pytest.raises(AssertionError):
+        cmp_udf_np(f, start, stop, shape, pshape, dtype, cparams)
 
 
 @udf.jit
@@ -124,11 +131,6 @@ def test_avg(f):
     start, stop = 0, 10
 
     cmp_udf_np_strict(f, start, stop, shape, pshape, dtype, cparams)
-
-
-#
-# The tests in this section show up bugs, and so they're skipped for now.
-#
 
 
 @udf.jit
