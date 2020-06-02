@@ -58,7 +58,12 @@ def cmp_udf_np_strict(f, start, stop, shape, pshape, dtype, cparams):
 def f_1dim(out: udf.Array(float64, 1), x: udf.Array(float64, 1)) -> int64:
     n = out.shape[0]
     for i in range(n):
-        out[i] = (math.sin(x[i]) - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
+        if i % 4 == 0:
+            out[i] = 0.0
+        elif i % 4 == 2:
+            out[i] = (math.sin(x[i]) + 1.35) * (x[i] + 4.45) * (x[i] + 8.5)
+        else:
+            out[i] = (math.sin(x[i]) - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
 
     return 0
 
