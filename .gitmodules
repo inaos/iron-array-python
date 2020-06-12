@@ -1,4 +1,4 @@
 [submodule "iron-array-c"]
 	path = iarray/iarray-c-develop
-	url = https://github.com/inaos/iron-array.git
-	branch = develop
+	url = git@github.com:inaos/iron-array.git
+	branch = jdavid/develop
