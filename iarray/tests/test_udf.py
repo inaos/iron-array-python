@@ -6,7 +6,7 @@ import pytest
 
 import iarray as ia
 from iarray import udf
-from iarray.py2llvm import float64, int64
+from iarray.py2llvm import float64
 
 
 def cmp_udf_np(f, start, stop, shape, pshape, dtype, cparams):
@@ -55,10 +55,15 @@ def cmp_udf_np_strict(f, start, stop, shape, pshape, dtype, cparams):
 
 
 @udf.jit
-def f_1dim(out: udf.Array(float64, 1), x: udf.Array(float64, 1)) -> int64:
+def f_1dim(out: udf.Array(float64, 1), x: udf.Array(float64, 1)):
     n = out.shape[0]
     for i in range(n):
-        out[i] = (math.sin(x[i]) - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
+        if i % 3 == 0:
+            out[i] = 0.0
+        elif x[i] > 1.0 or x[i] <= 3.0 and i % 2 == 0:
+            out[i] = (math.sin(x[i]) + 1.35) * (x[i] + 4.45) * (x[i] + 8.5)
+        else:
+            out[i] = (math.sin(x[i]) - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
 
     return 0
 
@@ -66,16 +71,23 @@ def f_1dim(out: udf.Array(float64, 1), x: udf.Array(float64, 1)) -> int64:
 @pytest.mark.parametrize('f', [f_1dim])
 def test_1dim(f):
     shape = [20 * 1000]
-    pshape = [4 * 1000]
+    pshape = [3 * 1000]
     dtype = np.float64
     cparams = dict(clib=ia.LZ4, clevel=5, nthreads=16)
     start, stop = 0, 10
 
     cmp_udf_np(f, start, stop, shape, pshape, dtype, cparams)
 
+    # For the test function to return the same output as the Python function
+    # the partition size must be multiple of 3. This is just an example of
+    # how the result is not always the same as in the Python function.
+    pshape = [4 * 1000]
+    with pytest.raises(AssertionError):
+        cmp_udf_np(f, start, stop, shape, pshape, dtype, cparams)
+
 
 @udf.jit
-def f_2dim(out: udf.Array(float64, 2), x: udf.Array(float64, 2)) -> int64:
+def f_2dim(out: udf.Array(float64, 2), x: udf.Array(float64, 2)):
     n = x.shape[0]
     m = x.shape[1]
     for i in range(n):
@@ -98,7 +110,7 @@ def test_2dim(f):
 
 
 @udf.jit
-def f_avg(out: udf.Array(float64, 1), x: udf.Array(float64, 1)) -> int64:
+def f_avg(out: udf.Array(float64, 1), x: udf.Array(float64, 1)):
     n = x.shape[0]
     for i in range(n):
         value = x[i]
@@ -119,3 +131,34 @@ def test_avg(f):
     start, stop = 0, 10
 
     cmp_udf_np_strict(f, start, stop, shape, pshape, dtype, cparams)
+
+
+@udf.jit
+def f_error_bug(out: udf.Array(float64, 1), x: udf.Array(float64, 1)):
+    n = out.shape[1]
+    for i in range(n):
+        out[i] = (math.sin(x[i]) - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
+
+    return 0
+
+
+@udf.jit
+def f_error_user(out: udf.Array(float64, 1), x: udf.Array(float64, 1)):
+    return 1
+
+
+# @pytest.mark.skip('The test pass, but there is a segfault on finalization')
+@pytest.mark.parametrize('f', [f_error_bug, f_error_user])
+def test_error(f):
+    shape = [20 * 1000]
+    pshape = [4 * 1000]
+    dtype = np.float64
+    cparams = dict(clib=ia.LZ4, clevel=5, nthreads=16)
+    start, stop = 0, 10
+
+    x = ia.linspace(ia.dtshape(shape, pshape, dtype), start, stop, **cparams)
+    expr = f.create_expr([x], ia.dtshape(shape, pshape, dtype), **cparams)
+    with pytest.raises(ValueError) as excinfo:
+        expr.eval()
+
+    assert "Error in evaluating expr: user_defined_function" in str(excinfo.value)
