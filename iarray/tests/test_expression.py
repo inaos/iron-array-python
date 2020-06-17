@@ -21,7 +21,7 @@ import numpy as np
     ("auto", "auto", [100, 100], None, np.float64, "(x - cos(1)) * 2"),
     ("iterchunk", "interpreter", [8, 6, 7, 4, 5], None, np.float32,
      "(x - cos(y)) * (sin(x) + y) + 2 * x + y"),
-    ("iterblosc", "interpreter", [8, 6, 7, 4, 5], [4, 3, 3, 4, 5], np.float64,
+    ("iterblosc2", "compiler", [8, 6, 7, 4, 5], [4, 3, 3, 4, 5], np.float64,
      "(x - cos(y)) * (sin(x) + y) + 2 * x + y"),
 ])
 def test_expression(method, engine, shape, pshape, dtype, expression):
@@ -29,19 +29,23 @@ def test_expression(method, engine, shape, pshape, dtype, expression):
     if pshape is None:
         storage = ia.StorageProperties(backend="plainbuffer")
     else:
-        storage = ia.StorageProperties(backend="blosc", enforce_frame=False, filename=None)
+        storage = ia.StorageProperties(backend="blosc",
+                                       chunkshape=pshape,
+                                       blockshape=pshape,
+                                       enforce_frame=False,
+                                       filename=None)
 
     eval_flags = ia.EvalFlags(method=method, engine=engine)
 
-    x = ia.linspace(ia.dtshape(shape, pshape, dtype), 2.1, .2, storage=storage)
-    y = ia.linspace(ia.dtshape(shape, pshape, dtype), 0, 1, storage=storage)
+    x = ia.linspace(ia.dtshape(shape, dtype), 2.1, .2, storage=storage)
+    y = ia.linspace(ia.dtshape(shape, dtype), 0, 1, storage=storage)
     npx = ia.iarray2numpy(x)
     npy = ia.iarray2numpy(y)
 
     expr = ia.Expr(eval_flags=eval_flags)
     expr.bind("x", x)
     expr.bind("y", y)
-    expr.bind_out_properties(ia.dtshape(shape, pshape, dtype), storage=storage)
+    expr.bind_out_properties(ia.dtshape(shape, dtype), storage=storage)
 
     expr.compile(expression)
 
@@ -85,12 +89,16 @@ def test_ufuncs(ufunc, ia_expr):
     if pshape is None:
         storage = ia.StorageProperties(backend="plainbuffer")
     else:
-        storage = ia.StorageProperties(backend="blosc", enforce_frame=False, filename=None)
+        storage = ia.StorageProperties(backend="blosc",
+                                       chunkshape=pshape,
+                                       blockshape=pshape,
+                                       enforce_frame=False,
+                                       filename=None)
 
     for dtype in np.float64, np.float32:
         # The ranges below are important for not overflowing operations
-        x = ia.linspace(ia.dtshape(shape, pshape, dtype), .1, .9, storage=storage)
-        y = ia.linspace(ia.dtshape(shape, pshape, dtype), 0, 1, storage=storage)
+        x = ia.linspace(ia.dtshape(shape, dtype), .1, .9, storage=storage)
+        y = ia.linspace(ia.dtshape(shape, dtype), 0, 1, storage=storage)
         npx = ia.iarray2numpy(x)
         npy = ia.iarray2numpy(y)
 
@@ -98,7 +106,7 @@ def test_ufuncs(ufunc, ia_expr):
         expr = ia.Expr(eval_flags=eval_flags)
         expr.bind("x", x)
         expr.bind("y", y)
-        expr.bind_out_properties(ia.dtshape(shape, pshape, dtype), storage=storage)
+        expr.bind_out_properties(ia.dtshape(shape, dtype), storage=storage)
         expr.compile(ia_expr)
         iout = expr.eval()
         npout = ia.iarray2numpy(iout)
@@ -107,7 +115,7 @@ def test_ufuncs(ufunc, ia_expr):
 
         # High-level ironarray eval
         lazy_expr = eval("ia." + ufunc, {"ia": ia, "x": x, "y": y})
-        iout2 = lazy_expr.eval(eval_flags=eval_flags, pshape=pshape, dtype=dtype)
+        iout2 = lazy_expr.eval(eval_flags=eval_flags, dtype=dtype)
         npout2 = ia.iarray2numpy(iout2)
         np.testing.assert_almost_equal(npout, npout2, decimal=decimal)
 
@@ -120,7 +128,7 @@ def test_ufuncs(ufunc, ia_expr):
         # power(x,y) : TypeError: unsupported operand type(s) for ** or pow(): 'IArray' and 'IArray'
         if ufunc not in ("abs(x)", "ceil(x)", "floor(x)", "negative(x)", "power(x, y)"):
             lazy_expr = eval("np." + ufunc, {"np": np, "x": x, "y": y})
-            iout2 = lazy_expr.eval(eval_flags=eval_flags, pshape=pshape, dtype=dtype)
+            iout2 = lazy_expr.eval(eval_flags=eval_flags, dtype=dtype)
             npout2 = ia.iarray2numpy(iout2)
             np.testing.assert_almost_equal(npout, npout2, decimal=decimal)
 
@@ -157,8 +165,8 @@ def test_expr_ufuncs(ufunc):
 
     for dtype in np.float64, np.float32:
         # The ranges below are important for not overflowing operations
-        x = ia.linspace(ia.dtshape(shape, pshape, dtype), .1, .9)
-        y = ia.linspace(ia.dtshape(shape, pshape, dtype), 0, 1)
+        x = ia.linspace(ia.dtshape(shape, dtype), .1, .9)
+        y = ia.linspace(ia.dtshape(shape, dtype), 0, 1)
 
         # NumPy computation
         npx = ia.iarray2numpy(x)
@@ -173,7 +181,7 @@ def test_expr_ufuncs(ufunc):
             lazy_expr = eval("1 + 2* x.%s(y)" % ufunc, {"x": x, "y": y})
         else:
             lazy_expr = eval("1 + 2 * x.%s()" % ufunc, {"x": x})
-        iout2 = lazy_expr.eval(eval_flags=eval_flags, pshape=pshape, dtype=dtype)
+        iout2 = lazy_expr.eval(eval_flags=eval_flags, dtype=dtype)
         npout2 = ia.iarray2numpy(iout2)
 
         decimal = 6 if dtype is np.float32 else 7
@@ -198,10 +206,10 @@ def test_expr_fusion(expr):
 
     for dtype in np.float64, np.float32:
         # The ranges below are important for not overflowing operations
-        x = ia.linspace(ia.dtshape(shape, pshape, dtype), .1, .9)
-        y = ia.linspace(ia.dtshape(shape, pshape, dtype), 0., 1.)
-        z = ia.linspace(ia.dtshape(shape, pshape, dtype), 0., 2.)
-        t = ia.linspace(ia.dtshape(shape, pshape, dtype), 0., 3.)
+        x = ia.linspace(ia.dtshape(shape, dtype), .1, .9)
+        y = ia.linspace(ia.dtshape(shape, dtype), 0., 1.)
+        z = ia.linspace(ia.dtshape(shape, dtype), 0., 2.)
+        t = ia.linspace(ia.dtshape(shape, dtype), 0., 3.)
 
         # NumPy computation
         npx = ia.iarray2numpy(x)
@@ -212,7 +220,7 @@ def test_expr_fusion(expr):
 
         # High-level ironarray eval
         lazy_expr = eval(expr, {"x": x, "y": y, "z": z, "t": t})
-        iout2 = lazy_expr.eval(eval_flags=eval_flags, pshape=pshape, dtype=dtype)
+        iout2 = lazy_expr.eval(eval_flags=eval_flags, dtype=dtype)
         npout2 = ia.iarray2numpy(iout2)
 
         decimal = 6 if dtype is np.float32 else 7

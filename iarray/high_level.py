@@ -257,10 +257,13 @@ class LazyExpr:
     def __rtruediv__(self, value):
         return self.update_expr(new_op=(value, '/', self))
 
-    def eval(self, method="iarray_eval", pshape=None, dtype=None, **kwargs):
+    def eval(self, method="iarray_eval", dtype=None, **kwargs):
         # TODO: see if shape and pshape can be instance variables, or better stay like this
         o0 = self.operands['o0']
         shape_ = o0.shape
+
+        cfg = Config(**kwargs)
+        pshape = shape_ if cfg._storage.chunkshape is None else cfg._storage.chunkshape
         # TODO: figure out a better way to set a default for the dtype
         dtype = o0.dtype if dtype is None else dtype
         if method == "iarray_eval":
@@ -269,8 +272,7 @@ class LazyExpr:
                 if isinstance(v, IArray):
                     expr.bind(k, v)
 
-            cfg = Config(**kwargs)
-            dtshape = ia.dtshape(shape_, pshape, dtype)
+            dtshape = ia.dtshape(shape_, dtype)
 
             expr.bind_out_properties(dtshape, cfg._storage)
 
@@ -279,7 +281,7 @@ class LazyExpr:
             out = expr.eval()
 
         elif method == "numexpr":
-            out = ia.empty(ia.dtshape(shape=shape_, pshape=pshape, dtype=dtype), **kwargs)
+            out = ia.empty(ia.dtshape(shape=shape_, dtype=dtype), **kwargs)
             operand_iters = tuple(o.iter_read_block(pshape)
                                   for o in self.operands.values()
                                   if isinstance(o, IArray))
