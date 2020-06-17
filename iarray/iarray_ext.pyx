@@ -341,7 +341,7 @@ cdef class Container:
             item = [item]
         start = [s.start if s.start is not None else 0 for s in item]
         stop = [s.stop if s.stop is not None else sh for s, sh in zip(item, self.shape)]
-        return get_slice(self._ctx, self, start, stop)
+        return get_slice(self._ctx, self, start, stop, True, None)
 
 
 cdef class Expression:
@@ -406,15 +406,15 @@ cdef class Expression:
 # Iarray container constructors
 #
 
-def copy(cfg, src, storage, view=False):
+def copy(cfg, src, view=False):
     ctx = Context(cfg)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
         ctx.to_capsule(), "iarray_context_t*")
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(storage, &store_)
+    set_storage(cfg._storage, &store_)
 
-    flags = 0 if storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg._storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     cdef ciarray.iarray_container_t *c
     cdef ciarray.iarray_container_t *src_ = <ciarray.iarray_container_t *> PyCapsule_GetPointer(
@@ -426,7 +426,7 @@ def copy(cfg, src, storage, view=False):
     return IArray(ctx, c_c)
 
 
-def empty(cfg, dtshape, storage):
+def empty(cfg, dtshape):
     ctx = Context(cfg)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
         ctx.to_capsule(), "iarray_context_t*")
@@ -435,9 +435,9 @@ def empty(cfg, dtshape, storage):
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(storage, &store_)
+    set_storage(cfg._storage, &store_)
 
-    flags = 0 if storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg._storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
 
 
     cdef ciarray.iarray_container_t *c
@@ -447,7 +447,7 @@ def empty(cfg, dtshape, storage):
     return IArray(ctx, c_c)
 
 
-def arange(cfg, slice, dtshape, storage):
+def arange(cfg, slice, dtshape):
     ctx = Context(cfg)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
         ctx.to_capsule(), "iarray_context_t*")
@@ -460,9 +460,9 @@ def arange(cfg, slice, dtshape, storage):
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(storage, &store_)
+    set_storage(cfg._storage, &store_)
 
-    flags = 0 if storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg._storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     cdef ciarray.iarray_container_t *c
     ciarray.iarray_arange(ctx_, &dtshape_, start, stop, step, &store_, flags, &c)
@@ -471,7 +471,7 @@ def arange(cfg, slice, dtshape, storage):
     return IArray(ctx, c_c)
 
 
-def linspace(cfg, nelem, start, stop, dtshape, storage):
+def linspace(cfg, nelem, start, stop, dtshape):
     ctx = Context(cfg)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
         ctx.to_capsule(), "iarray_context_t*")
@@ -482,9 +482,9 @@ def linspace(cfg, nelem, start, stop, dtshape, storage):
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(storage, &store_)
+    set_storage(cfg._storage, &store_)
 
-    flags = 0 if storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg._storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     cdef ciarray.iarray_container_t *c
     ciarray.iarray_linspace(ctx_, &dtshape_, nelem, start, stop, &store_, flags, &c)
@@ -493,7 +493,7 @@ def linspace(cfg, nelem, start, stop, dtshape, storage):
     return IArray(ctx, c_c)
 
 
-def zeros(cfg, dtshape, storage):
+def zeros(cfg, dtshape):
     ctx = Context(cfg)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
         ctx.to_capsule(), "iarray_context_t*")
@@ -502,9 +502,9 @@ def zeros(cfg, dtshape, storage):
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(storage, &store_)
+    set_storage(cfg._storage, &store_)
 
-    flags = 0 if storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg._storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     cdef ciarray.iarray_container_t *c
     ciarray.iarray_zeros(ctx_, &dtshape_, &store_, flags, &c)
@@ -513,7 +513,7 @@ def zeros(cfg, dtshape, storage):
     return IArray(ctx, c_c)
 
 
-def ones(cfg, dtshape, storage):
+def ones(cfg, dtshape):
     ctx = Context(cfg)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
         ctx.to_capsule(), "iarray_context_t*")
@@ -522,9 +522,9 @@ def ones(cfg, dtshape, storage):
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(storage, &store_)
+    set_storage(cfg._storage, &store_)
 
-    flags = 0 if storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg._storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     cdef ciarray.iarray_container_t *c
     ciarray.iarray_ones(ctx_, &dtshape_, &store_, flags, &c)
@@ -533,7 +533,7 @@ def ones(cfg, dtshape, storage):
     return IArray(ctx, c_c)
 
 
-def full(cfg, fill_value, dtshape, storage):
+def full(cfg, fill_value, dtshape):
     ctx = Context(cfg)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
         ctx.to_capsule(), "iarray_context_t*")
@@ -542,10 +542,9 @@ def full(cfg, fill_value, dtshape, storage):
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(storage, &store_)
+    set_storage(cfg._storage, &store_)
 
-    flags = 0 if storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
-
+    flags = 0 if cfg._storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     cdef ciarray.iarray_container_t *c
     if dtshape["dtype"] == ciarray.IARRAY_DATA_TYPE_DOUBLE:
@@ -592,10 +591,7 @@ def get_slice(ctx, data, start, stop, view, storage):
     DTshape = namedtuple('dtshape', ['shape','dtype'])
     dtshape = DTshape(shape, data.dtype)
 
-    cdef ciarray.iarray_storage_t store_
-    set_storage(storage, &store_)
-
-    flags = 0 if storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0
 
     cdef ciarray.int64_t start_[ciarray.IARRAY_DIMENSION_MAX]
     cdef ciarray.int64_t stop_[ciarray.IARRAY_DIMENSION_MAX]
@@ -605,14 +601,14 @@ def get_slice(ctx, data, start, stop, view, storage):
         stop_[i] = stop[i]
 
     cdef ciarray.iarray_container_t *c
-    ciarray.iarray_get_slice(ctx_, data_, start_, stop_, view, &store_, flags, &c)
+    ciarray.iarray_get_slice(ctx_, data_, start_, stop_, view, NULL, flags, &c)
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     b =  IArray(ctx, c_c)
     return b
 
 
-def numpy2iarray(cfg, a, dtshape, storage):
+def numpy2iarray(cfg, a, dtshape):
     ctx = Context(cfg)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
         ctx.to_capsule(), "iarray_context_t*")
@@ -621,9 +617,9 @@ def numpy2iarray(cfg, a, dtshape, storage):
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(storage, &store_)
+    set_storage(cfg._storage, &store_)
 
-    flags = 0 if storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg._storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     buffer_size = a.size * np.dtype(a.dtype).itemsize
 
@@ -662,7 +658,7 @@ def iarray2numpy(cfg, c):
 # Random functions
 #
 
-def random_rand(cfg, dtshape, storage):
+def random_rand(cfg, dtshape):
     ctx = Context(cfg)
     r_ctx = RandomContext(ctx)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
@@ -672,9 +668,9 @@ def random_rand(cfg, dtshape, storage):
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(storage, &store_)
+    set_storage(cfg._storage, &store_)
 
-    flags = 0 if storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg._storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     cdef ciarray.iarray_container_t *c
     ciarray.iarray_random_rand(ctx_, &dtshape_, r_ctx_, &store_, flags, &c)
@@ -683,7 +679,7 @@ def random_rand(cfg, dtshape, storage):
     return IArray(ctx, c_c)
 
 
-def random_randn(cfg, dtshape, storage):
+def random_randn(cfg, dtshape):
     ctx = Context(cfg)
     r_ctx = RandomContext(ctx)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
@@ -693,9 +689,9 @@ def random_randn(cfg, dtshape, storage):
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(storage, &store_)
+    set_storage(cfg._storage, &store_)
 
-    flags = 0 if storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg._storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     cdef ciarray.iarray_container_t *c
     ciarray.iarray_random_randn(ctx_, &dtshape_, r_ctx_, &store_, flags, &c)
@@ -704,7 +700,7 @@ def random_randn(cfg, dtshape, storage):
     return IArray(ctx, c_c)
 
 
-def random_beta(cfg, alpha, beta, dtshape, storage):
+def random_beta(cfg, alpha, beta, dtshape):
     ctx = Context(cfg)
     r_ctx = RandomContext(ctx)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
@@ -721,9 +717,9 @@ def random_beta(cfg, alpha, beta, dtshape, storage):
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(storage, &store_)
+    set_storage(cfg._storage, &store_)
 
-    flags = 0 if storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg._storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     cdef ciarray.iarray_container_t *c
     ciarray.iarray_random_beta(ctx_, &dtshape_, r_ctx_, &store_, flags, &c)
@@ -732,7 +728,7 @@ def random_beta(cfg, alpha, beta, dtshape, storage):
     return IArray(ctx, c_c)
 
 
-def random_lognormal(cfg, mu, sigma, dtshape, storage):
+def random_lognormal(cfg, mu, sigma, dtshape):
     ctx = Context(cfg)
     r_ctx = RandomContext(ctx)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
@@ -749,9 +745,9 @@ def random_lognormal(cfg, mu, sigma, dtshape, storage):
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(storage, &store_)
+    set_storage(cfg._storage, &store_)
 
-    flags = 0 if storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg._storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     cdef ciarray.iarray_container_t *c
     ciarray.iarray_random_lognormal(ctx_, &dtshape_, r_ctx_, &store_, flags, &c)
@@ -760,7 +756,7 @@ def random_lognormal(cfg, mu, sigma, dtshape, storage):
     return IArray(ctx, c_c)
 
 
-def random_exponential(cfg, beta, dtshape, storage):
+def random_exponential(cfg, beta, dtshape):
     ctx = Context(cfg)
     r_ctx = RandomContext(ctx)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
@@ -775,9 +771,9 @@ def random_exponential(cfg, beta, dtshape, storage):
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(storage, &store_)
+    set_storage(cfg._storage, &store_)
 
-    flags = 0 if storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg._storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     cdef ciarray.iarray_container_t *c
     ciarray.iarray_random_exponential(ctx_, &dtshape_, r_ctx_, &store_, flags, &c)
@@ -786,7 +782,7 @@ def random_exponential(cfg, beta, dtshape, storage):
     return IArray(ctx, c_c)
 
 
-def random_uniform(cfg, a, b, dtshape, storage):
+def random_uniform(cfg, a, b, dtshape):
     ctx = Context(cfg)
     r_ctx = RandomContext(ctx)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
@@ -803,9 +799,9 @@ def random_uniform(cfg, a, b, dtshape, storage):
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(storage, &store_)
+    set_storage(cfg._storage, &store_)
 
-    flags = 0 if storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg._storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     cdef ciarray.iarray_container_t *c
     ciarray.iarray_random_uniform(ctx_, &dtshape_, r_ctx_, &store_, flags, &c)
@@ -814,7 +810,7 @@ def random_uniform(cfg, a, b, dtshape, storage):
     return IArray(ctx, c_c)
 
 
-def random_normal(cfg, mu, sigma, dtshape, storage):
+def random_normal(cfg, mu, sigma, dtshape):
     ctx = Context(cfg)
     r_ctx = RandomContext(ctx)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
@@ -831,9 +827,9 @@ def random_normal(cfg, mu, sigma, dtshape, storage):
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(storage, &store_)
+    set_storage(cfg._storage, &store_)
 
-    flags = 0 if storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg._storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     cdef ciarray.iarray_container_t *c
     ciarray.iarray_random_normal(ctx_, &dtshape_, r_ctx_, &store_, flags, &c)
@@ -842,7 +838,7 @@ def random_normal(cfg, mu, sigma, dtshape, storage):
     return IArray(ctx, c_c)
 
 
-def random_bernoulli(cfg, p, dtshape, storage):
+def random_bernoulli(cfg, p, dtshape):
     ctx = Context(cfg)
     r_ctx = RandomContext(ctx)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
@@ -857,9 +853,9 @@ def random_bernoulli(cfg, p, dtshape, storage):
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(storage, &store_)
+    set_storage(cfg._storage, &store_)
 
-    flags = 0 if storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg._storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     cdef ciarray.iarray_container_t *c
     ciarray.iarray_random_bernoulli(ctx_, &dtshape_, r_ctx_, &store_, flags, &c)
@@ -868,7 +864,7 @@ def random_bernoulli(cfg, p, dtshape, storage):
     return IArray(ctx, c_c)
 
 
-def random_binomial(cfg, m, p, dtshape, storage):
+def random_binomial(cfg, m, p, dtshape):
     ctx = Context(cfg)
     r_ctx = RandomContext(ctx)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
@@ -885,9 +881,9 @@ def random_binomial(cfg, m, p, dtshape, storage):
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(storage, &store_)
+    set_storage(cfg._storage, &store_)
 
-    flags = 0 if storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg._storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     cdef ciarray.iarray_container_t *c
     ciarray.iarray_random_binomial(ctx_, &dtshape_, r_ctx_, &store_, flags, &c)
@@ -896,7 +892,7 @@ def random_binomial(cfg, m, p, dtshape, storage):
     return IArray(ctx, c_c)
 
 
-def random_poisson(cfg, l, dtshape, storage):
+def random_poisson(cfg, l, dtshape):
     ctx = Context(cfg)
     r_ctx = RandomContext(ctx)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
@@ -911,9 +907,9 @@ def random_poisson(cfg, l, dtshape, storage):
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(storage, &store_)
+    set_storage(cfg._storage, &store_)
 
-    flags = 0 if storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg._storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     cdef ciarray.iarray_container_t *c
     ciarray.iarray_random_poisson(ctx_, &dtshape_, r_ctx_, &store_, flags, &c)
@@ -932,7 +928,7 @@ def random_kstest(cfg, a, b):
     return res
 
 
-def matmul(cfg, a, b, block_a, block_b, storage):
+def matmul(cfg, a, b, block_a, block_b):
     ctx = Context(cfg)
     cdef ciarray.iarray_container_t *a_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(a.to_capsule(), "iarray_container_t*")
     cdef ciarray.iarray_container_t *b_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(b.to_capsule(), "iarray_container_t*")
@@ -955,9 +951,9 @@ def matmul(cfg, a, b, block_a, block_b, storage):
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(storage, &store_)
+    set_storage(cfg._storage, &store_)
 
-    flags = 0 if storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg._storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     ciarray.iarray_container_new(ctx_, &dtshape_, &store_, flags, &c)
 
