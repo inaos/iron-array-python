@@ -17,8 +17,10 @@ def cmp_udf_np(f, start, stop, shape, pshape, dtype, cparams):
     - Input is always 1 linspace array, defined by start and stop
     - Function results do not depend on pshape
     """
-    x = ia.linspace(ia.dtshape(shape, pshape, dtype), start, stop, **cparams)
-    expr = f.create_expr([x], ia.dtshape(shape, pshape, dtype), **cparams)
+
+    storage = ia.StorageProperties("blosc", pshape, pshape)
+    x = ia.linspace(ia.dtshape(shape, dtype), start, stop, storage=storage, **cparams)
+    expr = f.create_expr([x], ia.dtshape(shape, dtype), storage=storage, **cparams)
     out = expr.eval()
 
     num = functools.reduce(lambda x, y: x * y, shape)
@@ -40,8 +42,9 @@ def cmp_udf_np_strict(f, start, stop, shape, pshape, dtype, cparams):
     """
     assert len(pshape) == 1
 
-    x = ia.linspace(ia.dtshape(shape, pshape, dtype), start, stop, **cparams)
-    expr = f.create_expr([x], ia.dtshape(shape, pshape, dtype), **cparams)
+    storage = ia.StorageProperties("blosc", pshape, pshape)
+    x = ia.linspace(ia.dtshape(shape, dtype), start, stop, storage=storage, **cparams)
+    expr = f.create_expr([x], ia.dtshape(shape, dtype), storage=storage, **cparams)
     out = expr.eval()
 
     num = functools.reduce(lambda x, y: x * y, shape)
