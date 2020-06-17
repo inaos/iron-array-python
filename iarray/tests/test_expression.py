@@ -82,8 +82,9 @@ def test_expression(method, engine, shape, pshape, dtype, expression):
     ("tanh(x)", "tanh(x)"),
 ])
 def test_ufuncs(ufunc, ia_expr):
-    shape = [20, 30]
-    pshape = [2, 3]
+    shape = [200, 300]
+    pshape = [40, 40]
+    bshape = [10, 17]
     eval_flags = ia.EvalFlags(method="iterchunk", engine="auto")
 
     if pshape is None:
@@ -91,7 +92,7 @@ def test_ufuncs(ufunc, ia_expr):
     else:
         storage = ia.StorageProperties(backend="blosc",
                                        chunkshape=pshape,
-                                       blockshape=pshape,
+                                       blockshape=bshape,
                                        enforce_frame=False,
                                        filename=None)
 
@@ -159,14 +160,20 @@ def test_ufuncs(ufunc, ia_expr):
     "tanh",
 ])
 def test_expr_ufuncs(ufunc):
-    shape = [20, 30]
-    pshape = [4, 5]
+    shape = [200, 300]
+    pshape = [40, 50]
+    bshape = [20, 20]
     eval_flags = ia.EvalFlags(method="iterchunk", engine="auto")
+    storage = ia.StorageProperties(backend="blosc",
+                                   chunkshape=pshape,
+                                   blockshape=bshape,
+                                   enforce_frame=False,
+                                   filename=None)
 
     for dtype in np.float64, np.float32:
         # The ranges below are important for not overflowing operations
-        x = ia.linspace(ia.dtshape(shape, dtype), .1, .9)
-        y = ia.linspace(ia.dtshape(shape, dtype), 0, 1)
+        x = ia.linspace(ia.dtshape(shape, dtype), .1, .9, storage=storage)
+        y = ia.linspace(ia.dtshape(shape, dtype), 0, 1, storage=storage)
 
         # NumPy computation
         npx = ia.iarray2numpy(x)
@@ -184,8 +191,8 @@ def test_expr_ufuncs(ufunc):
         iout2 = lazy_expr.eval(eval_flags=eval_flags, dtype=dtype)
         npout2 = ia.iarray2numpy(iout2)
 
-        decimal = 6 if dtype is np.float32 else 7
-        np.testing.assert_almost_equal(npout, npout2, decimal=decimal)
+        rtol = 1e-3 if dtype is np.float32 else 1e-10
+        np.testing.assert_allclose(npout, npout2, rtol=rtol)
 
 
 # Different operand fusions inside expressions
@@ -200,16 +207,22 @@ def test_expr_ufuncs(ufunc):
     "(x - z + t + y) * (t - y + z - x)",
 ])
 def test_expr_fusion(expr):
-    shape = [20, 30]
-    pshape = [4, 5]
+    shape = [200, 300]
+    pshape = [40, 50]
+    bshape = [20, 20]
     eval_flags = ia.EvalFlags(method="iterchunk", engine="auto")
+    storage = ia.StorageProperties(backend="blosc",
+                                   chunkshape=pshape,
+                                   blockshape=bshape,
+                                   enforce_frame=False,
+                                   filename=None)
 
     for dtype in np.float64, np.float32:
         # The ranges below are important for not overflowing operations
-        x = ia.linspace(ia.dtshape(shape, dtype), .1, .9)
-        y = ia.linspace(ia.dtshape(shape, dtype), 0., 1.)
-        z = ia.linspace(ia.dtshape(shape, dtype), 0., 2.)
-        t = ia.linspace(ia.dtshape(shape, dtype), 0., 3.)
+        x = ia.linspace(ia.dtshape(shape, dtype), .1, .9, storage=storage)
+        y = ia.linspace(ia.dtshape(shape, dtype), 0., 1., storage=storage)
+        z = ia.linspace(ia.dtshape(shape, dtype), 0., 2., storage=storage)
+        t = ia.linspace(ia.dtshape(shape, dtype), 0., 3., storage=storage)
 
         # NumPy computation
         npx = ia.iarray2numpy(x)
@@ -223,5 +236,5 @@ def test_expr_fusion(expr):
         iout2 = lazy_expr.eval(eval_flags=eval_flags, dtype=dtype)
         npout2 = ia.iarray2numpy(iout2)
 
-        decimal = 6 if dtype is np.float32 else 7
-        np.testing.assert_almost_equal(npout, npout2, decimal=decimal)
+        rtol = 1e-4 if dtype is np.float32 else 1e-10
+        np.testing.assert_allclose(npout, npout2, rtol=rtol)
