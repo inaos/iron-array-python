@@ -20,8 +20,8 @@ def test_iterator(shape, pshape, bshape, dtype):
     if pshape is None:
         storage = ia.StorageProperties("plainbuffer")
     else:
-        storage = ia.StorageProperties("blosc", False)
-    a = ia.linspace(ia.dtshape(shape, pshape, dtype), -10, 10, storage=storage)
+        storage = ia.StorageProperties("blosc", pshape, pshape, False)
+    a = ia.linspace(ia.dtshape(shape, dtype), -10, 10, storage=storage)
     an = ia.iarray2numpy(a)
 
     b = ia.empty(ia.dtshape(shape, pshape), storage=storage)
