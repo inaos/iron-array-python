@@ -14,7 +14,8 @@ import numpy as np
                          ])
 def test_load_save(shape, pshape, dtype, load_in_mem):
 
-    a = ia.linspace(ia.dtshape(shape, pshape, dtype), -10, 10)
+    storage = ia.StorageProperties("blosc", pshape, pshape)
+    a = ia.linspace(ia.dtshape(shape, dtype), -10, 10, storage=storage)
     an = ia.iarray2numpy(a)
 
     ia.save(a, "test_load_save.iarray")
