@@ -1,6 +1,9 @@
 trigger:
 - develop
 
+variables:
+  BUILD_WHEELS: 1
+
 jobs:
 
 - job: 'Linux'
