@@ -636,6 +636,7 @@ class GenVisitor(NodeVisitor):
             (ast.Sub, ir.IntType): self.builder.sub,
             (ast.Mult, ir.IntType): self.builder.mul,
             (ast.Div, ir.IntType): self.builder.sdiv,
+            (ast.Mod, ir.IntType): self.builder.srem,
             (ast.Add, ir.FloatType): self.builder.fadd,
             (ast.Sub, ir.FloatType): self.builder.fsub,
             (ast.Mult, ir.FloatType): self.builder.fmul,
