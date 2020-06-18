@@ -61,7 +61,11 @@ This will compile the iron-array C library and the Python extension in one go an
 
 Also note the `-j 4` flag; this is a way to specify the number of processes in parallel that you want to use during the build process.
 
-You can even pass [cmake configure options directly from commandline](https://scikit-build.readthedocs.io/en/latest/usage.html#cmake-configure-options).
+Thanks to the nice integration of scikit-build with cmake, you can even pass [cmake configure options directly from commandline](https://scikit-build.readthedocs.io/en/latest/usage.html#cmake-configure-options).  For example:
+
+```
+python setup.py build_ext -j 4 --build-type=RelWithDebInfo -DDISABLE_LLVM_CONFIG=False
+```
 
 ### Test
 
