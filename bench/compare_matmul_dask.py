@@ -1,18 +1,21 @@
 from time import time
-import numpy as np
 
+import ctypes
 import dask
 import dask.array as da
-import zarr
 from numcodecs import Blosc
+import numpy as np
+import zarr
 
 import iarray as ia
 
-import ctypes
 mkl_rt = ctypes.CDLL('libmkl_rt.dylib')
 mkl_get_max_threads = mkl_rt.mkl_get_max_threads
+
+
 def mkl_set_num_threads(cores):
     mkl_rt.mkl_set_num_threads(ctypes.byref(ctypes.c_int(cores)))
+
 
 MEMPROF = True
 if MEMPROF:
@@ -37,11 +40,13 @@ apshape = (500, 500)
 bshape = (10000, 8000)
 bpshape = (250, 500)
 lia = ia.linspace(ia.dtshape(ashape, pshape=apshape, dtype=DTYPE), 0, 1, clib=CLIB, clevel=CLEVEL)
-nia = ia.random_normal(ia.dtshape(ashape, pshape=apshape, dtype=DTYPE), 0, 0.0000001, clib=CLIB, clevel=CLEVEL)
+nia = ia.random_normal(ia.dtshape(ashape, pshape=apshape, dtype=DTYPE), 0,
+                       0.0000001, clib=CLIB, clevel=CLEVEL)
 aia = (lia + nia).eval(pshape=apshape, dtype=DTYPE, clib=CLIB, clevel=CLEVEL)
 
 lia = ia.linspace(ia.dtshape(bshape, pshape=bpshape, dtype=DTYPE), 0, 1, clib=CLIB, clevel=CLEVEL)
-nia = ia.random_normal(ia.dtshape(bshape, pshape=bpshape, dtype=DTYPE), 0, 0.0000001, clib=CLIB, clevel=CLEVEL)
+nia = ia.random_normal(ia.dtshape(bshape, pshape=bpshape, dtype=DTYPE), 0,
+                       0.0000001, clib=CLIB, clevel=CLEVEL)
 bia = (lia + nia).eval(pshape=bpshape, dtype=DTYPE, clib=CLIB, clevel=CLEVEL)
 
 ablock = (500, 500)
@@ -77,15 +82,18 @@ scheduler = "single-threaded" if NTHREADS == 1 else "threads"
 
 mkl_set_num_threads(1)
 
+
 @profile
 def dask_matmul(azarr, bzarr):
     with dask.config.set(scheduler=scheduler, num_workers=NTHREADS):
         ad = da.from_zarr(azarr)
         bd = da.from_zarr(bzarr)
         cd = da.matmul(ad, bd)
-        czarr = zarr.empty((ashape[0], bshape[1]), dtype=DTYPE, compressor=compressor, chunks=(ablock[0], bblock[1]))
+        czarr = zarr.empty((ashape[0], bshape[1]), dtype=DTYPE,
+                           compressor=compressor, chunks=(ablock[0], bblock[1]))
         da.to_zarr(cd, czarr)
         return czarr
+
 
 t0 = time()
 czarr = dask_matmul(azarr, bzarr)
@@ -103,6 +111,7 @@ np.testing.assert_allclose(np1, np2, rtol=1e-5)
 anp = ia.iarray2numpy(aia)
 bnp = ia.iarray2numpy(bia)
 
+
 @profile
 def ia_matmul(anp, bnp):
     mkl_set_num_threads(NTHREADS)
@@ -115,7 +124,5 @@ t1 = time()
 tnp = t1 - t0
 
 print("Time for computing matmul (via numpy): %.3f" % (tnp))
-
-
 print(f"Speed-up vs zarr: {tzarr / tia}")
 print(f"Speed-up vs numpy (MKL): {tnp / tia}")

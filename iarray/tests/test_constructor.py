@@ -48,16 +48,17 @@ def test_arange(start, stop, shape, pshape, dtype):
 
 
 # from_file
-@pytest.mark.parametrize("start, stop, shape, pshape, dtype, filename",
-                         [
-                             (0, 10, [9], [2], np.float64, "test.fromfile0.iarray"),
-                             (-0.1, -0.10, [4, 3, 5, 5, 2], [2, 3, 2, 3, 2], np.float32, "test.fromfile1.iarray")
-                         ])
+@pytest.mark.parametrize(
+    "start, stop, shape, pshape, dtype, filename",
+    [
+        (0, 10, [9], [2], np.float64, "test.fromfile0.iarray"),
+        (-0.1, -0.10, [4, 3, 5, 5, 2], [2, 3, 2, 3, 2], np.float32, "test.fromfile1.iarray")
+    ])
 def test_from_file(start, stop, shape, pshape, dtype, filename):
     size = int(np.prod(shape))
     npdtype = np.float64 if dtype == np.float64 else np.float32
     a = np.linspace(start, stop, size, dtype=npdtype).reshape(shape)
-    b = ia.numpy2iarray(a, pshape, storage=ia.StorageProperties("blosc", True, filename))
+    ia.numpy2iarray(a, pshape, storage=ia.StorageProperties("blosc", True, filename))
     c = ia.load(filename)
     d = ia.iarray2numpy(c)
     np.testing.assert_almost_equal(a, d)
@@ -65,13 +66,14 @@ def test_from_file(start, stop, shape, pshape, dtype, filename):
 
 
 # get_slice
-@pytest.mark.parametrize("start, stop, slice, shape, pshape, dtype",
-                         [
-                             (0, 10, (slice(2, 4), slice(5, 10), slice(1, 2)), [10, 12, 5], [2, 3, 2], np.float64),
-                             (-0.1, -0.2, (slice(2, 4), slice(7, 12)), [12, 16], [2, 7], np.float32),
-                             (0, 10, (slice(2, 4), slice(5, 10), slice(1, 2)), [10, 12, 5], None, np.float64),
-                             (-0.1, -0.2, (slice(2, 4), slice(7, 12)), [12, 16], None, np.float32)
-                         ])
+@pytest.mark.parametrize(
+    "start, stop, slice, shape, pshape, dtype",
+    [
+        (0, 10, (slice(2, 4), slice(5, 10), slice(1, 2)), [10, 12, 5], [2, 3, 2], np.float64),
+        (-0.1, -0.2, (slice(2, 4), slice(7, 12)), [12, 16], [2, 7], np.float32),
+        (0, 10, (slice(2, 4), slice(5, 10), slice(1, 2)), [10, 12, 5], None, np.float64),
+        (-0.1, -0.2, (slice(2, 4), slice(7, 12)), [12, 16], None, np.float32)
+    ])
 def test_slice(start, stop, slice, shape, pshape, dtype):
     if pshape is None:
         storage = ia.StorageProperties("plainbuffer")

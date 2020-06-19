@@ -33,7 +33,8 @@ print("Operand cratio:", round(xa.cratio, 2))
 ya = None
 
 t0 = time()
-eval_flags = ia.EvalFlags(method="auto", engine="auto")  # FIX: ('auto', 'auto') is slow (compiler is not selected)
+# FIX: ('auto', 'auto') is slow (compiler is not selected)
+eval_flags = ia.EvalFlags(method="auto", engine="auto")
 expr = ia.Expr(eval_flags=eval_flags, **cparams)
 expr.bind('x', xa)
 expr.bind_out_properties(ia.dtshape(shape, pshape, dtype=dtype))

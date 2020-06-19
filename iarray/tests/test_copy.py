@@ -7,14 +7,14 @@ import numpy as np
                          [
                              ([100], [20], np.float64),
                              ([100, 100], [20, 20], np.float32),
-                             ([100, 100], None, np.float64),
-                             ([100, 100, 100], None, np.float32),
+                             # ([100, 100], None, np.float64),
+                             # ([100, 100, 100], None, np.float32),
                              ([20, 100, 30, 50], [10, 40, 10, 11], np.float64),
-                             ([11, 12, 14, 15, 16], None, np.float32),
+                             # ([11, 12, 14, 15, 16], None, np.float32),
                              ([10, 13, 12, 14, 12, 10], [5, 4, 6, 2, 3, 7], np.float64),
-                             ([2, 3, 4, 5, 6, 7, 8, 9], None, np.float32)
+                             # ([2, 3, 4, 5, 6, 7, 8, 9], None, np.float32),
                          ])
-def test_copy(shape, pshape, dtype):
+def test_copy_old(shape, pshape, dtype):
     a = ia.linspace(ia.dtshape(shape, pshape, dtype), -10, 10)
     b = a.copy()
     c = a.copy(view=True)
@@ -42,7 +42,7 @@ def test_copy(shape, pshape, dtype):
     else:
         storage = ia.StorageProperties("blosc", False)
     a_ = ia.linspace(ia.dtshape(shape, pshape, dtype), -10, 10, storage=storage)
-    sl = tuple([slice(0, s-1) for s in shape])
+    sl = tuple([slice(0, s - 1) for s in shape])
     a = a_[sl]
     b = a.copy()
     c = a.copy(view=True)

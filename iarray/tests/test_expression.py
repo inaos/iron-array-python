@@ -5,20 +5,24 @@ import numpy as np
 
 # Expression
 @pytest.mark.parametrize("method, engine, shape, pshape, dtype, expression", [
-     ("iterblosc2", "compiler", [100, 100], [23, 32], np.float64, "cos(x)"),  # TODO: fix this
-     ("iterblosc2", "compiler", [100, 100], [10, 99], np.float64, "x"),
-     ("iterblosc2", "interpreter", [1000], [110], np.float32, "x"),
-     ("iterblosc", "compiler", [1000], [100], np.float64, "(cos(x) - 1.35) * (sin(x) - 4.45) * tan(x - 8.5)"),
-     ("auto", "auto", [1000], [100], np.float64, "(cos(x) - 1.35) * (sin(x) - 4.45) * tan(x - 8.5)"),
-     ("iterchunk", "interpreter", [1000], [123], np.float32, "(abs(-x) - 1.35) * ceil(x) * floor(x - 8.5)"),
-     ("iterblosc2", "compiler", [100, 100, 100], [5, 12, 10], np.float64, "sinh(x) + (cosh(x) - 1.35) - tanh(x + .2) + 1"),
-     ("iterblosc", "compiler", [100], [23], np.float64, "sinh(x) + (cosh(x) - 1.35) - tanh(x + .2)"),
-     ("iterchunk", "auto", [100, 100, 55], [10, 5, 10], np.float64, "asin(x) + (acos(x) - 1.35) - atan(x + .2)"),
-     ("auto", "interpreter", [1000], None, np.float64, "exp(x) + (log(x) - 1.35) - log10(x + .2)"),
-     ("iterchunk", "auto", [1000], None, np.float32, "sqrt(x) + atan2(x, x) + pow(x, x)"),
-     ("auto", "auto", [100, 100], None, np.float64, "(x - cos(1)) * 2"),
-     ("iterchunk", "interpreter", [8, 6, 7, 4, 5], None, np.float32, "(x - cos(y)) * (sin(x) + y) + 2 * x + y"),
-     ("iterblosc", "interpreter", [8, 6, 7, 4, 5], [4, 3, 3, 4, 5], np.float64, "(x - cos(y)) * (sin(x) + y) + 2 * x + y"),
+    ("iterblosc2", "compiler", [100, 100], [23, 32], np.float64, "cos(x)"),  # TODO: fix this
+    ("iterblosc2", "compiler", [100, 100], [10, 99], np.float64, "x"),
+    ("iterblosc2", "interpreter", [1000], [110], np.float32, "x"),
+    ("iterblosc", "compiler", [1000], [100], np.float64, "(cos(x) - 1.35) * (sin(x) - 4.45) * tan(x - 8.5)"),
+    ("auto", "auto", [1000], [100], np.float64, "(cos(x) - 1.35) * (sin(x) - 4.45) * tan(x - 8.5)"),
+    ("iterchunk", "interpreter", [1000], [123], np.float32, "(abs(-x) - 1.35) * ceil(x) * floor(x - 8.5)"),
+    ("iterblosc2", "compiler", [100, 100, 100], [5, 12, 10], np.float64,
+     "sinh(x) + (cosh(x) - 1.35) - tanh(x + .2) + 1"),
+    ("iterblosc", "compiler", [100], [23], np.float64, "sinh(x) + (cosh(x) - 1.35) - tanh(x + .2)"),
+    ("iterchunk", "auto", [100, 100, 55], [10, 5, 10], np.float64,
+     "asin(x) + (acos(x) - 1.35) - atan(x + .2)"),
+    ("auto", "interpreter", [1000], None, np.float64, "exp(x) + (log(x) - 1.35) - log10(x + .2)"),
+    ("iterchunk", "auto", [1000], None, np.float32, "sqrt(x) + atan2(x, x) + pow(x, x)"),
+    ("auto", "auto", [100, 100], None, np.float64, "(x - cos(1)) * 2"),
+    ("iterchunk", "interpreter", [8, 6, 7, 4, 5], None, np.float32,
+     "(x - cos(y)) * (sin(x) + y) + 2 * x + y"),
+    ("iterblosc", "interpreter", [8, 6, 7, 4, 5], [4, 3, 3, 4, 5], np.float64,
+     "(x - cos(y)) * (sin(x) + y) + 2 * x + y"),
 ])
 def test_expression(method, engine, shape, pshape, dtype, expression):
     # The ranges below are important for not overflowing operations
@@ -65,7 +69,7 @@ def test_expression(method, engine, shape, pshape, dtype, expression):
     ("floor(x)", "floor(x)"),
     ("log(x)", "log(x)"),
     ("log10(x)", "log10(x)"),
-    #("negative(x)", "negate(x)"),
+    # ("negative(x)", "negate(x)"),
     ("power(x, y)", "pow(x, y)"),
     ("sin(x)", "sin(x)"),
     ("sinh(x)", "sinh(x)"),
@@ -138,7 +142,7 @@ def test_ufuncs(ufunc, ia_expr):
     "floor",
     "log",
     "log10",
-    #"negative",
+    # "negative",
     "power",
     "sin",
     "sinh",
@@ -174,6 +178,7 @@ def test_expr_ufuncs(ufunc):
 
         decimal = 6 if dtype is np.float32 else 7
         np.testing.assert_almost_equal(npout, npout2, decimal=decimal)
+
 
 # Different operand fusions inside expressions
 @pytest.mark.parametrize("expr", [

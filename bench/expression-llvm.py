@@ -15,7 +15,7 @@ NITER = 10
 PROFILE = False
 NTHREADS = 20
 
-cparams = dict(clib=ia.LZ4, clevel=5, nthreads=NTHREADS) #, blocksize=2**16)
+cparams = dict(clib=ia.LZ4, clevel=5, nthreads=NTHREADS)
 
 # Define array params
 # shape = [10000, 2000]
