@@ -320,6 +320,8 @@ cdef class Container:
     def chunkshape(self):
         cdef ciarray.iarray_storage_t storage
         ciarray.iarray_get_storage(self._ctx._ctx, self._c, &storage)
+        if storage.backend == ciarray.IARRAY_STORAGE_PLAINBUFFER:
+            return None
         chunkshape = [storage.chunkshape[i] for i in range(self.ndim)]
         return tuple(chunkshape)
 
@@ -327,6 +329,8 @@ cdef class Container:
     def blockshape(self):
         cdef ciarray.iarray_storage_t storage
         ciarray.iarray_get_storage(self._ctx._ctx, self._c, &storage)
+        if storage.backend == ciarray.IARRAY_STORAGE_PLAINBUFFER:
+            return None
         blockshape = [storage.blockshape[i] for i in range(self.ndim)]
         return tuple(blockshape)
 
