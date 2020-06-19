@@ -191,8 +191,8 @@ def test_expr_ufuncs(ufunc):
         iout2 = lazy_expr.eval(eval_flags=eval_flags, dtype=dtype)
         npout2 = ia.iarray2numpy(iout2)
 
-        rtol = 1e-3 if dtype is np.float32 else 1e-10
-        np.testing.assert_allclose(npout, npout2, rtol=rtol)
+        decimal = 6 if dtype is np.float32 else 7
+        np.testing.assert_almost_equal(npout, npout2, decimal=decimal)
 
 
 # Different operand fusions inside expressions
@@ -236,5 +236,5 @@ def test_expr_fusion(expr):
         iout2 = lazy_expr.eval(eval_flags=eval_flags, dtype=dtype)
         npout2 = ia.iarray2numpy(iout2)
 
-        rtol = 1e-4 if dtype is np.float32 else 1e-10
-        np.testing.assert_allclose(npout, npout2, rtol=rtol)
+        decimal = 6 if dtype is np.float32 else 7
+        np.testing.assert_almost_equal(npout, npout2, decimal=decimal)
