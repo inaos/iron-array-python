@@ -6,7 +6,7 @@ import numpy as np
 # Matmul
 @pytest.mark.parametrize("ashape, apshape, abshape, bshape, bpshape, bbshape, dtype",
                          [
-                             ([100, 100], [20, 20], [23, 32], [100, 100], [30, 30], [32, 23], np.float64),
+                             ([20, 20], [10, 10], [10, 10], [20, 20], [10, 10], [10, 10], np.float64),
                              ([100, 100], None, [100, 100], [100, 100], None, [100, 100], np.float32),
                              ([100, 100], [40, 40], [23, 32], [100], [12], [32], np.float64),
                              ([100, 100], None, [100, 100], [100], None, [100], np.float32),
@@ -19,21 +19,39 @@ def test_matmul(ashape, apshape, abshape, bshape, bpshape, bbshape, dtype):
     if apshape is None:
         astorage = ia.StorageProperties("plainbuffer")
     else:
-        astorage = ia.StorageProperties("blosc", False)
-    a = ia.linspace(ia.dtshape(ashape, apshape, dtype), -10, 1, storage=astorage)
+        astorage = ia.StorageProperties("blosc", apshape, apshape, False)
+    a = ia.linspace(ia.dtshape(ashape, dtype), -10, 1, storage=astorage)
     an = ia.iarray2numpy(a)
 
     if bpshape is None:
         bstorage = ia.StorageProperties("plainbuffer")
     else:
-        bstorage = ia.StorageProperties("blosc", False)
-    b = ia.linspace(ia.dtshape(bshape, bpshape, dtype), -1, 10, storage=bstorage)
+        bstorage = ia.StorageProperties("blosc", bpshape, bpshape, False)
+    b = ia.linspace(ia.dtshape(bshape, dtype), -1, 10, storage=bstorage)
     bn = ia.iarray2numpy(b)
 
-    c = ia.matmul(a, b, abshape, bbshape)
+    if abshape is None and bbshape is None:
+        cstorage = ia.StorageProperties("plainbuffer")
+    else:
+        if len(bbshape) == 2:
+            cpshape = [a.shape[0], b.shape[1]]
+            if abshape is not None:
+                cpshape[0] = abshape[0]
+            if bbshape is not None:
+                cpshape[1] = bbshape[1]
+            cpshape = tuple(cpshape)
+        else:
+            cpshape = [a.shape[0]]
+            if abshape is not None:
+                cpshape[0] = abshape[0]
+            cpshape = tuple(cpshape)
+        cstorage = ia.StorageProperties("blosc", cpshape, cpshape)
+
+    c = ia.matmul(a, b, abshape, bbshape, storage=cstorage)
+    cn_2 = ia.iarray2numpy(c)
+    print(cn_2)
     cn = np.matmul(an, bn)
 
-    cn_2 = ia.iarray2numpy(c)
 
     rtol = 1e-6 if dtype == np.float32 else 1e-14
 
@@ -66,8 +84,8 @@ def test_matmul_slice(ashape, apshape, astart, astop, abshape, bshape, bpshape,
     if apshape is None:
         astorage = ia.StorageProperties("plainbuffer")
     else:
-        astorage = ia.StorageProperties("blosc", False)
-    a = ia.linspace(ia.dtshape(ashape, apshape, dtype), -1, -2, storage=astorage)
+        astorage = ia.StorageProperties("blosc", apshape, apshape, False)
+    a = ia.linspace(ia.dtshape(ashape, dtype), -1, -2, storage=astorage)
     an = ia.iarray2numpy(a)
     aslices = tuple(slice(astart[i], astop[i]) for i in range(len(astart)))
     if len(astart) == 1:
@@ -77,15 +95,32 @@ def test_matmul_slice(ashape, apshape, astart, astop, abshape, bshape, bpshape,
     if bpshape is None:
         bstorage = ia.StorageProperties("plainbuffer")
     else:
-        bstorage = ia.StorageProperties("blosc", False)
-    b = ia.linspace(ia.dtshape(bshape, bpshape, dtype), 1, 200, storage=bstorage)
+        bstorage = ia.StorageProperties("blosc", bpshape, bpshape, False)
+    b = ia.linspace(ia.dtshape(bshape, dtype), 1, 200, storage=bstorage)
     bn = ia.iarray2numpy(b)
     bslices = tuple(slice(bstart[i], bstop[i]) for i in range(len(bstart)))
     if len(bstart) == 1:
         bslices = bslices[0]
     bsl = b[bslices]
 
-    c = ia.matmul(asl, bsl, abshape, bbshape)
+    if abshape is None and bbshape is None:
+        cstorage = ia.StorageProperties("plainbuffer")
+    else:
+        if len(bbshape) == 2:
+            cpshape = [a.shape[0], b.shape[1]]
+            if abshape is not None:
+                cpshape[0] = abshape[0]
+            if bbshape is not None:
+                cpshape[1] = bbshape[1]
+            cpshape = tuple(cpshape)
+        else:
+            cpshape = [a.shape[0]]
+            if abshape is not None:
+                cpshape[0] = abshape[0]
+            cpshape = tuple(cpshape)
+        cstorage = ia.StorageProperties("blosc", cpshape, cpshape)
+
+    c = ia.matmul(asl, bsl, abshape, bbshape, storage=cstorage)
     cn = np.matmul(an[aslices], bn[bslices])
 
     cn_2 = ia.iarray2numpy(c)

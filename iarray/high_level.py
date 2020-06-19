@@ -107,7 +107,7 @@ class Config(ext._Config):
         self._eval_flags = ia.EvalFlags() if eval_flags is None else eval_flags
         self._storage = ia.StorageProperties() if storage is None else storage
         super().__init__(clib, clevel, use_dict, filter_flags, nthreads,
-                         fp_mantissa_bits, blocksize, self._eval_flags)
+                         fp_mantissa_bits, self._eval_flags)
 
     @property
     def clib(self):
@@ -257,10 +257,13 @@ class LazyExpr:
     def __rtruediv__(self, value):
         return self.update_expr(new_op=(value, '/', self))
 
-    def eval(self, method="iarray_eval", pshape=None, dtype=None, **kwargs):
+    def eval(self, method="iarray_eval", dtype=None, **kwargs):
         # TODO: see if shape and pshape can be instance variables, or better stay like this
         o0 = self.operands['o0']
         shape_ = o0.shape
+
+        cfg = Config(**kwargs)
+        pshape = shape_ if cfg._storage.chunkshape is None else cfg._storage.chunkshape
         # TODO: figure out a better way to set a default for the dtype
         dtype = o0.dtype if dtype is None else dtype
         if method == "iarray_eval":
@@ -269,8 +272,7 @@ class LazyExpr:
                 if isinstance(v, IArray):
                     expr.bind(k, v)
 
-            cfg = Config(**kwargs)
-            dtshape = ia.dtshape(shape_, pshape, dtype)
+            dtshape = ia.dtshape(shape_, dtype)
 
             expr.bind_out_properties(dtshape, cfg._storage)
 
@@ -279,7 +281,7 @@ class LazyExpr:
             out = expr.eval()
 
         elif method == "numexpr":
-            out = ia.empty(ia.dtshape(shape=shape_, pshape=pshape, dtype=dtype), **kwargs)
+            out = ia.empty(ia.dtshape(shape=shape_, dtype=dtype), **kwargs)
             operand_iters = tuple(o.iter_read_block(pshape)
                                   for o in self.operands.values()
                                   if isinstance(o, IArray))
@@ -412,26 +414,29 @@ class Expr(ext.Expression):
 
 class dtshape:
 
-    def __init__(self, shape=None, pshape=None, dtype=np.float64):
+    def __init__(self, shape=None, dtype=np.float64):
         self.shape = shape
-        self.pshape = pshape
         self.dtype = dtype
 
     def to_tuple(self):
-        Dtshape = namedtuple('dtshape', 'shape pshape dtype')
-        return Dtshape(self.shape, self.pshape, self.dtype)
+        Dtshape = namedtuple('dtshape', 'shape dtype')
+        return Dtshape(self.shape, self.dtype)
 
 
 class StorageProperties:
 
-    def __init__(self, backend="blosc", enforce_frame=False, filename=None):
+    def __init__(self, backend="plainbuffer", chunkshape=None, blockshape=None, enforce_frame=False, filename=None):
         self.backend = backend
         self.enforce_frame = enforce_frame
         self.filename = filename
+        if backend == "blosc" and (chunkshape is None or blockshape is None):
+            raise AttributeError("If the backend is a blosc schunk the chunkshape/blockshape can not be None")
+        self.chunkshape = chunkshape
+        self.blockshape = blockshape
 
     def to_tuple(self):
-        StoreProp = namedtuple('store_properties', 'backend enforce_frame filename')
-        return StoreProp(self.backend, self.enforce_frame, self.filename)
+        StoreProp = namedtuple('store_properties', 'backend chunkshape blockshape enforce_frame filename')
+        return StoreProp(self.backend, self.chunkshape, self.backend, self.enforce_frame, self.filename)
 
 #
 # Constructors
@@ -473,7 +478,7 @@ def arange(dtshape, start=None, stop=None, step=None, **kwargs):
 def linspace(dtshape, start, stop, nelem=50, **kwargs):
     cfg = Config(**kwargs)
 
-    shape, pshape, dtype = dtshape.to_tuple()
+    shape, dtype = dtshape.to_tuple()
     nelem = np.prod(shape) if dtshape is not None else nelem
 
     return ext.linspace(cfg, nelem, start, stop, dtshape)
@@ -515,7 +520,7 @@ def iarray2numpy(iarr, **kwargs):
     return ext.iarray2numpy(cfg, iarr)
 
 
-def numpy2iarray(c, pshape=None, **kwargs):
+def numpy2iarray(c, **kwargs):
     cfg = Config(**kwargs)
 
     if c.dtype == np.float64:
@@ -525,7 +530,7 @@ def numpy2iarray(c, pshape=None, **kwargs):
     else:
         raise NotImplementedError("Only float32 and float64 types are supported for now")
 
-    dtshape = ia.dtshape(c.shape, pshape, dtype)
+    dtshape = ia.dtshape(c.shape, dtype)
     return ext.numpy2iarray(cfg, c, dtshape)
 
 

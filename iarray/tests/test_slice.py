@@ -16,13 +16,13 @@ def test_slice(shape, pshape, start, stop, dtype):
     if pshape is None:
         storage = ia.StorageProperties("plainbuffer")
     else:
-        storage = ia.StorageProperties("blosc", True)
+        storage = ia.StorageProperties("blosc", pshape, pshape, True)
 
     slices = tuple(slice(start[i], stop[i]) for i in range(len(start)))
     if len(start) == 1:
         slices = slices[0]
 
-    a = ia.linspace(ia.dtshape(shape, pshape, dtype), -10, 10, storage=storage)
+    a = ia.linspace(ia.dtshape(shape, dtype), -10, 10, storage=storage)
     an = ia.iarray2numpy(a)
 
     b = a[slices]
