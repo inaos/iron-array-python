@@ -38,7 +38,7 @@ cdef set_storage(storage, ciarray.iarray_storage_t *cstore):
         cstore.backend = ciarray.IARRAY_STORAGE_BLOSC
         for i in range(len(storage.chunkshape)):
             cstore.chunkshape[i] = storage.chunkshape[i]
-            cstore.blockshape[i] = storage.blockshape[i]
+            cstore.blockshape[i] = storage.chunkshape[i]
 
     if storage.filename is not None:
         filename = storage.filename.encode("utf-8") if isinstance(storage.filename, str) else storage.filename
@@ -59,7 +59,7 @@ cdef class ReadBlockIter:
         self._c = c
         cdef ciarray.int64_t block_[ciarray.IARRAY_DIMENSION_MAX]
         if block is None:
-            block = c.pshape
+            block = c.chunkshape
         for i in range(len(block)):
             block_[i] = block[i]
 
@@ -109,7 +109,7 @@ cdef class WriteBlockIter:
         cdef ciarray.int64_t block_[ciarray.IARRAY_DIMENSION_MAX]
         if block is None:
             # The block for iteration has always be provided
-            block = c.pshape
+            block = c.chunkshape
         for i in range(len(block)):
             block_[i] = block[i]
         retcode = ciarray.iarray_iter_write_block_new(self._c._ctx._ctx, &self._iter, self._c._c, block_, &self._val,
@@ -315,6 +315,20 @@ cdef class Container:
         ciarray.iarray_get_dtshape(self._ctx._ctx, self._c, &dtshape)
         shape = [dtshape.shape[i] for i in range(self.ndim)]
         return tuple(shape)
+
+    @property
+    def chunkshape(self):
+        cdef ciarray.iarray_storage_t storage
+        ciarray.iarray_get_storage(self._ctx._ctx, self._c, &storage)
+        chunkshape = [storage.chunkshape[i] for i in range(self.ndim)]
+        return tuple(chunkshape)
+
+    @property
+    def blockshape(self):
+        cdef ciarray.iarray_storage_t storage
+        ciarray.iarray_get_storage(self._ctx._ctx, self._c, &storage)
+        blockshape = [storage.blockshape[i] for i in range(self.ndim)]
+        return tuple(blockshape)
 
     @property
     def dtype(self):
@@ -937,22 +951,22 @@ def matmul(cfg, a, b, block_a, block_b):
 
     Dtshape = namedtuple('dtshape','shape dtype')
 
-    if a.pshape is None and b.pshape is None:
+    if a.chunkshape is None and b.chunkshape is None:
         if len(b.shape) == 1:
-            dtshape = _DTShape(Dtshape(tuple([a.shape[0]]), None, a.dtype)).to_dict()
+            dtshape = _DTShape(Dtshape(tuple([a.shape[0]]), a.dtype)).to_dict()
         else:
-            dtshape = _DTShape(Dtshape((a.shape[0], b.shape[1]), None, a.dtype)).to_dict()
+            dtshape = _DTShape(Dtshape((a.shape[0], b.shape[1]), a.dtype)).to_dict()
     else:
         if len(b.shape) == 1:
-            dtshape = _DTShape(Dtshape(tuple([a.shape[0]]), tuple([block_a[0]]), a.dtype)).to_dict()
+            dtshape = _DTShape(Dtshape(tuple([a.shape[0]]), a.dtype)).to_dict()
         else:
-            dtshape = _DTShape(Dtshape((a.shape[0], b.shape[1]), (block_a[0], block_b[1]), a.dtype)).to_dict()
+            dtshape = _DTShape(Dtshape((a.shape[0], b.shape[1]), a.dtype)).to_dict()
 
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
     set_storage(cfg._storage, &store_)
-
+    print(cfg._storage)
     flags = 0 if cfg._storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     ciarray.iarray_container_new(ctx_, &dtshape_, &store_, flags, &c)
@@ -970,6 +984,7 @@ def matmul(cfg, a, b, block_a, block_b):
 
 
     err = ciarray.iarray_linalg_matmul(ctx_, a_, b_, c, block_a_, block_b_, ciarray.IARRAY_OPERATOR_GENERAL)
+
     if err != 0:
         raise AttributeError
 

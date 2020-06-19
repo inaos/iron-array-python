@@ -214,6 +214,10 @@ cdef extern from "libiarray/iarray.h":
                                 iarray_container_t *c,
                                 iarray_dtshape_t *dtshape)
 
+    ina_rc_t iarray_get_storage(iarray_context_t *ctx,
+                                iarray_container_t *c,
+                                iarray_storage_t *storage)
+
     ina_rc_t iarray_from_buffer(iarray_context_t *ctx,
                                      iarray_dtshape_t *dtshape,
                                      void *buffer,
