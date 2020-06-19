@@ -8,6 +8,7 @@ find_package(Cython REQUIRED)
 find_package(NumPy REQUIRED)
 include_directories(${NumPy_INCLUDE_DIRS})
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/iarray-c-develop/include")
+link_directories("${CMAKE_CURRENT_SOURCE_DIR}/iarray-c-develop/build")  # looks like windows still needs this?
 link_directories("${CMAKE_CURRENT_SOURCE_DIR}")
 
 if (WIN32)
@@ -30,7 +31,8 @@ endif(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/iarray-c-develop/build")
 if (WIN32)
     add_custom_command(
         TARGET iarray_ext PRE_BUILD
-        COMMAND ${CMAKE_COMMAND} .. -G ${WINGEN} -DCMAKE_LIBRARY_OUTPUT_DIRECTORY=${CMAKE_CURRENT_SOURCE_DIR} -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} -DINAC_TARGET_ARCH=${INAC_TARGET_ARCH} -DLLVM_DIR=${LLVM_DIR}
+        # COMMAND ${CMAKE_COMMAND} .. -G ${WINGEN} -DCMAKE_LIBRARY_OUTPUT_DIRECTORY=${CMAKE_CURRENT_SOURCE_DIR} -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} -DINAC_TARGET_ARCH=${INAC_TARGET_ARCH} -DLLVM_DIR=${LLVM_DIR}
+        COMMAND ${CMAKE_COMMAND} .. -G ${WINGEN} -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} -DINAC_TARGET_ARCH=${INAC_TARGET_ARCH} -DLLVM_DIR=${LLVM_DIR}
         WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/iarray-c-develop/build"
         )
     add_custom_command(
