@@ -66,6 +66,14 @@ jobs:
       git submodule update --init --recursive
     displayName: Clone repos
 
+  - script: |
+      mkdir -p $HOME/.inaos/cmake
+      mkdir -p $HOME/INAOS
+      echo "INAC_REPOSITORY_LOCAL=$HOME/INAOS" > $HOME/.inaos/cmake/repository.txt
+      echo "INAC_REPOSITORY_REMOTE=https://inaos.jfrog.io/inaos/libs-release-local/inaos" >> $HOME/.inaos/cmake/repository.txt
+      echo "INAC_REPOSITORY_USRPWD=licensed:AKCp5bBraH7CasbsYCURsjzkbjXwVwdYcT7u39EiuL6GjnK1VKfKQWCd1E2E64mHokU5YUHku" >> $HOME/.inaos/cmake/repository.txt
+    displayName: Install inaos license
+
   - bash: |
       echo "##vso[task.prependpath]$CONDA/bin"  # Add conda to PATH
     displayName: Add conda to PATH
