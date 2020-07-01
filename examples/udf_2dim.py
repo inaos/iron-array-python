@@ -19,6 +19,8 @@ dtype = np.float64
 
 blocksize = reduce(lambda x, y: x * y, pshape) * dtype(0).itemsize
 cparams = dict(clib=ia.LZ4, clevel=5, blocksize=blocksize)
+storage = ia.StorageProperties("blosc", pshape, pshape)
+dtshape = ia.dtshape(shape, dtype)
 
 
 @jit(verbose=0)
@@ -34,7 +36,7 @@ def f(out: Array(float64, 2), x: Array(float64, 2)) -> int64:
 
 if __name__ == '__main__':
     # Create input arrays
-    ia_in = ia.linspace(ia.dtshape(shape, pshape, dtype), 0, 10, **cparams)
+    ia_in = ia.linspace(dtshape, 0, 10, storage=storage, **cparams)
     np_in = np.linspace(0, 10, reduce(lambda x, y: x * y, shape), dtype=dtype).reshape(shape)
     ia.cmp_arrays(np_in, ia_in)
 
@@ -42,7 +44,7 @@ if __name__ == '__main__':
 
     # iarray udf evaluation
     print("iarray evaluation ...")
-    expr = f.create_expr([ia_in], ia.dtshape(shape, pshape, dtype), **cparams)
+    expr = f.create_expr([ia_in], dtshape, storage=storage, **cparams)
     t0 = time()
     for i in range(NITER):
         ia_out = expr.eval()
