@@ -34,7 +34,8 @@ class udf_type(types.StructType):
 
 class ArrayShape(types.ArrayShape):
 
-    def __init__(self, shape, array):
+    def __init__(self, name, shape, array):
+        self.name = name
         self.shape = shape
         self.array = array
 
@@ -58,7 +59,7 @@ class ArrayShape(types.ArrayShape):
             return visitor.BinOp_exit(None, None, out_size, ast.Div, out_typesize)
 
         # General case
-        name = f'window_shape_{n}'
+        name = f'{self.name}_{n}'
         size = builder.gep(self.shape, [n_ir])  # i64*
         size = builder.load(size, name=name)  # i64
         return size
@@ -69,8 +70,9 @@ class ArrayType(types.ArrayType):
     def __init__(self, function, name, args):
         self.function = function
         self.name = name
-        self.window_shape = ArrayShape(self._shape, self)
-        self.window_start = ArrayShape(self._start, self)
+        self.window_shape = ArrayShape('window_shape', self._shape, self)
+        self.window_start = ArrayShape('window_start', self._start, self)
+        self.window_strides = ArrayShape('window_strides', self._strides, self)
 
     def preamble(self, builder):
         if self.idx == 0:
@@ -95,12 +97,21 @@ class ArrayType(types.ArrayType):
     def _start(self):
         return self.function._start
 
+    @property
+    def _strides(self):
+        return self.function._strides
+
     def get_ptr(self, visitor):
         return self.ptr
 
+    # For compatibility with numpy arrays
     @property
     def shape(self):
         return self.window_shape
+
+    @property
+    def strides(self):
+        return self.window_strides
 
 
 def Array(dtype, ndim):
@@ -137,8 +148,9 @@ class Function(py2llvm.Function):
         self._out_size = self.load_field(builder, 5, name='out_size')               # i32
         self._out_typesize = self.load_field(builder, 6, name='out_typesize')       # i32
         self._ndim = self.load_field(builder, 7, name='ndim')                       # i8
-        self._shape = self.load_field(builder, 8, name='window_shape')              # i64*
+        self._shape = self.load_field(builder, 8, name='window_shape')              # i32*
         self._start = self.load_field(builder, 9, name='window_start')              # i64*
+        self._strides = self.load_field(builder, 10, name='window_strides')         # i32*
 
     def get_field(self, builder, idx, name=''):
         idx = ir.Constant(int32, idx)
