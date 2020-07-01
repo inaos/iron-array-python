@@ -180,22 +180,32 @@ class ArrayType(ComplexType):
         if isinstance(ptr.type.pointee, ir.ArrayType):
             ptr = builder.gep(ptr, [zero])
 
-        # Support for multidimensional arrays.
-        # Let's say we have 3 dimensions (d0, d1, d2), each with a length (dl0,
-        # dl1, dl2). Then the size of the dimensions (ds0, ds1, ds2) is
-        # calculated multiplying the length of the next dimensions, for
-        # example: ds0 = dl1 * dl2
-        # Because we assume the array is stored using the C convention.
-        dim = 1
-        while slice:
-            idx = slice.pop(0)
-            idx = value_to_ir_value(builder, idx)
-            for i in range(dim, self.ndim):
-                dim_len = self.shape.get(visitor, dim)
-                idx = builder.mul(idx, dim_len)
+        # Support for multidimensional arrays. Calculate position using
+        # strides, e.g. for a 3 dimension array:
+        # x[i,j,k] = i * strides[0] + j * strides[1] + k * strides[2]
+        # Strides represent the gap in bytes.
+        ptr_type = ptr.type
+        ptr = builder.bitcast(ptr, int8p)
 
+        for dim in range(self.ndim):
+            idx = slice[dim]
+            idx = value_to_ir_value(builder, idx)
+            stride = self.strides.get(visitor, dim)
+            idx = builder.mul(idx, stride)
             ptr = builder.gep(ptr, [idx])
-            dim += 1
+
+        ptr = builder.bitcast(ptr, ptr_type)
+
+#       dim = 1
+#       while slice:
+#           idx = slice.pop(0)
+#           idx = value_to_ir_value(builder, idx)
+#           for i in range(dim, self.ndim):
+#               dim_len = self.shape.get(visitor, dim)
+#               idx = builder.mul(idx, dim_len)
+
+#           ptr = builder.gep(ptr, [idx])
+#           dim += 1
 
         # Return the value
         if ctx is ast.Load:
