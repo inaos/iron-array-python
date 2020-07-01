@@ -619,7 +619,7 @@ def get_slice(ctx, data, start, stop, view, storage):
         stop_[i] = stop[i]
 
     cdef ciarray.iarray_container_t *c
-    ciarray.iarray_get_slice(ctx_, data_, start_, stop_, view, NULL, flags, &c)
+    ciarray.iarray_get_slice(ctx_, data_, start_, stop_, view, storage_, flags, &c)
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     b =  IArray(ctx, c_c)
