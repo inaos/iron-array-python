@@ -5,7 +5,7 @@ import math
 import iarray as ia
 from llvmlite import ir
 from . import py2llvm
-from .py2llvm import int8, int8p, int32, int64, int64p
+from .py2llvm import int8, int8p, int32, int64, int32p, int64p
 from .py2llvm import types
 
 from . import iarray_ext
@@ -13,44 +13,22 @@ from . import iarray_ext
 assert math  # Silence pyflakes warning
 
 
-"""
-typedef struct iarray_eval_pparams_s {
-    int ninputs;  // number of data inputs
-    uint8_t* inputs[IARRAY_EXPR_OPERANDS_MAX];  // the data inputs
-    int32_t input_typesizes[IARRAY_EXPR_OPERANDS_MAX];  // the typesizes for data inputs
-    void *user_data;  // a pointer to an iarray_expr_pparams_t struct
-    uint8_t *out;  // the output buffer
-    int32_t out_size;  // the size of output buffer (in bytes)
-    int32_t out_typesize;  // the typesize of output
-    int8_t ndim;  // the number of dimensions for inputs / output arrays
-    int64_t *window_shape;  // the shape of the window for the input arrays (NULL if not available)
-    int64_t *window_start; // the start coordinates for the window shape (NULL if not available)
-} iarray_eval_pparams_t;
-
-/**
- * @brief The type of the prefilter function.
- *
- * If the function call is successful, the return value should be 0; else, a negative value.
- */
-#typedef int (*blosc2_prefilter_fn)(iarray_eval_pparams_t* params);
-"""
-
-BLOSC2_PREFILTER_INPUTS_MAX = 128
-
-
+# From iarray/iarray-c-develop/src/iarray_expression.c
+IARRAY_EXPR_OPERANDS_MAX = 128
 class udf_type(types.StructType):
     _name_ = 'iarray_eval_pparams_t'
     _fields_ = [
         ('ninputs', int32),  # int32 may not be the same as int
-        ('inputs', ir.ArrayType(int8p, BLOSC2_PREFILTER_INPUTS_MAX)),
-        ('input_typesizes', ir.ArrayType(int32, BLOSC2_PREFILTER_INPUTS_MAX)),
+        ('inputs', ir.ArrayType(int8p, IARRAY_EXPR_OPERANDS_MAX)),
+        ('input_typesizes', ir.ArrayType(int32, IARRAY_EXPR_OPERANDS_MAX)),
         ('user_data', int8p),  # LLVM does not have the concept of void*
         ('out', int8p),  # LLVM doesn't make the difference between signed and unsigned
         ('out_size', int32),
         ('out_typesize', int32),  # int32_t out_typesize;  // automatically filled
         ('ndim', int8),
-        ('window_shape', int64p),
+        ('window_shape', int32p),
         ('window_start', int64p),
+        ('window_strides', int32p),
     ]
 
 
