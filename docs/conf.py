@@ -67,6 +67,7 @@ html_theme_options = {
 
 autodoc_member_order = 'groupwise'
 
+html_css_files = [
+    'custom.css',
+]
 
-def setup(app):
-    app.add_css_file('custom.css')
