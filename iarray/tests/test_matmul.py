@@ -49,7 +49,7 @@ def test_matmul(ashape, apshape, abshape, bshape, bpshape, bbshape, dtype):
 
     c = ia.matmul(a, b, abshape, bbshape, storage=cstorage)
     cn_2 = ia.iarray2numpy(c)
-    print(cn_2)
+
     cn = np.matmul(an, bn)
 
 
