@@ -51,13 +51,6 @@ class ArrayShape(types.ArrayShape):
             error = ir.Constant(return_type, iarray_ext.IARRAY_ERR_EVAL_ENGINE_OUT_OF_RANGE)
             builder.ret(error)
 
-        # If out has 1 dimension, then its length is defined by the blocksize
-        if self.array.idx == 0 and self.array.ndim == 1:
-            import ast
-            out_size = self.array.function._out_size
-            out_typesize = self.array.function._out_typesize
-            return visitor.BinOp_exit(None, None, out_size, ast.Div, out_typesize)
-
         # General case
         name = f'{self.name}_{n}'
         size = builder.gep(self.shape, [n_ir])  # i64*
@@ -145,8 +138,8 @@ class Function(py2llvm.Function):
         # self._input_typesizes = self.load_field(builder, 2, name='input_typesizes') # i8*
         # self._user_data = self.load_field(builder, 3, name='user_data')             # i8*
         self._out = self.load_field(builder, 4, name='out')                         # i8*
-        self._out_size = self.load_field(builder, 5, name='out_size')               # i32
-        self._out_typesize = self.load_field(builder, 6, name='out_typesize')       # i32
+        # self._out_size = self.load_field(builder, 5, name='out_size')               # i32
+        # self._out_typesize = self.load_field(builder, 6, name='out_typesize')       # i32
         self._ndim = self.load_field(builder, 7, name='ndim')                       # i8
         self._shape = self.load_field(builder, 8, name='window_shape')              # i32*
         self._start = self.load_field(builder, 9, name='window_start')              # i64*
