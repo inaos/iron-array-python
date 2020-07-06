@@ -184,9 +184,6 @@ class ArrayType(ComplexType):
         # strides, e.g. for a 3 dimension array:
         # x[i,j,k] = i * strides[0] + j * strides[1] + k * strides[2]
         # Strides represent the gap in bytes.
-        ptr_type = ptr.type
-        ptr = builder.bitcast(ptr, int8p)
-
         for dim in range(self.ndim):
             idx = slice[dim]
             idx = value_to_ir_value(builder, idx)
@@ -194,8 +191,9 @@ class ArrayType(ComplexType):
             idx = builder.mul(idx, stride)
             ptr = builder.gep(ptr, [idx])
 
-        ptr = builder.bitcast(ptr, ptr_type)
+        ptr = builder.bitcast(ptr, self.dtype.as_pointer())
 
+#       ptr = builder.bitcast(ptr, self.dtype.as_pointer())
 #       dim = 1
 #       while slice:
 #           idx = slice.pop(0)

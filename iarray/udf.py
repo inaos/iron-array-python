@@ -70,17 +70,14 @@ class ArrayType(types.ArrayType):
     def preamble(self, builder):
         if self.idx == 0:
             # .out (uint8_t*)
-            ptr = self.function._out
+            self.ptr = self.function._out
         else:
             # .inputs (uint8_t**)
             ptr = self.function.get_field(builder, 1, name='inputs')
             # .inputs[n] (uint8_t*)
             idx = ir.Constant(int32, self.idx - 1)
             ptr = builder.gep(ptr, [types.zero, idx])
-            ptr = builder.load(ptr)
-
-        # Cast
-        self.ptr = builder.bitcast(ptr, self.dtype.as_pointer(), name=self.name)
+            self.ptr = builder.load(ptr, name=self.name)
 
     @property
     def _shape(self):
