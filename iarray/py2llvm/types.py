@@ -7,6 +7,12 @@ try:
 except ImportError:
     np = None
 
+try:
+    from numba.core.cgutils import printf
+except ImportError:
+    def printf(builder, fmt, *args):
+        pass
+
 
 #
 # Basic IR types
@@ -188,22 +194,11 @@ class ArrayType(ComplexType):
             idx = slice[dim]
             idx = value_to_ir_value(builder, idx)
             stride = self.strides.get(visitor, dim)
-            idx = builder.mul(idx, stride)
-            ptr = builder.gep(ptr, [idx])
+            offset = builder.mul(idx, stride)
+            # printf(builder, "%d * %d = %d\n", idx, stride, offset)
+            ptr = builder.gep(ptr, [offset])
 
         ptr = builder.bitcast(ptr, self.dtype.as_pointer())
-
-#       ptr = builder.bitcast(ptr, self.dtype.as_pointer())
-#       dim = 1
-#       while slice:
-#           idx = slice.pop(0)
-#           idx = value_to_ir_value(builder, idx)
-#           for i in range(dim, self.ndim):
-#               dim_len = self.shape.get(visitor, dim)
-#               idx = builder.mul(idx, dim_len)
-
-#           ptr = builder.gep(ptr, [idx])
-#           dim += 1
 
         # Return the value
         if ctx is ast.Load:
