@@ -6,10 +6,10 @@ import numexpr as ne
 
 # Define array params
 dtype = np.float64
-shape = [10000, 4000]
-pshape = [1000, 400]
-bshape = [100, 200]
-nthreads = 4
+shape = [10000, 8000]
+pshape = [1000, 800]
+bshape = [100, 100]
+nthreads = 10
 eval_flags = ia.EvalFlags(method="iterblosc2", engine="auto")
 storage = ia.StorageProperties(backend="blosc", chunkshape=pshape, blockshape=bshape,
                                enforce_frame=False, filename=None)
