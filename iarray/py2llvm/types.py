@@ -196,7 +196,8 @@ class ArrayType(ComplexType):
             idx = value_to_ir_value(builder, idx)
             stride = self.strides.get(visitor, dim)
             idx_ = builder.mul(idx, stride)
-            #printf(builder, "%d * %d = %d\n", idx, stride, idx_)
+
+            printf(builder, "%d * %d = %d\n", idx, stride, idx_)
 
             if gep_idx is None:
                 gep_idx = idx_
