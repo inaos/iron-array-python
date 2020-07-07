@@ -13,13 +13,14 @@ from iarray.py2llvm import float64, int64
 NITER = 10
 
 # Define array params
-shape = [4000, 800]
-pshape = [1000, 200]
+shape = [20, 20]
+chunkshape = [20, 19]
+
 dtype = np.float64
 
-blocksize = reduce(lambda x, y: x * y, pshape) * dtype(0).itemsize
-cparams = dict(clib=ia.LZ4, clevel=5, blocksize=blocksize)
-storage = ia.StorageProperties("blosc", pshape, pshape)
+
+cparams = dict(clib=ia.LZ4, clevel=5)
+storage = ia.StorageProperties("blosc", chunkshape, chunkshape)
 dtshape = ia.dtshape(shape, dtype)
 
 
@@ -40,7 +41,6 @@ if __name__ == '__main__':
     np_in = np.linspace(0, 10, reduce(lambda x, y: x * y, shape), dtype=dtype).reshape(shape)
     ia.cmp_arrays(np_in, ia_in)
 
-    print(np_in)
 
     # iarray udf evaluation
     print("iarray evaluation ...")
