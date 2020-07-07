@@ -7,6 +7,12 @@ try:
 except ImportError:
     np = None
 
+try:
+    from numba.core.cgutils import printf
+except ImportError:
+    def printf(builder, fmt, *args):
+        pass
+
 
 #
 # Basic IR types
@@ -184,13 +190,21 @@ class ArrayType(ComplexType):
         # strides, e.g. for a 3 dimension array:
         # x[i,j,k] = i * strides[0] + j * strides[1] + k * strides[2]
         # Strides represent the gap in bytes.
+        gep_idx = None
         for dim in range(self.ndim):
             idx = slice[dim]
             idx = value_to_ir_value(builder, idx)
             stride = self.strides.get(visitor, dim)
-            idx = builder.mul(idx, stride)
-            ptr = builder.gep(ptr, [idx])
+            idx_ = builder.mul(idx, stride)
+            #printf(builder, "%d * %d = %d\n", idx, stride, idx_)
 
+            if gep_idx is None:
+                gep_idx = idx_
+            else:
+                gep_idx = builder.add(gep_idx, idx_)
+
+        #printf(builder, "-> %d\n", gep_idx)
+        ptr = builder.gep(ptr, [gep_idx])
         ptr = builder.bitcast(ptr, self.dtype.as_pointer())
 
 #       ptr = builder.bitcast(ptr, self.dtype.as_pointer())
