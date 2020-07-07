@@ -1,39 +1,62 @@
+from time import time
 import iarray as ia
 import numpy as np
+import numexpr as ne
 
-# Number of iterations per benchmark
-NITER = 10
 
 # Define array params
-# shape = [10000, 2000]
-# pshape = [1000, 200]
-shape = [1000]
-pshape = [110]
 dtype = np.float64
+shape = [16000, 8000]
+pshape = [1000, 800]
+bshape = [100, 100]
+nthreads = 8
 
-storage = ia.StorageProperties(backend="blosc", enforce_frame=False, filename=None)
+sexpr = "cos(%s) + sin(%s)"
+npexpr = "np.cos(%s) + np.sin(%s)"
+# sexpr = "(%s - 1.35) * (%s - 4.45)"
+# npexpr = "(%s - 1.35) * (%s - 4.45)"
 
 # Create initial containers
-a1 = ia.linspace(ia.dtshape(shape, pshape, dtype), .01, .2, storage=storage)
-a2 = np.linspace(.01, .2, shape[0], dtype=dtype).reshape(shape)
+storage = ia.StorageProperties(backend="blosc", chunkshape=pshape, blockshape=bshape)
+kwargs = dict(storage=storage, nthreads=nthreads, clevel=9, clib=ia.LZ4, fp_mantissa_bits=30)
 
+size = shape[0] * shape[1]
+np0 = np.linspace(0, 10, size, dtype=dtype).reshape(shape)
+ia0 = ia.numpy2iarray(np0, **kwargs)
+np1 = np.linspace(0, 1, size, dtype=dtype).reshape(shape)
+ia1 = ia.numpy2iarray(np1, **kwargs)
 
-print("iarray evaluation...")
+t0 = time()
+np2 = eval(npexpr % ("np0", "np1"))
+t1 = time()
+print("Time for numpy evaluation: %.3f" % (t1 - t0))
 
-# And now, the expression
-eval_flags = ia.EvalFlags(method="iterblosc2", engine="auto")
-expr = ia.Expr(eval_flags=eval_flags, nthreads=2)
-expr.bind("x", a1)
-expr.bind_out_properties(ia.dtshape(shape, pshape, np.float64), storage=storage)
-expr.compile("(x - 1.35) * (x - 4.45) * (x - 8.5)")
-b1 = expr.eval()
-b1_n = ia.iarray2numpy(b1)
-
-print("numpy evaluation...")
-b2 = eval("(x - 1.35) * (x - 4.45) * (x - 8.5)", {"x": a2})
+ne.set_num_threads(nthreads)
+t0 = time()
+np3 = ne.evaluate(sexpr % ("np0", "np1"))
+t1 = time()
+print("Time for numexpr evaluation: %.3f" % (t1 - t0))
 
 try:
-    np.testing.assert_almost_equal(b2, b1_n)
+    np.testing.assert_almost_equal(np3, np2)
+    print("OK.  Results are the same.")
+except AssertionError:
+    print("ERROR. Results are different.")
+
+t0 = time()
+eval_flags = ia.EvalFlags(method="iterblosc2", engine="auto")
+expr = ia.Expr(eval_flags=eval_flags, **kwargs)
+expr.bind("x", ia0)
+expr.bind("y", ia1)
+expr.bind_out_properties(ia.dtshape(shape, dtype), storage=storage)
+expr.compile(sexpr % ("x", "y"))
+ia2 = expr.eval()
+t1 = time()
+print("Time for iarray evaluation: %.3f (cratio: %.2fx)" % ((t1 - t0), ia2.cratio))
+np3 = ia.iarray2numpy(ia2)
+
+try:
+    np.testing.assert_almost_equal(np3, np2)
     print("OK.  Results are the same.")
 except AssertionError:
     print("ERROR. Results are different.")

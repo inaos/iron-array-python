@@ -6,20 +6,24 @@ import numexpr as ne
 
 # Define array params
 dtype = np.float64
-shape = [10000, 2000]
-pshape = [1000, 200]
-nthreads = 4
+shape = [10000, 8000]
+pshape = [1000, 800]
+bshape = [100, 100]
+nthreads = 10
 eval_flags = ia.EvalFlags(method="iterblosc2", engine="auto")
-kwargs = dict(eval_flags=eval_flags, nthreads=nthreads, clevel=1, clib=ia.LZ4)
+storage = ia.StorageProperties(backend="blosc", chunkshape=pshape, blockshape=bshape,
+                               enforce_frame=False, filename=None)
+kwargs = dict(eval_flags=eval_flags, storage=storage, nthreads=nthreads, clevel=9, clib=ia.LZ4)
+
 
 # Create initial containers
-ia1 = ia.linspace(ia.dtshape(shape, pshape, dtype), 0, 10, **kwargs)
+ia1 = ia.linspace(ia.dtshape(shape, dtype), 0, 10, **kwargs)
 np1 = ia.iarray2numpy(ia1)
 
 t0 = time()
 expr = ia.Expr(**kwargs)
 expr.bind("x", ia1)
-expr.bind_out_properties(ia.dtshape(shape, pshape, dtype))
+expr.bind_out_properties(ia.dtshape(shape, dtype), storage=storage)
 expr.compile("cos(x)")
 ia2 = expr.eval()
 t1 = time()
@@ -37,6 +41,7 @@ try:
 except AssertionError:
     print("ERROR. Results are different.")
 
+ne.set_num_threads(nthreads)
 t0 = time()
 np3 = ne.evaluate("cos(np1)")
 t1 = time()
@@ -61,9 +66,8 @@ except AssertionError:
     print("ERROR. Results are different.")
 
 t0 = time()
-ia3 = np.cos(ia1).eval(pshape=pshape, dtype=dtype, **kwargs)
-# ia3 = ia1.cos().eval(pshape=pshape, **kwargs)
-# ia3 = ia1.cos().eval(method="numexpr", pshape=pshape, **kwargs)
+ia3 = ia1.cos().eval(**kwargs)
+# ia3 = ia1.cos().eval(method="numexpr", **kwargs)
 t1 = time()
 print("iarray evaluation via __array_ufunc__: %.3f (cratio: %.2fx)" % ((t1 - t0), ia3.cratio))
 np4 = ia.iarray2numpy(ia3)
