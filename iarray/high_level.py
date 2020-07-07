@@ -99,8 +99,10 @@ class Config(ext._Config):
         self._clib = clib
         self._clevel = clevel
         self._use_dict = use_dict
-        self._filter_flags = filter_flags
         self._fp_mantissa_bits = fp_mantissa_bits
+        if fp_mantissa_bits > 0:
+            filter_flags |= ia.TRUNC_PREC
+        self._filter_flags = filter_flags
         self._blocksize = blocksize
         self._nthreads = nthreads
         # TODO: should we move this to its own eval configuration?
