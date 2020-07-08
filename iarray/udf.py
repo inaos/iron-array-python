@@ -150,7 +150,7 @@ class Function(py2llvm.Function):
         ptr = self.get_field(builder, idx)
         return builder.load(ptr, name=name)
 
-    def create_expr(self, inputs, dtshape, method='iterblosc', **cparams):
+    def create_expr(self, inputs, dtshape, method='auto', **cparams):
         eval_flags = ia.EvalFlags(method=method, engine="compiler")
         expr = ia.Expr(eval_flags=eval_flags, **cparams)
         for a in inputs:
