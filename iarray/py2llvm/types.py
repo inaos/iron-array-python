@@ -197,14 +197,14 @@ class ArrayType(ComplexType):
             stride = self.strides.get(visitor, dim)
             idx_ = builder.mul(idx, stride)
 
-            printf(builder, "%d * %d = %d\n", idx, stride, idx_)
+            # printf(builder, "%d * %d = %d\n", idx, stride, idx_)
 
             if gep_idx is None:
                 gep_idx = idx_
             else:
                 gep_idx = builder.add(gep_idx, idx_)
 
-        #printf(builder, "-> %d\n", gep_idx)
+        # printf(builder, "-> %d\n", gep_idx)
         ptr = builder.gep(ptr, [gep_idx])
         ptr = builder.bitcast(ptr, self.dtype.as_pointer())
 
