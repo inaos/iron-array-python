@@ -428,6 +428,8 @@ class dtshape:
 class StorageProperties:
 
     def __init__(self, backend="plainbuffer", chunkshape=None, blockshape=None, enforce_frame=False, filename=None):
+        if backend not in ("blosc", "plainbuffer"):
+            raise ValueError("backend can only be 'blosc' or 'plainbuffer'")
         self.backend = backend
         self.enforce_frame = enforce_frame
         self.filename = filename
