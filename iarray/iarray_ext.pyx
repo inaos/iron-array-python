@@ -268,7 +268,8 @@ cdef class RandomContext:
         self._r_ctx = r_ctx
 
     def __dealloc__(self):
-        ciarray.iarray_random_ctx_free(self._ctx._ctx, &self._r_ctx)
+        if self._ctx is not None:
+            ciarray.iarray_random_ctx_free(self._ctx._ctx, &self._r_ctx)
 
     def to_capsule(self):
         return PyCapsule_New(self._r_ctx, "iarray_random_ctx_t*", NULL)
@@ -292,7 +293,8 @@ cdef class Container:
         self._c = c_
 
     def __dealloc__(self):
-        ciarray.iarray_container_free(self._ctx._ctx, &self._c)
+        if self._ctx is not None:
+            ciarray.iarray_container_free(self._ctx._ctx, &self._c)
 
     def iter_read_block(self, block=None):
         return ReadBlockIter(self, block)
@@ -383,7 +385,8 @@ cdef class Expression:
         self.dtshape = None
 
     def __dealloc__(self):
-        ciarray.iarray_expr_free(self._ctx._ctx, &self._e)
+        if self._ctx is not None:
+            ciarray.iarray_expr_free(self._ctx._ctx, &self._e)
 
     def bind(self, var, c):
         var2 = var.encode("utf-8") if isinstance(var, str) else var
