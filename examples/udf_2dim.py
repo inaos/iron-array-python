@@ -45,7 +45,7 @@ if __name__ == '__main__':
 
     # iarray udf evaluation
     print("iarray evaluation ...")
-    expr = f.create_expr([ia_in], dtshape, method="iterblosc", storage=storage, **cparams)
+    expr = f.create_expr([ia_in], dtshape, storage=storage, **cparams)
     t0 = time()
     for i in range(NITER):
         ia_out = expr.eval()
