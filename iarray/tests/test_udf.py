@@ -155,7 +155,7 @@ def test_error(f):
     shape = [20 * 1000]
     pshape = [4 * 1000]
     dtype = np.float64
-    cparams = dict(clib=ia.LZ4, clevel=5, nthreads=16)
+    cparams = dict(clib=ia.LZ4, clevel=5, nthreads=1)
     start, stop = 0, 10
 
     storage = ia.StorageProperties("blosc", pshape, pshape)
