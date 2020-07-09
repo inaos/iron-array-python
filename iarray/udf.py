@@ -8,8 +8,6 @@ from . import py2llvm
 from .py2llvm import int8, int8p, int32, int64, int32p, int64p
 from .py2llvm import types
 
-#from . import iarray_ext
-
 assert math  # Silence pyflakes warning
 
 
@@ -42,14 +40,6 @@ class ArrayShape(types.ArrayShape):
     def get(self, visitor, n):
         builder = visitor.builder
         n_ir = types.value_to_ir_value(builder, n, type_=int8)
-
-        # Check bounds
-#       ndim = self.array.function._ndim
-#       test = builder.icmp_signed('>=', n_ir, ndim)
-#       with builder.if_then(test, likely=False):
-#           return_type = builder.function.type.pointee.return_type
-#           error = ir.Constant(return_type, iarray_ext.IARRAY_ERR_EVAL_ENGINE_OUT_OF_RANGE)
-#           builder.ret(error)
 
         # General case
         name = f'{self.name}_{n}'
