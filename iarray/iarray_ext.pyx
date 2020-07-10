@@ -428,7 +428,7 @@ cdef class Expression:
     def eval(self):
         cdef ciarray.iarray_container_t *c;
         if ciarray.iarray_eval(self._e, &c) != 0:
-            raise ValueError(f"Error in evaluating expr: {self.expression}")
+            raise RuntimeError(f"Error in evaluating expr: {self.expression}")
         c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
 
         return IArray(self._ctx, c_c)

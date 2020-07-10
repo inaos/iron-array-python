@@ -165,12 +165,6 @@ def test_error(f):
     x = ia.linspace(ia.dtshape(shape, dtype), start, stop, storage=storage, **cparams)
     expr = f.create_expr([x], ia.dtshape(shape, dtype), storage=storage, **cparams)
 
-    # The test below segfaults badly.  For details, see https://github.com/inaos/iron-array-python/pull/38
-    # with pytest.raises(ValueError) as excinfo:
-    #     expr.eval()
-    # assert "Error in evaluating expr: user_defined_function" in str(excinfo.value)
-    # Not sure why, but this alternative way for testing the above is safer
-    try:
+    with pytest.raises(RuntimeError) as excinfo:
         expr.eval()
-    except ValueError as inst:
-        assert "Error in evaluating expr: user_defined_function" in str(inst)
+    assert "Error in evaluating expr: user_defined_function" in str(excinfo.value)
