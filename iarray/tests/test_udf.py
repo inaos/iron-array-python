@@ -73,7 +73,7 @@ def f_1dim(out: udf.Array(float64, 1), x: udf.Array(float64, 1)):
 
 @pytest.mark.parametrize('f', [f_1dim])
 def test_1dim(f):
-    shape = [20 * 1000]
+    shape = [10 * 1000]
     pshape = [3 * 1000]
     dtype = np.float64
     cparams = dict(clib=ia.LZ4, clevel=5, nthreads=16)
@@ -102,8 +102,8 @@ def f_2dim(out: udf.Array(float64, 2), x: udf.Array(float64, 2)):
 
 @pytest.mark.parametrize('f', [f_2dim])
 def test_2dim(f):
-    shape = [4000, 800]
-    pshape = [1000, 200]
+    shape = [400, 800]
+    pshape = [100, 200]
     dtype = np.float64
     blocksize = functools.reduce(lambda x, y: x * y, pshape) * dtype(0).itemsize
     cparams = dict(clib=ia.LZ4, clevel=5, blocksize=blocksize)
@@ -148,7 +148,6 @@ def f_error_bug(out: udf.Array(float64, 1), x: udf.Array(float64, 1)):
 @udf.jit
 def f_error_user(out: udf.Array(float64, 1), x: udf.Array(float64, 1)):
     return 1
-
 
 @pytest.mark.parametrize('f', [f_error_bug, f_error_user])
 def test_error(f):
