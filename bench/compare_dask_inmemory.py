@@ -51,7 +51,7 @@ for i, shape in enumerate(shapes):
     print("Time for computing '%s' expression (via ia.Expr()): %.3f" % (sexpr, (t1 - t0)))
 
     data2 = zarr.zeros(shape=shape, chunks=chunkshape, dtype=DTYPE, compressor=compressor)
-    print("ergeg")
+
     for info, block in data.iter_read_block(chunkshape):
         sl = tuple([slice(i, i + s) for i, s in zip(info.elemindex, info.shape)])
         data2[sl] = block[:]
