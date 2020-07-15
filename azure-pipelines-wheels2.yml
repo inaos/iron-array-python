@@ -153,7 +153,7 @@ jobs:
     displayName: Install inaos license
 
   - powershell: |
-      Invoke-WebRequest "http://go.microsoft.com/fwlink/?LinkId=691126"
+      Invoke-WebRequest "http://go.microsoft.com/fwlink/?LinkId=691126" -OutFile visualcppbuildtools_full.exe
       visualcppbuildtools_full.exe /S /NoRestart
 
   - bash: |
