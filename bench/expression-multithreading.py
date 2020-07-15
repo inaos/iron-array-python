@@ -33,13 +33,12 @@ def poly_udf(x: udf.Array(float64, 1), y: udf.Array(float64, 1)):
 
 # Define array params
 shape = [32 * 512 * 1024]
-pshape = [32 * 1024]
-pshape2 = [32 * 1024]
-bshape = pshape2
+chunkshape = [32 * 1024]
+blockshape = [16 * 1024]
 dtshape = ia.dtshape(shape)
 size = int(np.prod(shape))
 
-bstorage = ia.StorageProperties("blosc", pshape, bshape)
+bstorage = ia.StorageProperties("blosc", chunkshape, blockshape)
 pstorage = ia.StorageProperties("plainbuffer", None, None)
 
 eval_flags = ia.EvalFlags(method="auto", engine="auto")

@@ -1,5 +1,5 @@
 from time import time
-
+from functools import reduce
 import ctypes
 import dask
 import dask.array as da
@@ -26,40 +26,53 @@ else:
 
 
 DTYPE = np.float32
-NTHREADS = 4
+NTHREADS = 8
 CLEVEL = 5
 CLIB = ia.LZ4
-compressor = Blosc(cname='lz4', clevel=CLEVEL, shuffle=Blosc.SHUFFLE)
 
 t_iarray = []
 t_dask = []
 t_ratio = []
 
 ashape = (10000, 10000)
-apshape = (500, 500)
-bshape = (10000, 8000)
-bpshape = (250, 500)
-lia = ia.linspace(ia.dtshape(ashape, pshape=apshape, dtype=DTYPE), 0, 1, clib=CLIB, clevel=CLEVEL)
-nia = ia.random_normal(ia.dtshape(ashape, pshape=apshape, dtype=DTYPE), 0,
-                       0.0000001, clib=CLIB, clevel=CLEVEL)
-aia = (lia + nia).eval(pshape=apshape, dtype=DTYPE, clib=CLIB, clevel=CLEVEL)
+achunkshape = (500, 500)
+ablockshape = (128, 128)
 
-lia = ia.linspace(ia.dtshape(bshape, pshape=bpshape, dtype=DTYPE), 0, 1, clib=CLIB, clevel=CLEVEL)
-nia = ia.random_normal(ia.dtshape(bshape, pshape=bpshape, dtype=DTYPE), 0,
-                       0.0000001, clib=CLIB, clevel=CLEVEL)
-bia = (lia + nia).eval(pshape=bpshape, dtype=DTYPE, clib=CLIB, clevel=CLEVEL)
+bshape = (10000, 8000)
+bchunkshape = (250, 500)
+bblockshape = (128, 128)
+
+cchunkshape = (500, 500)
+cblockshape = (128, 128)
+
+
+compressor = Blosc(cname='lz4', clevel=CLEVEL, shuffle=Blosc.SHUFFLE, blocksize=reduce(lambda x, y: x * y, ablockshape))
+cparams = dict(clib=CLIB, clevel=CLEVEL, nthreads=NTHREADS)
+
+astorage = ia.StorageProperties("blosc", achunkshape, ablockshape)
+
+lia = ia.linspace(ia.dtshape(ashape, dtype=DTYPE), 0, 1, storage=astorage, **cparams)
+nia = ia.random_normal(ia.dtshape(ashape, dtype=DTYPE), 0, 0.0000001, storage=astorage, **cparams)
+aia = (lia + nia).eval(storage=astorage, **cparams)
+
+bstorage = ia.StorageProperties("blosc", bchunkshape, bblockshape)
+
+lia = ia.linspace(ia.dtshape(bshape, dtype=DTYPE), 0, 1, storage=bstorage, **cparams)
+nia = ia.random_normal(ia.dtshape(bshape, dtype=DTYPE), 0, 0.0000001, storage=bstorage, **cparams)
+bia = (lia + nia).eval(storage=bstorage, **cparams)
 
 ablock = (500, 500)
 bblock = (500, 500)
 
+cstorage = ia.StorageProperties("blosc", cchunkshape, cblockshape)
 
 @profile
-def ia_matmul(aia, bia, ablock, bblock, NTHREADS):
-    return ia.matmul(aia, bia, ablock, bblock, nthreads=NTHREADS)
+def ia_matmul(aia, bia, ablock, bblock):
+    return ia.matmul(aia, bia, ablock, bblock, storage=cstorage, **cparams)
 
 
 t0 = time()
-cia = ia_matmul(aia, bia, ablock, bblock, NTHREADS)
+cia = ia_matmul(aia, bia, ablock, bblock)
 t1 = time()
 tia = t1 - t0
 print("Time for computing matmul (via iarray): %.3f" % (tia))
@@ -67,14 +80,14 @@ print(f"a cratio: {aia.cratio}")
 print(f"b cratio: {bia.cratio}")
 print(f"out cratio: {cia.cratio}")
 
-azarr = zarr.empty(shape=ashape, chunks=apshape, dtype=DTYPE, compressor=compressor)
-for info, block in aia.iter_read_block():
+azarr = zarr.empty(shape=ashape, chunks=achunkshape, dtype=DTYPE, compressor=compressor)
+for info, block in aia.iter_read_block(achunkshape):
     sl = tuple([slice(i, i + s) for i, s in zip(info.elemindex, info.shape)])
     azarr[sl] = block[:]
 
 
-bzarr = zarr.empty(shape=bshape, chunks=bpshape, dtype=DTYPE, compressor=compressor)
-for info, block in bia.iter_read_block():
+bzarr = zarr.empty(shape=bshape, chunks=bchunkshape, dtype=DTYPE, compressor=compressor)
+for info, block in bia.iter_read_block(bchunkshape):
     sl = tuple([slice(i, i + s) for i, s in zip(info.elemindex, info.shape)])
     bzarr[sl] = block[:]
 

@@ -10,13 +10,14 @@ from numcodecs import Blosc
 
 
 NTHREADS = 20
-PSHAPE = 4 * 1000 * 1000
+CHUNKSHAPE = 100 * 1000
+BLOCKSHAPE = 64 * 1000
 
 
 def evaluate(command):
     x, y, z = (None,) * 3
     iax, iay, iaz = (None,) * 3
-    shape, pshape, dtype, cparams = (None,) * 4
+    shape, chunkshape, blockshape, dtype, cparams = (None,) * 5
     zx, zy, zz = (None,) * 3
     zcompr = None
 
@@ -27,21 +28,26 @@ def evaluate(command):
         y = x.copy()
         z = y.copy()
         # iarray
-        global iax, iay, iaz, shape, pshape, dtype, cparams
+        global iax, iay, iaz, shape, chunkshape, blockshape, dtype, cparams
         shape = [n]
-        pshape = [PSHAPE]
+        chunkshape = [CHUNKSHAPE]
+        blockshape = [BLOCKSHAPE]
         dtype = np.float64
-        cparams = dict(clib=ia.LZ4, clevel=5, nthreads=NTHREADS)  # , blocksize=1024)
-        iax = ia.linspace(ia.dtshape(shape, pshape, dtype), 0, 1, **cparams)
-        iay = iax.copy(**cparams)
-        iaz = iax.copy(**cparams)
+        cparams = dict(clib=ia.LZ4, clevel=5, nthreads=NTHREADS)
+        storage = ia.StorageProperties("blosc", chunkshape, blockshape)
+        iax = ia.linspace(ia.dtshape(shape, dtype), 0, 1, storage=storage, **cparams)
+        iay = ia.linspace(ia.dtshape(shape, dtype), 0, 1, storage=storage, **cparams)
+        iaz = ia.linspace(ia.dtshape(shape, dtype), 0, 1, storage=storage, **cparams)
         # dask/zarr
         global zx, zy, zz, zcompr
-        zcompr = Blosc(cname='lz4', clevel=5, shuffle=Blosc.SHUFFLE)
-        zx = zarr.empty(shape=shape, chunks=pshape, dtype=dtype, compressor=zcompr)
-        zy = zarr.empty(shape=shape, chunks=pshape, dtype=dtype, compressor=zcompr)
-        zz = zarr.empty(shape=shape, chunks=pshape, dtype=dtype, compressor=zcompr)
-        for info, block in iax.iter_read_block():
+        zcompr = Blosc(cname='lz4', clevel=5, shuffle=Blosc.SHUFFLE,
+                       blocksize=int(np.prod(blockshape) * np.dtype(dtype).itemsize))
+
+        zx = zarr.empty(shape=shape, chunks=chunkshape, dtype=dtype, compressor=zcompr)
+        zy = zarr.empty(shape=shape, chunks=chunkshape, dtype=dtype, compressor=zcompr)
+        zz = zarr.empty(shape=shape, chunks=chunkshape, dtype=dtype, compressor=zcompr)
+
+        for info, block in iax.iter_read_block(chunkshape):
             sl = tuple([slice(i, i + s) for i, s in zip(info.elemindex, info.shape)])
             zx[sl] = block[:]
             zy[sl] = block[:]
@@ -61,67 +67,71 @@ def evaluate(command):
         ne.evaluate(command)
 
     def ia_compiler_parallel(command):
-        global iax, iay, iaz, shape, pshape, dtype, cparams
+        global iax, iay, iaz, shape, chunkshape, blockshape, dtype, cparams
         cparams['nthreads'] = NTHREADS
         eval_flags = ia.EvalFlags(method="iterblosc2", engine="compiler")
         expr = ia.Expr(eval_flags=eval_flags, **cparams)
         expr.bind('x', iax)
         expr.bind('y', iay)
         expr.bind('z', iaz)
+        expr.bind_out_properties(ia.dtshape(shape, dtype), ia.StorageProperties("blosc", chunkshape, blockshape))
         expr.compile(command)
-        expr.eval(shape, pshape, dtype)
+        expr.eval()
 
     def ia_compiler_serial(command):
-        global iax, iay, iaz, shape, pshape, dtype, cparams
+        global iax, iay, iaz, shape, chunkshape, blockshape, dtype, cparams
         cparams['nthreads'] = 1
         eval_flags = ia.EvalFlags(method="iterblosc2", engine="compiler")
         expr = ia.Expr(eval_flags=eval_flags, **cparams)
         expr.bind('x', iax)
         expr.bind('y', iay)
         expr.bind('z', iaz)
+        expr.bind_out_properties(ia.dtshape(shape, dtype), ia.StorageProperties("blosc", chunkshape, blockshape))
         expr.compile(command)
-        expr.eval(shape, pshape, dtype)
+        expr.eval()
 
     def ia_interpreter_parallel(command):
-        global iax, iay, iaz, shape, pshape, dtype, cparams
+        global iax, iay, iaz, shape, chunkshape, blockshape, dtype, cparams
         cparams['nthreads'] = NTHREADS
         eval_flags = ia.EvalFlags(method="iterblosc2", engine="interpreter")
         expr = ia.Expr(eval_flags=eval_flags, **cparams)
         expr.bind('x', iax)
         expr.bind('y', iay)
         expr.bind('z', iaz)
+        expr.bind_out_properties(ia.dtshape(shape, dtype), ia.StorageProperties("blosc", chunkshape, blockshape))
         expr.compile(command)
-        expr.eval(shape, pshape, dtype)
+        expr.eval()
 
     def ia_interpreter_serial(command):
-        global iax, iay, iaz, shape, pshape, dtype, cparams
+        global iax, iay, iaz, shape, chunkshape, blockshape, dtype, cparams
         cparams['nthreads'] = 1
         eval_flags = ia.EvalFlags(method="iterblosc2", engine="interpreter")
         expr = ia.Expr(eval_flags=eval_flags, **cparams)
         expr.bind('x', iax)
         expr.bind('y', iay)
         expr.bind('z', iaz)
+        expr.bind_out_properties(ia.dtshape(shape, dtype), ia.StorageProperties("blosc", chunkshape, blockshape))
         expr.compile(command)
-        expr.eval(shape, pshape, dtype)
+        expr.eval()
 
     def dask_parallel(command):
-        global zx, zy, zz, shape, pshape, dtype, zcompr
+        global zx, zy, zz, shape, chunkshape, dtype, zcompr
         with dask.config.set({"scheduler": "threads", "pool": ThreadPool(NTHREADS)}):
             da.from_zarr(zx)
             da.from_zarr(zy)
             da.from_zarr(zz)
             res = eval(command)
-            zout = zarr.empty(shape, dtype=dtype, compressor=zcompr, chunks=pshape)
+            zout = zarr.empty(shape, dtype=dtype, compressor=zcompr, chunks=chunkshape)
             da.to_zarr(res, zout)
 
     def dask_serial(command):
-        global zx, zy, zz, shape, pshape, dtype, zcompr
+        global zx, zy, zz, shape, chunkshape, dtype, zcompr
         with dask.config.set(scheduler="single-threaded"):
             da.from_zarr(zx)
             da.from_zarr(zy)
             da.from_zarr(zz)
             res = eval(command)
-            zout = zarr.empty(shape, dtype=dtype, compressor=zcompr, chunks=pshape)
+            zout = zarr.empty(shape, dtype=dtype, compressor=zcompr, chunks=chunkshape)
             da.to_zarr(res, zout)
 
     perfplot.show(
