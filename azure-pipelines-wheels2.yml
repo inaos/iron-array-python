@@ -179,9 +179,9 @@ jobs:
       python setup.py clean
       python setup.py build_ext -i --build-type RelWithDebInfo --generator "NMake Makefiles" -- -DINAC_TARGET_ARCH=x86_64 -DLLVM_DIR=%CONDA%/envs/iArrayEnv/Library/lib/cmake/llvm -DWINGEN="NMake Makefiles"
       python setup.py bdist_wheel --generator "NMake Makefiles" -DWINGEN="NMake Makefiles"
-      varwheel=dist\*.whl
-      delocate-listdeps $varwheel
-      delocate-wheel $varwheel
+      for /f %i in ('dir /b dist\*.whl') do set varwheel=%i
+      delocate-listdeps %varwheel%
+      delocate-wheel %varwheel%
     displayName: 'Build wheel'
 
   - task: PublishPipelineArtifact@0
