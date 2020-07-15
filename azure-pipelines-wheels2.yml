@@ -171,7 +171,7 @@ jobs:
       conda install -y --name iArrayEnv -c intel mkl-static
       conda install -y --name iArrayEnv -c intel icc_rt
       conda install -y --name iArrayEnv -c numba llvmdev
-      conda install -y --name iArrayEnv -c numba llvmlite>=0.33.0
+      conda install -y -c numba llvmlite>=0.33.0
     displayName: 'Install build dependencies'
 
   - script: |
