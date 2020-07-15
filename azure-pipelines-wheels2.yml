@@ -179,8 +179,8 @@ jobs:
       python setup.py clean
       python setup.py build_ext -i --build-type RelWithDebInfo --generator "NMake Makefiles" -- -DINAC_TARGET_ARCH=x86_64 -DLLVM_DIR=%CONDA%/envs/iArrayEnv/Library/lib/cmake/llvm -DWINGEN="NMake Makefiles"
       python setup.py bdist_wheel --generator "NMake Makefiles" -DWINGEN="NMake Makefiles"
-      delocate-listdeps ./dist/*.whl
-      delocate-wheel ./dist/*.whl
+      delocate-listdeps dist\*.whl
+      delocate-wheel dist\*.whl
     displayName: 'Build wheel'
 
   - task: PublishPipelineArtifact@0
