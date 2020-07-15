@@ -169,14 +169,17 @@ jobs:
       conda install -y -c numba llvmdev
       conda install -y -c numba llvmlite>=0.33.0
       python -m pip install --upgrade pip
-      python -m pip install cython numpy cmake scikit-build wheel delocate
+      python -m pip install cython numpy ninja cmake scikit-build wheel delocate
     displayName: 'Install build dependencies'
 
   - script: |
       call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" amd64
       python setup.py clean
-      python setup.py build --build-type RelWithDebInfo -G "Visual Studio 14 2015 Win64" -- \
+      python setup.py build --build-type RelWithDebInfo -G Ninja -- \
         -DINAC_TARGET_ARCH=x86_64 
+        -DCMAKE_C_COMPILER="cl.exe"
+        -DCMAKE_CXX_COMPILER="cl.exe"
+        -DMSVC_TOOLSET_VERSION=140
         -DLLVM_ROOT=%CONDA%/envs/iArrayEnv/Library
       python setup.py bdist_wheel
     displayName: 'Build wheel'
