@@ -170,8 +170,8 @@ jobs:
       conda install -y -c numba llvmlite>=0.33.0
       python -m pip install --upgrade pip
       python -m pip install cython numpy ninja cmake scikit-build wheel delocate
-      ls $ENV{CONDA}/Library/bin
-      ls $ENV{CONDA}/Library/lib
+      ls $CONDA/Library/bin
+      ls $CONDA/Library/lib
     displayName: 'Install build dependencies'
 
   - script: |
