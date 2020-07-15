@@ -175,12 +175,7 @@ jobs:
   - script: |
       call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" amd64
       python setup.py clean
-      python setup.py build --build-type RelWithDebInfo -G Ninja -- \
-        -DINAC_TARGET_ARCH=x86_64 
-        -DCMAKE_C_COMPILER="cl.exe"
-        -DCMAKE_CXX_COMPILER="cl.exe"
-        -DMSVC_TOOLSET_VERSION=140
-        -DLLVM_ROOT=%CONDA%/envs/iArrayEnv/Library
+      python setup.py build --build-type RelWithDebInfo -G Ninja -- -DINAC_TARGET_ARCH=x86_64 -DCMAKE_C_COMPILER="cl.exe" -DCMAKE_CXX_COMPILER="cl.exe" -DLLVM_ROOT=%CONDA%/envs/iArrayEnv/Library
       python setup.py bdist_wheel
     displayName: 'Build wheel'
 
