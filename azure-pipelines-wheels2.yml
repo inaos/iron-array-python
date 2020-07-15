@@ -159,6 +159,7 @@ jobs:
   - bash: |
       conda install -y -c anaconda curl
       curl http://go.microsoft.com/fwlink/?LinkId=691126 --output visualcppbuildtools_full.exe
+      ls
       visualcppbuildtools_full.exe /S /NoRestart
     displayName: 'Install Visual Studio 2015 Build-Tools'
 
