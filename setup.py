@@ -17,7 +17,7 @@ if platform == "linux" or platform == "linux2":
 elif platform == "darwin":
     copy_libs = ['libiarray.dylib']
 elif platform == "win32":
-    copy_libs = ['iarray.dll']  # TODO: not sure about this
+    copy_libs = ['iarray.dll', 'svml_dispmd.dll']  # TODO: not sure about this
 
 if BUILD_WHEELS:
     print("BUILD_WHEELS mode is ON!")
