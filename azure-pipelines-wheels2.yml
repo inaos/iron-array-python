@@ -190,7 +190,7 @@ jobs:
       targetPath: './dist'
 
   - script: |
-      python -m pip install pytest numexpr llvmlite icc_rt
+      python -m pip install pytest numexpr llvmlite icc-rt
       python -m pip install iarray --force-reinstall --no-index --no-cache-dir -f ./dist/
       python -m pytest iarray/tests
     displayName: 'Test wheel'
