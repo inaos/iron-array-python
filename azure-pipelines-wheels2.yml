@@ -153,8 +153,10 @@ jobs:
     displayName: Install inaos license
 
   - powershell: |
-      Invoke-WebRequest "http://go.microsoft.com/fwlink/?LinkId=691126" -OutFile visualcppbuildtools_full.exe
+      Invoke-WebRequest "http://go.microsoft.com/fwlink/?LinkId=691126" -OutFile %BUILD_DIR%\visualcppbuildtools_full.exe
       visualcppbuildtools_full.exe /S /NoRestart
+    env:
+      BUILD_DIR: $(Agent.BuildDirectory)
 
   - bash: |
       echo "##vso[task.prependpath]$CONDA/bin"  # Add conda to PATH
