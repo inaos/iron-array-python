@@ -152,11 +152,10 @@ jobs:
       echo "INAC_REPOSITORY_USRPWD=licensed:AKCp5bBraH7CasbsYCURsjzkbjXwVwdYcT7u39EiuL6GjnK1VKfKQWCd1E2E64mHokU5YUHku" >> $HOME/.inaos/cmake/repository.txt
     displayName: Install inaos license
 
-  - powershell: |
-      Invoke-WebRequest "http://go.microsoft.com/fwlink/?LinkId=691126" -OutFile %BUILD_DIR%\visualcppbuildtools_full.exe
+  - bash: |
+      conda install -y -c anaconda curl
+      curl http://go.microsoft.com/fwlink/?LinkId=691126 --output visualcppbuildtools_full.exe
       visualcppbuildtools_full.exe /S /NoRestart
-    env:
-      BUILD_DIR: $(Agent.BuildDirectory)
 
   - bash: |
       echo "##vso[task.prependpath]$CONDA/bin"  # Add conda to PATH
