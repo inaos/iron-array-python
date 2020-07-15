@@ -181,13 +181,13 @@ jobs:
       python setup.py bdist_wheel --generator "NMake Makefiles" -DWINGEN="NMake Makefiles"
     displayName: 'Build wheel'
 
-#  - script: |
-#      python -m pip install pytest numexpr
-#      python -m pip install iarray --force-reinstall --no-index --no-cache-dir -f ./dist/
-#      python -m pytest iarray/tests
-#    displayName: 'Test wheel'
+  - task: PublishPipelineArtifact@0
+    inputs:
+      artifactName: 'Windows$(python.version)'
+      targetPath: './dist'
 
-#  - task: PublishPipelineArtifact@0
-#    inputs:
-#      artifactName: 'Windows$(python.version)'
-#      targetPath: './dist'
+  - script: |
+      python -m pip install pytest numexpr
+      python -m pip install iarray --force-reinstall --no-index --no-cache-dir -f ./dist/
+      python -m pytest iarray/tests
+    displayName: 'Test wheel'
