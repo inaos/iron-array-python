@@ -163,6 +163,8 @@ jobs:
     displayName: 'Install Visual Studio 2015 Build-Tools'
 
   - bash: |
+      python -m pip install --upgrade pip
+      python -m pip install cython numpy ninja cmake scikit-build wheel delocate
       conda create --yes --quiet --name iArrayEnv
       source activate iArrayEnv
       conda install -y --name iArrayEnv -c intel mkl-include
@@ -170,16 +172,12 @@ jobs:
       conda install -y --name iArrayEnv -c intel icc_rt
       conda install -y --name iArrayEnv -c numba llvmdev
       conda install -y --name iArrayEnv -c numba llvmlite>=0.33.0
-      python -m pip install --upgrade pip
-      python -m pip install cython numpy ninja cmake scikit-build wheel delocate
-      ls $CONDA/Library/bin
-      ls $CONDA/Library/lib
     displayName: 'Install build dependencies'
 
   - script: |
       call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" amd64
       python setup.py clean
-      python setup.py build_ext -i --build-type RelWithDebInfo --generator "NMake Makefiles" -- -DINAC_TARGET_ARCH=x86_64 -DLLVM_DIR=%CONDA%/Library/lib/cmake/llvm -DWINGEN="NMake Makefiles"
+      python setup.py build_ext -i --build-type RelWithDebInfo --generator "NMake Makefiles" -- -DINAC_TARGET_ARCH=x86_64 -DLLVM_DIR=%CONDA%/envs/iArrayEnv/Library/lib/cmake/llvm -DWINGEN="NMake Makefiles"
       python setup.py bdist_wheel
     displayName: 'Build wheel'
 
