@@ -153,12 +153,8 @@ jobs:
     displayName: Install inaos license
 
   - bash: |
-      echo "##vso[task.prependpath]$CONDA/bin"  # Add conda to PATH
+      echo "##vso[task.prependpath]$CONDA/Scripts" # Add conda to PATH
     displayName: Add conda to PATH
-
-  - bash: |
-      chown -R $USER $CONDA
-    displayName: Take ownership of conda installation
 
   - bash: |
       conda install -y -c anaconda curl
