@@ -156,11 +156,11 @@ jobs:
       echo "##vso[task.prependpath]$CONDA/Scripts" # Add conda to PATH
     displayName: Add conda to PATH
 
-  - bash: |
-      conda install -y -c anaconda curl
-      curl http://go.microsoft.com/fwlink/?LinkId=691126 --output visualcppbuildtools_full.exe
-      ./visualcppbuildtools_full.exe /S /NoRestart
-    displayName: 'Install Visual Studio 2015 Build-Tools'
+#  - bash: |
+#      conda install -y -c anaconda curl
+#      curl http://go.microsoft.com/fwlink/?LinkId=691126 --output visualcppbuildtools_full.exe
+#      ./visualcppbuildtools_full.exe /S /NoRestart
+#    displayName: 'Install Visual Studio 2015 Build-Tools'
 
   - bash: |
       python -m pip install --upgrade pip
@@ -171,7 +171,7 @@ jobs:
       conda install -y --name iArrayEnv -c intel mkl-static
       conda install -y --name iArrayEnv -c intel icc_rt
       conda install -y --name iArrayEnv -c numba llvmdev
-      conda install -y -c numba llvmlite>=0.33.0
+      conda install -y --name iArrayEnv -c numba llvmlite>=0.33.0
     displayName: 'Install build dependencies'
 
   - script: |
@@ -190,7 +190,7 @@ jobs:
       targetPath: './dist'
 
   - script: |
-      python -m pip install pytest numexpr
+      python -m pip install pytest numexpr llvmlite
       python -m pip install iarray --force-reinstall --no-index --no-cache-dir -f ./dist/
       python -m pytest iarray/tests
     displayName: 'Test wheel'
