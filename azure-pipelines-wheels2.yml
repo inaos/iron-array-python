@@ -6,52 +6,130 @@ variables:
 
 jobs:
 
-- job: 'Linux'
-  displayName: 'Linux'
+#- job: 'Linux'
+#  displayName: 'Linux'
+#
+#  pool:
+#    vmImage: 'ubuntu-latest'
+#
+#  steps:
+#  - task: UsePythonVersion@0
+#    inputs:
+#      versionSpec: '3.X'
+#      architecture: 'x64'
+#  - checkout: self
+#    submodules: recursive
+#    persistCredentials: true
+
+#  - bash: |
+#      git submodule update --init --recursive
+#    displayName: Clone repos
+
+#  - script: |
+#      docker pull dockcross/manylinux2014-x64
+#      docker run dockcross/manylinux2014-x64 > ./dockcross-manylinux2014-x64
+#      chmod +x ./dockcross-manylinux2014-x64
+#      ./dockcross-manylinux2014-x64 ./.build_wheels_in_manylinux.sh
+#    displayName: 'Build wheels'
+
+#  - task: PublishPipelineArtifact@0
+#    inputs:
+#      artifactName: 'LinuxWheels'
+#      targetPath: './dist'
+
+
+#- job: 'macOS'
+#  displayName: 'macOS'
+
+#  pool:
+#    vmImage: 'macos-10.14'
+
+#  strategy:
+#    matrix:
+#      Python36:
+#        python.version: '3.6'
+#      Python37:
+#        python.version: '3.7'
+#      Python38:
+#        python.version: '3.8'
+
+#  steps:
+#  - task: UsePythonVersion@0
+#    inputs:
+#      versionSpec: '$(python.version)'
+#      architecture: 'x64'
+#  - checkout: self
+#    submodules: recursive
+#    persistCredentials: true
+
+#  - bash: |
+#      git submodule update --init --recursive
+#    displayName: Clone repos
+
+#  - script: |
+#      mkdir -p $HOME/.inaos/cmake
+#      mkdir -p $HOME/INAOS
+#      echo "INAC_REPOSITORY_LOCAL=$HOME/INAOS" > $HOME/.inaos/cmake/repository.txt
+#      echo "INAC_REPOSITORY_REMOTE=https://inaos.jfrog.io/inaos/libs-release-local/inaos" >> $HOME/.inaos/cmake/repository.txt
+#      echo "INAC_REPOSITORY_USRPWD=licensed:AKCp5bBraH7CasbsYCURsjzkbjXwVwdYcT7u39EiuL6GjnK1VKfKQWCd1E2E64mHokU5YUHku" >> $HOME/.inaos/cmake/repository.txt
+#    displayName: Install inaos license
+
+#  - bash: |
+#      echo "##vso[task.prependpath]$CONDA/bin"  # Add conda to PATH
+#    displayName: Add conda to PATH
+
+#  - bash: |
+#      sudo chown -R $USER $CONDA
+#    displayName: Take ownership of conda installation
+
+#  - script: |
+#      conda install -y -c intel mkl-include
+#      conda install -y -c intel mkl-static
+#      conda install -y -c intel icc_rt
+#      conda install -y -c numba llvmdev
+#      conda install -y -c numba llvmlite>=0.33.0
+#      python -m pip install --upgrade pip
+#      python -m pip install cython numpy ninja cmake scikit-build wheel delocate
+#    displayName: 'Install build dependencies'
+
+#  - script: |
+#      export CONDA_PREFIX=$CONDA  # existing conda in azure seems a bit old and does not define this
+#      python setup.py clean
+#      python setup.py build --build-type RelWithDebInfo -G Ninja -- \
+#        -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=10.9 \
+#        -DCMAKE_OSX_ARCHITECTURES:STRING=x86_64 \
+#        -DDISABLE_LLVM_CONFIG=True \
+#        -DLLVM_DIR=$CONDA_PREFIX/lib/cmake/llvm
+#      python setup.py bdist_wheel --plat-name macosx-10.9-x86_64
+#      delocate-listdeps ./dist/*.whl
+#      delocate-wheel ./dist/*.whl
+#    displayName: 'Build wheel'
+
+#  - script: |
+#      python -m pip install pytest numexpr
+#      python -m pip install iarray --force-reinstall --no-index --no-cache-dir -f ./dist/
+#      python -m pytest iarray/tests
+#    displayName: 'Test wheel'
+
+#  - task: PublishPipelineArtifact@0
+#    inputs:
+#      artifactName: 'MacWheel$(python.version)'
+#      targetPath: './dist'
+
+- job: 'Windows'
+  displayName: 'Windows'
 
   pool:
-    vmImage: 'ubuntu-latest'
-
-  steps:
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '3.X'
-      architecture: 'x64'
-  - checkout: self
-    submodules: recursive
-    persistCredentials: true
-
-  - bash: |
-      git submodule update --init --recursive
-    displayName: Clone repos
-
-  - script: |
-      docker pull dockcross/manylinux2014-x64
-      docker run dockcross/manylinux2014-x64 > ./dockcross-manylinux2014-x64
-      chmod +x ./dockcross-manylinux2014-x64
-      ./dockcross-manylinux2014-x64 ./.build_wheels_in_manylinux.sh
-    displayName: 'Build wheels'
-
-  - task: PublishPipelineArtifact@0
-    inputs:
-      artifactName: 'LinuxWheels'
-      targetPath: './dist'
-
-
-- job: 'macOS'
-  displayName: 'macOS'
-
-  pool:
-    vmImage: 'macos-10.14'
+    vmImage: 'windows-latest'
 
   strategy:
     matrix:
       Python36:
         python.version: '3.6'
-      Python37:
-        python.version: '3.7'
-      Python38:
-        python.version: '3.8'
+#      Python37:
+#        python.version: '3.7'
+#      Python38:
+#        python.version: '3.8'
 
   steps:
   - task: UsePythonVersion@0
@@ -66,7 +144,7 @@ jobs:
       git submodule update --init --recursive
     displayName: Clone repos
 
-  - script: |
+  - bash: |
       mkdir -p $HOME/.inaos/cmake
       mkdir -p $HOME/INAOS
       echo "INAC_REPOSITORY_LOCAL=$HOME/INAOS" > $HOME/.inaos/cmake/repository.txt
@@ -75,14 +153,16 @@ jobs:
     displayName: Install inaos license
 
   - bash: |
-      echo "##vso[task.prependpath]$CONDA/bin"  # Add conda to PATH
+      echo "##vso[task.prependpath]$CONDA/Scripts" # Add conda to PATH
     displayName: Add conda to PATH
 
   - bash: |
-      sudo chown -R $USER $CONDA
-    displayName: Take ownership of conda installation
+      conda install -y -c anaconda curl
+      curl http://go.microsoft.com/fwlink/?LinkId=691126 --output visualcppbuildtools_full.exe
+      ./visualcppbuildtools_full.exe /S /NoRestart
+    displayName: 'Install Visual Studio 2015 Build-Tools'
 
-  - script: |
+  - bash: |
       conda install -y -c intel mkl-include
       conda install -y -c intel mkl-static
       conda install -y -c intel icc_rt
@@ -93,25 +173,19 @@ jobs:
     displayName: 'Install build dependencies'
 
   - script: |
-      export CONDA_PREFIX=$CONDA  # existing conda in azure seems a bit old and does not define this
+      call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" amd64
       python setup.py clean
-      python setup.py build --build-type RelWithDebInfo -G Ninja -- \
-        -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=10.9 \
-        -DCMAKE_OSX_ARCHITECTURES:STRING=x86_64 \
-        -DDISABLE_LLVM_CONFIG=True \
-        -DLLVM_DIR=$CONDA_PREFIX/lib/cmake/llvm
-      python setup.py bdist_wheel --plat-name macosx-10.9-x86_64
-      delocate-listdeps ./dist/*.whl
-      delocate-wheel ./dist/*.whl
+      python setup.py build_ext -i --build-type RelWithDebInfo --generator "NMake Makefiles" -- -DINAC_TARGET_ARCH=x86_64 -DLLVM_DIR=%CONDA%/envs/iArrayEnv/Library/lib/cmake/llvm -DWINGEN="NMake Makefiles"
+      python setup.py bdist_wheel
     displayName: 'Build wheel'
 
-  - script: |
-      python -m pip install pytest numexpr
-      python -m pip install iarray --force-reinstall --no-index --no-cache-dir -f ./dist/
-      python -m pytest iarray/tests
-    displayName: 'Test wheel'
+#  - script: |
+#      python -m pip install pytest numexpr
+#      python -m pip install iarray --force-reinstall --no-index --no-cache-dir -f ./dist/
+#      python -m pytest iarray/tests
+#    displayName: 'Test wheel'
 
-  - task: PublishPipelineArtifact@0
-    inputs:
-      artifactName: 'MacWheel$(python.version)'
-      targetPath: './dist'
+#  - task: PublishPipelineArtifact@0
+#    inputs:
+#      artifactName: 'Windows$(python.version)'
+#      targetPath: './dist'
