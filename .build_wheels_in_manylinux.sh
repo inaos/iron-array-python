@@ -27,8 +27,8 @@ cmake --build . --target iarray # is there a way to select just the static or th
 popd
 
 ########### Python specific work begins here ###########################
-versions=(cp36-cp36m cp37-cp37m cp38-cp38)
-#versions=(cp38-cp38)
+#versions=(cp36-cp36m cp37-cp37m cp38-cp38)
+versions=(cp37-cp37)
 
 for version in "${versions[@]}"; do
   /opt/python/${version}/bin/python -m pip install --upgrade pip
