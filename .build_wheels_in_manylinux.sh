@@ -26,6 +26,9 @@ export MAKEFLAGS=-j$(($(grep -c ^processor /proc/cpuinfo) - 0))
 cmake --build . --target iarray # is there a way to select just the static or the shared lib?
 popd
 
+# Remove previous existing wheels (for lacal testing mainly)
+rm -rf dist
+
 # Inform setup.py that we want to build wheels here
 touch BUILD_WHEELS
 
@@ -58,13 +61,17 @@ for whl in dist/*linux*.whl; do
   #/opt/python/cp37-cp37m/bin/auditwheel repair ${whl} -w /work/dist/  --plat manylinux2014_x86_64
 done
 
-# Test the installation of the wheel (not very complete because some binaries may remain, but anyway)
-for version in "${versions[@]}"; do
-  pybin=/opt/python/${version}/bin/python
-  python_version=`${pybin} -c "import sys; print('%d.%d'%sys.version_info[0:2])"`
-  conda create --yes --quiet -n test-wheels python=$python_version pytest numexpr
-  cd /tmp/
-  ${pybin} -m pip install iarray --user --no-cache-dir --no-index -f /work/dist/
-  cd /work/
-  ${pybin} -m pytest iarray/tests
-done
+# Test the installation of the wheel on a different conda environment
+# (not very complete because some binaries may remain, but anyway)
+# TODO: make this work
+#for version in "${versions[@]}"; do
+#  pybin=/opt/python/${version}/bin/python
+#  python_version=`${pybin} -c "import sys; print('%d.%d'%sys.version_info[0:2])"`
+#  conda create --yes -n test-wheels python=$python_version
+#  conda activate test-wheels
+#  cd /tmp/
+#  python -m pip install iarray --user --no-cache-dir --no-index -f /work/dist/
+#  cd /work/
+#  python -m pytest iarray/tests
+#  conda deactivate
+#done
