@@ -1,0 +1,96 @@
+jobs:
+
+- job: 'Linux'
+  displayName: 'Linux'
+
+  pool:
+    vmImage: 'ubuntu-latest'
+
+  strategy:
+    matrix:
+      Python36:
+        python.version: '3.6'
+      Python37:
+        python.version: '3.7'
+      Python38:
+        python.version: '3.8'
+  
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '$(python.version)'
+      architecture: 'x64'
+  - checkout: self
+    submodules: recursive
+    persistCredentials: true
+
+  - bash: |
+      mkdir -p $HOME/.pip
+      echo "[global]" > $HOME/.pip/pip.conf
+      echo "index-url = https://licensed:AKCp5bBraH7CasbsYCURsjzkbjXwVwdYcT7u39EiuL6GjnK1VKfKQWCd1E2E64mHokU5YUHku@inaos.jfrog.io/artifactory/api/pypi/pypi-iron-array/simple" >> $HOME/.pip/pip.conf
+    displayName: Install iron-array license
+
+  - bash: |
+      pip install iarray
+      python -m pytest iarray/tests
+    
+- job: 'macOS'
+  displayName: 'macOS'
+
+  pool:
+    vmImage: 'macOS-latest'
+
+  strategy:
+    matrix:
+      Python36:
+        python.version: '3.6'
+      Python37:
+        python.version: '3.7'
+      Python38:
+        python.version: '3.8'
+
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '$(python.version)'
+      architecture: 'x64'
+  - checkout: self
+    submodules: recursive
+    persistCredentials: true
+
+  - bash: |
+      mkdir -p $HOME/.pip
+      echo "[global]" > $HOME/.pip/pip.conf
+      echo "index-url = https://licensed:AKCp5bBraH7CasbsYCURsjzkbjXwVwdYcT7u39EiuL6GjnK1VKfKQWCd1E2E64mHokU5YUHku@inaos.jfrog.io/artifactory/api/pypi/pypi-iron-array/simple" >> $HOME/.pip/pip.conf
+    displayName: Install iron-array license
+
+
+- job: 'Windows'
+  displayName: 'Windows'
+
+  pool:
+    vmImage: 'windows-latest'
+
+  strategy:
+    matrix:
+      Python36:
+        python.version: '3.6'
+      Python37:
+        python.version: '3.7'
+      Python38:
+        python.version: '3.8'
+
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '$(python.version)'
+      architecture: 'x64'
+  - checkout: self
+    submodules: recursive
+    persistCredentials: true
+
+  - bash: |
+      mkdir -p $HOME/.pip
+      echo "[global]" > $HOME/.pip/pip.conf
+      echo "index-url = https://licensed:AKCp5bBraH7CasbsYCURsjzkbjXwVwdYcT7u39EiuL6GjnK1VKfKQWCd1E2E64mHokU5YUHku@inaos.jfrog.io/artifactory/api/pypi/pypi-iron-array/simple" >> $HOME/.pip/pip.conf
+    displayName: Install iron-array license
