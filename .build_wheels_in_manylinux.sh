@@ -26,6 +26,9 @@ export MAKEFLAGS=-j$(($(grep -c ^processor /proc/cpuinfo) - 0))
 cmake --build . --target iarray # is there a way to select just the static or the shared lib?
 popd
 
+# Inform setup.py that we want to build wheels here
+touch BUILD_WHEELS
+
 ########### Python specific work begins here ###########################
 #versions=(cp36-cp36m cp37-cp37m cp38-cp38)
 versions=(cp37-cp37m)
@@ -34,7 +37,7 @@ for version in "${versions[@]}"; do
   /opt/python/${version}/bin/python -m pip install --upgrade pip
   /opt/python/${version}/bin/python -m pip install cython numpy
   rm -rf _skbuild/
-  /opt/python/${version}/bin/python setup.py build --build-type RelWithDebInfo -- -DDISABLE_LLVM_CONFIG=True -DLLVM_DIR=$CONDA_PREFIX/lib/cmake/llvm
+  /opt/python/${version}/bin/python setup.py build -j --build-type RelWithDebInfo -- -DDISABLE_LLVM_CONFIG=True -DLLVM_DIR=$CONDA_PREFIX/lib/cmake/llvm
   # Copy the necessary shared libraries 
   /bin/cp -f iarray/iarray-c-develop/build/libiarray.so iarray/
   # We need manylinux2014_x86_64 because icc_rt needs this:

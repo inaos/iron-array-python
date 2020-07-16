@@ -22,7 +22,6 @@ jobs:
     persistCredentials: true
 
   - bash: |
-      if [ -z ${BUILD_WHEELS+x} ]; then echo "Not building WHEELS!"; else touch BUILD_WHEELS; fi
       git submodule update --init --recursive
     displayName: Clone repos
 
