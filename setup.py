@@ -32,7 +32,7 @@ with open('README.md') as f:
 # Libraries to copy as 'data' in package
 # Copying just 'libarray' seems good enough
 if platform == "linux" or platform == "linux2":
-    copy_libs = ['libiarray.so']
+    copy_libs = ['libiarray.so', 'libsvml.so', 'libintlc.so.5']
 elif platform == "darwin":
     copy_libs = ['libiarray.dylib']
 elif platform == "win32":

@@ -52,7 +52,7 @@ for version in "${versions[@]}"; do
   # Copy the necessary shared libraries
   /bin/cp -f iarray/iarray-c-develop/build/libiarray.so iarray/
   /bin/cp -f iarray/iarray-c-develop/build/libsvml.so iarray/
-  /bin/cp -f iarray/iarray-c-develop/build/libintlc.so iarray/
+  /bin/cp -f iarray/iarray-c-develop/build/libintlc.so.5 iarray/
   # We need manylinux2014_x86_64 because icc_rt needs this:
   # OSError: /lib64/libc.so.6: version `GLIBC_2.14' not found (required by /work/conda/lib/libintlc.so.5)
   # (manylinux2010 requires GLIB_2.12 or earlier: https://www.python.org/dev/peps/pep-0571/)
