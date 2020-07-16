@@ -33,7 +33,9 @@ jobs:
 
   - bash: |
       pip install iarray
-      python -m pytest iarray/tests
+      cp -r iarray/tests /tmp/tests
+      cd /tmp
+      python -m pytest tests
 
 - job: 'macOS'
   displayName: 'macOS'
