@@ -85,4 +85,4 @@ done
 #done
 
 /opt/python/cp37-cp37m/bin/python -m pip install twine
-/opt/python/cp37-cp37m/bin/python -m twine upload dist/*
+/opt/python/cp37-cp37m/bin/python -m twine upload -r jfrog dist/*
