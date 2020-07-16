@@ -37,13 +37,14 @@ for version in "${versions[@]}"; do
   /opt/python/${version}/bin/python -m pip install --upgrade pip
   /opt/python/${version}/bin/python -m pip install cython numpy
   rm -rf _skbuild/
-  /opt/python/${version}/bin/python setup.py build --build-type RelWithDebInfo -DDISABLE_LLVM_CONFIG=True -DLLVM_DIR=$CONDA_PREFIX/lib/cmake/llvm
+  /opt/python/${version}/bin/python setup.py build --build-type RelWithDebInfo -- -DDISABLE_LLVM_CONFIG=True -DLLVM_DIR=$CONDA_PREFIX/lib/cmake/llvm
   # Copy the necessary shared libraries 
   /bin/cp -f iarray/iarray-c-develop/build/libiarray.so iarray/
   # We need manylinux2014_x86_64 because icc_rt needs this:
   # OSError: /lib64/libc.so.6: version `GLIBC_2.14' not found (required by /work/conda/lib/libintlc.so.5)
   # (manylinux2010 requires GLIB_2.12 or earlier: https://www.python.org/dev/peps/pep-0571/)
-  /opt/python/${version}/bin/python setup.py bdist_wheel --plat-name manylinux2014_x86_64
+  echo "Starting actual wheel build!!"
+  /opt/python/${version}/bin/python setup.py bdist_wheel --plat-name manylinux2014_x86_64 -- -DDISABLE_LLVM_CONFIG=True -DLLVM_DIR=$CONDA_PREFIX/lib/cmake/llvm
 done
 
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:iarray
