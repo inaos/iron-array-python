@@ -10,6 +10,14 @@ echo "INAC_REPOSITORY_LOCAL=$HOME/INAOS" > $HOME/.inaos/cmake/repository.txt
 echo "INAC_REPOSITORY_REMOTE=https://inaos.jfrog.io/inaos/libs-release-local/inaos" >> $HOME/.inaos/cmake/repository.txt
 echo "INAC_REPOSITORY_USRPWD=licensed:AKCp5bBraH7CasbsYCURsjzkbjXwVwdYcT7u39EiuL6GjnK1VKfKQWCd1E2E64mHokU5YUHku" >> $HOME/.inaos/cmake/repository.txt
 
+# Install pypirc
+echo "[distutils]" > $HOME/.pypirc
+echo "index-servers = local" >> $HOME/.pypirc
+echo "[local]" >> $HOME/.pypirc
+echo "repository: https://inaos.jfrog.io/artifactory/api/pypi/pypi-iron-array" >> $HOME/.pypirc
+echo "username: iarray-deploy" >> $HOME/.pypirc
+echo "password: M{wf5-Am^2)c8&vR" >> $HOME/.pypirc
+
 # Activate the conda environment in this docker image
 # This is mainly to install llvmdev and intel packages which are python-agnostic
 source dockcross/install-conda.sh
@@ -41,12 +49,13 @@ for version in "${versions[@]}"; do
   /opt/python/${version}/bin/python -m pip install cython numpy
   rm -rf _skbuild/
   /opt/python/${version}/bin/python setup.py build --build-type RelWithDebInfo -- -DDISABLE_LLVM_CONFIG=True -DLLVM_DIR=$CONDA_PREFIX/lib/cmake/llvm
-  # Copy the necessary shared libraries 
+  # Copy the necessary shared libraries
   /bin/cp -f iarray/iarray-c-develop/build/libiarray.so iarray/
   # We need manylinux2014_x86_64 because icc_rt needs this:
   # OSError: /lib64/libc.so.6: version `GLIBC_2.14' not found (required by /work/conda/lib/libintlc.so.5)
   # (manylinux2010 requires GLIB_2.12 or earlier: https://www.python.org/dev/peps/pep-0571/)
   /opt/python/${version}/bin/python setup.py bdist_wheel --plat-name manylinux2014_x86_64 -- -DDISABLE_LLVM_CONFIG=True -DLLVM_DIR=$CONDA_PREFIX/lib/cmake/llvm
+  /opt/python/${version}/bin/python setup.py bdist_wheel --plat-name manylinux2014_x86_64 upload -r local -- -DDISABLE_LLVM_CONFIG=True -DLLVM_DIR=$CONDA_PREFIX/lib/cmake/llvm
 done
 
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:iarray
