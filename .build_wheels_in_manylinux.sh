@@ -37,7 +37,7 @@ for version in "${versions[@]}"; do
   /opt/python/${version}/bin/python -m pip install --upgrade pip
   /opt/python/${version}/bin/python -m pip install cython numpy
   rm -rf _skbuild/
-  /opt/python/${version}/bin/python setup.py build -j --build-type RelWithDebInfo -- -DDISABLE_LLVM_CONFIG=True -DLLVM_DIR=$CONDA_PREFIX/lib/cmake/llvm
+  /opt/python/${version}/bin/python setup.py build --build-type RelWithDebInfo -- -DDISABLE_LLVM_CONFIG=True -DLLVM_DIR=$CONDA_PREFIX/lib/cmake/llvm
   # Copy the necessary shared libraries 
   /bin/cp -f iarray/iarray-c-develop/build/libiarray.so iarray/
   # We need manylinux2014_x86_64 because icc_rt needs this:
