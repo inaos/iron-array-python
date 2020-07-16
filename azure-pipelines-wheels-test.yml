@@ -10,10 +10,10 @@ jobs:
     matrix:
       Python36:
         python.version: '3.6'
-      Python37:
-        python.version: '3.7'
-      Python38:
-        python.version: '3.8'
+#      Python37:
+#        python.version: '3.7'
+#      Python38:
+#        python.version: '3.8'
   
   steps:
   - task: UsePythonVersion@0
@@ -43,11 +43,11 @@ jobs:
   strategy:
     matrix:
       Python36:
-        python.version: '3.6'
+#        python.version: '3.6'
       Python37:
         python.version: '3.7'
-      Python38:
-        python.version: '3.8'
+#      Python38:
+#        python.version: '3.8'
 
   steps:
   - task: UsePythonVersion@0
@@ -63,6 +63,10 @@ jobs:
       echo "[global]" > $HOME/.pip/pip.conf
       echo "index-url = https://licensed:AKCp5bBraH7CasbsYCURsjzkbjXwVwdYcT7u39EiuL6GjnK1VKfKQWCd1E2E64mHokU5YUHku@inaos.jfrog.io/artifactory/api/pypi/pypi-iron-array/simple" >> $HOME/.pip/pip.conf
     displayName: Install iron-array license
+
+  - bash: |
+      pip install iarray
+      python -m pytest iarray/tests
 
 
 - job: 'Windows'
@@ -75,10 +79,10 @@ jobs:
     matrix:
       Python36:
         python.version: '3.6'
-      Python37:
-        python.version: '3.7'
-      Python38:
-        python.version: '3.8'
+#      Python37:
+#        python.version: '3.7'
+#      Python38:
+#        python.version: '3.8'
 
   steps:
   - task: UsePythonVersion@0
@@ -94,3 +98,7 @@ jobs:
       echo "[global]" > $HOME/.pip/pip.conf
       echo "index-url = https://licensed:AKCp5bBraH7CasbsYCURsjzkbjXwVwdYcT7u39EiuL6GjnK1VKfKQWCd1E2E64mHokU5YUHku@inaos.jfrog.io/artifactory/api/pypi/pypi-iron-array/simple" >> $HOME/.pip/pip.conf
     displayName: Install iron-array license
+
+  - bash: |
+      pip install iarray
+      python -m pytest iarray/tests
