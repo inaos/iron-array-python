@@ -2,7 +2,7 @@ trigger:
 - develop
 
 variables:
-  BUILD_WHEELS: 1
+- group: jfrog-artifactory
 
 jobs:
 
