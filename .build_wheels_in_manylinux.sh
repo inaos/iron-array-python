@@ -28,7 +28,7 @@ popd
 
 ########### Python specific work begins here ###########################
 #versions=(cp36-cp36m cp37-cp37m cp38-cp38)
-versions=(cp37-cp37)
+versions=(cp37-cp37m)
 
 for version in "${versions[@]}"; do
   /opt/python/${version}/bin/python -m pip install --upgrade pip
