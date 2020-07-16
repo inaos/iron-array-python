@@ -27,9 +27,6 @@ else:
     binding.load_library_permanently(os.path.join(install_dir, "svml_dispmd.dll"))
     lib1 = cdll.LoadLibrary(os.path.join(install_dir, "iarray.dll"))
 
-# Probably needed by py2llvm
-binding.set_option('', '-vector-library=SVML')
-
 # Codecs
 BLOSCLZ = 0
 LZ4 = 1

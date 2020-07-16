@@ -10,6 +10,14 @@ echo "INAC_REPOSITORY_LOCAL=$HOME/INAOS" > $HOME/.inaos/cmake/repository.txt
 echo "INAC_REPOSITORY_REMOTE=https://inaos.jfrog.io/inaos/libs-release-local/inaos" >> $HOME/.inaos/cmake/repository.txt
 echo "INAC_REPOSITORY_USRPWD=licensed:AKCp5bBraH7CasbsYCURsjzkbjXwVwdYcT7u39EiuL6GjnK1VKfKQWCd1E2E64mHokU5YUHku" >> $HOME/.inaos/cmake/repository.txt
 
+# Install pypirc
+echo "[distutils]" > $HOME/.pypirc
+echo "index-servers = jfrog" >> $HOME/.pypirc
+echo "[jfrog]" >> $HOME/.pypirc
+echo "repository: https://inaos.jfrog.io/artifactory/api/pypi/pypi-iron-array" >> $HOME/.pypirc
+echo "username: iarray-deploy" >> $HOME/.pypirc
+echo "password: M{wf5-Am^2)c8&vR" >> $HOME/.pypirc
+
 # Activate the conda environment in this docker image
 # This is mainly to install llvmdev and intel packages which are python-agnostic
 source dockcross/install-conda.sh
@@ -26,6 +34,9 @@ export MAKEFLAGS=-j$(($(grep -c ^processor /proc/cpuinfo) - 0))
 cmake --build . --target iarray # is there a way to select just the static or the shared lib?
 popd
 
+# Remove previous existing wheels (for lacal testing mainly)
+rm -rf dist
+
 # Inform setup.py that we want to build wheels here
 touch BUILD_WHEELS
 
@@ -38,7 +49,7 @@ for version in "${versions[@]}"; do
   /opt/python/${version}/bin/python -m pip install cython numpy
   rm -rf _skbuild/
   /opt/python/${version}/bin/python setup.py build --build-type RelWithDebInfo -- -DDISABLE_LLVM_CONFIG=True -DLLVM_DIR=$CONDA_PREFIX/lib/cmake/llvm
-  # Copy the necessary shared libraries 
+  # Copy the necessary shared libraries
   /bin/cp -f iarray/iarray-c-develop/build/libiarray.so iarray/
   /bin/cp -f iarray/iarray-c-develop/build/libsvml.so iarray/
   /bin/cp -f iarray/iarray-c-develop/build/libintlc.so iarray/
@@ -60,13 +71,20 @@ for whl in dist/*linux*.whl; do
   #/opt/python/cp37-cp37m/bin/auditwheel repair ${whl} -w /work/dist/  --plat manylinux2014_x86_64
 done
 
-# Test the installation of the wheel (not very complete because some binaries may remain, but anyway)
-for version in "${versions[@]}"; do
-  pybin=/opt/python/${version}/bin/python
-  python_version=`${pybin} -c "import sys; print('%d.%d'%sys.version_info[0:2])"`
-  conda create --yes --quiet -n test-wheels python=$python_version
-  cd /tmp/
-  ${pybin} -m pip install iarray --user --no-cache-dir --no-index -f /work/dist/
-  cd /work/
-  ${pybin} -m pytest iarray/tests
-done
+# Test the installation of the wheel on a different conda environment
+# (not very complete because some binaries may remain, but anyway)
+# TODO: make this work
+#for version in "${versions[@]}"; do
+#  pybin=/opt/python/${version}/bin/python
+#  python_version=`${pybin} -c "import sys; print('%d.%d'%sys.version_info[0:2])"`
+#  conda create --yes -n test-wheels python=$python_version
+#  conda activate test-wheels
+#  cd /tmp/
+#  python -m pip install iarray --user --no-cache-dir --no-index -f /work/dist/
+#  cd /work/
+#  python -m pytest iarray/tests
+#  conda deactivate
+#done
+
+/opt/python/cp37-cp37m/bin/python -m pip install twine
+/opt/python/cp37-cp37m/bin/python -m twine upload -r jfrog dist/*
