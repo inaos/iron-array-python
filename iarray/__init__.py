@@ -24,8 +24,8 @@ elif platform_system == 'Darwin':
     lib0 = cdll.LoadLibrary(os.path.join(install_dir, 'libiarray.dylib'))
     binding.load_library_permanently("libsvml.dylib")
 else:
+    binding.load_library_permanently(os.path.join(install_dir, "svml_dispmd.dll"))
     lib1 = cdll.LoadLibrary(os.path.join(install_dir, "iarray.dll"))
-    binding.load_library_permanently("svml_dispmd.dll")
 
 # Probably needed by py2llvm
 binding.set_option('', '-vector-library=SVML')
