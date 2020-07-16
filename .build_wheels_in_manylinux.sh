@@ -40,6 +40,8 @@ for version in "${versions[@]}"; do
   /opt/python/${version}/bin/python setup.py build --build-type RelWithDebInfo -- -DDISABLE_LLVM_CONFIG=True -DLLVM_DIR=$CONDA_PREFIX/lib/cmake/llvm
   # Copy the necessary shared libraries 
   /bin/cp -f iarray/iarray-c-develop/build/libiarray.so iarray/
+  /bin/cp -f iarray/iarray-c-develop/build/libsvml.so iarray/
+  /bin/cp -f iarray/iarray-c-develop/build/libintlc.so iarray/
   # We need manylinux2014_x86_64 because icc_rt needs this:
   # OSError: /lib64/libc.so.6: version `GLIBC_2.14' not found (required by /work/conda/lib/libintlc.so.5)
   # (manylinux2010 requires GLIB_2.12 or earlier: https://www.python.org/dev/peps/pep-0571/)
