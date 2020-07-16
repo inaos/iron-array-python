@@ -18,6 +18,7 @@ if platform_system == 'Linux':
     # https://stackoverflow.com/questions/6543847/setting-ld-library-path-from-inside-python
     # We can disable this when/if we can package iron-array into its own wheel
     # and make a dependency of it.  The same goes for other platforms.
+    binding.load_library_permanently(os.path.join(install_dir, "libintlc.so.5"))
     binding.load_library_permanently(os.path.join(install_dir, "libsvml.so"))
     lib0 = cdll.LoadLibrary(os.path.join(install_dir, 'libiarray.so'))
 elif platform_system == 'Darwin':
