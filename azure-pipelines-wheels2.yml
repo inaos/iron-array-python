@@ -1,8 +1,8 @@
 trigger:
 - develop
 
-variables:
-- group: jfrog-artifactory
+variables: # This activates => BUILD_WHEELS: 1
+- group: wheels
 
 jobs:
 
@@ -36,6 +36,15 @@ jobs:
     inputs:
       artifactName: 'LinuxWheels'
       targetPath: './dist'
+
+  - bash: |
+      echo "[distutils]" > $HOME/.pypirc
+      echo "index-servers = local" >> $HOME/.pypirc
+      echo "[local]" >> $HOME/.pypirc
+      echo "repository: https://inaos.jfrog.io/artifactory/api/pypi/pypi-iron-array" >> $HOME/.pypirc
+      echo "username: iarray-deploy" >> $HOME/.pypirc
+      echo "password: $dd" >> $HOME/.pypirc
+    displayName: Install pypirc
 
 
 - job: 'macOS'
