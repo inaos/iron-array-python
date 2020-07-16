@@ -62,7 +62,7 @@ done
 for version in "${versions[@]}"; do
   pybin=/opt/python/${version}/bin/python
   python_version=`${pybin} -c "import sys; print('%d.%d'%sys.version_info[0:2])"`
-  conda create --yes --quiet -n test-wheels python=$python_version
+  conda create --yes --quiet -n test-wheels python=$python_version pytest numexpr
   cd /tmp/
   ${pybin} -m pip install iarray --user --no-cache-dir --no-index -f /work/dist/
   cd /work/
