@@ -69,7 +69,7 @@ jobs:
       mkdir -p $HOME/.inaos/cmake
       mkdir -p $HOME/INAOS
       echo "INAC_REPOSITORY_LOCAL=$HOME/INAOS" > $HOME/.inaos/cmake/repository.txt
-      echo "INAC_REPOSITORY_REMOTE=https://inaos.jfrog.io/inaos/libs-release-local/inaos" >> $HOME/.inaos/cmake/repository.txt
+      echo "INAC_REPOSITORY_REMOTE=https://inaos.jfrog.io/inaos/libs-release-jfrog/inaos" >> $HOME/.inaos/cmake/repository.txt
       echo "INAC_REPOSITORY_USRPWD=licensed:AKCp5bBraH7CasbsYCURsjzkbjXwVwdYcT7u39EiuL6GjnK1VKfKQWCd1E2E64mHokU5YUHku" >> $HOME/.inaos/cmake/repository.txt
     displayName: Install inaos license
 
@@ -112,15 +112,16 @@ jobs:
 
   - bash: |
       echo "[distutils]" > $HOME/.pypirc
-      echo "index-servers = local" >> $HOME/.pypirc
-      echo "[local]" >> $HOME/.pypirc
+      echo "index-servers = jfrog" >> $HOME/.pypirc
+      echo "[jfrog]" >> $HOME/.pypirc
       echo "repository: https://inaos.jfrog.io/artifactory/api/pypi/pypi-iron-array" >> $HOME/.pypirc
       echo "username: iarray-deploy" >> $HOME/.pypirc
       echo "password: M{wf5-Am^2)c8&vR" >> $HOME/.pypirc
     displayName: Install pypirc
 
   - bash: |
-      python setup.py bdist_wheel upload -r local
+      python -m pip install twine
+      twine upload dist/*
     displayName: Deploy Wheel
 
   - task: PublishPipelineArtifact@0
@@ -160,7 +161,7 @@ jobs:
       mkdir -p $HOME/.inaos/cmake
       mkdir -p $HOME/INAOS
       echo "INAC_REPOSITORY_LOCAL=$HOME/INAOS" > $HOME/.inaos/cmake/repository.txt
-      echo "INAC_REPOSITORY_REMOTE=https://inaos.jfrog.io/inaos/libs-release-local/inaos" >> $HOME/.inaos/cmake/repository.txt
+      echo "INAC_REPOSITORY_REMOTE=https://inaos.jfrog.io/inaos/libs-release-jfrog/inaos" >> $HOME/.inaos/cmake/repository.txt
       echo "INAC_REPOSITORY_USRPWD=licensed:AKCp5bBraH7CasbsYCURsjzkbjXwVwdYcT7u39EiuL6GjnK1VKfKQWCd1E2E64mHokU5YUHku" >> $HOME/.inaos/cmake/repository.txt
     displayName: Install inaos license
 
@@ -209,13 +210,14 @@ jobs:
 
   - bash: |
       echo "[distutils]" > $HOME/.pypirc
-      echo "index-servers = local" >> $HOME/.pypirc
-      echo "[local]" >> $HOME/.pypirc
+      echo "index-servers = jfrog" >> $HOME/.pypirc
+      echo "[jfrog]" >> $HOME/.pypirc
       echo "repository: https://inaos.jfrog.io/artifactory/api/pypi/pypi-iron-array" >> $HOME/.pypirc
       echo "username: iarray-deploy" >> $HOME/.pypirc
       echo "password: M{wf5-Am^2)c8&vR" >> $HOME/.pypirc
     displayName: Install pypirc
 
   - bash: |
-      python setup.py bdist_wheel upload -r local --generator "NMake Makefiles" -DWINGEN="NMake Makefiles"
+      python -m pip install twine
+      twine upload dist/*
     displayName: Deploy Wheel
