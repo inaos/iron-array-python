@@ -3,6 +3,10 @@ from ctypes import cdll
 from llvmlite import binding
 import platform
 
+# This is the source of truth for version
+# https://packaging.python.org/guides/single-sourcing-package-version/
+__version__ = "1.0.0-beta.1"
+
 binding.initialize()
 binding.initialize_native_target()
 binding.initialize_native_asmprinter()
