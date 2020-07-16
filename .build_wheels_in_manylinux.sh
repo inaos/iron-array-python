@@ -58,9 +58,11 @@ for whl in dist/*linux*.whl; do
   #/opt/python/cp37-cp37m/bin/auditwheel repair ${whl} -w /work/dist/  --plat manylinux2014_x86_64
 done
 
+# Test the installation of the wheel (not very complete because some binaries may remain, but anyway)
 for version in "${versions[@]}"; do
   pybin=/opt/python/${version}/bin/python
-  ${pybin} -m pip install --user pytest llvmlite numexpr
+  python_version=`${pybin} -c "import sys; print('%d.%d'%sys.version_info[0:2])"`
+  conda create --yes --quiet -n test-wheels python=$python_version
   cd /tmp/
   ${pybin} -m pip install iarray --user --no-cache-dir --no-index -f /work/dist/
   cd /work/
