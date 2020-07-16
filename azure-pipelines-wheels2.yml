@@ -43,9 +43,12 @@ jobs:
       echo "[local]" >> $HOME/.pypirc
       echo "repository: https://inaos.jfrog.io/artifactory/api/pypi/pypi-iron-array" >> $HOME/.pypirc
       echo "username: iarray-deploy" >> $HOME/.pypirc
-      echo "password: $dd" >> $HOME/.pypirc
+      echo "password: $deploy-password" >> $HOME/.pypirc
     displayName: Install pypirc
 
+  - bash: |
+      python setup.py bdist_wheel upload -r local
+    displayName: Deploy Wheel
 
 - job: 'macOS'
   displayName: 'macOS'
@@ -119,6 +122,19 @@ jobs:
       python -m pip install iarray --force-reinstall --no-index --no-cache-dir -f ./dist/
       python -m pytest iarray/tests
     displayName: 'Test wheel'
+
+  - bash: |
+      echo "[distutils]" > $HOME/.pypirc
+      echo "index-servers = local" >> $HOME/.pypirc
+      echo "[local]" >> $HOME/.pypirc
+      echo "repository: https://inaos.jfrog.io/artifactory/api/pypi/pypi-iron-array" >> $HOME/.pypirc
+      echo "username: iarray-deploy" >> $HOME/.pypirc
+      echo "password: $deploy-password" >> $HOME/.pypirc
+    displayName: Install pypirc
+
+  - bash: |
+      python setup.py bdist_wheel upload -r local
+    displayName: Deploy Wheel
 
   - task: PublishPipelineArtifact@0
     inputs:
@@ -203,3 +219,16 @@ jobs:
       python -m pip install iarray --force-reinstall --no-index --no-cache-dir -f ./dist/
       python -m pytest iarray/tests
     displayName: 'Test wheel'
+
+  - bash: |
+      echo "[distutils]" > $HOME/.pypirc
+      echo "index-servers = local" >> $HOME/.pypirc
+      echo "[local]" >> $HOME/.pypirc
+      echo "repository: https://inaos.jfrog.io/artifactory/api/pypi/pypi-iron-array" >> $HOME/.pypirc
+      echo "username: iarray-deploy" >> $HOME/.pypirc
+      echo "password: $deploy-password" >> $HOME/.pypirc
+    displayName: Install pypirc
+
+  - bash: |
+      python setup.py bdist_wheel upload -r local
+    displayName: Deploy Wheel
