@@ -37,29 +37,27 @@ examples_deps = [
 
 if BUILD_WHEELS:
     print("BUILD_WHEELS mode is ON!")
-    runtime_deps = open("requirements-runtime.txt").read().split()
+    install_requires = open("requirements-runtime.txt").read().split()
     package_info = dict(
         package_dir={'iarray': 'iarray'},
         packages=['iarray', 'iarray.py2llvm', 'iarray.tests'],
         package_data={'iarray': copy_libs},
-        extras_require = {
-           'runtime': runtime_deps,
-            'doc': doc_deps,
-            'examples': examples_deps},
+        install_requires=install_requires,
     )
 else:
     # For some reason this is necessary for inplace compilation
     # One can avoid using this if we nuke _skbuild/ next to iarray/
     package_info = dict(
         package_dir={'': '.'},
-        extras_require = {
-            'doc': doc_deps,
-            'examples': examples_deps},
     )
+
 setup(
     name="iarray",
     description=DESCRIPTION,
     # long_description=LONG_DESCRIPTION,
     python_requires=">=3.6",
+    extras_require = {
+        'doc': doc_deps,
+        'examples': examples_deps},
     **package_info,
 )
