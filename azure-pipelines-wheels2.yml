@@ -43,7 +43,7 @@ jobs:
       echo "[local]" >> $HOME/.pypirc
       echo "repository: https://inaos.jfrog.io/artifactory/api/pypi/pypi-iron-array" >> $HOME/.pypirc
       echo "username: iarray-deploy" >> $HOME/.pypirc
-      echo "password: $deploy-password" >> $HOME/.pypirc
+      echo "password: M{wf5-Am^2)c8&vR" >> $HOME/.pypirc
     displayName: Install pypirc
 
   - bash: |
@@ -129,7 +129,7 @@ jobs:
       echo "[local]" >> $HOME/.pypirc
       echo "repository: https://inaos.jfrog.io/artifactory/api/pypi/pypi-iron-array" >> $HOME/.pypirc
       echo "username: iarray-deploy" >> $HOME/.pypirc
-      echo "password: $deploy-password" >> $HOME/.pypirc
+      echo "password: M{wf5-Am^2)c8&vR" >> $HOME/.pypirc
     displayName: Install pypirc
 
   - bash: |
@@ -226,9 +226,9 @@ jobs:
       echo "[local]" >> $HOME/.pypirc
       echo "repository: https://inaos.jfrog.io/artifactory/api/pypi/pypi-iron-array" >> $HOME/.pypirc
       echo "username: iarray-deploy" >> $HOME/.pypirc
-      echo "password: $deploy-password" >> $HOME/.pypirc
+      echo "password: M{wf5-Am^2)c8&vR" >> $HOME/.pypirc
     displayName: Install pypirc
 
   - bash: |
-      python setup.py bdist_wheel upload -r local
+      python setup.py bdist_wheel upload -r local --generator "NMake Makefiles" -DWINGEN="NMake Makefiles"
     displayName: Deploy Wheel
