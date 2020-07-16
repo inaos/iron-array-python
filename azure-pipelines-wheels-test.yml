@@ -10,10 +10,10 @@ jobs:
     matrix:
       Python36:
         python.version: '3.6'
-#      Python37:
-#        python.version: '3.7'
-#      Python38:
-#        python.version: '3.8'
+      Python37:
+        python.version: '3.7'
+      Python38:
+        python.version: '3.8'
 
   steps:
   - task: UsePythonVersion@0
@@ -45,12 +45,12 @@ jobs:
 
   strategy:
     matrix:
-#      Python36:
-#        python.version: '3.6'
+      Python36:
+        python.version: '3.6'
       Python37:
         python.version: '3.7'
-#      Python38:
-#        python.version: '3.8'
+      Python38:
+        python.version: '3.8'
 
   steps:
   - task: UsePythonVersion@0
@@ -85,10 +85,10 @@ jobs:
     matrix:
       Python36:
         python.version: '3.6'
-#      Python37:
-#        python.version: '3.7'
-#      Python38:
-#        python.version: '3.8'
+      Python37:
+        python.version: '3.7'
+      Python38:
+        python.version: '3.8'
 
   steps:
   - task: UsePythonVersion@0
