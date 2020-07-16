@@ -30,8 +30,8 @@ popd
 touch BUILD_WHEELS
 
 ########### Python specific work begins here ###########################
-#versions=(cp36-cp36m cp37-cp37m cp38-cp38)
-versions=(cp37-cp37m)
+versions=(cp36-cp36m cp37-cp37m cp38-cp38)
+#versions=(cp37-cp37m)
 
 for version in "${versions[@]}"; do
   /opt/python/${version}/bin/python -m pip install --upgrade pip
@@ -43,7 +43,6 @@ for version in "${versions[@]}"; do
   # We need manylinux2014_x86_64 because icc_rt needs this:
   # OSError: /lib64/libc.so.6: version `GLIBC_2.14' not found (required by /work/conda/lib/libintlc.so.5)
   # (manylinux2010 requires GLIB_2.12 or earlier: https://www.python.org/dev/peps/pep-0571/)
-  echo "Starting actual wheel build!!"
   /opt/python/${version}/bin/python setup.py bdist_wheel --plat-name manylinux2014_x86_64 -- -DDISABLE_LLVM_CONFIG=True -DLLVM_DIR=$CONDA_PREFIX/lib/cmake/llvm
 done
 
@@ -55,6 +54,7 @@ for whl in dist/*linux*.whl; do
   # Error was: ValueError: Cannot repair wheel, because required library "libintlc.so.5" could not be located
   # Another possibility is to add it manually in setup.py, but still, not all the dependencies are nailed down.
   # Ok, so let's disable repairing for now (as another benefit, this leads to lighter wheels).
+  # For the time being, lets add an install dependency on icc-rt for wheels.  This seems to work well.
   #/opt/python/cp37-cp37m/bin/auditwheel repair ${whl} -w /work/dist/  --plat manylinux2014_x86_64
 done
 
