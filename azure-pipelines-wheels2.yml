@@ -121,7 +121,7 @@ jobs:
 
   - bash: |
       python -m pip install twine
-      twine upload dist/*
+      python -m twine upload dist/*
     displayName: Deploy Wheel
 
   - task: PublishPipelineArtifact@0
@@ -219,5 +219,5 @@ jobs:
 
   - bash: |
       python -m pip install twine
-      twine upload dist/*
+      python -m twine upload dist/*
     displayName: Deploy Wheel
