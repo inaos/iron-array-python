@@ -14,8 +14,8 @@ NITER = 10
 # Define array params
 # shape = [10000, 2000]
 # pshape = [1000, 200]
-shape = [20 * 1000 * 1000]
-pshape = [4 * 1000 * 1000]
+shape = [20 * 1000 * 100]
+pshape = [4 * 1000 * 100]
 dtype = np.float64
 
 cparams = dict(clib=ia.LZ4, clevel=5, nthreads=16)

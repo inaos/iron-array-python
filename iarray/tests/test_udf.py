@@ -9,16 +9,16 @@ from iarray import udf
 from iarray.py2llvm import float64
 
 
-def cmp_udf_np(f, start, stop, shape, pshape, dtype, cparams):
+def cmp_udf_np(f, start, stop, shape, chunkshape, blockshape, dtype, cparams):
     """Helper function that compares UDF against numpy.
 
     Constraints:
 
     - Input is always 1 linspace array, defined by start and stop
-    - Function results do not depend on pshape
+    - Function results do not depend on chunkshape/blockshape
     """
 
-    storage = ia.StorageProperties("blosc", pshape, pshape)
+    storage = ia.StorageProperties("blosc", chunkshape, blockshape)
     x = ia.linspace(ia.dtshape(shape, dtype), start, stop, storage=storage, **cparams)
     expr = f.create_expr([x], ia.dtshape(shape, dtype), storage=storage, **cparams)
     out = expr.eval()
@@ -74,19 +74,20 @@ def f_1dim(out: udf.Array(float64, 1), x: udf.Array(float64, 1)):
 @pytest.mark.parametrize('f', [f_1dim])
 def test_1dim(f):
     shape = [10 * 1000]
-    pshape = [3 * 1000]
+    chunkshape = [3 * 1000]
+    blockshape = [3 * 100]
     dtype = np.float64
     cparams = dict(clib=ia.LZ4, clevel=5, nthreads=16)
     start, stop = 0, 10
 
-    cmp_udf_np(f, start, stop, shape, pshape, dtype, cparams)
+    cmp_udf_np(f, start, stop, shape, chunkshape, blockshape, dtype, cparams)
 
     # For the test function to return the same output as the Python function
     # the partition size must be multiple of 3. This is just an example of
     # how the result is not always the same as in the Python function.
-    pshape = [4 * 1000]
+    blockshape = [4 * 100]
     with pytest.raises(AssertionError):
-        cmp_udf_np(f, start, stop, shape, pshape, dtype, cparams)
+        cmp_udf_np(f, start, stop, shape, chunkshape, blockshape, dtype, cparams)
 
 
 @udf.jit
@@ -103,13 +104,13 @@ def f_2dim(out: udf.Array(float64, 2), x: udf.Array(float64, 2)):
 @pytest.mark.parametrize('f', [f_2dim])
 def test_2dim(f):
     shape = [400, 800]
-    pshape = [100, 200]
+    chunkshape = [60, 200]
+    blockshape = [11, 200]
     dtype = np.float64
-    blocksize = functools.reduce(lambda x, y: x * y, pshape) * dtype(0).itemsize
-    cparams = dict(clib=ia.LZ4, clevel=5, blocksize=blocksize)
+    cparams = dict(clib=ia.LZ4, clevel=5)
     start, stop = 0, 10
 
-    cmp_udf_np(f, start, stop, shape, pshape, dtype, cparams)
+    cmp_udf_np(f, start, stop, shape, chunkshape, blockshape, dtype, cparams)
 
 # TODO
 #@udf.jit

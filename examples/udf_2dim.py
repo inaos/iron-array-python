@@ -13,9 +13,9 @@ from iarray.py2llvm import float64, int64
 NITER = 10
 
 # Define array params
-shape = [10, 10]
-chunkshape = [10, 9]
-blockshape = [10, 9]
+shape = [1000, 1000]
+chunkshape = [100, 90]
+blockshape = [14, 11]
 
 dtype = np.float64
 
