@@ -31,7 +31,7 @@ def cmp_udf_np(f, start, stop, shape, chunkshape, blockshape, dtype, cparams):
     ia.cmp_arrays(out, out_ref)
 
 
-def cmp_udf_np_strict(f, start, stop, shape, pshape, dtype, cparams):
+def cmp_udf_np_strict(f, start, stop, shape, chunkshape, blockshape, dtype, cparams):
     """Same as cmp_udf_np but the comparison is done strictly. This is to say:
     numpy arrays are evaluated chunk by chunk, this way it works even when the
     function accesses elements other than the current element.
@@ -40,9 +40,10 @@ def cmp_udf_np_strict(f, start, stop, shape, pshape, dtype, cparams):
     - Input is always 1 linspace array, defined by start and stop
     - Only works for 1 dimension arrays
     """
-    assert len(pshape) == 1
+    assert len(chunkshape) == 1
+    assert len(blockshape) == 1
 
-    storage = ia.StorageProperties("blosc", pshape, pshape)
+    storage = ia.StorageProperties("blosc", chunkshape, blockshape)
     x = ia.linspace(ia.dtshape(shape, dtype), start, stop, storage=storage, **cparams)
     expr = f.create_expr([x], ia.dtshape(shape, dtype), storage=storage, **cparams)
     out = expr.eval()
@@ -50,7 +51,7 @@ def cmp_udf_np_strict(f, start, stop, shape, pshape, dtype, cparams):
     num = functools.reduce(lambda x, y: x * y, shape)
     x_ref = np.linspace(start, stop, num, dtype=dtype).reshape(shape)
     out_ref = np.empty(num, dtype=dtype).reshape(shape)
-    indices = range(0, num, pshape[0])
+    indices = range(0, num, blockshape[0])
     for out_ref_slice, x_ref_slice in zip(np.array_split(out_ref, indices), np.array_split(x_ref, indices)):
         f.py_function(out_ref_slice, x_ref_slice)
 
@@ -126,14 +127,14 @@ def f_avg(out: udf.Array(float64, 1), x: udf.Array(float64, 1)):
 
 @pytest.mark.parametrize('f', [f_avg])
 def test_avg(f):
-    shape = [100]
-    pshape = [6]
+    shape = [1000]
+    chunkshape = [60]
+    blockshape = [5]
     dtype = np.float64
-    blocksize = functools.reduce(lambda x, y: x * y, pshape) * dtype(0).itemsize
-    cparams = dict(clib=ia.LZ4, clevel=5, blocksize=blocksize)
+    cparams = dict(clib=ia.LZ4, clevel=5)
     start, stop = 0, 10
 
-    cmp_udf_np_strict(f, start, stop, shape, pshape, dtype, cparams)
+    cmp_udf_np_strict(f, start, stop, shape, chunkshape, blockshape, dtype, cparams)
 
 
 @udf.jit
@@ -153,12 +154,13 @@ def f_error_user(out: udf.Array(float64, 1), x: udf.Array(float64, 1)):
 @pytest.mark.parametrize('f', [f_error_bug, f_error_user])
 def test_error(f):
     shape = [20 * 1000]
-    pshape = [4 * 1000]
+    chunkshape = [4 * 1000]
+    blockshape = [1 * 1000]
     dtype = np.float64
     cparams = dict(clib=ia.LZ4, clevel=5, nthreads=1)
     start, stop = 0, 10
 
-    storage = ia.StorageProperties("blosc", pshape, pshape)
+    storage = ia.StorageProperties("blosc", chunkshape, blockshape)
     x = ia.linspace(ia.dtshape(shape, dtype), start, stop, storage=storage, **cparams)
     expr = f.create_expr([x], ia.dtshape(shape, dtype), storage=storage, **cparams)
 
