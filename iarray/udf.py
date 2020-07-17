@@ -39,8 +39,7 @@ class ArrayShape(types.ArrayShape):
         self.shape = shape
         self.array = array
 
-    def get(self, visitor, n):
-        builder = visitor.builder
+    def get(self, builder, n):
         n_ir = types.value_to_ir_value(builder, n, type_=int8)
 
         # Check bounds
@@ -82,6 +81,12 @@ class ArrayType(types.ArrayType):
 
         # Cast
         self.ptr = builder.bitcast(ptr, self.dtype.as_pointer(), name=self.name)
+
+        # Strides
+        self.strides_cache = []
+        for dim in range(self.ndim):
+            stride = self.strides.get(builder, dim)
+            self.strides_cache.append(stride)
 
     @property
     def _shape(self):

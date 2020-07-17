@@ -150,13 +150,13 @@ class ArrayShape:
     def __init__(self, shape):
         self.shape = shape
 
-    def get(self, visitor, n):
+    def get(self, builder, n):
         value = self.shape[n]
-        return visitor.builder.load(value)
+        return builder.load(value)
 
     def subscript(self, visitor, slice, ctx):
         assert ctx is ast.Load
-        return self.get(visitor, slice)
+        return self.get(visitor.builder, slice)
 
 
 class ArrayType(ComplexType):
@@ -191,9 +191,10 @@ class ArrayType(ComplexType):
         # x[i,j,k] = i * strides[0] + j * strides[1] + k * strides[2]
         # Strides represent the gap in bytes.
         for dim in range(self.ndim):
+            #stride = self.strides.get(visitor.builder, dim)
+            stride = self.strides_cache[dim]
             idx = slice[dim]
             idx = value_to_ir_value(builder, idx)
-            stride = self.strides.get(visitor, dim)
             offset = builder.mul(idx, stride)
             # printf(builder, "%d * %d = %d\n", idx, stride, offset)
             ptr = builder.gep(ptr, [offset])
