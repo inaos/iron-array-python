@@ -112,29 +112,28 @@ def test_2dim(f):
 
     cmp_udf_np(f, start, stop, shape, chunkshape, blockshape, dtype, cparams)
 
-# TODO
-#@udf.jit
-#def f_avg(out: udf.Array(float64, 1), x: udf.Array(float64, 1)):
-#    n = x.shape[0]
-#    for i in range(n):
-#        value = x[i]
-#        value += x[i - 1] if i > 0 else x[i]
-#        value += x[i + 1] if i < n - 1 else x[i]
-#        out[i] = value / 3
-#
-#    return 0
-#
-#
-#@pytest.mark.parametrize('f', [f_avg])
-#def test_avg(f):
-#    shape = [100]
-#    pshape = [6]
-#    dtype = np.float64
-#    blocksize = functools.reduce(lambda x, y: x * y, pshape) * dtype(0).itemsize
-#    cparams = dict(clib=ia.LZ4, clevel=5, blocksize=blocksize)
-#    start, stop = 0, 10
-#
-#    cmp_udf_np_strict(f, start, stop, shape, pshape, dtype, cparams)
+@udf.jit
+def f_avg(out: udf.Array(float64, 1), x: udf.Array(float64, 1)):
+    n = x.shape[0]
+    for i in range(n):
+        value = x[i]
+        value += x[i - 1] if i > 0 else x[i]
+        value += x[i + 1] if i < n - 1 else x[i]
+        out[i] = value / 3
+
+    return 0
+
+
+@pytest.mark.parametrize('f', [f_avg])
+def test_avg(f):
+    shape = [100]
+    pshape = [6]
+    dtype = np.float64
+    blocksize = functools.reduce(lambda x, y: x * y, pshape) * dtype(0).itemsize
+    cparams = dict(clib=ia.LZ4, clevel=5, blocksize=blocksize)
+    start, stop = 0, 10
+
+    cmp_udf_np_strict(f, start, stop, shape, pshape, dtype, cparams)
 
 
 @udf.jit
