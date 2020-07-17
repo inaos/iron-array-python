@@ -198,8 +198,6 @@ class ArrayType(ComplexType):
             # printf(builder, "%d * %d = %d\n", idx, stride, offset)
             ptr = builder.gep(ptr, [offset])
 
-        ptr = builder.bitcast(ptr, self.dtype.as_pointer())
-
         # Return the value
         if ctx is ast.Load:
             return builder.load(ptr)
