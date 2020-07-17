@@ -113,6 +113,30 @@ def test_2dim(f):
 
     cmp_udf_np(f, start, stop, shape, chunkshape, blockshape, dtype, cparams)
 
+
+@udf.jit
+def f_while(out: udf.Array(float64, 1), x: udf.Array(float64, 1)):
+    n = x.shape[0]
+    i: int32 = 0
+    while i < n:
+        out[i] = (math.sin(x[i]) - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
+        i = i + 1
+
+    return 0
+
+
+@pytest.mark.parametrize('f', [f_while])
+def test_while(f):
+    shape = [200]
+    chunkshape = [60]
+    blockshape = [11]
+    dtype = np.float64
+    cparams = dict(clib=ia.LZ4, clevel=5)
+    start, stop = 0, 10
+
+    cmp_udf_np(f, start, stop, shape, chunkshape, blockshape, dtype, cparams)
+
+
 @udf.jit
 def f_avg(out: udf.Array(float64, 1), x: udf.Array(float64, 1)):
     n = x.shape[0]
