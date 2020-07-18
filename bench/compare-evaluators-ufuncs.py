@@ -2,7 +2,7 @@ import iarray as ia
 from time import time
 import numpy as np
 import numexpr as ne
-from numba import jit
+import numba as nb
 from itertools import zip_longest as zip
 import math
 
@@ -52,8 +52,8 @@ def poly_python(x):
     return y
 
 
-# @jit(nopython=True, cache=True, parallel=True)
-@jit(nopython=True, cache=True)
+# @nb.jit(nopython=True, cache=True, parallel=True)
+@nb.jit(nopython=True, cache=True)
 def poly_numba(x):
     y = np.empty(x.shape, x.dtype)
     for i in range(len(x)):
@@ -61,7 +61,7 @@ def poly_numba(x):
     return y
 
 
-@jit(nopython=True, cache=True)
+@nb.jit(nopython=True, cache=True)
 def poly_numba2(x, y):
     for i in range(len(x)):
         y[i] = (np.cos(x[i]) - 1.35) * (x[i] - 4.45) * (np.sin(x[i]) - 8.5)
@@ -102,22 +102,29 @@ def do_regular_evaluation():
     print("Regular evaluate via numexpr (multi-thread):", round((time() - t0) / NITER, 4))
     np.testing.assert_almost_equal(y0, y1)
 
+    nb.set_num_threads(1)
+    y = x.copy()
     t0 = time()
     for i in range(NITER):
-        y1 = poly_numba(x)
+        #y1 = poly_numba(x)
+        poly_numba2(x, y)
     print("Regular evaluate via numba:", round((time() - t0) / NITER, 4))
     np.testing.assert_almost_equal(y0, y1)
 
+    nb.set_num_threads(nthreads)
+    y = x.copy()
     t0 = time()
     for i in range(NITER):
-        y1 = poly_numba(x)
-    print("Regular evaluate via numba (II):", round((time() - t0) / NITER, 4))
+        #y1 = poly_numba(x)
+        poly_numba2(x, y)
+    print("Regular evaluate via numba (multi-thread):", round((time() - t0) / NITER, 4))
     np.testing.assert_almost_equal(y0, y1)
 
     if NUMBA_PRECOMP:
         t0 = time()
         for i in range(NITER):
-            y1 = numba_prec.poly_double(x)
+            #y1 = numba_prec.poly_double(x)
+            y1[:] = numba_prec.poly_double(x)
         print("Regular evaluate via pre-compiled numba:", round((time() - t0) / NITER, 4))
         np.testing.assert_almost_equal(y0, y1)
 
@@ -161,6 +168,7 @@ def do_block_evaluation(chunkshape_):
     y1 = ia.iarray2numpy(ya)
     np.testing.assert_almost_equal(y0, y1)
 
+    nb.set_num_threads(1)
     t0 = time()
     for i in range(NITER):
         ya = ia.empty(ia.dtshape(shape=shape), **cparams)
@@ -171,13 +179,14 @@ def do_block_evaluation(chunkshape_):
     y1 = ia.iarray2numpy(ya)
     np.testing.assert_almost_equal(y0, y1)
 
+    nb.set_num_threads(nthreads)
     t0 = time()
     for i in range(NITER):
         ya = ia.empty(ia.dtshape(shape=shape), **cparams)
         for ((j, x), (k, y)) in zip(xa.iter_read_block(itershape), ya.iter_write_block(block_write)):
             # y[:] = poly_numba(x)
             poly_numba2(x, y)
-    print("Block evaluate via numba (II):", round((time() - t0) / NITER, 4))
+    print("Block evaluate via numba (multi-thread):", round((time() - t0) / NITER, 4))
     y1 = ia.iarray2numpy(ya)
     np.testing.assert_almost_equal(y0, y1)
 
