@@ -8,3 +8,4 @@ Welcome to ironArray's documentation!
 
    user-guide/creation
    user-guide/random
+   user-guide/matmul

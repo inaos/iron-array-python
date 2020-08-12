@@ -631,8 +631,13 @@ def get_slice(ctx, data, start, stop, view, storage):
         start_[i] = start[i]
         stop_[i] = stop[i]
 
+    cdef ciarray.iarray_storage_t storage_
+    if storage is not None:
+        set_storage(storage, &storage_)
+
     cdef ciarray.iarray_container_t *c
-    ciarray.iarray_get_slice(ctx_, data_, start_, stop_, view, storage_, flags, &c)
+
+    ciarray.iarray_get_slice(ctx_, data_, start_, stop_, view, &storage_, flags, &c)
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     b =  IArray(ctx, c_c)
