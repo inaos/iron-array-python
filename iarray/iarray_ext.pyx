@@ -38,7 +38,7 @@ cdef set_storage(storage, ciarray.iarray_storage_t *cstore):
         cstore.backend = ciarray.IARRAY_STORAGE_BLOSC
         for i in range(len(storage.chunkshape)):
             cstore.chunkshape[i] = storage.chunkshape[i]
-            cstore.blockshape[i] = storage.chunkshape[i]
+            cstore.blockshape[i] = storage.blockshape[i]
 
     if storage.filename is not None:
         filename = storage.filename.encode("utf-8") if isinstance(storage.filename, str) else storage.filename
@@ -268,7 +268,9 @@ cdef class RandomContext:
         self._r_ctx = r_ctx
 
     def __dealloc__(self):
-        ciarray.iarray_random_ctx_free(self._ctx._ctx, &self._r_ctx)
+        if self._ctx is not None and self._ctx._ctx != NULL:
+            ciarray.iarray_random_ctx_free(self._ctx._ctx, &self._r_ctx)
+            self._ctx = None
 
     def to_capsule(self):
         return PyCapsule_New(self._r_ctx, "iarray_random_ctx_t*", NULL)
@@ -292,7 +294,10 @@ cdef class Container:
         self._c = c_
 
     def __dealloc__(self):
-        ciarray.iarray_container_free(self._ctx._ctx, &self._c)
+        if self._ctx is not None and self._ctx._ctx != NULL:
+            ciarray.iarray_container_free(self._ctx._ctx, &self._c)
+            self._ctx = None
+
 
     def iter_read_block(self, block=None):
         return ReadBlockIter(self, block)
@@ -317,10 +322,19 @@ cdef class Container:
         return tuple(shape)
 
     @property
-    def chunkshape(self):
+    def backend(self):
         cdef ciarray.iarray_storage_t storage
         ciarray.iarray_get_storage(self._ctx._ctx, self._c, &storage)
         if storage.backend == ciarray.IARRAY_STORAGE_PLAINBUFFER:
+            return "Plainbuffer"
+        else:
+            return "Blosc"
+
+    @property
+    def chunkshape(self):
+        cdef ciarray.iarray_storage_t storage
+        ciarray.iarray_get_storage(self._ctx._ctx, self._c, &storage)
+        if storage.backend == ciarray.IARRAY_STORAGE_PLAINBUFFER or self.is_view():
             return None
         chunkshape = [storage.chunkshape[i] for i in range(self.ndim)]
         return tuple(chunkshape)
@@ -329,7 +343,7 @@ cdef class Container:
     def blockshape(self):
         cdef ciarray.iarray_storage_t storage
         ciarray.iarray_get_storage(self._ctx._ctx, self._c, &storage)
-        if storage.backend == ciarray.IARRAY_STORAGE_PLAINBUFFER:
+        if storage.backend == ciarray.IARRAY_STORAGE_PLAINBUFFER or self.is_view():
             return None
         blockshape = [storage.blockshape[i] for i in range(self.ndim)]
         return tuple(blockshape)
@@ -347,13 +361,6 @@ cdef class Container:
         ciarray.iarray_container_info(self._c, &nbytes, &cbytes)
         return <double>nbytes / <double>cbytes
 
-    def __str__(self):
-        res = f"IARRAY CONTAINER OBJECT\n"
-        ndim = f"    Dimensions: {self.ndim}\n"
-        shape = f"    Shape: {self.shape}\n"
-        dtype = f"    Datatype: {self.dtype}"
-        return res + ndim + shape + dtype
-
     def __getitem__(self, item):
         if self.ndim == 1:
             item = [item]
@@ -361,6 +368,10 @@ cdef class Container:
         stop = [s.stop if s.stop is not None else sh for s, sh in zip(item, self.shape)]
         return get_slice(self._ctx, self, start, stop, True, None)
 
+    def is_view(self):
+        cdef ciarray.bool view
+        ciarray.iarray_is_view(self._ctx._ctx, self._c, &view)
+        return view
 
 cdef class Expression:
     cdef object expression
@@ -377,7 +388,9 @@ cdef class Expression:
         self.dtshape = None
 
     def __dealloc__(self):
-        ciarray.iarray_expr_free(self._ctx._ctx, &self._e)
+        if self._ctx is not None and self._ctx._ctx != NULL:
+            ciarray.iarray_expr_free(self._ctx._ctx, &self._e)
+            self._ctx = None
 
     def bind(self, var, c):
         var2 = var.encode("utf-8") if isinstance(var, str) else var
@@ -415,7 +428,7 @@ cdef class Expression:
     def eval(self):
         cdef ciarray.iarray_container_t *c;
         if ciarray.iarray_eval(self._e, &c) != 0:
-            raise ValueError(f"Error in evaluating expr: {self.expression}")
+            raise RuntimeError(f"Error in evaluating expr: {self.expression}")
         c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
 
         return IArray(self._ctx, c_c)
@@ -970,7 +983,7 @@ def matmul(cfg, a, b, block_a, block_b):
 
     cdef ciarray.iarray_storage_t store_
     set_storage(cfg._storage, &store_)
-    print(cfg._storage)
+
     flags = 0 if cfg._storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     ciarray.iarray_container_new(ctx_, &dtshape_, &store_, flags, &c)

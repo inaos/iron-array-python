@@ -3,60 +3,59 @@ import numpy as np
 import iarray as ia
 
 
-NTHREADS = 20
-PSHAPE = 4 * 1000 * 1000
+NTHREADS = 4
+CHUNKSHAPE = 100 * 1000
+BLOCKSHAPE = 16 * 1000
 
 
 def evaluate(command):
     iax, iay, iaz = (None,) * 3
-    shape, pshape, dtype, cparams = (None,) * 4
+    shape, chunkshape, blockshape, dtype, cparams = (None,) * 5
 
     def setup(n):
         # iarray
-        global iax, iay, iaz, shape, pshape, dtype, cparams
+        global iax, iay, iaz, shape, chunkshape, blockshape, dtype, cparams
         shape = [n]
-        pshape = [PSHAPE]
+        chunkshape = [CHUNKSHAPE]
+        blockshape = [BLOCKSHAPE]
         dtype = np.float64
-        cparams = dict(clib=ia.LZ4, clevel=5, nthreads=NTHREADS)  # , blocksize=1024)
-        iax = ia.linspace(ia.dtshape(shape, pshape, dtype), 0, 1, **cparams)
-        iay = iax.copy(**cparams)
-        iaz = iax.copy(**cparams)
+        cparams = dict(clib=ia.LZ4, clevel=5, nthreads=NTHREADS)
+
+        iax = ia.linspace(ia.dtshape(shape, dtype), 0, 1,
+                          storage=ia.StorageProperties("blosc", chunkshape, blockshape), **cparams)
+        iay = iax.copy(storage=ia.StorageProperties("blosc", chunkshape, blockshape), **cparams)
+        iaz = iax.copy(storage=ia.StorageProperties("blosc", chunkshape, blockshape), **cparams)
 
         return command
 
     def ia_llvm_parallel(command, nthreads):
-        global iax, iay, iaz, shape, pshape, dtype, cparams
+        global iax, iay, iaz, shape, chunkshape, blockshape, dtype, cparams
         cparams['nthreads'] = nthreads
-        expr = ia.Expr(eval_flags="iterblosc2", **cparams)
+        eval_flags = ia.EvalFlags(method="iterblosc2", engine="compiler")
+        expr = ia.Expr(eval_flags=eval_flags, **cparams)
         expr.bind('x', iax)
         expr.bind('y', iay)
         expr.bind('z', iaz)
+        expr.bind_out_properties(ia.dtshape(shape, dtype), ia.StorageProperties("blosc", chunkshape, blockshape))
         expr.compile(command)
-        expr.eval(shape, pshape, dtype)
+        expr.eval()
 
     perfplot.show(
         setup=setup,
         # n_range=[int(k) for k in range(int(1e8), int(2e8), int(3e7))],
-        n_range=[int(k) for k in range(int(1e7), int(2e8), int(1e7))],
+        n_range=[int(k) for k in range(int(1e5), int(1e6), int(1e5))],
         kernels=[lambda x: ia_llvm_parallel(x, 1),
                  lambda x: ia_llvm_parallel(x, 2),
+                 lambda x: ia_llvm_parallel(x, 3),
                  lambda x: ia_llvm_parallel(x, 4),
-                 lambda x: ia_llvm_parallel(x, 8),
-                 lambda x: ia_llvm_parallel(x, 12),
-                 lambda x: ia_llvm_parallel(x, 16),
-                 lambda x: ia_llvm_parallel(x, 20),
                  ],
-        labels=[command + " nthreads=1",
-                command + " nthreads=2",
-                command + " nthreads=4",
-                command + " nthreads=8",
-                command + " nthreads=12",
-                command + " nthreads=16",
-                command + " nthreads=20",
+        labels=["nthreads=1",
+                "nthreads=2",
+                "nthreads=3",
+                "nthreads=4",
                 ],
         logx=False,
         logy=False,
-        automatic_order=False,
         title="Scalability for iarray with LLVM + iterblosc (3 operands)",
         xlabel='len(x)',
         equality_check=None,

@@ -10,6 +10,7 @@ import typing
 
 # Requirements
 from llvmlite import binding, ir
+from llvmlite.llvmpy.core import Module
 
 from . import default
 from . import types
@@ -1082,7 +1083,7 @@ class Function:
         node = ast.parse(self.py_source)
 
         # (2) IR Signature
-        self.ir_module = ir.Module()
+        self.ir_module = Module()
         ir_signature = self.get_ir_signature(node, verbose, *args)
         self.ir_signature = ir_signature
 

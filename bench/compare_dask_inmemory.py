@@ -11,14 +11,17 @@ import matplotlib.pyplot as plt
 
 
 DTYPE = np.float64
-NTHREADS = 4
+NTHREADS = 8
 CLEVEL = 5
 CLIB = ia.LZ4
 
-compressor = Blosc(cname='lz4', clevel=CLEVEL, shuffle=Blosc.SHUFFLE)
-shapes = np.logspace(5, 8, 10, dtype=np.int64)
-pshape = (100 * 1000,)
-# pshape = None  # use a plainbuffer
+shapes = np.logspace(6, 8, 10, dtype=np.int64)
+chunkshape = (100 * 1000,)
+blockshape = (16 * 1000,)
+
+compressor = Blosc(cname='lz4', clevel=CLEVEL, shuffle=Blosc.SHUFFLE,
+                   blocksize=int(np.prod(blockshape) * np.dtype(DTYPE).itemsize))
+cparams = dict(clib=CLIB, clevel=CLEVEL, nthreads=NTHREADS)
 
 sexpr = "(sin(x) - 3.2) * (cos(x) + 1.2)"
 
@@ -29,20 +32,27 @@ t_ratio = []
 for i, shape in enumerate(shapes):
     shape = (shape,)
     print(shape)
-    data = ia.arange(ia.dtshape(shape, pshape=pshape, dtype=DTYPE), clib=CLIB, clevel=CLEVEL)
+
+    storage = ia.StorageProperties("blosc", chunkshape, blockshape)
+
+    data = ia.linspace(ia.dtshape(shape, dtype=DTYPE), 0, 1, storage=storage, **cparams)
 
     t0 = time()
     # TODO: the next crashes if eval_flags == "iterblosc" and DTYPE = np.float32
-    expr = ia.Expr(eval_flags="iterblosc", blocksize=0, nthreads=NTHREADS, clevel=CLEVEL)
+    eval_flags = ia.EvalFlags(method="iterblosc2", engine="compiler")
+    expr = ia.Expr(eval_flags=eval_flags, **cparams)
     expr.bind("x", data)
+    expr.bind_out_properties(ia.dtshape(shape, DTYPE), storage=storage)
     expr.compile(sexpr)
-    res1 = expr.eval(shape, pshape=pshape, dtype=DTYPE)
+    res1 = expr.eval()
     t1 = time()
     t_iarray.append(t1 - t0)
+
     print("Time for computing '%s' expression (via ia.Expr()): %.3f" % (sexpr, (t1 - t0)))
 
-    data2 = zarr.zeros(shape=shape, chunks=pshape, dtype=DTYPE, compressor=compressor)
-    for info, block in data.iter_read_block():
+    data2 = zarr.zeros(shape=shape, chunks=chunkshape, dtype=DTYPE, compressor=compressor)
+
+    for info, block in data.iter_read_block(chunkshape):
         sl = tuple([slice(i, i + s) for i, s in zip(info.elemindex, info.shape)])
         data2[sl] = block[:]
 
@@ -51,7 +61,7 @@ for i, shape in enumerate(shapes):
     with dask.config.set(scheduler=scheduler):
         d = da.from_zarr(data2)
         res = (np.sin(d) - 3.2) * (np.cos(d) + 1.2)
-        z2 = zarr.empty(shape, dtype=DTYPE, compressor=compressor, chunks=pshape)
+        z2 = zarr.empty(shape, dtype=DTYPE, compressor=compressor, chunks=chunkshape)
         da.to_zarr(res, z2)
     t1 = time()
     t_dask.append(t1 - t0)

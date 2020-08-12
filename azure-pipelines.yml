@@ -58,12 +58,14 @@ steps:
       fi
   displayName: Take ownership of conda installation
 
-- task: CacheBeta@0
-  inputs:
-    key: v1 | conda | $(Agent.OS)
-    path: $(CONDA_CACHE_FOLDER)
-    cacheHitVar: CACHE_RESTORED
-  displayName: 'Cache CONDA'
+  # Caching post-task takes quite a bit of time.  Disabling it.
+  # See: https://github.com/inaos/iron-array/issues/311
+  #- task: CacheBeta@0
+  #  inputs:
+  #  key: v1 | conda | $(Agent.OS)
+  #  path: $(CONDA_CACHE_FOLDER)
+  #  cacheHitVar: CACHE_RESTORED
+  #displayName: 'Cache CONDA'
 
 - bash: |
     conda create --yes --quiet --name iArrayEnv

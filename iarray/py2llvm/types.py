@@ -7,6 +7,12 @@ try:
 except ImportError:
     np = None
 
+try:
+    from numba.core.cgutils import printf
+except ImportError:
+    def printf(builder, fmt, *args):
+        pass
+
 
 #
 # Basic IR types
@@ -22,6 +28,7 @@ int64 = ir.IntType(64)
 
 # Pointers
 int8p = int8.as_pointer()
+int32p = int32.as_pointer()
 int64p = int64.as_pointer()
 
 # Constants
@@ -143,13 +150,13 @@ class ArrayShape:
     def __init__(self, shape):
         self.shape = shape
 
-    def get(self, visitor, n):
+    def get(self, builder, n):
         value = self.shape[n]
-        return visitor.builder.load(value)
+        return builder.load(value)
 
     def subscript(self, visitor, slice, ctx):
         assert ctx is ast.Load
-        return self.get(visitor, slice)
+        return self.get(visitor.builder, slice)
 
 
 class ArrayType(ComplexType):
@@ -179,22 +186,18 @@ class ArrayType(ComplexType):
         if isinstance(ptr.type.pointee, ir.ArrayType):
             ptr = builder.gep(ptr, [zero])
 
-        # Support for multidimensional arrays.
-        # Let's we have 3 dimensions (d0, d1, d2), each with a length (dl0,
-        # dl1, dl2). Then the size of the dimensions (ds0, ds1, ds2) is
-        # calculated multiplying the length of the next dimensions, for
-        # example: ds0 = dl1 * dl2
-        # Because we assume the array is stored using the C convention.
-        dim = 1
-        while slice:
-            idx = slice.pop(0)
+        # Support for multidimensional arrays. Calculate position using
+        # strides, e.g. for a 3 dimension array:
+        # x[i,j,k] = i * strides[0] + j * strides[1] + k * strides[2]
+        # Strides represent the gap in bytes.
+        for dim in range(self.ndim):
+            #stride = self.strides.get(visitor.builder, dim)
+            stride = self.strides_cache[dim]
+            idx = slice[dim]
             idx = value_to_ir_value(builder, idx)
-            for i in range(dim, self.ndim):
-                dim_len = self.shape.get(visitor, dim)
-                idx = builder.mul(idx, dim_len)
-
-            ptr = builder.gep(ptr, [idx])
-            dim += 1
+            offset = builder.mul(idx, stride)
+            # printf(builder, "%d * %d = %d\n", idx, stride, offset)
+            ptr = builder.gep(ptr, [offset])
 
         # Return the value
         if ctx is ast.Load:
