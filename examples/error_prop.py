@@ -1,3 +1,6 @@
+# Exercises ia.matmul().  Notice that the differences in precision are due because the order of computations
+# is different than in numpy (or BLAS).  This is because the algorithm uses different blocks in iarray.
+
 import iarray as ia
 import numpy as np
 
@@ -8,10 +11,10 @@ bbshape = [100, 100]
 
 dtype = np.float64
 
-a = ia.linspace(ia.dtshape(ashape, None, dtype), -1, 1)
+a = ia.linspace(ia.dtshape(ashape, dtype), -1, 1)
 an = ia.iarray2numpy(a)
 
-b = ia.linspace(ia.dtshape(bshape, None, dtype), -1, 1)
+b = ia.linspace(ia.dtshape(bshape, dtype), -1, 1)
 bn = ia.iarray2numpy(b)
 
 c = ia.matmul(a, b, abshape, bbshape)

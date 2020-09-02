@@ -7,15 +7,15 @@ import numexpr as ne
 # Define array params
 dtype = np.float64
 shape = [16000, 8000]
-pshape = [1000, 800]
+cshape = [1000, 800]
 bshape = [100, 100]
 nthreads = 8
 
 sexpr = "(cos(%s) - sin(%s)) * (%s - 1.35) * (%s - 4.45)"
 npexpr = "(np.cos(%s) - np.sin(%s)) * (%s - 1.35) * (%s - 4.45)"
 
-# Create initial containers
-storage = ia.StorageProperties(backend="blosc", chunkshape=pshape, blockshape=bshape)
+# Create initial arrays
+storage = ia.StorageProperties(backend="blosc", chunkshape=cshape, blockshape=bshape)
 kwargs = dict(storage=storage, nthreads=nthreads, clevel=9, clib=ia.LZ4, fp_mantissa_bits=24)
 
 size = shape[0] * shape[1]

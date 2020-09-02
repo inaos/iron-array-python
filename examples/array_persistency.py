@@ -1,18 +1,17 @@
+# Store an array persistently and load it back.
+
 import iarray as ia
 import numpy as np
-import os.path
 
 
 filename = 'arange.iarray'
 shape = (7, 13)
-pshape = (2, 3)
 size = int(np.prod(shape))
-
 a = np.arange(size, dtype=np.float64).reshape(shape)
 
-if not os.path.isfile(filename):
-    print(f"Creating {filename}")
-    b = ia.numpy2iarray(a, pshape, storage=ia.StorageProperties("blosc", True, filename))
+print(f"Creating {filename}")
+store = ia.StorageProperties("blosc", chunkshape=(2,3), blockshape=(1,3), filename=filename)
+b = ia.numpy2iarray(a, storage=store)
 
 print(f"Reading {filename}")
 c = ia.load(filename)

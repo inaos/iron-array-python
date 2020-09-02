@@ -1,3 +1,5 @@
+# This uses the binary code in LLVM .bc file for evaluating expressions.  Only meant for developers, really.
+
 import iarray as ia
 import numpy as np
 
@@ -8,10 +10,11 @@ NITER = 10
 # shape = [10000, 2000]
 # pshape = [1000, 200]
 shape = [10 * 1000 * 1000]
-pshape = [200 * 1000]
+cshape = [200 * 1000]
+bshape = [20 * 1000]
 dtype = np.float64
 
-storage = ia.StorageProperties("blosc", pshape, pshape)
+storage = ia.StorageProperties("blosc", cshape, bshape)
 dtshape = ia.dtshape(shape, dtype)
 
 # Create initial containers

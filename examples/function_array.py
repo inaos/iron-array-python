@@ -1,3 +1,5 @@
+# This uses different computation methods inside (and outside) iarray and compares performance.
+
 from time import time
 import iarray as ia
 import numpy as np
@@ -7,16 +9,16 @@ import numexpr as ne
 # Define array params
 dtype = np.float64
 shape = [10000, 8000]
-pshape = [1000, 800]
+cshape = [1000, 800]
 bshape = [100, 100]
-nthreads = 10
+nthreads = 8
 eval_flags = ia.EvalFlags(method="iterblosc2", engine="auto")
-storage = ia.StorageProperties(backend="blosc", chunkshape=pshape, blockshape=bshape,
+storage = ia.StorageProperties(backend="blosc", chunkshape=cshape, blockshape=bshape,
                                enforce_frame=False, filename=None)
 kwargs = dict(eval_flags=eval_flags, storage=storage, nthreads=nthreads, clevel=9, clib=ia.LZ4)
 
 
-# Create initial containers
+# Create initial arrays
 ia1 = ia.linspace(ia.dtshape(shape, dtype), 0, 10, **kwargs)
 np1 = ia.iarray2numpy(ia1)
 
