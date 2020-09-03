@@ -1,3 +1,5 @@
+# matmul comparsion with numpy.
+
 import iarray as ia
 import numpy as np
 from time import time

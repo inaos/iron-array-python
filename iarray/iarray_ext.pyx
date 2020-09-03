@@ -999,9 +999,7 @@ def matmul(cfg, a, b, block_a, block_b):
     for i in range(b.ndim):
         block_b_[i] = block_b[i]
 
-
     err = ciarray.iarray_linalg_matmul(ctx_, a_, b_, c, block_a_, block_b_, ciarray.IARRAY_OPERATOR_GENERAL)
-
     if err != 0:
         raise AttributeError
 
