@@ -25,10 +25,10 @@ def cmp_arrays(a, b, success=None):
         b = ia.iarray2numpy(b)
 
     if a.dtype == np.float64 and b.dtype == np.float64:
-        rtol = 1e-10
+        tol = 1e-14
     else:
-        rtol = 1e-6
-    np.testing.assert_allclose(a, b, rtol=rtol)
+        tol = 1e-6
+    np.testing.assert_allclose(a, b, rtol=tol, atol=tol)
 
     if success is not None:
         print(success)
