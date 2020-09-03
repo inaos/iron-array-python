@@ -5,13 +5,13 @@ import numpy as np
 
 # Expression
 @pytest.mark.parametrize("method, engine, shape, chunkshape, blockshape, dtype, expression", [
-    ("iterblosc2", "compiler", [100, 100], [23, 32], [10, 10], np.float64, "cos(x)"),  # TODO: fix this
-    ("iterblosc2", "compiler", [100, 100], [10, 99], [4, 12], np.float64, "x"),
-    ("iterblosc2", "interpreter", [1000], [110], [55], np.float32, "x"),
+    ("iterblosc", "compiler", [100, 100], [23, 32], [10, 10], np.float64, "cos(x)"),  # TODO: fix this
+    ("iterblosc", "compiler", [100, 100], [10, 99], [4, 12], np.float64, "x"),
+    ("iterblosc", "interpreter", [1000], [110], [55], np.float32, "x"),
     ("iterblosc", "compiler", [1000], [100], [30], np.float64, "(cos(x) - 1.35) * (sin(x) - 4.45) * tan(x - 8.5)"),
     ("auto", "auto", [1000], [100], [25], np.float64, "(cos(x) - 1.35) * (sin(x) - 4.45) * tan(x - 8.5)"),
     ("iterchunk", "interpreter", [1000], [367], [77], np.float32, "(abs(-x) - 1.35) * ceil(x) * floor(x - 8.5)"),
-    ("iterblosc2", "compiler", [100, 100, 100], [25, 25, 33], [12, 16, 8], np.float64,
+    ("iterblosc", "compiler", [100, 100, 100], [25, 25, 33], [12, 16, 8], np.float64,
      "sinh(x) + (cosh(x) - 1.35) - tanh(x + .2)"),
     ("iterblosc", "compiler", [223], [100], [30], np.float64, "sinh(x) + (cosh(x) - 1.35) - tanh(x + .2)"),
     ("iterchunk", "auto", [100, 100, 55], [10, 5, 10], [3, 4, 3], np.float64,
@@ -21,7 +21,7 @@ import numpy as np
     ("auto", "auto", [100, 100], None, None, np.float64, "(x - cos(1)) * 2"),
     ("iterchunk", "interpreter", [8, 6, 7, 4, 5], None, None, np.float32,
      "(x - cos(y)) * (sin(x) + y) + 2 * x + y"),
-    ("iterblosc2", "compiler",  [17, 12, 15, 15, 8], [8, 6, 7, 4, 5], [4, 3, 3, 4, 5], np.float64,
+    ("iterblosc", "compiler",  [17, 12, 15, 15, 8], [8, 6, 7, 4, 5], [4, 3, 3, 4, 5], np.float64,
      "(x - cos(y)) * (sin(x) + y) + 2 * x + y"),
 ])
 def test_expression(method, engine, shape, chunkshape, blockshape, dtype, expression):
@@ -35,7 +35,7 @@ def test_expression(method, engine, shape, chunkshape, blockshape, dtype, expres
                                        enforce_frame=False,
                                        filename=None)
 
-    eval_flags = ia.EvalFlags(method=method, engine=engine)
+    eval_flags = ia.EvalFlags(method=method)
 
     x = ia.linspace(ia.dtshape(shape, dtype), 2.1, .2, storage=storage)
     y = ia.linspace(ia.dtshape(shape, dtype), 0, 1, storage=storage)
@@ -85,7 +85,7 @@ def test_ufuncs(ufunc, ia_expr):
     shape = [200, 300]
     chunkshape = [40, 40]
     bshape = [10, 17]
-    eval_flags = ia.EvalFlags(method="iterchunk", engine="auto")
+    eval_flags = ia.EvalFlags(method="iterchunk")
 
     if chunkshape is None:
         storage = ia.StorageProperties(backend="plainbuffer")
@@ -163,7 +163,7 @@ def test_expr_ufuncs(ufunc):
     shape = [200, 300]
     chunkshape = [40, 50]
     bshape = [20, 20]
-    eval_flags = ia.EvalFlags(method="iterchunk", engine="auto")
+    eval_flags = ia.EvalFlags(method="iterchunk")
     storage = ia.StorageProperties(backend="blosc",
                                    chunkshape=chunkshape,
                                    blockshape=bshape,
@@ -210,7 +210,7 @@ def test_expr_fusion(expr):
     shape = [200, 300]
     chunkshape = [40, 50]
     bshape = [20, 20]
-    eval_flags = ia.EvalFlags(method="iterchunk", engine="auto")
+    eval_flags = ia.EvalFlags(method="iterchunk")
     storage = ia.StorageProperties(backend="blosc",
                                    chunkshape=chunkshape,
                                    blockshape=bshape,

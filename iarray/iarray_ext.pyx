@@ -170,8 +170,6 @@ cdef class _Config:
 
         if eval_flags.method == "auto":
             method = ciarray.IARRAY_EVAL_METHOD_AUTO
-        elif eval_flags.method == "iterblosc2":
-            method = ciarray.IARRAY_EVAL_METHOD_ITERBLOSC2
         elif eval_flags.method == "iterblosc":
             method = ciarray.IARRAY_EVAL_METHOD_ITERBLOSC
         elif eval_flags.method == "iterchunk":
@@ -179,16 +177,7 @@ cdef class _Config:
         else:
             raise ValueError("eval_flags method not recognized:", eval_flags.method)
 
-        if eval_flags.engine == "auto":
-            engine = ciarray.IARRAY_EVAL_ENGINE_AUTO
-        elif eval_flags.engine == "interpreter":
-            engine = ciarray.IARRAY_EVAL_ENGINE_INTERPRETER
-        elif eval_flags.engine == "compiler":
-            engine = ciarray.IARRAY_EVAL_ENGINE_COMPILER
-        else:
-            raise ValueError("eval_flags engine not recognized:", eval_flags.engine)
-
-        self._cfg.eval_flags = method | (engine << 3)
+        self._cfg.eval_flags = method
         self._cfg.max_num_threads = max_num_threads
         self._cfg.fp_mantissa_bits = fp_mantissa_bits
 

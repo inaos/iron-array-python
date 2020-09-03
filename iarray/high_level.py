@@ -24,7 +24,12 @@ def cmp_arrays(a, b, success=None):
     if type(b) is ia.high_level.IArray:
         b = ia.iarray2numpy(b)
 
-    np.testing.assert_almost_equal(a, b)
+    if a.dtype == np.float64 and b.dtype == np.float64:
+        rtol = 1e-10
+    else:
+        rtol = 1e-6
+    np.testing.assert_allclose(a, b, rtol=rtol)
+
     if success is not None:
         print(success)
 
@@ -83,13 +88,12 @@ class RandomContext(ext.RandomContext):
 
 class EvalFlags:
 
-    def __init__(self, method="auto", engine="auto"):
+    def __init__(self, method="auto"):
         self.method = method
-        self.engine = engine
 
     def to_tuple(self):
-        EvalFlags = namedtuple('eval_flags', 'method engine')
-        return EvalFlags(self.method, self.engine)
+        EvalFlags = namedtuple('eval_flags', 'method')
+        return EvalFlags(self.method)
 
 
 class Config(ext._Config):

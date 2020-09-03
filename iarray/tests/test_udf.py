@@ -127,9 +127,9 @@ def f_while(out: udf.Array(float64, 1), x: udf.Array(float64, 1)):
 
 @pytest.mark.parametrize('f', [f_while])
 def test_while(f):
-    shape = [200]
-    chunkshape = [60]
-    blockshape = [11]
+    shape = [2000]
+    chunkshape = [1000]
+    blockshape = [300]
     dtype = np.float64
     cparams = dict(clib=ia.LZ4, clevel=5)
     start, stop = 0, 10
@@ -152,8 +152,8 @@ def f_avg(out: udf.Array(float64, 1), x: udf.Array(float64, 1)):
 @pytest.mark.parametrize('f', [f_avg])
 def test_avg(f):
     shape = [1000]
-    chunkshape = [60]
-    blockshape = [5]
+    chunkshape = [300]
+    blockshape = [100]
     dtype = np.float64
     cparams = dict(clib=ia.LZ4, clevel=5)
     start, stop = 0, 10
