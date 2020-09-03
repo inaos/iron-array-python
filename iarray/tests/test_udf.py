@@ -6,7 +6,7 @@ import pytest
 
 import iarray as ia
 from iarray import udf
-from iarray.py2llvm import float64
+from iarray.udf import int32
 
 
 def cmp_udf_np(f, start, stop, shape, chunkshape, blockshape, dtype, cparams):
@@ -59,7 +59,7 @@ def cmp_udf_np_strict(f, start, stop, shape, chunkshape, blockshape, dtype, cpar
 
 
 @udf.jit
-def f_1dim(out: udf.Array(float64, 1), x: udf.Array(float64, 1)):
+def f_1dim(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
     n = out.shape[0]
     for i in range(n):
         if i % 3 == 0:
@@ -92,7 +92,7 @@ def test_1dim(f):
 
 
 @udf.jit
-def f_2dim(out: udf.Array(float64, 2), x: udf.Array(float64, 2)):
+def f_2dim(out: udf.Array(udf.float64, 2), x: udf.Array(udf.float64, 2)):
     n = x.shape[0]
     m = x.shape[1]
     for i in range(n):
@@ -115,7 +115,7 @@ def test_2dim(f):
 
 
 @udf.jit
-def f_while(out: udf.Array(float64, 1), x: udf.Array(float64, 1)):
+def f_while(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
     n = x.shape[0]
     i: int32 = 0
     while i < n:
@@ -138,7 +138,7 @@ def test_while(f):
 
 
 @udf.jit
-def f_avg(out: udf.Array(float64, 1), x: udf.Array(float64, 1)):
+def f_avg(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
     n = x.shape[0]
     for i in range(n):
         value = x[i]
@@ -162,7 +162,7 @@ def test_avg(f):
 
 
 @udf.jit
-def f_error_bug(out: udf.Array(float64, 1), x: udf.Array(float64, 1)):
+def f_error_bug(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
     n = out.shape[1]
     for i in range(n):
         out[i] = (math.sin(x[i]) - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
@@ -171,7 +171,7 @@ def f_error_bug(out: udf.Array(float64, 1), x: udf.Array(float64, 1)):
 
 
 @udf.jit
-def f_error_user(out: udf.Array(float64, 1), x: udf.Array(float64, 1)):
+def f_error_user(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
     return 1
 
 

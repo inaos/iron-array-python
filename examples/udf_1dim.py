@@ -7,8 +7,7 @@ from time import time
 import numpy as np
 
 import iarray as ia
-from iarray.udf import jit, Array
-from iarray.py2llvm import float64, int64
+from iarray.udf import jit, Array, float64, int64
 
 
 # Number of iterations per benchmark
