@@ -1,3 +1,6 @@
+# Performance of User Defined Functions (UDF) compared with internal compiler.
+# This exercises conditionals inside of a UDF function.
+
 from functools import reduce
 from time import time
 
@@ -36,23 +39,22 @@ def f(out: Array(float64, 1), x: Array(float64, 1)) -> int64:
     return 0
 
 
-if __name__ == '__main__':
-    # Create input arrays
-    ia_in = ia.linspace(dtshape, 0, 10, storage=storage, **cparams)
-    np_in = np.linspace(0, 10, reduce(lambda x, y: x * y, shape), dtype=dtype).reshape(shape)
-    ia.cmp_arrays(np_in, ia_in)
+# Create input arrays
+ia_in = ia.linspace(dtshape, 0, 10, storage=storage, **cparams)
+np_in = np.linspace(0, 10, reduce(lambda x, y: x * y, shape), dtype=dtype).reshape(shape)
+ia.cmp_arrays(np_in, ia_in)
 
-    print(np_in)
+print(np_in)
 
-    # iarray udf evaluation
-    print("iarray evaluation ...")
-    expr = f.create_expr([ia_in], dtshape, storage=storage, **cparams)
-    t0 = time()
-    for i in range(NITER):
-        ia_out = expr.eval()
-    print("Time for py2llvm eval:", round((time() - t0) / NITER, 3))
-    ia_out = ia.iarray2numpy(ia_out)
-    print(ia_out)
+# iarray UDF evaluation
+print("iarray UDF evaluation ...")
+expr = f.create_expr([ia_in], dtshape, storage=storage, **cparams)
+t0 = time()
+for i in range(NITER):
+    ia_out = expr.eval()
+print("Time for UDF eval:", round((time() - t0) / NITER, 3))
+ia_out = ia.iarray2numpy(ia_out)
+print(ia_out)
 
 #   # numpy evaluation
 #   print("numpy evaluation...")
