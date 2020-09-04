@@ -152,7 +152,7 @@ print("Time for computing '%s' expression (via numexpr): %.3f" % (sexpr, (t1 - t
 # Compute the accumulation of the random slices into one
 @profile
 def compute_expr(sexpr, x):
-    expr = ia.Expr(eval_flags="iterblock", blocksize=BLOCKSIZE, nthreads=NTHREADS, clevel=CLEVEL)
+    expr = ia.Expr(eval_method="iterblock", blocksize=BLOCKSIZE, nthreads=NTHREADS, clevel=CLEVEL)
     if not IN_MEMORY:
         x = ia.load(in_filename)
     expr.bind("x", x)

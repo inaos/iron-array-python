@@ -12,10 +12,10 @@ shape = [10000, 8000]
 cshape = [1000, 800]
 bshape = [100, 100]
 nthreads = 8
-eval_flags = ia.EvalFlags(method="iterblosc2", engine="auto")
+eval_method = ia.EVAL_ITERBLOSC
 storage = ia.StorageProperties(backend="blosc", chunkshape=cshape, blockshape=bshape,
                                enforce_frame=False, filename=None)
-kwargs = dict(eval_flags=eval_flags, storage=storage, nthreads=nthreads, clevel=9, clib=ia.LZ4)
+kwargs = dict(eval_method=eval_method, storage=storage, nthreads=nthreads, clevel=9, clib=ia.LZ4)
 
 
 # Create initial arrays

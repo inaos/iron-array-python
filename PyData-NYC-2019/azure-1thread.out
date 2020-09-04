@@ -64,7 +64,7 @@ Line #    Mem usage    Increment   Line Contents
 ================================================
     80    894.8 MiB    894.8 MiB   @profile
     81                             def compute_slices(dataset):
-    82    894.8 MiB      0.0 MiB       expr = ia.Expr(eval_flags="iterblock", clevel=CLEVEL, clib=CLIB, nthreads=NTHREADS, blocksize=BLOCKSIZE)
+    82    894.8 MiB      0.0 MiB       expr = ia.Expr(eval_method="iterblock", clevel=CLEVEL, clib=CLIB, nthreads=NTHREADS, blocksize=BLOCKSIZE)
     83    894.8 MiB      0.0 MiB       expr.bind("x", dataset)
     84    898.2 MiB      3.4 MiB       expr.compile(sexpr)
     85    951.6 MiB     53.4 MiB       out = expr.eval(shape, pshape, dataset.dtype)
@@ -89,7 +89,7 @@ Line #    Mem usage    Increment   Line Contents
 ================================================
    102    952.0 MiB    952.0 MiB   @profile
    103                             def compute_slices2(dset1, dset2, dset3):
-   104    952.0 MiB      0.0 MiB       expr = ia.Expr(eval_flags="iterblock", clevel=CLEVEL, clib=CLIB, nthreads=NTHREADS, blocksize=BLOCKSIZE)
+   104    952.0 MiB      0.0 MiB       expr = ia.Expr(eval_method="iterblock", clevel=CLEVEL, clib=CLIB, nthreads=NTHREADS, blocksize=BLOCKSIZE)
    105    952.0 MiB      0.0 MiB       expr.bind("x", dset1)
    106    952.0 MiB      0.0 MiB       expr.bind("y", dset2)
    107    952.0 MiB      0.0 MiB       expr.bind("z", dset3)

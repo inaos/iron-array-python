@@ -201,15 +201,12 @@ def do_block_evaluation(chunkshape_):
         np.testing.assert_almost_equal(y0, y1)
 
     if chunkshape_ is None:
-        eval_method = "auto"
-        eval_engine = "auto"
+        eval_method = ia.EVAL_ITERCHUNK
     else:
-        eval_method = "iterblosc2"
-        eval_engine = "compiler"
+        eval_method = ia.EVAL_ITERBLOSC
 
     t0 = time()
-    eval_flags = ia.EvalFlags(method=eval_method, engine=eval_engine)
-    expr = ia.Expr(eval_flags=eval_flags, **cparams)
+    expr = ia.Expr(eval_method=eval_method, **cparams)
     expr.bind('x', xa)
     expr.bind_out_properties(ia.dtshape(shape, np.float64), storage=storage)
     expr.compile(expression)
@@ -224,7 +221,7 @@ def do_block_evaluation(chunkshape_):
     x = xa
     for i in range(NITER):
         ya = ((x.cos() - 1.35) * (x - 4.45) * (x.sin() - 8.5)).eval(
-            method="iarray_eval", eval_flags=eval_flags, **cparams)
+            method="iarray_eval", eval_method=eval_method, **cparams)
     avg = round((time() - t0) / NITER, 4)
     print(f"Block evaluate via iarray.LazyExpr.eval (method: {eval_method}): {avg:.4f}")
     y1 = ia.iarray2numpy(ya)

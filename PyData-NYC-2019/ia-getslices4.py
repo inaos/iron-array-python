@@ -79,7 +79,7 @@ print("cratio", prec3.cratio)
 
 @profile
 def compute_slices(dataset):
-    expr = ia.Expr(eval_flags="iterblock", clevel=CLEVEL, clib=CLIB, nthreads=NTHREADS, blocksize=BLOCKSIZE)
+    expr = ia.Expr(eval_method="iterblock", clevel=CLEVEL, clib=CLIB, nthreads=NTHREADS, blocksize=BLOCKSIZE)
     expr.bind("x", dataset)
     expr.compile(sexpr)
     out = expr.eval(shape, pshape, dataset.dtype)
@@ -101,7 +101,7 @@ print("Time for summing up 1 operand (iarray): %.3f" % (t1 - t0))
 sexpr2 = "(x - y) * (z - 3.) * (y - x - 2)"
 @profile
 def compute_slices2(dset1, dset2, dset3):
-    expr = ia.Expr(eval_flags="iterblock", clevel=CLEVEL, clib=CLIB, nthreads=NTHREADS, blocksize=BLOCKSIZE)
+    expr = ia.Expr(eval_method="iterblock", clevel=CLEVEL, clib=CLIB, nthreads=NTHREADS, blocksize=BLOCKSIZE)
     expr.bind("x", dset1)
     expr.bind("y", dset2)
     expr.bind("z", dset3)

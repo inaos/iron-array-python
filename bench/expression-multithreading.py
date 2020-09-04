@@ -41,7 +41,7 @@ size = int(np.prod(shape))
 bstorage = ia.StorageProperties("blosc", chunkshape, blockshape)
 pstorage = ia.StorageProperties("plainbuffer", None, None)
 
-eval_flags = ia.EvalFlags(method="auto", engine="auto")
+eval_method = ia.EVAL_AUTO
 
 res = []
 
@@ -87,7 +87,7 @@ for num_threads in range(1, max_num_threads + 1):
 
     # Plainbuffer
     a1 = ia.linspace(dtshape, 0, 10, storage=pstorage, nthreads=num_threads)
-    expr = ia.Expr(eval_flags=eval_flags, nthreads=num_threads)
+    expr = ia.Expr(eval_method=eval_method, nthreads=num_threads)
     expr.bind("x", a1)
     expr.bind_out_properties(dtshape, storage=pstorage)
     expr.compile("(x - 1.35) * (x - 4.45) * (x - 8.5)")
@@ -102,7 +102,7 @@ for num_threads in range(1, max_num_threads + 1):
 
     # Superchunk without compression
     a1 = ia.linspace(dtshape, 0, 10, storage=bstorage, clevel=0, **kwargs)
-    expr = ia.Expr(eval_flags=eval_flags, clevel=0, **kwargs)
+    expr = ia.Expr(eval_method=eval_method, clevel=0, **kwargs)
     expr.bind("x", a1)
     expr.bind_out_properties(dtshape, storage=bstorage)
     expr.compile("(x - 1.35) * (x - 4.45) * (x - 8.5)")
@@ -117,7 +117,7 @@ for num_threads in range(1, max_num_threads + 1):
 
     # Superchunk with compression
     a1 = ia.linspace(dtshape, 0, 10, storage=bstorage, clevel=9, **kwargs)
-    expr = ia.Expr(eval_flags=eval_flags, clevel=9, **kwargs)
+    expr = ia.Expr(eval_method=eval_method, clevel=9, **kwargs)
     expr.bind("x", a1)
     expr.bind_out_properties(dtshape, storage=bstorage)
     expr.compile("(x - 1.35) * (x - 4.45) * (x - 8.5)")
@@ -132,7 +132,7 @@ for num_threads in range(1, max_num_threads + 1):
 
     # Superchunk with compression and UDF
     a1 = ia.linspace(dtshape, 0, 10, storage=bstorage, clevel=9, **kwargs)
-    expr = poly_udf.create_expr([a1], dtshape, storage=bstorage, method="iterblosc2", clevel=9, **kwargs)
+    expr = poly_udf.create_expr([a1], dtshape, storage=bstorage, method=ia.EVAL_ITERBLOSC, clevel=9, **kwargs)
     t = []
     for _ in range(nrep):
         t0 = time()
