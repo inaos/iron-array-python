@@ -408,6 +408,18 @@ cdef class Expression:
         self.storage = storage
 
     def compile(self, expr):
+        # Try to support all the ufuncs in numpy
+        substs = {
+            "arcsin": "asin",
+            "arccos": "acos",
+            "arctan": "atan",
+            "arctan2": "atan2",
+            "power": "pow",
+            }
+        for key in substs.keys():
+            if key in expr:
+                expr = expr.replace(key, substs[key])
+
         expr = expr.encode("utf-8") if isinstance(expr, str) else expr
         if ciarray.iarray_expr_compile(self._e, expr) != 0:
             raise ValueError(f"Error in compiling expr: {expr}")
