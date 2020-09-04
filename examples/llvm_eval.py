@@ -36,8 +36,8 @@ print("Operand cratio:", round(xa.cratio, 2))
 ya = None
 
 t0 = time()
-eval_flags = ia.EvalFlags(method="auto", engine="auto")
-expr = ia.Expr(eval_flags=eval_flags, **cparams)
+eval_method = ia.EVAL_AUTO
+expr = ia.Expr(eval_method=eval_method, **cparams)
 expr.bind('x', xa)
 expr.bind_out_properties(ia.dtshape(shape, dtype=dtype), storage)
 expr.compile('(x - 1.35) * (x - 4.45) * (x - 8.5)')
@@ -52,7 +52,7 @@ t0 = time()
 x = xa
 for i in range(NITER):
     ya = ((x - 1.35) * (x - 4.45) * (x - 8.5)).eval(method="iarray_eval", storage=storage,
-                                                    dtype=dtype, eval_flags=eval_flags, **cparams)
+                                                    dtype=dtype, eval_method=eval_method, **cparams)
 print("Block evaluate via iarray.LazyExpr.eval('iarray_eval')):", round((time() - t0) / NITER, 4))
 y1 = ia.iarray2numpy(ya)
 np.testing.assert_almost_equal(y0, y1)

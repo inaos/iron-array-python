@@ -5,18 +5,18 @@ import numpy as np
 from time import time
 import ctypes
 
-mkl_rt = ctypes.CDLL('libmkl_rt.so')
+mkl_rt = ctypes.CDLL('libmkl_rt.dylib')
 mkl_set_num_threads = mkl_rt.MKL_Set_Num_Threads
 mkl_get_max_threads = mkl_rt.MKL_Get_Max_Threads
 
 mkl_set_num_threads(1)
 print(f"Numpy max threads: {mkl_get_max_threads()}")
 
-dtshape_a = ia.dtshape([2000, 2000], [200, 200])
-bshape_a = [200, 200]
+dtshape_a = ia.dtshape([2000, 2000], np.float64)
+bshape_a = [2000, 2000]
 
-dtshape_b = ia.dtshape([2000, 2000], [200, 200])
-bshape_b = [200, 200]
+dtshape_b = ia.dtshape([2000, 2000], np.float64)
+bshape_b = [2000, 2000]
 
 a = ia.arange(dtshape_a, clevel=0)
 an = ia.iarray2numpy(a)
@@ -43,5 +43,7 @@ t1 = time()
 print(f"Time to compute matmul with iarray: {(t1-t0)/nrep} s")
 
 cn = ia.iarray2numpy(c)
+
+np.allclose(cn, cn2)
 
 print("Matrix multiplication is working!")

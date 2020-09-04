@@ -160,8 +160,8 @@ class Function(py2llvm.Function):
         return builder.load(ptr, name=name)
 
     def create_expr(self, inputs, dtshape, method=ia.EVAL_AUTO, **cparams):
-        eval_flags = method
-        expr = ia.Expr(eval_flags=eval_flags, **cparams)
+        eval_method = method
+        expr = ia.Expr(eval_method=eval_method, **cparams)
         for a in inputs:
             expr.bind("", a)
         cfg = ia.Config(**cparams)

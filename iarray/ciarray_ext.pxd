@@ -89,7 +89,7 @@ cdef extern from "libiarray/iarray.h":
         int compression_level
         int use_dict
         int filter_flags
-        int eval_flags
+        int eval_method
         int max_num_threads
         int8_t fp_mantissa_bits
 

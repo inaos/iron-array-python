@@ -226,19 +226,19 @@ def do_block_evaluation(chunkshape_):
     # np.testing.assert_almost_equal(y0, y1)
 
     if chunkshape_ is None:
-        eval_flags = ia.EvalFlags(method="iterchunk", engine="auto")
+        eval_method = ia.EVAL_ITERCHUNK
     else:
-        eval_flags = ia.EvalFlags(method="iterblosc2", engine="auto")
+        eval_method = ia.EVAL_ITERBLOSC
 
     t0 = time()
     if chunkshape_ is None:
-        expr = ia.Expr(eval_flags=eval_flags, **cparams)
+        expr = ia.Expr(eval_method=eval_method, **cparams)
         expr.bind('x', xa)
         expr.bind_out_properties(ia.dtshape(shape), storage)
         expr.compile('(sin(x) - 1.35) * (cos(x) - 4.45) * (x - 8.5)')
     else:
         if True:
-            expr = ia.Expr(eval_flags=eval_flags, **cparams)
+            expr = ia.Expr(eval_method=eval_method, **cparams)
             expr.bind('x', xa)
             expr.bind_out_properties(ia.dtshape(shape), storage)
             expr.compile('(sin(x) - 1.35) * (cos(x) - 4.45) * (x - 8.5)')
@@ -247,7 +247,7 @@ def do_block_evaluation(chunkshape_):
         for i in range(NITER):
             ya = expr.eval()
     avg = round((time() - t0) / NITER, 4)
-    print(f"Block evaluate via iarray.eval (method: {eval_flags.method}): {avg:.4f}")
+    print(f"Block evaluate via iarray.eval (method: {eval_method}): {avg:.4f}")
     #y1 = ia.iarray2numpy(ya)
     #np.testing.assert_almost_equal(y0, y1)
 
@@ -255,9 +255,9 @@ def do_block_evaluation(chunkshape_):
     # x = xa
     # for i in range(NITER):
     #     ya = eval("(sin(x) - 1.35) * (cos(x) - 4.45) * (x - 8.5)", {"x": x})
-    #     ya = ya.eval(eval_flags=eval_flags, storage=storage, **cparams)
+    #     ya = ya.eval(eval_method=eval_method, storage=storage, **cparams)
     # avg = round((time() - t0) / NITER, 4)
-    # print(f"Block evaluate via iarray.LazyExpr.eval (method: {eval_flags.method}): {avg:.4f}")
+    # print(f"Block evaluate via iarray.LazyExpr.eval (method: {eval_method}): {avg:.4f}")
     # y1 = ia.iarray2numpy(ya)
     # np.testing.assert_almost_equal(y0, y1)
 

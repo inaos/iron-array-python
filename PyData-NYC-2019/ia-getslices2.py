@@ -52,7 +52,7 @@ def compute_slices(dataset):
     # TODO: this shows a leak in the expr.eval() call
     for i in range(NSLICES):
         sl = get_slice(dataset, i)
-        expr = ia.Expr(eval_flags="iterblock", blocksize=BLOCKSIZE, nthreads=NTHREADS, clevel=CLEVEL)
+        expr = ia.Expr(eval_method="iterblock", blocksize=BLOCKSIZE, nthreads=NTHREADS, clevel=CLEVEL)
         expr.bind("x", sl)
         expr.compile(sexpr)
         out = expr.eval(shape, pshape, sl.dtype)

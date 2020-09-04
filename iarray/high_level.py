@@ -90,7 +90,7 @@ class RandomContext(ext.RandomContext):
 class Config(ext._Config):
 
     def __init__(self, clib=ia.LZ4, clevel=5, use_dict=0, filter_flags=ia.SHUFFLE, nthreads=1,
-                 fp_mantissa_bits=0, blocksize=0, storage=None, eval_flags=None):
+                 fp_mantissa_bits=0, blocksize=0, storage=None, eval_method=None):
         self._clib = clib
         self._clevel = clevel
         self._use_dict = use_dict
@@ -101,10 +101,10 @@ class Config(ext._Config):
         self._blocksize = blocksize
         self._nthreads = nthreads
         # TODO: should we move this to its own eval configuration?
-        self._eval_flags = ia.EVAL_AUTO if eval_flags is None else eval_flags
+        self._eval_method = ia.EVAL_AUTO if eval_method is None else eval_method
         self._storage = ia.StorageProperties() if storage is None else storage
         super().__init__(clib, clevel, use_dict, filter_flags, nthreads,
-                         fp_mantissa_bits, self._eval_flags)
+                         fp_mantissa_bits, self._eval_method)
 
     @property
     def clib(self):
@@ -137,8 +137,8 @@ class Config(ext._Config):
         return self._filename
 
     @property
-    def eval_flags(self):
-        return self._eval_flags
+    def eval_method(self):
+        return self._eval_method
 
     def __str__(self):
         return (
@@ -150,7 +150,7 @@ class Config(ext._Config):
             f"    Floating point mantissa bits: {self.fp_mantissa_bits}\n"
             f"    Blocksize: {self.blocksize}\n"
             f"    Filename: {self.filename}\n"
-            f"    Eval flags: {self.eval_flags}\n"
+            f"    Eval flags: {self.eval_method}\n"
         )
 
 

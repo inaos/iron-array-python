@@ -22,6 +22,7 @@ from libc.stdlib cimport malloc, free
 from iarray.high_level import IArray
 from collections import namedtuple
 from .expression import Parser
+from iarray import EVAL_AUTO, EVAL_ITERBLOSC, EVAL_ITERCHUNK
 from libc.stdio cimport printf
 
 
@@ -160,22 +161,22 @@ cdef class _Config:
     cdef ciarray.iarray_config_t _cfg
 
     def __init__(self, compression_codec, compression_level, use_dict, filter_flags,
-                 max_num_threads, fp_mantissa_bits, eval_flags):
+                 max_num_threads, fp_mantissa_bits, eval_method):
         self._cfg.compression_codec = compression_codec
         self._cfg.compression_level = compression_level
         self._cfg.use_dict = use_dict
         self._cfg.filter_flags = filter_flags
 
-        if eval_flags == "auto":
+        if eval_method == EVAL_AUTO:
             method = ciarray.IARRAY_EVAL_METHOD_AUTO
-        elif eval_flags == "iterblosc":
+        elif eval_method == EVAL_ITERBLOSC:
             method = ciarray.IARRAY_EVAL_METHOD_ITERBLOSC
-        elif eval_flags == "iterchunk":
+        elif eval_method == EVAL_ITERCHUNK:
             method = ciarray.IARRAY_EVAL_METHOD_ITERCHUNK
         else:
-            raise ValueError("eval_flags method not recognized:", eval_flags)
+            raise ValueError("eval_method method not recognized:", eval_method)
 
-        self._cfg.eval_flags = method
+        self._cfg.eval_method = method
         self._cfg.max_num_threads = max_num_threads
         self._cfg.fp_mantissa_bits = fp_mantissa_bits
 
