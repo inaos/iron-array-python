@@ -21,6 +21,7 @@ import numpy as np
      "arcsin(x) + (arccos(x) - 1.35) - arctan(x + .2)"),  # check NumPy naming convention for ufuncs
     (ia.EVAL_AUTO, [1000], None, None, np.float64, "exp(x) + (log(x) - 1.35) - log10(x + .2)"),
     (ia.EVAL_ITERCHUNK, [1000], None, None, np.float32, "sqrt(x) + atan2(x, x) + pow(x, x)"),
+    (ia.EVAL_AUTO, [1000], None, None, np.float32, "sqrt(x) + arctan2(x, x) + power(x, x)"),  # NumPy conventions
     (ia.EVAL_AUTO, [100, 100], None, None, np.float64, "(x - cos(1)) * 2"),
     (ia.EVAL_ITERCHUNK, [8, 6, 7, 4, 5], None, None, np.float32,
      "(x - cos(y)) * (sin(x) + y) + 2 * x + y"),
