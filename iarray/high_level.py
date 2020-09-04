@@ -86,15 +86,6 @@ class RandomContext(ext.RandomContext):
         super().__init__(cfg)
 
 
-class EvalFlags:
-
-    def __init__(self, method="auto"):
-        self.method = method
-
-    def to_tuple(self):
-        EvalFlags = namedtuple('eval_flags', 'method')
-        return EvalFlags(self.method)
-
 
 class Config(ext._Config):
 
@@ -110,7 +101,7 @@ class Config(ext._Config):
         self._blocksize = blocksize
         self._nthreads = nthreads
         # TODO: should we move this to its own eval configuration?
-        self._eval_flags = ia.EvalFlags() if eval_flags is None else eval_flags
+        self._eval_flags = ia.EVAL_AUTO if eval_flags is None else eval_flags
         self._storage = ia.StorageProperties() if storage is None else storage
         super().__init__(clib, clevel, use_dict, filter_flags, nthreads,
                          fp_mantissa_bits, self._eval_flags)

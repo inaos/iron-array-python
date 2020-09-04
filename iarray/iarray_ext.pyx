@@ -166,16 +166,14 @@ cdef class _Config:
         self._cfg.use_dict = use_dict
         self._cfg.filter_flags = filter_flags
 
-        eval_flags = eval_flags.to_tuple()  # TODO: should we move this to its own eval configuration?
-
-        if eval_flags.method == "auto":
+        if eval_flags == "auto":
             method = ciarray.IARRAY_EVAL_METHOD_AUTO
-        elif eval_flags.method == "iterblosc":
+        elif eval_flags == "iterblosc":
             method = ciarray.IARRAY_EVAL_METHOD_ITERBLOSC
-        elif eval_flags.method == "iterchunk":
+        elif eval_flags == "iterchunk":
             method = ciarray.IARRAY_EVAL_METHOD_ITERCHUNK
         else:
-            raise ValueError("eval_flags method not recognized:", eval_flags.method)
+            raise ValueError("eval_flags method not recognized:", eval_flags)
 
         self._cfg.eval_flags = method
         self._cfg.max_num_threads = max_num_threads

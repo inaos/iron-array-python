@@ -4,27 +4,27 @@ import numpy as np
 
 
 # Expression
-@pytest.mark.parametrize("method, engine, shape, chunkshape, blockshape, dtype, expression", [
-    ("iterblosc", "compiler", [100, 100], [23, 32], [10, 10], np.float64, "cos(x)"),  # TODO: fix this
-    ("iterblosc", "compiler", [100, 100], [10, 99], [4, 12], np.float64, "x"),
-    ("iterblosc", "interpreter", [1000], [110], [55], np.float32, "x"),
-    ("iterblosc", "compiler", [1000], [100], [30], np.float64, "(cos(x) - 1.35) * (sin(x) - 4.45) * tan(x - 8.5)"),
-    ("auto", "auto", [1000], [100], [25], np.float64, "(cos(x) - 1.35) * (sin(x) - 4.45) * tan(x - 8.5)"),
-    ("iterchunk", "interpreter", [1000], [367], [77], np.float32, "(abs(-x) - 1.35) * ceil(x) * floor(x - 8.5)"),
-    ("iterblosc", "compiler", [100, 100, 100], [25, 25, 33], [12, 16, 8], np.float64,
+@pytest.mark.parametrize("method, shape, chunkshape, blockshape, dtype, expression", [
+    (ia.EVAL_ITERBLOSC, [100, 100], [23, 32], [10, 10], np.float64, "cos(x)"),  # TODO: fix this
+    (ia.EVAL_ITERBLOSC, [100, 100], [10, 99], [4, 12], np.float64, "x"),
+    (ia.EVAL_ITERBLOSC, [1000], [110], [55], np.float32, "x"),
+    (ia.EVAL_ITERBLOSC, [1000], [100], [30], np.float64, "(cos(x) - 1.35) * (sin(x) - 4.45) * tan(x - 8.5)"),
+    (ia.EVAL_AUTO, [1000], [100], [25], np.float64, "(cos(x) - 1.35) * (sin(x) - 4.45) * tan(x - 8.5)"),
+    (ia.EVAL_ITERCHUNK, [1000], [367], [77], np.float32, "(abs(-x) - 1.35) * ceil(x) * floor(x - 8.5)"),
+    (ia.EVAL_ITERBLOSC, [100, 100, 100], [25, 25, 33], [12, 16, 8], np.float64,
      "sinh(x) + (cosh(x) - 1.35) - tanh(x + .2)"),
-    ("iterblosc", "compiler", [223], [100], [30], np.float64, "sinh(x) + (cosh(x) - 1.35) - tanh(x + .2)"),
-    ("iterchunk", "auto", [100, 100, 55], [10, 5, 10], [3, 4, 3], np.float64,
+    (ia.EVAL_ITERBLOSC, [223], [100], [30], np.float64, "sinh(x) + (cosh(x) - 1.35) - tanh(x + .2)"),
+    (ia.EVAL_ITERCHUNK, [100, 100, 55], [10, 5, 10], [3, 4, 3], np.float64,
      "asin(x) + (acos(x) - 1.35) - atan(x + .2)"),
-    ("auto", "interpreter", [1000], None, None, np.float64, "exp(x) + (log(x) - 1.35) - log10(x + .2)"),
-    ("iterchunk", "auto", [1000], None, None, np.float32, "sqrt(x) + atan2(x, x) + pow(x, x)"),
-    ("auto", "auto", [100, 100], None, None, np.float64, "(x - cos(1)) * 2"),
-    ("iterchunk", "interpreter", [8, 6, 7, 4, 5], None, None, np.float32,
+    (ia.EVAL_AUTO, [1000], None, None, np.float64, "exp(x) + (log(x) - 1.35) - log10(x + .2)"),
+    (ia.EVAL_ITERCHUNK, [1000], None, None, np.float32, "sqrt(x) + atan2(x, x) + pow(x, x)"),
+    (ia.EVAL_AUTO, [100, 100], None, None, np.float64, "(x - cos(1)) * 2"),
+    (ia.EVAL_ITERCHUNK, [8, 6, 7, 4, 5], None, None, np.float32,
      "(x - cos(y)) * (sin(x) + y) + 2 * x + y"),
-    ("iterblosc", "compiler",  [17, 12, 15, 15, 8], [8, 6, 7, 4, 5], [4, 3, 3, 4, 5], np.float64,
+    (ia.EVAL_ITERBLOSC,  [17, 12, 15, 15, 8], [8, 6, 7, 4, 5], [4, 3, 3, 4, 5], np.float64,
      "(x - cos(y)) * (sin(x) + y) + 2 * x + y"),
 ])
-def test_expression(method, engine, shape, chunkshape, blockshape, dtype, expression):
+def test_expression(method, shape, chunkshape, blockshape, dtype, expression):
     # The ranges below are important for not overflowing operations
     if chunkshape is None:
         storage = ia.StorageProperties(backend="plainbuffer")
@@ -35,7 +35,7 @@ def test_expression(method, engine, shape, chunkshape, blockshape, dtype, expres
                                        enforce_frame=False,
                                        filename=None)
 
-    eval_flags = ia.EvalFlags(method=method)
+    eval_flags = method
 
     x = ia.linspace(ia.dtshape(shape, dtype), 2.1, .2, storage=storage)
     y = ia.linspace(ia.dtshape(shape, dtype), 0, 1, storage=storage)
@@ -85,7 +85,7 @@ def test_ufuncs(ufunc, ia_expr):
     shape = [200, 300]
     chunkshape = [40, 40]
     bshape = [10, 17]
-    eval_flags = ia.EvalFlags(method="iterchunk")
+    eval_flags = ia.EVAL_ITERCHUNK
 
     if chunkshape is None:
         storage = ia.StorageProperties(backend="plainbuffer")
@@ -163,7 +163,7 @@ def test_expr_ufuncs(ufunc):
     shape = [200, 300]
     chunkshape = [40, 50]
     bshape = [20, 20]
-    eval_flags = ia.EvalFlags(method="iterchunk")
+    eval_flags = ia.EVAL_ITERCHUNK
     storage = ia.StorageProperties(backend="blosc",
                                    chunkshape=chunkshape,
                                    blockshape=bshape,
@@ -210,7 +210,7 @@ def test_expr_fusion(expr):
     shape = [200, 300]
     chunkshape = [40, 50]
     bshape = [20, 20]
-    eval_flags = ia.EvalFlags(method="iterchunk")
+    eval_flags = ia.EVAL_ITERCHUNK
     storage = ia.StorageProperties(backend="blosc",
                                    chunkshape=chunkshape,
                                    blockshape=bshape,
