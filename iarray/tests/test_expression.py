@@ -1,5 +1,6 @@
 import pytest
 import iarray as ia
+import numpy
 import numpy as np
 
 
@@ -16,6 +17,8 @@ import numpy as np
     (ia.EVAL_ITERBLOSC, [223], [100], [30], np.float64, "sinh(x) + (cosh(x) - 1.35) - tanh(x + .2)"),
     (ia.EVAL_ITERCHUNK, [100, 100, 55], [10, 5, 10], [3, 4, 3], np.float64,
      "asin(x) + (acos(x) - 1.35) - atan(x + .2)"),
+    (ia.EVAL_ITERCHUNK, [100, 100, 55], [10, 5, 10], [3, 4, 3], np.float64,
+     "arcsin(x) + (arccos(x) - 1.35) - arctan(x + .2)"),  # check NumPy naming convention for ufuncs
     (ia.EVAL_AUTO, [1000], None, None, np.float64, "exp(x) + (log(x) - 1.35) - log10(x + .2)"),
     (ia.EVAL_ITERCHUNK, [1000], None, None, np.float32, "sqrt(x) + atan2(x, x) + pow(x, x)"),
     (ia.EVAL_AUTO, [100, 100], None, None, np.float64, "(x - cos(1)) * 2"),
@@ -50,11 +53,31 @@ def test_expression(method, shape, chunkshape, blockshape, dtype, expression):
     expr.compile(expression)
 
     iout = expr.eval()
-
     npout = ia.iarray2numpy(iout)
-    npout2 = ia.Parser().parse(expression).evaluate({"x": npx, "y": npy})
 
-    decimal = 6 if dtype is np.float32 else 7
+    # Evaluate using a different engine
+    ufunc_repls = {
+        "asin": "arcsin",
+        "acos": "arccos",
+        "atan": "arctan",
+        "atan2": "arctan2",
+        "pow": "power",
+    }
+    for ufunc in ufunc_repls.keys():
+        if ufunc in expression:
+            if ufunc == "pow" and "power" in expression:
+                # Don't do a replacement twice
+                break
+            expression = expression.replace(ufunc, ufunc_repls[ufunc])
+    for ufunc in ia.UFUNC_LIST:
+        if ufunc in expression:
+            idx = expression.find(ufunc)
+            # Prevent replacing an ufunc with np.ufunc twice (not terribly solid, but else, test will crash)
+            if "np." not in expression[idx - len("np.arc"):idx]:
+                expression = expression.replace(ufunc + "(", "np." + ufunc + "(")
+    npout2 = eval(expression, {"x": npx, "y": npy, "np": numpy})
+
+    decimal = 5 if dtype is np.float32 else 10
 
     np.testing.assert_almost_equal(npout, npout2, decimal=decimal)
 

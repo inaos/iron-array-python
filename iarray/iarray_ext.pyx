@@ -21,9 +21,7 @@ from math import ceil
 from libc.stdlib cimport malloc, free
 from iarray.high_level import IArray
 from collections import namedtuple
-from .expression import Parser
 from iarray import EVAL_AUTO, EVAL_ITERBLOSC, EVAL_ITERCHUNK
-from libc.stdio cimport printf
 
 
 IARRAY_ERR_EVAL_ENGINE_FAILED = ciarray.IARRAY_ERR_EVAL_ENGINE_FAILED
@@ -398,11 +396,21 @@ cdef class Expression:
         self.storage = storage
 
     def compile(self, expr):
-        expr = Parser().parse(expr).simplify({}).toString()
-        expr2 = expr.encode("utf-8") if isinstance(expr, str) else expr
-        if ciarray.iarray_expr_compile(self._e, expr2) != 0:
+        # Try to support all the ufuncs in numpy
+        ufunc_repls = {
+            "arcsin": "asin",
+            "arccos": "acos",
+            "arctan": "atan",
+            "arctan2": "atan2",
+            "power": "pow",
+            }
+        for ufunc in ufunc_repls.keys():
+            if ufunc in expr:
+                expr = expr.replace(ufunc, ufunc_repls[ufunc])
+        expr = expr.encode("utf-8") if isinstance(expr, str) else expr
+        if ciarray.iarray_expr_compile(self._e, expr) != 0:
             raise ValueError(f"Error in compiling expr: {expr}")
-        self.expression = expr2
+        self.expression = expr
 
     def compile_bc(self, bc, name):
         name = name.encode()
