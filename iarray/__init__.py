@@ -46,9 +46,16 @@ TRUNC_PREC = 8
 # Storage types
 PLAINBUFFER_STORAGE = 'plainbuffer'
 BLOSC_STORAGE = 'blosc'
+
+# Eval method
+
+EVAL_AUTO = 'auto'
+EVAL_ITERBLOSC = 'iterblosc'
+EVAL_ITERCHUNK = 'iterchunk'
+
 from . import iarray_ext as ext
 
-from .high_level import (IArray, dtshape, StorageProperties, EvalFlags, Config, RandomContext, Expr, LazyExpr,
+from .high_level import (IArray, dtshape, StorageProperties, Config, RandomContext, Expr, LazyExpr,
                          empty, arange, linspace, zeros, ones, full, load, save,
                          cmp_arrays, iarray2numpy, numpy2iarray, matmul,
                          # random constructors

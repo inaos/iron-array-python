@@ -38,6 +38,7 @@ a1 = ia.linspace(dtshape, 0, 10, storage=storage, **cparams)
 a2 = np.linspace(0, 10, shape[0], dtype=dtype).reshape(shape)
 
 print("numpy evaluation...")
+bn = None
 t0 = time()
 for i in range(NITER):
     bn = (np.sin(a2) - 1.35) * (a2 - 4.45) * (a2 - 8.5)
@@ -46,6 +47,7 @@ print(bn)
 
 print("iarray evaluation ...")
 expr = f.create_expr([a1], dtshape, storage=storage, **cparams)
+b1 = None
 t0 = time()
 for i in range(NITER):
     b1 = expr.eval()
@@ -55,11 +57,12 @@ print(b1_n)
 
 ia.cmp_arrays(bn, b1_n, success='OK. Results are the same.')
 
-eval_flags = ia.EvalFlags(method="auto", engine="auto")
-expr = ia.Expr(eval_flags=eval_flags, **cparams)
+eval_method = ia.EVAL_AUTO
+expr = ia.Expr(eval_method=eval_method, **cparams)
 expr.bind('x', a1)
 expr.bind_out_properties(dtshape, storage)
 expr.compile('(sin(x) - 1.35) * (x - 4.45) * (x - 8.5)')
+b2 = None
 t0 = time()
 for i in range(NITER):
     b2 = expr.eval()

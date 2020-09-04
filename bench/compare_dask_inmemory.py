@@ -38,9 +38,9 @@ for i, shape in enumerate(shapes):
     data = ia.linspace(ia.dtshape(shape, dtype=DTYPE), 0, 1, storage=storage, **cparams)
 
     t0 = time()
-    # TODO: the next crashes if eval_flags == "iterblosc" and DTYPE = np.float32
-    eval_flags = ia.EvalFlags(method="iterblosc2", engine="compiler")
-    expr = ia.Expr(eval_flags=eval_flags, **cparams)
+    # TODO: the next crashes if eval_method == "iterblosc" and DTYPE = np.float32
+    eval_method = ia.EVAL_ITERBLOSC
+    expr = ia.Expr(eval_method=eval_method, **cparams)
     expr.bind("x", data)
     expr.bind_out_properties(ia.dtshape(shape, DTYPE), storage=storage)
     expr.compile(sexpr)

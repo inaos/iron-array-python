@@ -42,8 +42,8 @@ except AssertionError:
     print("ERROR. Results are different.")
 
 t0 = time()
-eval_flags = ia.EvalFlags(method="iterblosc2", engine="auto")
-expr = ia.Expr(eval_flags=eval_flags, **kwargs)
+eval_method = ia.EVAL_ITERBLOSC
+expr = ia.Expr(eval_method=eval_method, **kwargs)
 expr.bind("x", ia0)
 expr.bind("y", ia1)
 expr.bind_out_properties(ia.dtshape(shape, dtype), storage=storage)

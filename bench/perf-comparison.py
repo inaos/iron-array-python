@@ -69,8 +69,8 @@ def evaluate(command):
     def ia_compiler_parallel(command):
         global iax, iay, iaz, shape, chunkshape, blockshape, dtype, cparams
         cparams['nthreads'] = NTHREADS
-        eval_flags = ia.EvalFlags(method="iterblosc2", engine="compiler")
-        expr = ia.Expr(eval_flags=eval_flags, **cparams)
+        eval_method = ia.EVAL_ITERBLOSC
+        expr = ia.Expr(eval_method=eval_method, **cparams)
         expr.bind('x', iax)
         expr.bind('y', iay)
         expr.bind('z', iaz)
@@ -81,8 +81,8 @@ def evaluate(command):
     def ia_compiler_serial(command):
         global iax, iay, iaz, shape, chunkshape, blockshape, dtype, cparams
         cparams['nthreads'] = 1
-        eval_flags = ia.EvalFlags(method="iterblosc2", engine="compiler")
-        expr = ia.Expr(eval_flags=eval_flags, **cparams)
+        eval_method = ia.EVAL_ITERBLOSC
+        expr = ia.Expr(eval_method=eval_method, **cparams)
         expr.bind('x', iax)
         expr.bind('y', iay)
         expr.bind('z', iaz)
@@ -90,49 +90,25 @@ def evaluate(command):
         expr.compile(command)
         expr.eval()
 
-    def ia_interpreter_parallel(command):
-        global iax, iay, iaz, shape, chunkshape, blockshape, dtype, cparams
-        cparams['nthreads'] = NTHREADS
-        eval_flags = ia.EvalFlags(method="iterblosc2", engine="interpreter")
-        expr = ia.Expr(eval_flags=eval_flags, **cparams)
-        expr.bind('x', iax)
-        expr.bind('y', iay)
-        expr.bind('z', iaz)
-        expr.bind_out_properties(ia.dtshape(shape, dtype), ia.StorageProperties("blosc", chunkshape, blockshape))
-        expr.compile(command)
-        expr.eval()
-
-    def ia_interpreter_serial(command):
-        global iax, iay, iaz, shape, chunkshape, blockshape, dtype, cparams
-        cparams['nthreads'] = 1
-        eval_flags = ia.EvalFlags(method="iterblosc2", engine="interpreter")
-        expr = ia.Expr(eval_flags=eval_flags, **cparams)
-        expr.bind('x', iax)
-        expr.bind('y', iay)
-        expr.bind('z', iaz)
-        expr.bind_out_properties(ia.dtshape(shape, dtype), ia.StorageProperties("blosc", chunkshape, blockshape))
-        expr.compile(command)
-        expr.eval()
-
-    def dask_parallel(command):
-        global zx, zy, zz, shape, chunkshape, dtype, zcompr
-        with dask.config.set({"scheduler": "threads", "pool": ThreadPool(NTHREADS)}):
-            da.from_zarr(zx)
-            da.from_zarr(zy)
-            da.from_zarr(zz)
-            res = eval(command)
-            zout = zarr.empty(shape, dtype=dtype, compressor=zcompr, chunks=chunkshape)
-            da.to_zarr(res, zout)
-
-    def dask_serial(command):
-        global zx, zy, zz, shape, chunkshape, dtype, zcompr
-        with dask.config.set(scheduler="single-threaded"):
-            da.from_zarr(zx)
-            da.from_zarr(zy)
-            da.from_zarr(zz)
-            res = eval(command)
-            zout = zarr.empty(shape, dtype=dtype, compressor=zcompr, chunks=chunkshape)
-            da.to_zarr(res, zout)
+    # def dask_parallel(command):
+    #     global zx, zy, zz, shape, chunkshape, dtype, zcompr
+    #     with dask.config.set({"scheduler": "threads", "pool": ThreadPool(NTHREADS)}):
+    #         da.from_zarr(zx)
+    #         da.from_zarr(zy)
+    #         da.from_zarr(zz)
+    #         res = eval(command)
+    #         zout = zarr.empty(shape, dtype=dtype, compressor=zcompr, chunks=chunkshape)
+    #         da.to_zarr(res, zout)
+    #
+    # def dask_serial(command):
+    #     global zx, zy, zz, shape, chunkshape, dtype, zcompr
+    #     with dask.config.set(scheduler="single-threaded"):
+    #         da.from_zarr(zx)
+    #         da.from_zarr(zy)
+    #         da.from_zarr(zz)
+    #         res = eval(command)
+    #         zout = zarr.empty(shape, dtype=dtype, compressor=zcompr, chunks=chunkshape)
+    #         da.to_zarr(res, zout)
 
     perfplot.show(
         setup=setup,
@@ -144,20 +120,16 @@ def evaluate(command):
             ne_serial,
             ia_compiler_parallel,
             ia_compiler_serial,
-            ia_interpreter_parallel,
-            ia_interpreter_serial,
-            dask_parallel,
-            dask_serial,
+            # dask_parallel,
+            # dask_serial,
         ],
         labels=[command + " numpy",
                 command + " numexpr parallel",
                 command + " numexpr serial",
                 command + " iarray parallel (compiler)",
                 command + " iarray serial (compiler)",
-                command + " iarray parallel (interpreter)",
-                command + " iarray serial (interpreter)",
-                command + " dask parallel (threads)",
-                command + " dask serial",
+                # command + " dask parallel (threads)",
+                # command + " dask serial",
                 ],
         logx=False,
         logy=False,

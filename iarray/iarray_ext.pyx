@@ -21,6 +21,7 @@ from math import ceil
 from libc.stdlib cimport malloc, free
 from iarray.high_level import IArray
 from collections import namedtuple
+from iarray import EVAL_AUTO, EVAL_ITERBLOSC, EVAL_ITERCHUNK
 
 
 IARRAY_ERR_EVAL_ENGINE_FAILED = ciarray.IARRAY_ERR_EVAL_ENGINE_FAILED
@@ -158,35 +159,22 @@ cdef class _Config:
     cdef ciarray.iarray_config_t _cfg
 
     def __init__(self, compression_codec, compression_level, use_dict, filter_flags,
-                 max_num_threads, fp_mantissa_bits, eval_flags):
+                 max_num_threads, fp_mantissa_bits, eval_method):
         self._cfg.compression_codec = compression_codec
         self._cfg.compression_level = compression_level
         self._cfg.use_dict = use_dict
         self._cfg.filter_flags = filter_flags
 
-        eval_flags = eval_flags.to_tuple()  # TODO: should we move this to its own eval configuration?
-
-        if eval_flags.method == "auto":
+        if eval_method == EVAL_AUTO:
             method = ciarray.IARRAY_EVAL_METHOD_AUTO
-        elif eval_flags.method == "iterblosc2":
-            method = ciarray.IARRAY_EVAL_METHOD_ITERBLOSC2
-        elif eval_flags.method == "iterblosc":
+        elif eval_method == EVAL_ITERBLOSC:
             method = ciarray.IARRAY_EVAL_METHOD_ITERBLOSC
-        elif eval_flags.method == "iterchunk":
+        elif eval_method == EVAL_ITERCHUNK:
             method = ciarray.IARRAY_EVAL_METHOD_ITERCHUNK
         else:
-            raise ValueError("eval_flags method not recognized:", eval_flags.method)
+            raise ValueError("eval_method method not recognized:", eval_method)
 
-        if eval_flags.engine == "auto":
-            engine = ciarray.IARRAY_EVAL_ENGINE_AUTO
-        elif eval_flags.engine == "interpreter":
-            engine = ciarray.IARRAY_EVAL_ENGINE_INTERPRETER
-        elif eval_flags.engine == "compiler":
-            engine = ciarray.IARRAY_EVAL_ENGINE_COMPILER
-        else:
-            raise ValueError("eval_flags engine not recognized:", eval_flags.engine)
-
-        self._cfg.eval_flags = method | (engine << 3)
+        self._cfg.eval_method = method
         self._cfg.max_num_threads = max_num_threads
         self._cfg.fp_mantissa_bits = fp_mantissa_bits
 

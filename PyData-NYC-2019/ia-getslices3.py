@@ -66,7 +66,7 @@ print("cratio", prec2.cratio)
 
 @profile
 def compute_slices(dataset):
-    expr = ia.Expr(eval_flags="iterblock", clevel=CLEVEL, clib=CLIB, nthreads=NTHREADS, blocksize=BLOCKSIZE)
+    expr = ia.Expr(eval_method="iterblock", clevel=CLEVEL, clib=CLIB, nthreads=NTHREADS, blocksize=BLOCKSIZE)
     expr.bind("x", dataset)
     expr.compile(sexpr)
     out = expr.eval(shape, pshape, dataset.dtype)

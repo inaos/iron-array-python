@@ -17,7 +17,7 @@ CLIB = ia.LZ4
 
 compressor = Blosc(cname='lz4', clevel=CLEVEL, shuffle=Blosc.SHUFFLE)
 # shape = (1 * 1000 * 1000,)
-shapes = np.logspace(5, 8, 10, dtype=np.int64)
+shapes = np.logspace(6, 8, 10, dtype=np.int64)
 # chunksizes = np.linspace(10 * 1000, 1000 * 1000, 10)
 chunkshape = (1000 * 1000,)
 blockshape = (16 * 1000,)
@@ -30,7 +30,7 @@ t_ratio = []
 
 for i, shape in enumerate(shapes):
     shape = (shape,)
-    print(shape)
+    print(shape, chunkshape)
     cparams = dict(clib=CLIB, clevel=CLEVEL, nthreads=NTHREADS)
 
     storage_in = ia.StorageProperties("blosc", chunkshape, blockshape, True, "iarray_infile.iarray")
@@ -41,8 +41,8 @@ for i, shape in enumerate(shapes):
     t0 = time()
     data = ia.load("iarray_infile.iarray", load_in_mem=False)
 
-    eval_flags = ia.EvalFlags(method="iterblosc2", engine="compiler")
-    expr = ia.Expr(eval_flags=eval_flags, **cparams)
+    eval_method = ia.EVAL_ITERBLOSC
+    expr = ia.Expr(eval_method=eval_method, **cparams)
     expr.bind("x", data)
     storage_out = ia.StorageProperties("blosc", chunkshape, blockshape, True, "iarray_outfile.iarray")
     expr.bind_out_properties(ia.dtshape(shape, DTYPE), storage=storage_out)

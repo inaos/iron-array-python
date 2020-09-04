@@ -82,7 +82,7 @@ print(bne)
 
 
 a1_storage = ia.StorageProperties("blosc", chunkshape, blockshape)
-eval_flags = ia.EvalFlags(method="iterblosc2", engine="compiler")
+eval_method = ia.EVAL_ITERBLOSC
 iax = a1.copy(view=False, storage=a1_storage, **cparams)
 iay = a1.copy(view=False, storage=a1_storage, **cparams)
 iaz = a1.copy(view=False, storage=a1_storage, **cparams)
@@ -91,7 +91,7 @@ print("iarray evaluation...")
 cparams2 = cparams.copy()
 # cparams2.update(dict(fp_mantissa_bits=3, clevel=5))
 # cparams2.update(dict(clevel=5))
-expr = f.create_expr([iax], ia.dtshape(shape, dtype), "iterblosc2", storage=a1_storage, **cparams2)
+expr = f.create_expr([iax], ia.dtshape(shape, dtype), ia.EVAL_ITERBLOSC, storage=a1_storage, **cparams2)
 # expr = f2.create_expr([iax, iay, iaz], **cparams2)
 # And now, the expression
 t0 = time()
@@ -102,7 +102,7 @@ b1_n = ia.iarray2numpy(b1)
 print(b1_n)
 
 t0 = time()
-expr = ia.Expr(eval_flags=eval_flags, **cparams2)
+expr = ia.Expr(eval_method=eval_method, **cparams2)
 # expr.bind('x', a1)
 # expr.compile('(x - 1.35) * (x - 4.45) * (x - 8.5)')
 expr.bind('x', iax)
