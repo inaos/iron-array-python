@@ -409,17 +409,16 @@ cdef class Expression:
 
     def compile(self, expr):
         # Try to support all the ufuncs in numpy
-        substs = {
+        ufunc_repls = {
             "arcsin": "asin",
             "arccos": "acos",
             "arctan": "atan",
             "arctan2": "atan2",
             "power": "pow",
             }
-        for key in substs.keys():
-            if key in expr:
-                expr = expr.replace(key, substs[key])
-
+        for ufunc in ufunc_repls.keys():
+            if ufunc in expr:
+                expr = expr.replace(ufunc, ufunc_repls[ufunc])
         expr = expr.encode("utf-8") if isinstance(expr, str) else expr
         if ciarray.iarray_expr_compile(self._e, expr) != 0:
             raise ValueError(f"Error in compiling expr: {expr}")

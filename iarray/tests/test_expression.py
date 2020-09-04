@@ -17,8 +17,11 @@ import numpy as np
     ("iterblosc", "compiler", [223], [100], [30], np.float64, "sinh(x) + (cosh(x) - 1.35) - tanh(x + .2)"),
     ("iterchunk", "auto", [100, 100, 55], [10, 5, 10], [3, 4, 3], np.float64,
      "asin(x) + (acos(x) - 1.35) - atan(x + .2)"),
+    ("iterchunk", "auto", [100, 100, 55], [10, 5, 10], [3, 4, 3], np.float64,
+     "arcsin(x) + (arccos(x) - 1.35) - arctan(x + .2)"),  # check NumPy naming convention for ufuncs
     ("auto", "interpreter", [1000], None, None, np.float64, "exp(x) + (log(x) - 1.35) - log10(x + .2)"),
     ("iterchunk", "auto", [1000], None, None, np.float32, "sqrt(x) + atan2(x, x) + pow(x, x)"),
+    ("iterchunk", "auto", [1000], None, None, np.float32, "sqrt(x) + arctan2(x, x) + power(x, x)"),
     ("auto", "auto", [100, 100], None, None, np.float64, "(x - cos(1)) * 2"),
     ("iterchunk", "interpreter", [8, 6, 7, 4, 5], None, None, np.float32,
      "(x - cos(y)) * (sin(x) + y) + 2 * x + y"),
@@ -54,15 +57,19 @@ def test_expression(method, engine, shape, chunkshape, blockshape, dtype, expres
     npout = ia.iarray2numpy(iout)
 
     # Evaluate using a different engine
-    substs = {"asin": "arcsin",
-              "acos": "arccos",
-              "atan": "arctan",
-              "atan2": "arctan2",
-              "pow": "power",
-              }
-    for key in substs.keys():
-        if key in expression:
-            expression = expression.replace(key, substs[key])
+    ufunc_repls = {
+        "asin": "arcsin",
+        "acos": "arccos",
+        "atan": "arctan",
+        "atan2": "arctan2",
+        "pow": "power",
+    }
+    for ufunc in ufunc_repls.keys():
+        if ufunc in expression:
+            if ufunc == "pow" and "power" in expression:
+                # Don't do a replacement twice
+                break
+            expression = expression.replace(ufunc, ufunc_repls[ufunc])
     for ufunc in ia.UFUNC_LIST:
         if ufunc in expression:
             idx = expression.find(ufunc)
