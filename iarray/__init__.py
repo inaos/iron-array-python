@@ -59,9 +59,8 @@ from .high_level import (IArray, dtshape, StorageProperties, EvalFlags, Config, 
                          abs, arccos, arcsin, arctan, arctan2, ceil, cos, cosh,
                          exp, floor, log, log10, negative, power, sin, sinh,
                          sqrt, tan, tanh,
+                         UFUNC_LIST,
                          )
 
-from .expression import Parser
-from .version import version as __version__
 
 ext.IArrayInit()

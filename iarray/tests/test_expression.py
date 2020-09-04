@@ -1,5 +1,6 @@
 import pytest
 import iarray as ia
+import numpy
 import numpy as np
 
 
@@ -50,11 +51,27 @@ def test_expression(method, engine, shape, chunkshape, blockshape, dtype, expres
     expr.compile(expression)
 
     iout = expr.eval()
-
     npout = ia.iarray2numpy(iout)
-    npout2 = ia.Parser().parse(expression).evaluate({"x": npx, "y": npy})
 
-    decimal = 6 if dtype is np.float32 else 7
+    # Evaluate using a different engine
+    substs = {"asin": "arcsin",
+              "acos": "arccos",
+              "atan": "arctan",
+              "atan2": "arctan2",
+              "pow": "power",
+              }
+    for key in substs.keys():
+        if key in expression:
+            expression = expression.replace(key, substs[key])
+    for ufunc in ia.UFUNC_LIST:
+        if ufunc in expression:
+            idx = expression.find(ufunc)
+            # Prevent replacing an ufunc with np.ufunc twice (not terribly solid, but else, test will crash)
+            if "np." not in expression[idx - len("np.arc"):idx]:
+                expression = expression.replace(ufunc + "(", "np." + ufunc + "(")
+    npout2 = eval(expression, {"x": npx, "y": npy, "np": numpy})
+
+    decimal = 5 if dtype is np.float32 else 10
 
     np.testing.assert_almost_equal(npout, npout2, decimal=decimal)
 

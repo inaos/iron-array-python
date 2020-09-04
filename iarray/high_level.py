@@ -17,6 +17,14 @@ from itertools import zip_longest as zip
 from collections import namedtuple
 
 
+# List of all know universal functions
+UFUNC_LIST = (
+    "abs", "arccos", "arcsin", "arctan", "arctan2", "ceil",
+    "cos", "cosh", "exp", "floor", "log", "log10", "negative",
+    "power", "sin", "sinh", "sqrt", "tan", "tanh",
+)
+
+
 def cmp_arrays(a, b, success=None):
     if type(a) is ia.high_level.IArray:
         a = ia.iarray2numpy(a)
