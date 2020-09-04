@@ -7,8 +7,7 @@ from time import time
 import numpy as np
 
 import iarray as ia
-from iarray.udf import jit, Array
-from iarray.py2llvm import float64, int64
+from iarray.udf import jit, Array, float64, int64
 
 
 # Number of iterations per benchmark
@@ -49,20 +48,10 @@ print(np_in)
 # iarray UDF evaluation
 print("iarray UDF evaluation ...")
 expr = f.create_expr([ia_in], dtshape, storage=storage, **cparams)
+ia_out = None  # fix a warning
 t0 = time()
 for i in range(NITER):
     ia_out = expr.eval()
 print("Time for UDF eval:", round((time() - t0) / NITER, 3))
 ia_out = ia.iarray2numpy(ia_out)
 print(ia_out)
-
-#   # numpy evaluation
-#   print("numpy evaluation...")
-#   t0 = time()
-#   for i in range(NITER):
-#       np_out = (np.sin(np_in) - 1.35) * (np_in - 4.45) * (np_in - 8.5)
-#   print("Time for numpy eval:", round((time() - t0) / NITER, 3))
-#   print(np_out)
-
-#   # compare
-#   ia.cmp_arrays(np_out, ia_out, success='OK. Results are the same.')

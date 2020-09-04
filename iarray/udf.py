@@ -5,6 +5,7 @@ import math
 import iarray as ia
 from llvmlite import ir
 from . import py2llvm
+from .py2llvm import float32, float64, void
 from .py2llvm import int8, int8p, int32, int64, int32p, int64p
 from .py2llvm import types
 

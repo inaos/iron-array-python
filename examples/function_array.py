@@ -23,6 +23,17 @@ ia1 = ia.linspace(ia.dtshape(shape, dtype), 0, 10, **kwargs)
 np1 = ia.iarray2numpy(ia1)
 
 t0 = time()
+np2 = np.cos(np1)
+t1 = time()
+print("Time for numpy evaluation: %.3f" % (t1 - t0))
+
+ne.set_num_threads(nthreads)
+t0 = time()
+np3 = ne.evaluate("cos(np1)")
+t1 = time()
+print("Time for numexpr evaluation: %.3f" % (t1 - t0))
+
+t0 = time()
 expr = ia.Expr(**kwargs)
 expr.bind("x", ia1)
 expr.bind_out_properties(ia.dtshape(shape, dtype), storage=storage)
@@ -30,24 +41,7 @@ expr.compile("cos(x)")
 ia2 = expr.eval()
 t1 = time()
 print("Time for iarray evaluation: %.3f (cratio: %.2fx)" % ((t1 - t0), ia2.cratio))
-np2 = ia.iarray2numpy(ia2)
-
-t0 = time()
-np3 = np.cos(np1)
-t1 = time()
-print("Time for numpy evaluation: %.3f" % (t1 - t0))
-
-try:
-    np.testing.assert_almost_equal(np3, np2)
-    print("OK.  Results are the same.")
-except AssertionError:
-    print("ERROR. Results are different.")
-
-ne.set_num_threads(nthreads)
-t0 = time()
-np3 = ne.evaluate("cos(np1)")
-t1 = time()
-print("Time for numexpr evaluation: %.3f" % (t1 - t0))
+np3 = ia.iarray2numpy(ia2)
 
 try:
     np.testing.assert_almost_equal(np3, np2)
@@ -68,14 +62,21 @@ except AssertionError:
     print("ERROR. Results are different.")
 
 t0 = time()
-ia3 = ia1.cos().eval(**kwargs)
-# ia3 = ia1.cos().eval(method="numexpr", **kwargs)
+ia3 = ia.cos(ia1).eval(**kwargs)
 t1 = time()
-print("iarray evaluation via __array_ufunc__: %.3f (cratio: %.2fx)" % ((t1 - t0), ia3.cratio))
+print("Time for iarray via lazy evaluation: %.3f (cratio: %.2fx)" % ((t1 - t0), ia3.cratio))
 np4 = ia.iarray2numpy(ia3)
+
+t0 = time()
+ia4 = ia1.cos().eval(**kwargs)
+# ia4 = ia1.cos().eval(method="numexpr", **kwargs)
+t1 = time()
+print("Time for iarray via lazy evaluation (method): %.3f (cratio: %.2fx)" % ((t1 - t0), ia3.cratio))
+np5 = ia.iarray2numpy(ia4)
 
 try:
     np.testing.assert_almost_equal(np4, np2)
+    # np.testing.assert_almost_equal(np5, np2)
     print("OK.  Results are the same.")
 except AssertionError:
     print("ERROR. Results are different.")
