@@ -14,13 +14,14 @@ from iarray.udf import jit, Array, float64, int64
 NITER = 1
 
 # Define array params
-shape = [100]
-pshape = [6]
+shape = [1000]
+cshape = [200]
+bshape = [40]
 dtype = np.float64
 
-blocksize = reduce(lambda x, y: x * y, pshape) * dtype(0).itemsize
+blocksize = reduce(lambda x, y: x * y, bshape) * dtype(0).itemsize
 cparams = dict(clib=ia.LZ4, clevel=5, nthreads=16, blocksize=blocksize)
-storage = ia.StorageProperties("blosc", pshape, pshape)
+storage = ia.StorageProperties("blosc", cshape, bshape)
 dtshape = ia.dtshape(shape, dtype)
 
 

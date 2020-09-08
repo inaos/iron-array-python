@@ -7,8 +7,6 @@ import numpy as np
 NITER = 10
 
 # Define array params
-# shape = [10000, 2000]
-# pshape = [1000, 200]
 shape = [10 * 1000 * 1000]
 cshape = [200 * 1000]
 bshape = [20 * 1000]

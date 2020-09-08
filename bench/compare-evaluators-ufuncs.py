@@ -10,7 +10,7 @@ import math
 # Number of iterations per benchmark
 NITER = 10
 
-# Vector sizes and partitions
+# Vector sizes and chunking
 shape = [20 * 1000 * 1000]
 N = int(np.prod(shape))
 

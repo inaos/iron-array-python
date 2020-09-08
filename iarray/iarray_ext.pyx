@@ -622,7 +622,7 @@ def get_slice(ctx, data, start, stop, view, storage):
 
     cdef ciarray.int64_t start_[ciarray.IARRAY_DIMENSION_MAX]
     cdef ciarray.int64_t stop_[ciarray.IARRAY_DIMENSION_MAX]
-    cdef ciarray.int64_t pshape_[ciarray.IARRAY_DIMENSION_MAX]
+
     for i in range(len(start)):
         start_[i] = start[i]
         stop_[i] = stop[i]

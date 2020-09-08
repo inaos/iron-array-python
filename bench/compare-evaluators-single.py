@@ -18,7 +18,7 @@ clevel = 9   # compression level
 clib = ia.LZ4  # compression codec
 nthreads = 1  # number of threads for the evaluation and/or compression
 
-# Vector sizes and partitions
+# Vector sizes and chunking
 shape = [200 * 1000 * 1000]
 N = int(np.prod(shape))
 blockshape = [30 * 1000]
