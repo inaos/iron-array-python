@@ -14,7 +14,7 @@ from iarray.py2llvm import float64, int64
 # Number of iterations per benchmark
 NITER = 10
 
-# Vector sizes and partitions
+# Vector and sizes and chunking
 shape = [20 * 1000 * 1000]
 N = int(np.prod(shape))
 

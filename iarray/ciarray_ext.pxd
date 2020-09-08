@@ -126,11 +126,11 @@ cdef extern from "libiarray/iarray.h":
 
     void iarray_context_free(iarray_context_t **ctx)
 
-    ina_rc_t iarray_partition_advice(iarray_context_t *ctx,
-                                     iarray_dtshape_t *dtshape,
-                                     iarray_storage_t *storage,
-                                          int64_t low,
-                                     int64_t high);
+    ina_rc_t iarray_chunk_advice(iarray_context_t *ctx,
+                                 iarray_dtshape_t *dtshape,
+                                 iarray_storage_t *storage,
+                                 int64_t low,
+                                 int64_t high);
 
     ina_rc_t iarray_container_new(iarray_context_t *ctx,
                                        iarray_dtshape_t *dtshape,

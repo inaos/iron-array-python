@@ -18,8 +18,6 @@ NTHREADS = 20
 cparams = dict(clib=ia.LZ4, clevel=5, nthreads=NTHREADS)
 
 # Define array params
-# shape = [10000, 2000]
-# pshape = [1000, 200]
 shape = [20 * 1000 * 1000]
 chunkshape = [4000 * 1000]
 blockshape = [20 * 1000]
