@@ -8,8 +8,15 @@ shape = [size]
 cshape = [100]
 bshape = [20]
 
+ia.random_set_seed(1)
+
 a1 = ia.random_uniform(ia.dtshape(shape, dtype=np.float32), 0, 1)
 a2 = ia.iarray2numpy(a1)
+print(a2[:10])
+
+a1 = ia.random_uniform(ia.dtshape(shape, dtype=np.float32), 0, 1)
+a2 = ia.iarray2numpy(a1)
+print(a2[:10])
 
 b1 = np.random.uniform(0, 1, size).astype(np.float32)
 
