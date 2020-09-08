@@ -126,6 +126,8 @@ cdef extern from "libiarray/iarray.h":
 
     void iarray_context_free(iarray_context_t **ctx)
 
+    ina_rc_t iarray_get_ncores(int *ncores, int64_t max_ncores);
+
     ina_rc_t iarray_chunk_advice(iarray_context_t *ctx,
                                  iarray_dtshape_t *dtshape,
                                  iarray_storage_t *storage,

@@ -15,6 +15,17 @@ import iarray as ia
 from iarray import iarray_ext as ext
 from itertools import zip_longest as zip
 from collections import namedtuple
+import warnings
+
+
+def get_ncores(max_ncores=0):
+    ncores = ext.get_ncores(max_ncores)
+    if ncores < 0:
+        warnings.warn("Error getting the number of cores in this system (please report this)."
+                      "  Falling back to 1.",
+                      UserWarning)
+        return 1
+    return ncores
 
 
 # List of all know universal functions

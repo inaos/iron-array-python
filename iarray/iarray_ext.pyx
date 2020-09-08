@@ -1005,6 +1005,13 @@ def matmul(cfg, a, b, block_a, block_b):
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     return IArray(ctx, c_c)
 
+def get_ncores(max_ncores):
+    cdef int ncores = 1
+    err = ciarray.iarray_get_ncores(&ncores, max_ncores)
+    if err != 0:
+        # In case of error, return a negative value
+        return -1
+    return ncores
 
 #
 # TODO: the next functions are just for benchmarking purposes and should be moved to its own extension
