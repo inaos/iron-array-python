@@ -19,6 +19,11 @@ import warnings
 
 
 def get_ncores(max_ncores=0):
+    """Return the number of logical cores in the system.
+
+    This number is capped at `max_ncores`.  When `max_ncores` is 0,
+    there is no cap at all.
+    """
     ncores = ext.get_ncores(max_ncores)
     if ncores < 0:
         warnings.warn("Error getting the number of cores in this system (please report this)."
