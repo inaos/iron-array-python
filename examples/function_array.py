@@ -11,11 +11,9 @@ dtype = np.float64
 shape = [10000, 8000]
 cshape = [1000, 800]
 bshape = [100, 100]
-nthreads = 8
-eval_method = ia.EVAL_ITERBLOSC
 storage = ia.StorageProperties(backend="blosc", chunkshape=cshape, blockshape=bshape,
                                enforce_frame=False, filename=None)
-kwargs = dict(eval_method=eval_method, storage=storage, nthreads=nthreads, clevel=9, clib=ia.LZ4)
+kwargs = dict(eval_method=ia.EVAL_ITERBLOSC, storage=storage)
 
 
 # Create initial arrays
@@ -27,7 +25,6 @@ np2 = np.cos(np1)
 t1 = time()
 print("Time for numpy evaluation: %.3f" % (t1 - t0))
 
-ne.set_num_threads(nthreads)
 t0 = time()
 np3_ = ne.evaluate("cos(np1)")
 t1 = time()

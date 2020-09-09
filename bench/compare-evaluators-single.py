@@ -196,7 +196,7 @@ def do_block_evaluation(chunkshape_):
     # print("Block evaluate via numba (II):", round((time() - t0) / NITER, 4))
     # y1 = ia.iarray2numpy(ya)
     # np.testing.assert_almost_equal(y0, y1)
-    
+
     if NUMBA_PRECOMP:
          t0 = time()
          for i in range(NITER):
@@ -206,7 +206,7 @@ def do_block_evaluation(chunkshape_):
          print("Block evaluate via pre-compiled numba:", round((time() - t0) / NITER, 4))
          y1 = ia.iarray2numpy(ya)
          np.testing.assert_almost_equal(y0, y1)
-    
+
     # t0 = time()
     # for i in range(NITER):
     #     ya = ia.empty(ia.dtshape(shape=shape), storage=storage, **cparams)

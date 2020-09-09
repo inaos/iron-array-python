@@ -1005,6 +1005,7 @@ def matmul(cfg, a, b, block_a, block_b):
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     return IArray(ctx, c_c)
 
+
 def get_ncores(max_ncores):
     cdef int ncores = 1
     err = ciarray.iarray_get_ncores(&ncores, max_ncores)
