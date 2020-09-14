@@ -956,6 +956,20 @@ class GenVisitor(NodeVisitor):
             return Range(self.builder, *args)
 
         func = self.root.compiled.get(func, func)
+        if not isinstance(func, ir.Function):
+            raise TypeError(f'unexpected {func}')
+
+        # Check the number of arguments is correct
+        if len(args) != len(func.args):
+            n = len(func.args)
+            raise TypeError(
+                f'{func.name} takes exactly one argument ({len(args)} given)' if n == 1 else
+                f'{func.name} expects {n} arguments, got {len(args)}')
+
+        # Convert to IR values of the correct type
+        args = [types.value_to_ir_value(self.builder, arg, type_=func_arg.type)
+                for arg, func_arg in zip(args, func.args)]
+
         return self.builder.call(func, args)
 
 
@@ -1104,11 +1118,16 @@ class Function:
         # (5) Load functions
         node.compiled = {}
         ft_f64 = ir.FunctionType(types.float64, (types.float64,))
-        fs = [math.acos, math.asin, math.atan, math.atan2, math.cos, math.cosh,
-              math.sin, math.sinh, math.tan, math.tanh]
+        fs = [math.acos, math.asin, math.atan, math.cos, math.cosh, math.sin,
+              math.sinh, math.tan, math.tanh]
         for f in fs:
             name = f.__name__
             node.compiled[f] = ir.Function(self.ir_module, ft_f64, name=name)
+
+        ft_f64_f64 = ir.FunctionType(types.float64, (types.float64, types.float64))
+        for f in [math.atan2, math.pow]:
+            name = f.__name__
+            node.compiled[f] = ir.Function(self.ir_module, ft_f64_f64, name=name)
 
         for plugin in plugins:
             load_functions = getattr(plugin, 'load_functions', None)

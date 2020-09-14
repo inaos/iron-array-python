@@ -191,3 +191,21 @@ def test_error(f):
     with pytest.raises(RuntimeError) as excinfo:
         expr.eval()
     assert "Error in evaluating expr: user_defined_function" in str(excinfo.value)
+
+
+def f_unsupported_function(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
+    math.sqrt(5.0)
+    return 0
+
+
+def f_bad_argument_count(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
+    math.pow(5)
+    return 0
+
+
+def test_function_call_errors():
+    with pytest.raises(TypeError):
+        udf.jit(f_unsupported_function)
+
+    with pytest.raises(TypeError):
+        udf.jit(f_bad_argument_count)
