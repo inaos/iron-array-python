@@ -114,7 +114,7 @@ class RandomContext(ext.RandomContext):
 class Config(ext._Config):
 
     def __init__(self, clib=ia.LZ4, clevel=5, use_dict=0, filter_flags=ia.SHUFFLE, nthreads=0,
-                 fp_mantissa_bits=0, blocksize=0, storage=None, eval_method=None):
+                 fp_mantissa_bits=0, blocksize=0, storage=None, eval_method=None, seed=0):
         self._clib = clib
         self._clevel = clevel
         self._use_dict = use_dict
@@ -125,6 +125,7 @@ class Config(ext._Config):
         self._blocksize = blocksize
         # Get the number of cores using nthreads as a maximum
         self._nthreads = nthreads = get_ncores(nthreads)
+        self._seed = seed
         # TODO: should we move this to its own eval configuration?
         self._eval_method = ia.EVAL_AUTO if eval_method is None else eval_method
         self._storage = ia.StorageProperties() if storage is None else storage
@@ -164,6 +165,10 @@ class Config(ext._Config):
     @property
     def eval_method(self):
         return self._eval_method
+
+    @property
+    def seed(self):
+        return self._seed
 
     def __str__(self):
         return (
@@ -557,53 +562,70 @@ def numpy2iarray(c, **kwargs):
     dtshape = ia.dtshape(c.shape, dtype)
     return ext.numpy2iarray(cfg, c, dtshape)
 
+def random_set_seed(seed):
+    ia.RANDOM_SEED = seed
+
+def random_pre(**kwargs):
+    ia.RANDOM_SEED += 1
+    kwargs["seed"] = ia.RANDOM_SEED
+    return kwargs
 
 def random_rand(dtshape, **kwargs):
+    kwargs = random_pre(**kwargs)
     cfg = Config(**kwargs)
     return ext.random_rand(cfg, dtshape)
 
 
 def random_randn(dtshape, **kwargs):
+    kwargs = random_pre(**kwargs)
     cfg = Config(**kwargs)
     return ext.random_randn(cfg, dtshape)
 
 
 def random_beta(dtshape, alpha, beta, **kwargs):
+    kwargs = random_pre(**kwargs)
     cfg = Config(**kwargs)
     return ext.random_beta(cfg, alpha, beta, dtshape)
 
 
 def random_lognormal(dtshape, mu, sigma, **kwargs):
+    kwargs = random_pre(**kwargs)
     cfg = Config(**kwargs)
     return ext.random_lognormal(cfg, mu, sigma, dtshape)
 
 
 def random_exponential(dtshape, beta, **kwargs):
+    kwargs = random_pre(**kwargs)
     cfg = Config(**kwargs)
     return ext.random_exponential(cfg, beta, dtshape)
 
 
 def random_uniform(dtshape, a, b, **kwargs):
+    kwargs = random_pre(**kwargs)
     cfg = Config(**kwargs)
     return ext.random_uniform(cfg, a, b, dtshape)
 
 
 def random_normal(dtshape, mu, sigma, **kwargs):
+    kwargs = random_pre(**kwargs)
     cfg = Config(**kwargs)
     return ext.random_normal(cfg, mu, sigma, dtshape)
 
 
 def random_bernoulli(dtshape, p, **kwargs):
+    kwargs = random_pre(**kwargs)
     cfg = Config(**kwargs)
     return ext.random_bernoulli(cfg, p, dtshape)
 
 
 def random_binomial(dtshape, m, p, **kwargs):
+    kwargs = random_pre(**kwargs)
     cfg = Config(**kwargs)
     return ext.random_binomial(cfg, m, p, dtshape)
 
 
 def random_poisson(dtshape, lamb, **kwargs):
+    kwargs = random_pre(**kwargs)
     cfg = Config(**kwargs)
     return ext.random_poisson(cfg, lamb, dtshape)
 

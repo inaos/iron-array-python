@@ -52,6 +52,7 @@ BLOSC_STORAGE = 'blosc'
 EVAL_AUTO = 'auto'
 EVAL_ITERBLOSC = 'iterblosc'
 EVAL_ITERCHUNK = 'iterchunk'
+RANDOM_SEED = 0
 
 from . import iarray_ext as ext
 
@@ -59,6 +60,7 @@ from .high_level import (IArray, dtshape, StorageProperties, Config, RandomConte
                          empty, arange, linspace, zeros, ones, full, load, save,
                          cmp_arrays, iarray2numpy, numpy2iarray, matmul,
                          # random constructors
+                         random_set_seed,
                          random_rand, random_randn, random_beta, random_lognormal, random_exponential,
                          random_uniform, random_normal, random_bernoulli, random_binomial, random_poisson,
                          random_kstest,
