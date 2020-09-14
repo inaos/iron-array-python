@@ -15,6 +15,22 @@ import iarray as ia
 from iarray import iarray_ext as ext
 from itertools import zip_longest as zip
 from collections import namedtuple
+import warnings
+
+
+def get_ncores(max_ncores=0):
+    """Return the number of logical cores in the system.
+
+    This number is capped at `max_ncores`.  When `max_ncores` is 0,
+    there is no cap at all.
+    """
+    ncores = ext.get_ncores(max_ncores)
+    if ncores < 0:
+        warnings.warn("Error getting the number of cores in this system (please report this)."
+                      "  Falling back to 1.",
+                      UserWarning)
+        return 1
+    return ncores
 
 
 # List of all know universal functions
@@ -97,7 +113,7 @@ class RandomContext(ext.RandomContext):
 
 class Config(ext._Config):
 
-    def __init__(self, clib=ia.LZ4, clevel=5, use_dict=0, filter_flags=ia.SHUFFLE, nthreads=1,
+    def __init__(self, clib=ia.LZ4, clevel=5, use_dict=0, filter_flags=ia.SHUFFLE, nthreads=0,
                  fp_mantissa_bits=0, blocksize=0, storage=None, eval_method=None, seed=0):
         self._clib = clib
         self._clevel = clevel
@@ -107,7 +123,8 @@ class Config(ext._Config):
             filter_flags |= ia.TRUNC_PREC
         self._filter_flags = filter_flags
         self._blocksize = blocksize
-        self._nthreads = nthreads
+        # Get the number of cores using nthreads as a maximum
+        self._nthreads = nthreads = get_ncores(nthreads)
         self._seed = seed
         # TODO: should we move this to its own eval configuration?
         self._eval_method = ia.EVAL_AUTO if eval_method is None else eval_method

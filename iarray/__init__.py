@@ -69,6 +69,8 @@ from .high_level import (IArray, dtshape, StorageProperties, Config, RandomConte
                          exp, floor, log, log10, negative, power, sin, sinh,
                          sqrt, tan, tanh,
                          UFUNC_LIST,
+                         # utils
+                         get_ncores,
                          )
 
 

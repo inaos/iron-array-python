@@ -49,7 +49,7 @@ for num_threads in range(1, max_num_threads + 1):
     print(f"Num. threads: {num_threads}")
     # omp_set_num_threads(num_threads)
     res_i = []
-    kwargs = dict(nthreads=num_threads, clib=ia.LZ4)
+    kwargs = dict(nthreads=num_threads)
 
     # Numpy
     a1 = np.linspace(0, 10, size).reshape(shape)
