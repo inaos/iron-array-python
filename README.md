@@ -64,8 +64,22 @@ Also note the `-j 4` flag; this is a way to specify the number of processes in p
 Thanks to the nice integration of scikit-build with cmake, you can even pass [cmake configure options directly from commandline](https://scikit-build.readthedocs.io/en/latest/usage.html#cmake-configure-options).  For example:
 
 ```
-python setup.py build_ext -j 4 --build-type=RelWithDebInfo -DDISABLE_LLVM_CONFIG=False
+python setup.py build_ext -j 4 --build-type=RelWithDebInfo -- -DDISABLE_LLVM_CONFIG=False
 ```
+
+Sometimes the `llvm_config` command does not work as intended (as in Clear Linux), so you will need to disable it.
+
+```
+python setup.py build_ext -j 4 --build-type=RelWithDebInfo -- -DDISABLE_LLVM_CONFIG=True
+```
+
+For interactive use, you may need to manually copy the next libs (for some reason, this copy only happens for wheels; To Be Fixed):
+
+```
+cp iarray/iarray-c-develop/build/libintlc.so.5 iarray
+cp iarray/iarray-c-develop/build/libsvml.so iarray/
+```
+
 
 ### Test
 
