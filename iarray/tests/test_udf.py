@@ -9,24 +9,36 @@ from iarray import udf
 from iarray.udf import int32
 
 
-def cmp_udf_np(f, start, stop, shape, chunkshape, blockshape, dtype, cparams):
+def cmp_udf_np(f, start_stop, shape, chunkshape, blockshape, dtype, cparams):
     """Helper function that compares UDF against numpy.
 
-    Constraints:
+    Parameters:
+        f          : The User-Defined-Function.
+        start_stop : Defines the input arrays, may be a tuple or a list of
+                     tuples. Each tuple has 2 elements with the start and stop
+                     arguments that define a linspace array.
+        chunkshape : Chunk shape for ironArray.
+        blockshape : Block shape for ironArray.
+        dtype      : Data type.
+        cparams    : Parameters for ironArray.
 
-    - Input is always 1 linspace array, defined by start and stop
-    - Function results do not depend on chunkshape/blockshape
+    Function results must not depend on chunkshape/blockshape, otherwise the
+    comparison with numpy will fail.
     """
 
+    if type(start_stop) is tuple:
+        start_stop = [start_stop]
+
     storage = ia.StorageProperties("blosc", chunkshape, blockshape)
-    x = ia.linspace(ia.dtshape(shape, dtype), start, stop, storage=storage, **cparams)
-    expr = f.create_expr([x], ia.dtshape(shape, dtype), storage=storage, **cparams)
+    dtshape = ia.dtshape(shape, dtype)
+    inputs = [ia.linspace(dtshape, start, stop, storage=storage, **cparams) for start, stop in start_stop]
+    expr = f.create_expr(inputs, dtshape, storage=storage, **cparams)
     out = expr.eval()
 
     num = functools.reduce(lambda x, y: x * y, shape)
-    x_ref = np.linspace(start, stop, num, dtype=dtype).reshape(shape)
+    inputs_ref = [np.linspace(start, stop, num, dtype=dtype).reshape(shape) for start, stop in start_stop]
     out_ref = np.empty(num, dtype=dtype).reshape(shape)
-    f.py_function(out_ref, x_ref)
+    f.py_function(out_ref, *inputs_ref)
 
     ia.cmp_arrays(out, out_ref)
 
@@ -44,8 +56,9 @@ def cmp_udf_np_strict(f, start, stop, shape, chunkshape, blockshape, dtype, cpar
     assert len(blockshape) == 1
 
     storage = ia.StorageProperties("blosc", chunkshape, blockshape)
-    x = ia.linspace(ia.dtshape(shape, dtype), start, stop, storage=storage, **cparams)
-    expr = f.create_expr([x], ia.dtshape(shape, dtype), storage=storage, **cparams)
+    dtshape = ia.dtshape(shape, dtype)
+    x = ia.linspace(dtshape, start, stop, storage=storage, **cparams)
+    expr = f.create_expr([x], dtshape, storage=storage, **cparams)
     out = expr.eval()
 
     num = functools.reduce(lambda x, y: x * y, shape)
@@ -81,14 +94,14 @@ def test_1dim(f):
     cparams = dict(clib=ia.LZ4, clevel=5, nthreads=16)
     start, stop = 0, 10
 
-    cmp_udf_np(f, start, stop, shape, chunkshape, blockshape, dtype, cparams)
+    cmp_udf_np(f, (start, stop), shape, chunkshape, blockshape, dtype, cparams)
 
     # For the test function to return the same output as the Python function
     # the partition size must be multiple of 3. This is just an example of
     # how the result is not always the same as in the Python function.
     blockshape = [4 * 100]
     with pytest.raises(AssertionError):
-        cmp_udf_np(f, start, stop, shape, chunkshape, blockshape, dtype, cparams)
+        cmp_udf_np(f, (start, stop), shape, chunkshape, blockshape, dtype, cparams)
 
 
 @udf.jit
@@ -111,7 +124,7 @@ def test_2dim(f):
     cparams = dict(clib=ia.LZ4, clevel=5)
     start, stop = 0, 10
 
-    cmp_udf_np(f, start, stop, shape, chunkshape, blockshape, dtype, cparams)
+    cmp_udf_np(f, (start, stop), shape, chunkshape, blockshape, dtype, cparams)
 
 
 @udf.jit
@@ -134,7 +147,7 @@ def test_while(f):
     cparams = dict(clib=ia.LZ4, clevel=5)
     start, stop = 0, 10
 
-    cmp_udf_np(f, start, stop, shape, chunkshape, blockshape, dtype, cparams)
+    cmp_udf_np(f, (start, stop), shape, chunkshape, blockshape, dtype, cparams)
 
 
 @udf.jit
@@ -185,9 +198,59 @@ def test_error(f):
     start, stop = 0, 10
 
     storage = ia.StorageProperties("blosc", chunkshape, blockshape)
-    x = ia.linspace(ia.dtshape(shape, dtype), start, stop, storage=storage, **cparams)
-    expr = f.create_expr([x], ia.dtshape(shape, dtype), storage=storage, **cparams)
+    dtshape = ia.dtshape(shape, dtype)
+    x = ia.linspace(dtshape, start, stop, storage=storage, **cparams)
+    expr = f.create_expr([x], dtshape, storage=storage, **cparams)
 
     with pytest.raises(RuntimeError) as excinfo:
         expr.eval()
     assert "Error in evaluating expr: user_defined_function" in str(excinfo.value)
+
+
+def f_unsupported_function(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
+    math.sqrt(5.0)
+    return 0
+
+
+def f_bad_argument_count(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
+    math.pow(5)
+    return 0
+
+
+def test_function_call_errors():
+    with pytest.raises(TypeError):
+        udf.jit(f_unsupported_function)
+
+    with pytest.raises(TypeError):
+        udf.jit(f_bad_argument_count)
+
+
+
+@udf.jit
+def f_pow(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1), y: udf.Array(udf.float64, 1)):
+    n = out.shape[0]
+    for i in range(n):
+        out[i] = math.pow(x[i], y[i])
+
+    return 0
+
+
+@udf.jit
+def f_atan2(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1), y: udf.Array(udf.float64, 1)):
+    n = out.shape[0]
+    for i in range(n):
+        out[i] = math.atan2(x[i], y[i])
+
+    return 0
+
+
+@pytest.mark.parametrize('f', [f_pow, f_atan2])
+def test_math(f):
+    shape = [10 * 1000]
+    chunkshape = [3 * 1000]
+    blockshape = [3 * 100]
+    dtype = np.float64
+    cparams = dict(clib=ia.LZ4, clevel=5, nthreads=16)
+    start, stop = 0, 10
+
+    cmp_udf_np(f, [(start, stop), (start, stop)], shape, chunkshape, blockshape, dtype, cparams)
