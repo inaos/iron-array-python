@@ -19,7 +19,7 @@ import cython
 from cpython.pycapsule cimport PyCapsule_New, PyCapsule_GetPointer
 from math import ceil
 from libc.stdlib cimport malloc, free
-from iarray.high_level import IArray
+from iarray.high_level import IArray, Config
 from collections import namedtuple
 from iarray import EVAL_AUTO, EVAL_ITERBLOSC, EVAL_ITERCHUNK
 
@@ -1014,16 +1014,40 @@ def get_ncores(max_ncores):
         return -1
     return ncores
 
+
+def partition_advice(dtshape, min_chunksize, max_chunksize, min_blocksize, max_blocksize):
+    _dtshape = _DTShape(dtshape).to_dict()
+    cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> _dtshape
+
+    # Create a default context.  Maybe we can pass this in the future.
+    ctx = Context(Config())
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
+
+    # Create a storage struct and initialize it.  Do we really need a store for this (maybe a frame info)?
+    cdef ciarray.iarray_storage_t store
+    store.backend = ciarray.IARRAY_STORAGE_BLOSC
+    store.enforce_frame = False
+    # Ask for the actual advice
+    err = ciarray.iarray_partition_advice(ctx_, &dtshape_, &store,
+                                          min_chunksize, max_chunksize, min_blocksize, max_blocksize)
+    if err != 0:
+        return None, None
+
+    # Extract the shapes and return them as tuples
+    chunkshape = tuple(store.chunkshape[i] for i in range(len(dtshape.shape)))
+    blockshape = tuple(store.blockshape[i] for i in range(len(dtshape.shape)))
+    return chunkshape, blockshape
+
 #
 # TODO: the next functions are just for benchmarking purposes and should be moved to its own extension
 #
-
+cimport numpy as cnp
 @cython.boundscheck(False) # turn off bounds-checking for entire function
 @cython.wraparound(False)  # turn off negative index wrapping for entire function
 def poly_cython(xa):
     shape = xa.shape
-    cdef np.ndarray[np.npy_float64] y = np.empty(xa.shape, xa.dtype).flatten()
-    cdef np.ndarray[np.npy_float64] x = xa.flatten()
+    cdef np.ndarray[cnp.npy_float64] y = np.empty(xa.shape, xa.dtype).flatten()
+    cdef np.ndarray[cnp.npy_float64] x = xa.flatten()
     for i in range(len(x)):
         y[i] = (x[i] - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
     return y.reshape(shape)
@@ -1041,8 +1065,8 @@ cdef void poly_nogil(double *x, double *y, int n) nogil:
 
 def poly_cython_nogil(xa):
     shape = xa.shape
-    cdef np.ndarray[np.npy_float64] y = np.empty(xa.shape, xa.dtype).flatten()
-    cdef np.ndarray[np.npy_float64] x = xa.flatten()
+    cdef np.ndarray[cnp.npy_float64] y = np.empty(xa.shape, xa.dtype).flatten()
+    cdef np.ndarray[cnp.npy_float64] x = xa.flatten()
     poly_nogil(&x[0], &y[0], len(x))
     return y.reshape(shape)
 

@@ -54,6 +54,14 @@ EVAL_ITERBLOSC = 'iterblosc'
 EVAL_ITERCHUNK = 'iterchunk'
 RANDOM_SEED = 0
 
+# List of all know universal functions
+UFUNC_LIST = (
+    "abs", "arccos", "arcsin", "arctan", "arctan2", "ceil",
+    "cos", "cosh", "exp", "floor", "log", "log10", "negative",
+    "power", "sin", "sinh", "sqrt", "tan", "tanh",
+)
+
+
 from . import iarray_ext as ext
 
 from .high_level import (IArray, dtshape, StorageProperties, Config, RandomContext, Expr, LazyExpr,
@@ -68,9 +76,8 @@ from .high_level import (IArray, dtshape, StorageProperties, Config, RandomConte
                          abs, arccos, arcsin, arctan, arctan2, ceil, cos, cosh,
                          exp, floor, log, log10, negative, power, sin, sinh,
                          sqrt, tan, tanh,
-                         UFUNC_LIST,
                          # utils
-                         get_ncores,
+                         get_ncores, partition_advice,
                          )
 
 

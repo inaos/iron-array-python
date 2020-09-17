@@ -33,12 +33,25 @@ def get_ncores(max_ncores=0):
     return ncores
 
 
-# List of all know universal functions
-UFUNC_LIST = (
-    "abs", "arccos", "arcsin", "arctan", "arctan2", "ceil",
-    "cos", "cosh", "exp", "floor", "log", "log10", "negative",
-    "power", "sin", "sinh", "sqrt", "tan", "tanh",
-)
+def partition_advice(dtshape, min_chunksize=0, max_chunksize=0, min_blocksize=0, max_blocksize=0):
+    """
+    Provide advice for the chunk and block shapes for a certain `dtshape`.
+
+    If success, the tuple (chunkshape, blockshape) containing the advice is returned.
+
+    `min_` and `max_` params contain minimum and maximum values for chunksize and blocksize.
+    If `min_` or `max_` are 0, they default to sensible values (fractions of CPU caches).
+
+    In case of error, a (None, None) tuple is returned and a warning is issued.
+    """
+    chunkshape, blockshape = ext.partition_advice(dtshape, min_chunksize, max_chunksize,
+                                                  min_blocksize, max_blocksize)
+    if chunkshape is None:
+        warnings.warn("Error in providing partition advice (please report this)."
+                      "  Please do not trust on the chunkshape and blockshape in `storage`!",
+                      UserWarning)
+    return chunkshape, blockshape
+
 
 
 def cmp_arrays(a, b, success=None):
