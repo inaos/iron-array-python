@@ -18,6 +18,7 @@ import numpy as np
                              ((2, 1, 1, 4), (2, 1, 1, 4), (2, 1, 1, 4), np.float64),
                              ((1000, 100, 100, 1000), (64, 8, 8, 64), (32, 4, 4, 32), np.float32),
                              ((1000, 100, 100, 1000), (32, 8, 8, 64), (16, 4, 4, 32), np.float64),
+                             ((2, 3, 4, 5, 6, 7, 8, 9), (2, 2, 4, 4, 4, 4, 8, 8), (1, 1, 2, 2, 4, 4, 8, 8), np.float64),
                          ])
 def test_partition_advice(shape, chunkshape, blockshape, dtype):
     dtshape = ia.dtshape(shape, dtype)

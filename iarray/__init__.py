@@ -44,8 +44,8 @@ DELTA = 4
 TRUNC_PREC = 8
 
 # Storage types
-PLAINBUFFER_STORAGE = 'plainbuffer'
-BLOSC_STORAGE = 'blosc'
+BACKEND_PLAINBUFFER = 'plainbuffer'
+BACKEND_BLOSC = 'blosc'
 
 # Eval method
 

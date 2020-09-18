@@ -53,7 +53,6 @@ def partition_advice(dtshape, min_chunksize=0, max_chunksize=0, min_blocksize=0,
     return chunkshape, blockshape
 
 
-
 def cmp_arrays(a, b, success=None):
     if type(a) is ia.high_level.IArray:
         a = ia.iarray2numpy(a)
@@ -71,59 +70,24 @@ def cmp_arrays(a, b, success=None):
         print(success)
 
 
-def fuse_operands(operands1, operands2):
-    new_operands = {}
-    dup_operands = {}
-    new_pos = len(operands1)
-    for k2, v2 in operands2.items():
-        try:
-            k1 = list(operands1.keys())[list(operands1.values()).index(v2)]
-            # The operand is duplicated; keep track of it
-            dup_operands[k2] = k1
-        except ValueError:
-            # The value is not among operands1, so rebase it
-            new_op = f"o{new_pos}"
-            new_pos += 1
-            new_operands[new_op] = operands2[k2]
-    return new_operands, dup_operands
+# TODO: add docstrings
+class dtshape:
+
+    def __init__(self, shape=None, dtype=np.float64):
+        if shape is None:
+            return ValueError("shape cannot be None")
+        dtype = np.dtype(dtype)
+        if dtype.type not in (np.float32, np.float64):
+            raise NotImplementedError("Only float32 and float64 types are supported for now")
+        self.shape = shape
+        self.dtype = dtype
+
+    def to_tuple(self):
+        Dtshape = namedtuple('dtshape', 'shape dtype')
+        return Dtshape(self.shape, self.dtype)
 
 
-def fuse_expressions(expr, new_base, dup_op):
-    new_expr = ""
-    skip_to_char = 0
-    old_base = 0
-    for i in range(len(expr)):
-        if i < skip_to_char:
-            continue
-        if expr[i] == 'o':
-            try:
-                j = expr[i + 1:].index(' ')
-            except ValueError:
-                j = expr[i + 1:].index(')')
-            if expr[i + j] == ')':
-                j -= 1
-            old_pos = int(expr[i+1:i+j+1])
-            old_op = f"o{old_pos}"
-            if old_op not in dup_op:
-                new_pos = old_base + new_base
-                new_expr += f"o{new_pos}"
-                old_base += 1
-            else:
-                new_expr += dup_op[old_op]
-            skip_to_char = i + j + 1
-        else:
-            new_expr += expr[i]
-    return new_expr
-
-
-class RandomContext(ext.RandomContext):
-
-    def __init__(self, **kwargs):
-        cfg = Config(**kwargs)
-        super().__init__(cfg)
-
-
-
+# TODO: add docstrings
 class Config(ext._Config):
 
     def __init__(self, clib=ia.LZ4, clevel=5, use_dict=0, filter_flags=ia.SHUFFLE, nthreads=0,
@@ -190,6 +154,104 @@ class Config(ext._Config):
             f"    Filename: {self.filename}\n"
             f"    Eval flags: {self.eval_method}\n"
         )
+
+
+# TODO: add docstrings
+class StorageProperties:
+
+    def __init__(self, backend=ia.BACKEND_BLOSC, chunkshape=None, blockshape=None, enforce_frame=False, filename=None):
+        if backend not in (ia.BACKEND_BLOSC, ia.BACKEND_PLAINBUFFER):
+            raise ValueError(f"backend can only be BACKEND_BLOSC or BACKEND_PLAINBUFFER")
+        self.backend = backend
+        self.enforce_frame = True if filename else enforce_frame
+        self.filename = filename
+        self.chunkshape = chunkshape
+        self.blockshape = blockshape
+
+    def get_shape_advice(self, dtshape):
+        if self.backend == ia.BACKEND_PLAINBUFFER:
+            return
+        chunkshape, blockshape = self.chunkshape, self.blockshape
+        if chunkshape is not None and blockshape is not None:
+            return
+        if chunkshape is None and blockshape is None:
+            chunkshape_, blockshape_ = ia.partition_advice(dtshape)
+        elif blockshape is None:
+            # chunkshape is None, but blockshape is not
+            blocksize = dtshape.dtype.itemsize
+            for l in chunkshape:
+                blocksize *= l
+            chunkshape_, blockshape_ = ia.partition_advice(dtshape, min_blocksize=blocksize, max_blocksize=blocksize)
+            blockshape_ = blockshape  # restore initial blockshape
+        else:
+            # blockshape is None, but chunkshape is not
+            chunksize = dtshape.dtype.itemsize
+            for l in chunkshape:
+                chunksize *= l
+            chunkshape_, blockshape_ = ia.partition_advice(dtshape, min_chunksize=chunksize, max_chunksize=chunksize)
+            chunkshape_ = chunkshape  # restore initial chunkshape
+        self.chunkshape = chunkshape_
+        self.blockshape = blockshape_
+
+    def to_tuple(self):
+        StoreProp = namedtuple('store_properties', 'backend chunkshape blockshape enforce_frame filename')
+        return StoreProp(self.backend, self.chunkshape, self.blockshape, self.backend, self.enforce_frame, self.filename)
+
+
+#
+# Expresssions
+#
+
+def fuse_operands(operands1, operands2):
+    new_operands = {}
+    dup_operands = {}
+    new_pos = len(operands1)
+    for k2, v2 in operands2.items():
+        try:
+            k1 = list(operands1.keys())[list(operands1.values()).index(v2)]
+            # The operand is duplicated; keep track of it
+            dup_operands[k2] = k1
+        except ValueError:
+            # The value is not among operands1, so rebase it
+            new_op = f"o{new_pos}"
+            new_pos += 1
+            new_operands[new_op] = operands2[k2]
+    return new_operands, dup_operands
+
+
+def fuse_expressions(expr, new_base, dup_op):
+    new_expr = ""
+    skip_to_char = 0
+    old_base = 0
+    for i in range(len(expr)):
+        if i < skip_to_char:
+            continue
+        if expr[i] == 'o':
+            try:
+                j = expr[i + 1:].index(' ')
+            except ValueError:
+                j = expr[i + 1:].index(')')
+            if expr[i + j] == ')':
+                j -= 1
+            old_pos = int(expr[i+1:i+j+1])
+            old_op = f"o{old_pos}"
+            if old_op not in dup_op:
+                new_pos = old_base + new_base
+                new_expr += f"o{new_pos}"
+                old_base += 1
+            else:
+                new_expr += dup_op[old_op]
+            skip_to_char = i + j + 1
+        else:
+            new_expr += expr[i]
+    return new_expr
+
+
+class RandomContext(ext.RandomContext):
+
+    def __init__(self, **kwargs):
+        cfg = Config(**kwargs)
+        super().__init__(cfg)
 
 
 class LazyExpr:
@@ -298,7 +360,6 @@ class LazyExpr:
         shape_ = o0.shape
 
         cfg = Config(**kwargs)
-        chunkshape = shape_ if cfg._storage.chunkshape is None else cfg._storage.chunkshape
         # TODO: figure out a better way to set a default for the dtype
         dtype = o0.dtype if dtype is None else dtype
         if method == "iarray_eval":
@@ -308,14 +369,13 @@ class LazyExpr:
                     expr.bind(k, v)
 
             dtshape = ia.dtshape(shape_, dtype)
-
+            cfg._storage.get_shape_advice(dtshape)
             expr.bind_out_properties(dtshape, cfg._storage)
-
             expr.compile(self.expression)
-
             out = expr.eval()
 
         elif method == "numexpr":
+            chunkshape = shape_ if cfg._storage.chunkshape is None else cfg._storage.chunkshape
             out = ia.empty(ia.dtshape(shape=shape_, dtype=dtype), **kwargs)
             operand_iters = tuple(o.iter_read_block(chunkshape)
                                   for o in self.operands.values()
@@ -342,7 +402,8 @@ class LazyExpr:
 class IArray(ext.Container):
 
     def copy(self, view=False, **kwargs):
-        cfg = Config(**kwargs)  # TODO: Pass chunkshape
+        cfg = Config(**kwargs)  # chunkshape and blockshape can be passed in storage kwarg
+        cfg._storage.get_shape_advice(self.dtshape)
         return ext.copy(cfg, self, view)
 
     def __add__(self, value):
@@ -447,48 +508,19 @@ class Expr(ext.Expression):
         super().__init__(cfg)
 
 
-class dtshape:
-
-    def __init__(self, shape=None, dtype=np.float64):
-        self.shape = shape
-        self.dtype = dtype
-
-    def to_tuple(self):
-        Dtshape = namedtuple('dtshape', 'shape dtype')
-        return Dtshape(self.shape, self.dtype)
-
-
-class StorageProperties:
-
-    def __init__(self, backend="plainbuffer", chunkshape=None, blockshape=None, enforce_frame=False, filename=None):
-        if backend not in ("blosc", "plainbuffer"):
-            raise ValueError("backend can only be 'blosc' or 'plainbuffer'")
-        self.backend = backend
-        self.enforce_frame = True if filename else enforce_frame
-        self.filename = filename
-        if backend == "blosc" and (chunkshape is None or blockshape is None):
-            raise AttributeError("If the backend is a blosc schunk, the chunkshape/blockshape can not be None")
-        self.chunkshape = chunkshape
-        self.blockshape = blockshape
-
-    def to_tuple(self):
-        StoreProp = namedtuple('store_properties', 'backend chunkshape blockshape enforce_frame filename')
-        return StoreProp(self.backend, self.chunkshape, self.backend, self.enforce_frame, self.filename)
-
 #
 # Constructors
 #
 
 def empty(dtshape, **kwargs):
-    if dtshape.shape is None:
-        return AttributeError
-
     cfg = Config(**kwargs)
+    cfg._storage.get_shape_advice(dtshape)
     return ext.empty(cfg, dtshape)
 
 
 def arange(dtshape, start=None, stop=None, step=None, **kwargs):
     cfg = Config(**kwargs)
+    cfg._storage.get_shape_advice(dtshape)
 
     if (start, stop, step) == (None, None, None):
         stop = np.prod(dtshape.shape)
@@ -507,12 +539,12 @@ def arange(dtshape, start=None, stop=None, step=None, **kwargs):
             step = (stop - start) / np.prod(dtshape.shape)
 
     slice_ = slice(start, stop, step)
-
     return ext.arange(cfg, slice_, dtshape)
 
 
 def linspace(dtshape, start, stop, nelem=50, **kwargs):
     cfg = Config(**kwargs)
+    cfg._storage.get_shape_advice(dtshape)
 
     shape, dtype = dtshape.to_tuple()
     nelem = np.prod(shape) if dtshape is not None else nelem
@@ -522,22 +554,19 @@ def linspace(dtshape, start, stop, nelem=50, **kwargs):
 
 def zeros(dtshape, **kwargs):
     cfg = Config(**kwargs)
-    if dtshape.shape is None:
-        return AttributeError
+    cfg._storage.get_shape_advice(dtshape)
     return ext.zeros(cfg, dtshape)
 
 
 def ones(dtshape, **kwargs):
     cfg = Config(**kwargs)
-    if dtshape.shape is None:
-        return AttributeError
+    cfg._storage.get_shape_advice(dtshape)
     return ext.ones(cfg, dtshape)
 
 
 def full(dtshape, fill_value, **kwargs):
     cfg = Config(**kwargs)
-    if dtshape.shape is None:
-        return AttributeError
+    cfg._storage.get_shape_advice(dtshape)
     return ext.full(cfg, fill_value, dtshape)
 
 
@@ -567,6 +596,7 @@ def numpy2iarray(c, **kwargs):
         raise NotImplementedError("Only float32 and float64 types are supported for now")
 
     dtshape = ia.dtshape(c.shape, dtype)
+    cfg._storage.get_shape_advice(dtshape)
     return ext.numpy2iarray(cfg, c, dtshape)
 
 def random_set_seed(seed):
@@ -580,60 +610,70 @@ def random_pre(**kwargs):
 def random_rand(dtshape, **kwargs):
     kwargs = random_pre(**kwargs)
     cfg = Config(**kwargs)
+    cfg._storage.get_shape_advice(dtshape)
     return ext.random_rand(cfg, dtshape)
 
 
 def random_randn(dtshape, **kwargs):
     kwargs = random_pre(**kwargs)
     cfg = Config(**kwargs)
+    cfg._storage.get_shape_advice(dtshape)
     return ext.random_randn(cfg, dtshape)
 
 
 def random_beta(dtshape, alpha, beta, **kwargs):
     kwargs = random_pre(**kwargs)
     cfg = Config(**kwargs)
+    cfg._storage.get_shape_advice(dtshape)
     return ext.random_beta(cfg, alpha, beta, dtshape)
 
 
 def random_lognormal(dtshape, mu, sigma, **kwargs):
     kwargs = random_pre(**kwargs)
     cfg = Config(**kwargs)
+    cfg._storage.get_shape_advice(dtshape)
     return ext.random_lognormal(cfg, mu, sigma, dtshape)
 
 
 def random_exponential(dtshape, beta, **kwargs):
     kwargs = random_pre(**kwargs)
     cfg = Config(**kwargs)
+    cfg._storage.get_shape_advice(dtshape)
     return ext.random_exponential(cfg, beta, dtshape)
 
 
 def random_uniform(dtshape, a, b, **kwargs):
     kwargs = random_pre(**kwargs)
     cfg = Config(**kwargs)
+    cfg._storage.get_shape_advice(dtshape)
     return ext.random_uniform(cfg, a, b, dtshape)
 
 
 def random_normal(dtshape, mu, sigma, **kwargs):
     kwargs = random_pre(**kwargs)
     cfg = Config(**kwargs)
+    cfg._storage.get_shape_advice(dtshape)
     return ext.random_normal(cfg, mu, sigma, dtshape)
 
 
 def random_bernoulli(dtshape, p, **kwargs):
     kwargs = random_pre(**kwargs)
     cfg = Config(**kwargs)
+    cfg._storage.get_shape_advice(dtshape)
     return ext.random_bernoulli(cfg, p, dtshape)
 
 
 def random_binomial(dtshape, m, p, **kwargs):
     kwargs = random_pre(**kwargs)
     cfg = Config(**kwargs)
+    cfg._storage.get_shape_advice(dtshape)
     return ext.random_binomial(cfg, m, p, dtshape)
 
 
 def random_poisson(dtshape, lamb, **kwargs):
     kwargs = random_pre(**kwargs)
     cfg = Config(**kwargs)
+    cfg._storage.get_shape_advice(dtshape)
     return ext.random_poisson(cfg, lamb, dtshape)
 
 
@@ -725,7 +765,7 @@ def tanh(iarr):
 
 if __name__ == "__main__":
     # Create initial containers
-    shape = ia.dtshape([40], [20])
+    shape = ia.dtshape([40, 20])
     a1 = ia.linspace(shape, 0, 10)
 
     # Evaluate with different methods

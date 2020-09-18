@@ -18,14 +18,13 @@ import numpy as np
                          ])
 def test_rand(shape, chunkshape, blockshape, dtype):
     if chunkshape is None:
-        storage = ia.StorageProperties("plainbuffer")
+        storage = ia.StorageProperties(ia.BACKEND_PLAINBUFFER)
     else:
-        storage = ia.StorageProperties("blosc", chunkshape, blockshape, False)
+        storage = ia.StorageProperties(ia.BACKEND_BLOSC, chunkshape, blockshape, False)
 
     size = int(np.prod(shape))
     a = ia.random_rand(ia.dtshape(shape, dtype), storage=storage)
-    npdtype = np.float64 if dtype == np.float64 else np.float32
-    b = np.random.rand(size).reshape(shape).astype(npdtype)
+    b = np.random.rand(size).reshape(shape).astype(dtype)
     c = ia.numpy2iarray(b, storage=storage)
 
     assert ia.random_kstest(a, c)
@@ -41,15 +40,13 @@ def test_rand(shape, chunkshape, blockshape, dtype):
                          ])
 def test_randn(shape, chunkshape, blockshape, dtype):
     if chunkshape is None:
-        storage = ia.StorageProperties("plainbuffer")
+        storage = ia.StorageProperties(ia.BACKEND_PLAINBUFFER)
     else:
-        storage = ia.StorageProperties("blosc", chunkshape, blockshape, False)
+        storage = ia.StorageProperties(ia.BACKEND_BLOSC, chunkshape, blockshape, False)
 
     size = int(np.prod(shape))
     a = ia.random_randn(ia.dtshape(shape, dtype), storage=storage)
-
-    npdtype = np.float64 if dtype == np.float64 else np.float32
-    b = np.random.randn(size).reshape(shape).astype(npdtype)
+    b = np.random.randn(size).reshape(shape).astype(dtype)
     c = ia.numpy2iarray(b, storage=storage)
 
     assert ia.random_kstest(a, c)
@@ -65,15 +62,13 @@ def test_randn(shape, chunkshape, blockshape, dtype):
                          ])
 def test_beta(alpha, beta, shape, chunkshape, blockshape, dtype):
     if chunkshape is None:
-        storage = ia.StorageProperties("plainbuffer")
+        storage = ia.StorageProperties(ia.BACKEND_PLAINBUFFER)
     else:
-        storage = ia.StorageProperties("blosc", chunkshape, blockshape, False)
+        storage = ia.StorageProperties(ia.BACKEND_BLOSC, chunkshape, blockshape, False)
 
     size = int(np.prod(shape))
     a = ia.random_beta(ia.dtshape(shape, dtype), alpha, beta, storage=storage)
-
-    npdtype = np.float64 if dtype == np.float64 else np.float32
-    b = np.random.beta(alpha, beta, size).reshape(shape).astype(npdtype)
+    b = np.random.beta(alpha, beta, size).reshape(shape).astype(dtype)
     c = ia.numpy2iarray(b, storage=storage)
 
     assert ia.random_kstest(a, c)
@@ -89,15 +84,13 @@ def test_beta(alpha, beta, shape, chunkshape, blockshape, dtype):
                          ])
 def test_lognormal(mu, sigma, shape, chunkshape, blockshape, dtype):
     if chunkshape is None:
-        storage = ia.StorageProperties("plainbuffer")
+        storage = ia.StorageProperties(ia.BACKEND_PLAINBUFFER)
     else:
-        storage = ia.StorageProperties("blosc", chunkshape, blockshape, False)
+        storage = ia.StorageProperties(ia.BACKEND_BLOSC, chunkshape, blockshape, False)
 
     size = int(np.prod(shape))
     a = ia.random_lognormal(ia.dtshape(shape, dtype), mu, sigma, storage=storage)
-
-    npdtype = np.float64 if dtype == np.float64 else np.float32
-    b = np.random.lognormal(mu, sigma, size).reshape(shape).astype(npdtype)
+    b = np.random.lognormal(mu, sigma, size).reshape(shape).astype(dtype)
     c = ia.numpy2iarray(b, storage=storage)
 
     assert ia.random_kstest(a, c)
@@ -113,15 +106,13 @@ def test_lognormal(mu, sigma, shape, chunkshape, blockshape, dtype):
                          ])
 def test_exponential(beta, shape, chunkshape, blockshape, dtype):
     if chunkshape is None:
-        storage = ia.StorageProperties("plainbuffer")
+        storage = ia.StorageProperties(ia.BACKEND_PLAINBUFFER)
     else:
-        storage = ia.StorageProperties("blosc", chunkshape, blockshape, False)
+        storage = ia.StorageProperties(ia.BACKEND_BLOSC, chunkshape, blockshape, False)
 
     size = int(np.prod(shape))
     a = ia.random_exponential(ia.dtshape(shape, dtype), beta, storage=storage)
-
-    npdtype = np.float64 if dtype == np.float64 else np.float32
-    b = np.random.exponential(beta, size).reshape(shape).astype(npdtype)
+    b = np.random.exponential(beta, size).reshape(shape).astype(dtype)
     c = ia.numpy2iarray(b, storage=storage)
 
     assert ia.random_kstest(a, c)
@@ -137,15 +128,13 @@ def test_exponential(beta, shape, chunkshape, blockshape, dtype):
                          ])
 def test_uniform(a_, b_, shape, chunkshape, blockshape, dtype):
     if chunkshape is None:
-        storage = ia.StorageProperties("plainbuffer")
+        storage = ia.StorageProperties(ia.BACKEND_PLAINBUFFER)
     else:
-        storage = ia.StorageProperties("blosc", chunkshape, blockshape, False)
+        storage = ia.StorageProperties(ia.BACKEND_BLOSC, chunkshape, blockshape, False)
 
     size = int(np.prod(shape))
     a = ia.random_uniform(ia.dtshape(shape, dtype), a_, b_, storage=storage)
-
-    npdtype = np.float64 if dtype == np.float64 else np.float32
-    b = np.random.uniform(a_, b_, size).reshape(shape).astype(npdtype)
+    b = np.random.uniform(a_, b_, size).reshape(shape).astype(dtype)
     c = ia.numpy2iarray(b, storage=storage)
 
     assert ia.random_kstest(a, c)
@@ -161,15 +150,13 @@ def test_uniform(a_, b_, shape, chunkshape, blockshape, dtype):
                          ])
 def test_normal(mu, sigma, shape, chunkshape, blockshape, dtype):
     if chunkshape is None:
-        storage = ia.StorageProperties("plainbuffer")
+        storage = ia.StorageProperties(ia.BACKEND_PLAINBUFFER)
     else:
-        storage = ia.StorageProperties("blosc", chunkshape, blockshape, False)
+        storage = ia.StorageProperties(ia.BACKEND_BLOSC, chunkshape, blockshape, False)
 
     size = int(np.prod(shape))
     a = ia.random_normal(ia.dtshape(shape, dtype), mu, sigma, storage=storage)
-
-    npdtype = np.float64 if dtype == np.float64 else np.float32
-    b = np.random.normal(mu, sigma, size).reshape(shape).astype(npdtype)
+    b = np.random.normal(mu, sigma, size).reshape(shape).astype(dtype)
     c = ia.numpy2iarray(b, storage=storage)
 
     assert ia.random_kstest(a, c)
@@ -185,15 +172,13 @@ def test_normal(mu, sigma, shape, chunkshape, blockshape, dtype):
                          ])
 def test_bernoulli(p, shape, chunkshape, blockshape, dtype):
     if chunkshape is None:
-        storage = ia.StorageProperties("plainbuffer")
+        storage = ia.StorageProperties(ia.BACKEND_PLAINBUFFER)
     else:
-        storage = ia.StorageProperties("blosc", chunkshape, blockshape, False)
+        storage = ia.StorageProperties(ia.BACKEND_BLOSC, chunkshape, blockshape, False)
 
     size = int(np.prod(shape))
     a = ia.random_bernoulli(ia.dtshape(shape, dtype), p, storage=storage)
-
-    npdtype = np.float64 if dtype == np.float64 else np.float32
-    b = np.random.binomial(1, p, size).reshape(shape).astype(npdtype)
+    b = np.random.binomial(1, p, size).reshape(shape).astype(dtype)
     c = ia.numpy2iarray(b, storage=storage)
 
     assert ia.random_kstest(a, c)
@@ -209,15 +194,13 @@ def test_bernoulli(p, shape, chunkshape, blockshape, dtype):
                          ])
 def test_binomial(n, p, shape, chunkshape, blockshape, dtype):
     if chunkshape is None:
-        storage = ia.StorageProperties("plainbuffer")
+        storage = ia.StorageProperties(ia.BACKEND_PLAINBUFFER)
     else:
-        storage = ia.StorageProperties("blosc", chunkshape, blockshape, False)
+        storage = ia.StorageProperties(ia.BACKEND_BLOSC, chunkshape, blockshape, False)
 
     size = int(np.prod(shape))
     a = ia.random_binomial(ia.dtshape(shape, dtype), n, p, storage=storage)
-
-    npdtype = np.float64 if dtype == np.float64 else np.float32
-    b = np.random.binomial(n, p, size).reshape(shape).astype(npdtype)
+    b = np.random.binomial(n, p, size).reshape(shape).astype(dtype)
     c = ia.numpy2iarray(b, storage=storage)
 
     assert ia.random_kstest(a, c)
@@ -233,15 +216,13 @@ def test_binomial(n, p, shape, chunkshape, blockshape, dtype):
                          ])
 def test_poisson(lamb, shape, chunkshape, blockshape, dtype):
     if chunkshape is None:
-        storage = ia.StorageProperties("plainbuffer")
+        storage = ia.StorageProperties(ia.BACKEND_PLAINBUFFER)
     else:
-        storage = ia.StorageProperties("blosc", chunkshape, blockshape, False)
+        storage = ia.StorageProperties(ia.BACKEND_BLOSC, chunkshape, blockshape, False)
 
     size = int(np.prod(shape))
     a = ia.random_poisson(ia.dtshape(shape, dtype), lamb, storage=storage)
-
-    npdtype = np.float64 if dtype == np.float64 else np.float32
-    b = np.random.poisson(lamb, size).reshape(shape).astype(npdtype)
+    b = np.random.poisson(lamb, size).reshape(shape).astype(dtype)
     c = ia.numpy2iarray(b, storage=storage)
 
     assert ia.random_kstest(a, c)

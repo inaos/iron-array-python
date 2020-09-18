@@ -19,7 +19,7 @@ import cython
 from cpython.pycapsule cimport PyCapsule_New, PyCapsule_GetPointer
 from math import ceil
 from libc.stdlib cimport malloc, free
-from iarray.high_level import IArray, Config
+from iarray.high_level import IArray, Config, dtshape
 from collections import namedtuple
 from iarray import EVAL_AUTO, EVAL_ITERBLOSC, EVAL_ITERCHUNK
 
@@ -340,6 +340,10 @@ cdef class Container:
         cdef ciarray.iarray_dtshape_t dtshape
         ciarray.iarray_get_dtshape(self._ctx._ctx, self._c, &dtshape)
         return dtype[dtshape.dtype]
+
+    @property
+    def dtshape(self):
+        return dtshape(self.shape, self.dtype)
 
     @property
     def cratio(self):
