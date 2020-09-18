@@ -127,7 +127,7 @@ class RandomContext(ext.RandomContext):
 class Config(ext._Config):
 
     def __init__(self, clib=ia.LZ4, clevel=5, use_dict=0, filter_flags=ia.SHUFFLE, nthreads=0,
-                 fp_mantissa_bits=0, blocksize=0, storage=None, eval_method=None, seed=0):
+                 fp_mantissa_bits=0, storage=None, eval_method=None, seed=0):
         self._clib = clib
         self._clevel = clevel
         self._use_dict = use_dict
@@ -135,7 +135,6 @@ class Config(ext._Config):
         if fp_mantissa_bits > 0:
             filter_flags |= ia.TRUNC_PREC
         self._filter_flags = filter_flags
-        self._blocksize = blocksize
         # Get the number of cores using nthreads as a maximum
         self._nthreads = nthreads = get_ncores(nthreads)
         self._seed = seed
@@ -166,10 +165,6 @@ class Config(ext._Config):
     @property
     def fp_mantissa_bits(self):
         return self._fp_mantissa_bits
-
-    @property
-    def blocksize(self):
-        return self._blocksize
 
     @property
     def filename(self):
@@ -483,7 +478,6 @@ class StorageProperties:
 #
 # Constructors
 #
-
 
 def empty(dtshape, **kwargs):
     if dtshape.shape is None:
