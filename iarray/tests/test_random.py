@@ -9,18 +9,17 @@ import numpy as np
 
 
 # Rand
-@pytest.mark.parametrize("shape, chunkshape, blockshape, dtype",
+@pytest.mark.parametrize("shape, chunkshape, blockshape, dtype, backend",
                          [
-                             ([20, 20, 20], [10, 12, 5], [2, 3, 2], np.float64),
-                             ([12, 31, 11, 22], [4, 3, 5, 2], [2, 2, 2, 2], np.float32),
-                             ([10, 12, 5], None, None, np.float64),
-                             ([4, 3, 5, 2], None, None, np.float32)
+                             ([20, 20, 20], [10, 12, 5], [2, 3, 2], np.float64, ia.BACKEND_BLOSC),
+                             ([12, 31, 11, 22], [4, 3, 5, 2], [2, 2, 2, 2], np.float32, ia.BACKEND_BLOSC),
+                             ([10, 12, 5], None, None, np.float64, ia.BACKEND_BLOSC),
+                             ([4, 3, 5, 2], None, None, np.float32, ia.BACKEND_BLOSC),
+                             ([10, 12, 5], None, None, np.float64, ia.BACKEND_PLAINBUFFER),
+                             ([4, 3, 5, 2], None, None, np.float32, ia.BACKEND_PLAINBUFFER),
                          ])
-def test_rand(shape, chunkshape, blockshape, dtype):
-    if chunkshape is None:
-        storage = ia.StorageProperties(ia.BACKEND_PLAINBUFFER)
-    else:
-        storage = ia.StorageProperties(ia.BACKEND_BLOSC, chunkshape, blockshape, False)
+def test_rand(shape, chunkshape, blockshape, dtype, backend):
+    storage = ia.StorageProperties(backend, chunkshape, blockshape)
 
     size = int(np.prod(shape))
     a = ia.random_rand(ia.dtshape(shape, dtype), storage=storage)
@@ -31,18 +30,17 @@ def test_rand(shape, chunkshape, blockshape, dtype):
 
 
 # Randn
-@pytest.mark.parametrize("shape, chunkshape, blockshape, dtype",
+@pytest.mark.parametrize("shape, chunkshape, blockshape, dtype, backend",
                          [
-                             ([20, 20, 20], [10, 12, 5], [2, 3, 2], np.float64),
-                             ([10, 10, 8, 10], [4, 3, 5, 2], [2, 2, 2, 2], np.float32),
-                             ([10, 12, 5], None, None, np.float64),
-                             ([4, 3, 5, 2], None, None, np.float32)
+                             ([20, 20, 20], [10, 12, 5], [2, 3, 2], np.float64, ia.BACKEND_BLOSC),
+                             ([10, 10, 8, 10], [4, 3, 5, 2], [2, 2, 2, 2], np.float32, ia.BACKEND_BLOSC),
+                             ([10, 12, 5], None, None, np.float64, ia.BACKEND_BLOSC),
+                             ([4, 3, 5, 2], None, None, np.float32, ia.BACKEND_BLOSC),
+                             ([10, 12, 5], None, None, np.float64, ia.BACKEND_PLAINBUFFER),
+                             ([4, 3, 5, 2], None, None, np.float32, ia.BACKEND_PLAINBUFFER),
                          ])
-def test_randn(shape, chunkshape, blockshape, dtype):
-    if chunkshape is None:
-        storage = ia.StorageProperties(ia.BACKEND_PLAINBUFFER)
-    else:
-        storage = ia.StorageProperties(ia.BACKEND_BLOSC, chunkshape, blockshape, False)
+def test_randn(shape, chunkshape, blockshape, dtype, backend):
+    storage = ia.StorageProperties(backend, chunkshape, blockshape)
 
     size = int(np.prod(shape))
     a = ia.random_randn(ia.dtshape(shape, dtype), storage=storage)
@@ -53,18 +51,17 @@ def test_randn(shape, chunkshape, blockshape, dtype):
 
 
 # Beta
-@pytest.mark.parametrize("alpha, beta, shape, chunkshape, blockshape, dtype",
+@pytest.mark.parametrize("alpha, beta, shape, chunkshape, blockshape, dtype, backend",
                          [
-                             (3, 4,  [20, 20, 30], [10, 12, 5], [2, 3, 4], np.float64),
-                             (0.1, 5, [12, 13, 8, 7], [4, 3, 5, 2], [2, 2, 5, 2], np.float32),
-                             (3, 0.2, [10, 12, 5], None, None, np.float64),
-                             (0.5, 0.05, [4, 3, 5, 2], None, None, np.float32)
+                             (3, 4,  [20, 20, 30], [10, 12, 5], [2, 3, 4], np.float64, ia.BACKEND_BLOSC),
+                             (0.1, 5, [12, 13, 8, 7], [4, 3, 5, 2], [2, 2, 5, 2], np.float32, ia.BACKEND_BLOSC),
+                             (3, 0.2, [10, 12, 5], None, None, np.float64, ia.BACKEND_BLOSC),
+                             (0.5, 0.05, [4, 3, 5, 2], None, None, np.float32, ia.BACKEND_BLOSC),
+                             (3, 0.2, [10, 12, 5], None, None, np.float64, ia.BACKEND_PLAINBUFFER),
+                             (0.5, 0.05, [4, 3, 5, 2], None, None, np.float32, ia.BACKEND_PLAINBUFFER),
                          ])
-def test_beta(alpha, beta, shape, chunkshape, blockshape, dtype):
-    if chunkshape is None:
-        storage = ia.StorageProperties(ia.BACKEND_PLAINBUFFER)
-    else:
-        storage = ia.StorageProperties(ia.BACKEND_BLOSC, chunkshape, blockshape, False)
+def test_beta(alpha, beta, shape, chunkshape, blockshape, dtype, backend):
+    storage = ia.StorageProperties(backend, chunkshape, blockshape)
 
     size = int(np.prod(shape))
     a = ia.random_beta(ia.dtshape(shape, dtype), alpha, beta, storage=storage)
@@ -75,18 +72,17 @@ def test_beta(alpha, beta, shape, chunkshape, blockshape, dtype):
 
 
 # Lognormal
-@pytest.mark.parametrize("mu, sigma, shape, chunkshape, blockshape, dtype",
+@pytest.mark.parametrize("mu, sigma, shape, chunkshape, blockshape, dtype, backend",
                          [
-                             (3, 4, [20, 20, 20], [10, 12, 5], [2, 3, 2], np.float64),
-                             (0.1, 5, [10, 20, 10, 20], [4, 3, 5, 2], [2, 2, 2, 2], np.float32),
-                             (3, 0.2, [10, 12, 5], None, None, np.float64),
-                             (0.5, 0.05, [4, 3, 5, 2], None, None, np.float32)
+                             (3, 4, [20, 20, 20], [10, 12, 5], [2, 3, 2], np.float64, ia.BACKEND_BLOSC),
+                             (0.1, 5, [10, 20, 10, 20], [4, 3, 5, 2], [2, 2, 2, 2], np.float32, ia.BACKEND_BLOSC),
+                             (3, 0.2, [10, 12, 5], None, None, np.float64, ia.BACKEND_BLOSC),
+                             (0.5, 0.05, [4, 3, 5, 2], None, None, np.float32, ia.BACKEND_BLOSC),
+                             (3, 0.2, [10, 12, 5], None, None, np.float64, ia.BACKEND_PLAINBUFFER),
+                             (0.5, 0.05, [4, 3, 5, 2], None, None, np.float32, ia.BACKEND_PLAINBUFFER),
                          ])
-def test_lognormal(mu, sigma, shape, chunkshape, blockshape, dtype):
-    if chunkshape is None:
-        storage = ia.StorageProperties(ia.BACKEND_PLAINBUFFER)
-    else:
-        storage = ia.StorageProperties(ia.BACKEND_BLOSC, chunkshape, blockshape, False)
+def test_lognormal(mu, sigma, shape, chunkshape, blockshape, dtype, backend):
+    storage = ia.StorageProperties(backend, chunkshape, blockshape)
 
     size = int(np.prod(shape))
     a = ia.random_lognormal(ia.dtshape(shape, dtype), mu, sigma, storage=storage)
@@ -97,18 +93,17 @@ def test_lognormal(mu, sigma, shape, chunkshape, blockshape, dtype):
 
 
 # Exponential
-@pytest.mark.parametrize("beta, shape, chunkshape, blockshape, dtype",
+@pytest.mark.parametrize("beta, shape, chunkshape, blockshape, dtype, backend",
                          [
-                             (3, [20, 20, 12], [10, 12, 5], [3, 5, 2], np.float64),
-                             (0.1, [10, 20, 20, 10], [4, 10, 8, 2], [2, 5, 3, 2], np.float32),
-                             (3, [10, 12, 5], None, None, np.float64),
-                             (0.5, [4, 3, 5, 2], None, None, np.float32)
+                             (3, [20, 20, 12], [10, 12, 5], [3, 5, 2], np.float64, ia.BACKEND_BLOSC),
+                             (0.1, [10, 20, 20, 10], [4, 10, 8, 2], [2, 5, 3, 2], np.float32, ia.BACKEND_BLOSC),
+                             (3, [10, 12, 5], None, None, np.float64, ia.BACKEND_BLOSC),
+                             (0.5, [4, 3, 5, 2], None, None, np.float32, ia.BACKEND_BLOSC),
+                             (3, [10, 12, 5], None, None, np.float64, ia.BACKEND_PLAINBUFFER),
+                             (0.5, [4, 3, 5, 2], None, None, np.float32, ia.BACKEND_PLAINBUFFER),
                          ])
-def test_exponential(beta, shape, chunkshape, blockshape, dtype):
-    if chunkshape is None:
-        storage = ia.StorageProperties(ia.BACKEND_PLAINBUFFER)
-    else:
-        storage = ia.StorageProperties(ia.BACKEND_BLOSC, chunkshape, blockshape, False)
+def test_exponential(beta, shape, chunkshape, blockshape, dtype, backend):
+    storage = ia.StorageProperties(backend, chunkshape, blockshape)
 
     size = int(np.prod(shape))
     a = ia.random_exponential(ia.dtshape(shape, dtype), beta, storage=storage)
@@ -119,18 +114,17 @@ def test_exponential(beta, shape, chunkshape, blockshape, dtype):
 
 
 # Uniform
-@pytest.mark.parametrize("a_, b_, shape, chunkshape, blockshape, dtype",
+@pytest.mark.parametrize("a_, b_, shape, chunkshape, blockshape, dtype, backend",
                          [
-                             (3, 5, [20, 20, 20], [10, 12, 10], [2, 3, 2], np.float64),
-                             (0.1, 0.2, [10, 20, 20, 10], [4, 10, 8, 2], [2, 5, 3, 2], np.float32),
-                             (-3, -2, [10, 12, 5], None, None, np.float64),
-                             (0.5, 1000, [4, 3, 5, 2], None, None, np.float32)
+                             (3, 5, [20, 20, 20], [10, 12, 10], [2, 3, 2], np.float64, ia.BACKEND_BLOSC),
+                             (0.1, 0.2, [10, 20, 20, 10], [4, 10, 8, 2], [2, 5, 3, 2], np.float32, ia.BACKEND_BLOSC),
+                             (-3, -2, [10, 12, 5], None, None, np.float64, ia.BACKEND_BLOSC),
+                             (0.5, 1000, [4, 3, 5, 2], None, None, np.float32, ia.BACKEND_BLOSC),
+                             (-3, -2, [10, 12, 5], None, None, np.float64, ia.BACKEND_PLAINBUFFER),
+                             (0.5, 1000, [4, 3, 5, 2], None, None, np.float32, ia.BACKEND_PLAINBUFFER),
                          ])
-def test_uniform(a_, b_, shape, chunkshape, blockshape, dtype):
-    if chunkshape is None:
-        storage = ia.StorageProperties(ia.BACKEND_PLAINBUFFER)
-    else:
-        storage = ia.StorageProperties(ia.BACKEND_BLOSC, chunkshape, blockshape, False)
+def test_uniform(a_, b_, shape, chunkshape, blockshape, dtype, backend):
+    storage = ia.StorageProperties(backend, chunkshape, blockshape)
 
     size = int(np.prod(shape))
     a = ia.random_uniform(ia.dtshape(shape, dtype), a_, b_, storage=storage)
@@ -141,18 +135,17 @@ def test_uniform(a_, b_, shape, chunkshape, blockshape, dtype):
 
 
 # Normal
-@pytest.mark.parametrize("mu, sigma, shape, chunkshape, blockshape, dtype",
+@pytest.mark.parametrize("mu, sigma, shape, chunkshape, blockshape, dtype, backend",
                          [
-                             (3, 5, [20, 20, 12], [10, 12, 5], [3, 5, 2], np.float64),
-                             (0.1, 0.2, [10, 20, 20, 10], [4, 10, 8, 2], [2, 5, 3, 2], np.float32),
-                             (-3, 2, [10, 12, 5], None, None, np.float64),
-                             (0.5, 1000, [4, 3, 5, 2], None, None, np.float32)
+                             (3, 5, [20, 20, 12], [10, 12, 5], [3, 5, 2], np.float64, ia.BACKEND_BLOSC),
+                             (0.1, 0.2, [10, 20, 20, 10], [4, 10, 8, 2], [2, 5, 3, 2], np.float32, ia.BACKEND_BLOSC),
+                             (-3, 2, [10, 12, 5], None, None, np.float64, ia.BACKEND_BLOSC),
+                             (0.5, 1000, [4, 3, 5, 2], None, None, np.float32, ia.BACKEND_BLOSC),
+                             (-3, 2, [10, 12, 5], None, None, np.float64, ia.BACKEND_PLAINBUFFER),
+                             (0.5, 1000, [4, 3, 5, 2], None, None, np.float32, ia.BACKEND_PLAINBUFFER),
                          ])
-def test_normal(mu, sigma, shape, chunkshape, blockshape, dtype):
-    if chunkshape is None:
-        storage = ia.StorageProperties(ia.BACKEND_PLAINBUFFER)
-    else:
-        storage = ia.StorageProperties(ia.BACKEND_BLOSC, chunkshape, blockshape, False)
+def test_normal(mu, sigma, shape, chunkshape, blockshape, dtype, backend):
+    storage = ia.StorageProperties(backend, chunkshape, blockshape)
 
     size = int(np.prod(shape))
     a = ia.random_normal(ia.dtshape(shape, dtype), mu, sigma, storage=storage)
@@ -163,18 +156,17 @@ def test_normal(mu, sigma, shape, chunkshape, blockshape, dtype):
 
 
 # Bernoulli (compare against np.random.binomial)
-@pytest.mark.parametrize("p, shape, chunkshape, blockshape, dtype",
+@pytest.mark.parametrize("p, shape, chunkshape, blockshape, dtype, backend",
                          [
-                             (0.7, [20, 20, 12], [10, 12, 5], [3, 5, 2], np.float64),
-                             (0.01, [10, 20, 20, 10], [4, 10, 8, 2], [2, 5, 3, 2], np.float32),
-                             (0.15, [10, 12, 5], None, None, np.float64),
-                             (0.6, [4, 3, 5, 2], None, None, np.float32)
+                             (0.7, [20, 20, 12], [10, 12, 5], [3, 5, 2], np.float64, ia.BACKEND_BLOSC),
+                             (0.01, [10, 20, 20, 10], [4, 10, 8, 2], [2, 5, 3, 2], np.float32, ia.BACKEND_BLOSC),
+                             (0.15, [10, 12, 5], None, None, np.float64, ia.BACKEND_BLOSC),
+                             (0.6, [4, 3, 5, 2], None, None, np.float32, ia.BACKEND_BLOSC),
+                             (0.15, [10, 12, 5], None, None, np.float64, ia.BACKEND_PLAINBUFFER),
+                             (0.6, [4, 3, 5, 2], None, None, np.float32, ia.BACKEND_PLAINBUFFER),
                          ])
-def test_bernoulli(p, shape, chunkshape, blockshape, dtype):
-    if chunkshape is None:
-        storage = ia.StorageProperties(ia.BACKEND_PLAINBUFFER)
-    else:
-        storage = ia.StorageProperties(ia.BACKEND_BLOSC, chunkshape, blockshape, False)
+def test_bernoulli(p, shape, chunkshape, blockshape, dtype, backend):
+    storage = ia.StorageProperties(backend, chunkshape, blockshape)
 
     size = int(np.prod(shape))
     a = ia.random_bernoulli(ia.dtshape(shape, dtype), p, storage=storage)
@@ -185,18 +177,17 @@ def test_bernoulli(p, shape, chunkshape, blockshape, dtype):
 
 
 # Binomial
-@pytest.mark.parametrize("n, p, shape, chunkshape, blockshape, dtype",
+@pytest.mark.parametrize("n, p, shape, chunkshape, blockshape, dtype, backend",
                          [
-                             (3, 0.7, [20, 20, 12], [10, 12, 5], [3, 5, 2], np.float64),
-                             (10, 0.01, [10, 20, 20, 10], [4, 10, 8, 2], [2, 5, 3, 2], np.float32),
-                             (1000, 0.15, [10, 12, 5], None, None, np.float64),
-                             (5, 0.6, [4, 3, 5, 2], None, None, np.float32)
+                             (3, 0.7, [20, 20, 12], [10, 12, 5], [3, 5, 2], np.float64, ia.BACKEND_BLOSC),
+                             (10, 0.01, [10, 20, 20, 10], [4, 10, 8, 2], [2, 5, 3, 2], np.float32, ia.BACKEND_BLOSC),
+                             (1000, 0.15, [10, 12, 5], None, None, np.float64, ia.BACKEND_BLOSC),
+                             (5, 0.6, [4, 3, 5, 2], None, None, np.float32, ia.BACKEND_BLOSC),
+                             (1000, 0.15, [10, 12, 5], None, None, np.float64, ia.BACKEND_PLAINBUFFER),
+                             (5, 0.6, [4, 3, 5, 2], None, None, np.float32, ia.BACKEND_PLAINBUFFER),
                          ])
-def test_binomial(n, p, shape, chunkshape, blockshape, dtype):
-    if chunkshape is None:
-        storage = ia.StorageProperties(ia.BACKEND_PLAINBUFFER)
-    else:
-        storage = ia.StorageProperties(ia.BACKEND_BLOSC, chunkshape, blockshape, False)
+def test_binomial(n, p, shape, chunkshape, blockshape, dtype, backend):
+    storage = ia.StorageProperties(backend, chunkshape, blockshape)
 
     size = int(np.prod(shape))
     a = ia.random_binomial(ia.dtshape(shape, dtype), n, p, storage=storage)
@@ -207,18 +198,17 @@ def test_binomial(n, p, shape, chunkshape, blockshape, dtype):
 
 
 # Poisson
-@pytest.mark.parametrize("lamb, shape, chunkshape, blockshape, dtype",
+@pytest.mark.parametrize("lamb, shape, chunkshape, blockshape, dtype, backend",
                          [
-                             (3, [20, 20, 12], [10, 12, 5], [3, 5, 2], np.float64),
-                             (0.01, [10, 20, 20, 10], [4, 10, 8, 2], [2, 5, 3, 2], np.float32),
-                             (0.15, [10, 12, 5], None, None, np.float64),
-                             (5, [4, 3, 5, 2], None, None, np.float32)
+                             (3, [20, 20, 12], [10, 12, 5], [3, 5, 2], np.float64, ia.BACKEND_BLOSC),
+                             (0.01, [10, 20, 20, 10], [4, 10, 8, 2], [2, 5, 3, 2], np.float32, ia.BACKEND_BLOSC),
+                             (0.15, [10, 12, 5], None, None, np.float64, ia.BACKEND_BLOSC),
+                             (5, [4, 3, 5, 2], None, None, np.float32, ia.BACKEND_BLOSC),
+                             (0.15, [10, 12, 5], None, None, np.float64, ia.BACKEND_PLAINBUFFER),
+                             (5, [4, 3, 5, 2], None, None, np.float32, ia.BACKEND_PLAINBUFFER),
                          ])
-def test_poisson(lamb, shape, chunkshape, blockshape, dtype):
-    if chunkshape is None:
-        storage = ia.StorageProperties(ia.BACKEND_PLAINBUFFER)
-    else:
-        storage = ia.StorageProperties(ia.BACKEND_BLOSC, chunkshape, blockshape, False)
+def test_poisson(lamb, shape, chunkshape, blockshape, dtype, backend):
+    storage = ia.StorageProperties(backend, chunkshape, blockshape)
 
     size = int(np.prod(shape))
     a = ia.random_poisson(ia.dtshape(shape, dtype), lamb, storage=storage)

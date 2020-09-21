@@ -176,22 +176,11 @@ class StorageProperties:
             return
         if chunkshape is None and blockshape is None:
             chunkshape_, blockshape_ = ia.partition_advice(dtshape)
-        elif blockshape is None:
-            # chunkshape is None, but blockshape is not
-            blocksize = dtshape.dtype.itemsize
-            for l in chunkshape:
-                blocksize *= l
-            chunkshape_, blockshape_ = ia.partition_advice(dtshape, min_blocksize=blocksize, max_blocksize=blocksize)
-            blockshape_ = blockshape  # restore initial blockshape
+            self.chunkshape = chunkshape_
+            self.blockshape = blockshape_
+            return
         else:
-            # blockshape is None, but chunkshape is not
-            chunksize = dtshape.dtype.itemsize
-            for l in chunkshape:
-                chunksize *= l
-            chunkshape_, blockshape_ = ia.partition_advice(dtshape, min_chunksize=chunksize, max_chunksize=chunksize)
-            chunkshape_ = chunkshape  # restore initial chunkshape
-        self.chunkshape = chunkshape_
-        self.blockshape = blockshape_
+            raise ValueError("You can either specify both chunkshape and blockshape or none of them.")
 
     def to_tuple(self):
         StoreProp = namedtuple('store_properties', 'backend chunkshape blockshape enforce_frame filename')
