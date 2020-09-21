@@ -15,13 +15,8 @@ NITER = 10
 
 # Define array params
 shape = [20 * 1000 * 1000]
-cshape = [1000 * 1000]
-bshape = [10 * 1000]
-dtype = np.float64
-
+dtshape = ia.dtshape(shape, np.float64)
 cparams = dict(clevel=5, nthreads=8)
-storage = ia.StorageProperties("blosc", cshape, bshape)
-dtshape = ia.dtshape(shape, dtype)
 
 
 @jit(verbose=0)
@@ -34,8 +29,8 @@ def f(out: Array(float64, 1), x: Array(float64, 1)) -> int64:
 
 
 # Create initial containers
-a1 = ia.linspace(dtshape, 0, 10, storage=storage, **cparams)
-a2 = np.linspace(0, 10, shape[0], dtype=dtype).reshape(shape)
+a1 = ia.linspace(dtshape, 0, 10, **cparams)
+a2 = np.linspace(0, 10, shape[0], dtshape.dtype).reshape(shape)
 
 print("numpy evaluation...")
 bn = None
@@ -46,7 +41,7 @@ print("Time for numpy eval:", round((time() - t0) / NITER, 3))
 print(bn)
 
 print("iarray evaluation ...")
-expr = f.create_expr([a1], dtshape, storage=storage, **cparams)
+expr = f.create_expr([a1], dtshape, **cparams)
 b1 = None
 t0 = time()
 for i in range(NITER):
@@ -60,7 +55,7 @@ ia.cmp_arrays(bn, b1_n, success='OK. Results are the same.')
 eval_method = ia.EVAL_AUTO
 expr = ia.Expr(eval_method=eval_method, **cparams)
 expr.bind('x', a1)
-expr.bind_out_properties(dtshape, storage)
+expr.bind_out_properties(dtshape)
 expr.compile('(sin(x) - 1.35) * (x - 4.45) * (x - 8.5)')
 b2 = None
 t0 = time()

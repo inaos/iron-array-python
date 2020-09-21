@@ -41,16 +41,13 @@ def poly_numba(x):
 
 # Define array params
 shape = [10 * 1000 * 1000]
-chunkshape = [1 * 1000 * 1000]
-blockshape = [8 * 1000]
 dtshape = ia.dtshape(shape)
 size = int(np.prod(shape))
 nthreads = 6
 clevel = 5
 
 # iarray UDF
-bstorage = ia.StorageProperties("blosc", chunkshape, blockshape)
-kwargs = dict(nthreads=nthreads, clevel=clevel, storage=bstorage)
+kwargs = dict(nthreads=nthreads, clevel=clevel)
 a1 = ia.linspace(dtshape, 0, 10, **kwargs)
 expr = poly_udf.create_expr([a1], dtshape, method="auto", **kwargs)
 t0 = time()
@@ -61,7 +58,7 @@ print("Time to evaluate expression with iarray.udf:", round(t1 - t0, 3))
 # iarray juggernaut
 expr = ia.Expr(**kwargs)
 expr.bind("x", a1)
-expr.bind_out_properties(dtshape, storage=bstorage)
+expr.bind_out_properties(dtshape)
 expr.compile(str_expr)
 t0 = time()
 b2 = expr.eval()

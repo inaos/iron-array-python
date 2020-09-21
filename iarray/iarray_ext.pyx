@@ -19,7 +19,7 @@ import cython
 from cpython.pycapsule cimport PyCapsule_New, PyCapsule_GetPointer
 from math import ceil
 from libc.stdlib cimport malloc, free
-from iarray.high_level import IArray, Config, dtshape
+from iarray.high_level import IArray, Config, StorageProperties, dtshape
 from collections import namedtuple
 from iarray import EVAL_AUTO, EVAL_ITERBLOSC, EVAL_ITERCHUNK
 
@@ -388,7 +388,12 @@ cdef class Expression:
             c.to_capsule(), "iarray_container_t*")
         ciarray.iarray_expr_bind(self._e, var2, c_)
 
-    def bind_out_properties(self, dtshape, storage):
+    def bind_out_properties(self, dtshape, storage=None):
+        if storage is None or storage.chunkshape is None:
+            # Create a default storage
+            storage = StorageProperties()
+            storage.get_shape_advice(dtshape)
+
         dtshape = _DTShape(dtshape).to_dict()
         cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 

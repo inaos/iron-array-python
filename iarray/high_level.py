@@ -393,6 +393,7 @@ class IArray(ext.Container):
     def copy(self, view=False, **kwargs):
         cfg = Config(**kwargs)  # chunkshape and blockshape can be passed in storage kwarg
         cfg._storage.get_shape_advice(self.dtshape)
+        print(cfg._storage.chunkshape, cfg._storage.blockshape)
         return ext.copy(cfg, self, view)
 
     def __add__(self, value):

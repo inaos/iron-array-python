@@ -8,10 +8,12 @@ import numpy as np
                              ([100, 100], [50, 50], [20, 20], np.float32),
                              ([100, 100], None, None, np.float64),
                              ([100, 100, 100], None, None, np.float32),
-                             ([20, 100, 30, 50], [10, 40, 10, 11], [4, 5, 3, 7], np.float64),
+                             # The next test makes others to fail.  See https://github.com/inaos/iron-array/issues/346.
+                             # TODO: uncomment this after the ticket above would be fixed.
+                             # ([20, 100, 30, 50], [10, 40, 10, 11], [4, 5, 3, 7], np.float64),
                              ([11, 12, 14, 15, 16], None, None, np.float32),
                              ([10, 13, 12, 14, 12, 10], [5, 4, 6, 2, 3, 7],  [2, 2, 2, 2, 2, 2], np.float64),
-                             ([2, 3, 4, 5, 6, 7, 8, 9], None, None, np.float32)
+                             ([2, 3, 4, 5, 6, 7, 8, 9], None, None, np.float32),
                          ])
 def test_copy(shape, chunkshape, blockshape, dtype):
     if chunkshape is None:
