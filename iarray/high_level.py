@@ -396,6 +396,25 @@ class IArray(ext.Container):
         print(cfg._storage.chunkshape, cfg._storage.blockshape)
         return ext.copy(cfg, self, view)
 
+    def __getitem__(self, key):
+        # Massage the key a bit so that it is compatible with self.shape
+        if self.ndim == 1:
+            key = [key]
+        start = [s.start if s.start is not None else 0 for s in key]
+        start = [st if st < sh else sh for st, sh in zip(start, self.shape, fillvalue=0)]
+        stop = [s.stop if s.stop is not None else sh for s, sh in zip(key, self.shape, fillvalue=slice(0))]
+        stop = [sh if st == 0 else st for st, sh in zip(stop, self.shape)]
+        stop = [st if st < sh else sh for st, sh in zip(stop, self.shape)]
+
+        # Check that the final size is not zero, as this is not supported yet in iArray
+        length = 1
+        for s0, s1 in zip(start, stop):
+            length *= s1 - s0
+        if length < 1:
+            raise ValueError("Slices with 0 or negative dims are not supported yet")
+
+        return super().__getitem__([start, stop])
+
     def __add__(self, value):
         return LazyExpr(new_op=(self, '+', value))
 

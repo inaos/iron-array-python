@@ -284,7 +284,6 @@ cdef class Container:
             ciarray.iarray_container_free(self._ctx._ctx, &self._c)
             self._ctx = None
 
-
     def iter_read_block(self, block=None):
         return ReadBlockIter(self, block)
 
@@ -351,11 +350,9 @@ cdef class Container:
         ciarray.iarray_container_info(self._c, &nbytes, &cbytes)
         return <double>nbytes / <double>cbytes
 
-    def __getitem__(self, item):
-        if self.ndim == 1:
-            item = [item]
-        start = [s.start if s.start is not None else 0 for s in item]
-        stop = [s.stop if s.stop is not None else sh for s, sh in zip(item, self.shape)]
+    def __getitem__(self, key):
+        # key has been massaged already
+        start, stop = key
         return get_slice(self._ctx, self, start, stop, True, None)
 
     def is_view(self):
@@ -631,8 +628,13 @@ def get_slice(ctx, data, start, stop, view, storage):
         start_[i] = start[i]
         stop_[i] = stop[i]
 
+    cdef ciarray.iarray_storage_t store_
     cdef ciarray.iarray_container_t *c
-    ciarray.iarray_get_slice(ctx_, data_, start_, stop_, view, NULL, flags, &c)
+    if view:
+        ciarray.iarray_get_slice(ctx_, data_, start_, stop_, view, NULL, flags, &c)
+    else:
+        set_storage(storage, &store_)
+        ciarray.iarray_get_slice(ctx_, data_, start_, stop_, view, &store_, flags, &c)
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     b =  IArray(ctx, c_c)
