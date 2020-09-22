@@ -497,6 +497,15 @@ class Expr(ext.Expression):
         cfg = Config(**kwargs)
         super().__init__(cfg)
 
+    def bind_out_properties(self, dtshape, storage=None):
+        if storage is None:
+            # Create a default storage
+            storage = StorageProperties()
+            storage.get_shape_advice(dtshape)
+        if storage.chunkshape is None or storage.blockshape is None:
+            storage.get_shape_advice(dtshape)
+        super().bind_out_properties(dtshape, storage)
+
 
 #
 # Constructors

@@ -31,9 +31,9 @@ import numpy as np
 def test_expression(method, shape, chunkshape, blockshape, dtype, expression):
     # The ranges below are important for not overflowing operations
     if chunkshape is None:
-        storage = ia.StorageProperties(backend="plainbuffer")
+        storage = ia.StorageProperties(backend=ia.BACKEND_PLAINBUFFER)
     else:
-        storage = ia.StorageProperties(backend="blosc",
+        storage = ia.StorageProperties(backend=ia.BACKEND_BLOSC,
                                        chunkshape=chunkshape,
                                        blockshape=blockshape,
                                        enforce_frame=False,
@@ -112,9 +112,9 @@ def test_ufuncs(ufunc, ia_expr):
     eval_method = ia.EVAL_ITERCHUNK
 
     if chunkshape is None:
-        storage = ia.StorageProperties(backend="plainbuffer")
+        storage = ia.StorageProperties(backend=ia.BACKEND_PLAINBUFFER)
     else:
-        storage = ia.StorageProperties(backend="blosc",
+        storage = ia.StorageProperties(backend=ia.BACKEND_BLOSC,
                                        chunkshape=chunkshape,
                                        blockshape=bshape,
                                        enforce_frame=False,
