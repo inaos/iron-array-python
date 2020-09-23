@@ -33,19 +33,22 @@ def get_ncores(max_ncores=0):
     return ncores
 
 
-def partition_advice(dtshape, min_chunksize=0, max_chunksize=0, min_blocksize=0, max_blocksize=0):
+def partition_advice(dtshape, min_chunksize=0, max_chunksize=0, min_blocksize=0, max_blocksize=0, config=None):
     """
     Provide advice for the chunk and block shapes for a certain `dtshape`.
-
-    If success, the tuple (chunkshape, blockshape) containing the advice is returned.
 
     `min_` and `max_` params contain minimum and maximum values for chunksize and blocksize.
     If `min_` or `max_` are 0, they default to sensible values (fractions of CPU caches).
 
+    `config` is an `Config` instance, and if not passed, a default configuration is used.
+
+    If success, the tuple (chunkshape, blockshape) containing the advice is returned.
     In case of error, a (None, None) tuple is returned and a warning is issued.
     """
+    if config is None:
+        config = Config()
     chunkshape, blockshape = ext.partition_advice(dtshape, min_chunksize, max_chunksize,
-                                                  min_blocksize, max_blocksize)
+                                                  min_blocksize, max_blocksize, config)
     if chunkshape is None:
         warnings.warn("Error in providing partition advice (please report this)."
                       "  Please do not trust on the chunkshape and blockshape in `storage`!",
@@ -75,7 +78,7 @@ class dtshape:
 
     def __init__(self, shape=None, dtype=np.float64):
         if shape is None:
-            return ValueError("shape cannot be None")
+            raise ValueError("shape cannot be None")
         dtype = np.dtype(dtype)
         if dtype.type not in (np.float32, np.float64):
             raise NotImplementedError("Only float32 and float64 types are supported for now")
@@ -131,8 +134,8 @@ class Config(ext._Config):
         return self._fp_mantissa_bits
 
     @property
-    def filename(self):
-        return self._filename
+    def storage(self):
+        return self._storage
 
     @property
     def eval_method(self):
@@ -150,8 +153,7 @@ class Config(ext._Config):
             f"    Filter flags: {self.filter_flags}\n"
             f"    Number of threads: {self.nthreads}\n"
             f"    Floating point mantissa bits: {self.fp_mantissa_bits}\n"
-            f"    Blocksize: {self.blocksize}\n"
-            f"    Filename: {self.filename}\n"
+            f"    Storage: {self.storage}\n"
             f"    Eval flags: {self.eval_method}\n"
         )
 
@@ -175,7 +177,7 @@ class StorageProperties:
         if chunkshape is not None and blockshape is not None:
             return
         if chunkshape is None and blockshape is None:
-            chunkshape_, blockshape_ = ia.partition_advice(dtshape)
+            chunkshape_, blockshape_ = partition_advice(dtshape)
             self.chunkshape = chunkshape_
             self.blockshape = blockshape_
             return
@@ -184,7 +186,7 @@ class StorageProperties:
 
     def to_tuple(self):
         StoreProp = namedtuple('store_properties', 'backend chunkshape blockshape enforce_frame filename')
-        return StoreProp(self.backend, self.chunkshape, self.blockshape, self.backend, self.enforce_frame, self.filename)
+        return StoreProp(self.backend, self.chunkshape, self.blockshape, self.enforce_frame, self.filename)
 
 
 #
