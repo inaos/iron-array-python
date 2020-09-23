@@ -164,6 +164,9 @@ class StorageProperties:
     def __init__(self, backend=ia.BACKEND_BLOSC, chunkshape=None, blockshape=None, enforce_frame=False, filename=None):
         if backend not in (ia.BACKEND_BLOSC, ia.BACKEND_PLAINBUFFER):
             raise ValueError(f"backend can only be BACKEND_BLOSC or BACKEND_PLAINBUFFER")
+        if backend is ia.BACKEND_PLAINBUFFER:
+            if chunkshape is not None or blockshape is not None:
+                raise ValueError("%s backends does not support a chunkshape or blockshape")
         self.backend = backend
         self.enforce_frame = True if filename else enforce_frame
         self.filename = filename

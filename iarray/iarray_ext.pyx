@@ -31,9 +31,9 @@ IARRAY_ERR_EVAL_ENGINE_OUT_OF_RANGE  = ciarray.IARRAY_ERR_EVAL_ENGINE_OUT_OF_RAN
 
 cdef set_storage(storage, ciarray.iarray_storage_t *cstore):
     cstore.enforce_frame = storage.enforce_frame
-    if storage.backend == 'plainbuffer':
+    if storage.backend == ia.BACKEND_PLAINBUFFER:
         cstore.backend = ciarray.IARRAY_STORAGE_PLAINBUFFER
-    elif storage.backend == 'blosc':
+    elif storage.backend == ia.BACKEND_BLOSC:
         cstore.backend = ciarray.IARRAY_STORAGE_BLOSC
         for i in range(len(storage.chunkshape)):
             cstore.chunkshape[i] = storage.chunkshape[i]
@@ -308,9 +308,9 @@ cdef class Container:
         cdef ciarray.iarray_storage_t storage
         ciarray.iarray_get_storage(self._ctx._ctx, self._c, &storage)
         if storage.backend == ciarray.IARRAY_STORAGE_PLAINBUFFER:
-            return "Plainbuffer"
+            return ia.BACKEND_PLAINBUFFER
         else:
-            return "Blosc"
+            return ia.BACKEND_BLOSC
 
     @property
     def chunkshape(self):
@@ -424,7 +424,6 @@ cdef class Expression:
         if ciarray.iarray_eval(self._e, &c) != 0:
             raise RuntimeError(f"Error in evaluating expr: {self.expression}")
         c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
-
         return ia.IArray(self._ctx, c_c)
 
 #
