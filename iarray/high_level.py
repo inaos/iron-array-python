@@ -348,7 +348,7 @@ class LazyExpr:
     def __rtruediv__(self, value):
         return self.update_expr(new_op=(value, '/', self))
 
-    def eval(self, method="iarray_eval", dtype=None, **kwargs):
+    def eval(self, engine="iarray", dtype=None, **kwargs):
         # TODO: see if shape and chunkshape can be instance variables, or better stay like this
         o0 = self.operands['o0']
         shape_ = o0.shape
@@ -356,7 +356,7 @@ class LazyExpr:
         cfg = Config(**kwargs)
         # TODO: figure out a better way to set a default for the dtype
         dtype = o0.dtype if dtype is None else dtype
-        if method == "iarray_eval":
+        if engine == "iarray":
             expr = Expr(**kwargs)
             for k, v in self.operands.items():
                 if isinstance(v, IArray):
@@ -368,7 +368,7 @@ class LazyExpr:
             expr.compile(self.expression)
             out = expr.eval()
 
-        elif method == "numexpr":
+        elif engine == "numexpr":
             chunkshape = shape_ if cfg._storage.chunkshape is None else cfg._storage.chunkshape
             out = ia.empty(ia.dtshape(shape=shape_, dtype=dtype), **kwargs)
             operand_iters = tuple(o.iter_read_block(chunkshape)
@@ -383,7 +383,7 @@ class LazyExpr:
                 # out_block = block[0][1]  # the block for output is at the front, by construction
                 ne.evaluate(self.expression, local_dict=block_operands, out=out_block)
         else:
-            raise ValueError(f"Unrecognized '{method}' method")
+            raise ValueError(f"Unrecognized '{engine}' method")
 
         return out
 
