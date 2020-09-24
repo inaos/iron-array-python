@@ -18,17 +18,15 @@ NITER = 10
 shape = [20 * 1000 * 1000]
 N = int(np.prod(shape))
 
-chunkshape, blockshape = [400 * 1000], [16 * 1000]
-# chunkshape, blockshape = None, None  # TODO: make this work too (automatic partition advice on)
-
-itershape = [400 * 1000]
+chunkshape, blockshape = None, None  # use automatic partition advice
+# chunkshape, blockshape = [400 * 1000], [16 * 1000]  # user-defined partitions
+itershape_ = [400 * 1000]
 
 expression = '(cos(x) - 1.35) * (x - 4.45) * (sin(x) - 8.5)'
 expression_np = '(np.cos(x) - 1.35) * (x - 4.45) * (np.sin(x) - 8.5)'
-clevel = 6   # compression level
+clevel = 9   # compression level
 clib = ia.LZ4  # compression codec
 nthreads = 8  # number of threads for the evaluation and/or compression
-engine = "udf"  # can be "udf" or "internal"
 
 
 def poly_python(x):
@@ -129,7 +127,10 @@ def do_block_evaluation(backend):
     # Reference to compare to
     y0 = eval(expression_np)
 
-    ya = None  # shut-up warnings about variables possibly referenced before assignment
+    # itershape has to be the same than chunkshape for iter_write when using blosc backends
+    ya = ia.empty(ia.dtshape(shape=shape), storage=storage, **cparams)
+    itershape = ya.chunkshape if backend is ia.BACKEND_BLOSC else itershape_
+
     t0 = time()
     for i in range(NITER):
         ya = ia.empty(ia.dtshape(shape=shape), storage=storage, **cparams)
@@ -159,25 +160,27 @@ def do_block_evaluation(backend):
     y1 = ia.iarray2numpy(ya)
     np.testing.assert_almost_equal(y0, y1)
 
-    # TODO: the line below should be removed after UDF can evaluate things with plain buffers
-    # See https://github.com/inaos/iron-array/issues/347
-    engine_ = "internal" if backend is ia.BACKEND_PLAINBUFFER else engine
+    for engine in ("internal", "udf"):
+        # TODO: the line below should be removed after UDF can evaluate things with plain buffers
+        # See https://github.com/inaos/iron-array/issues/347
+        if backend is ia.BACKEND_PLAINBUFFER and engine == "udf":
+            continue
 
-    t0 = time()
-    if engine_ == "internal":
-        expr = ia.Expr(**cparams)
-        expr.bind('x', xa)
-        expr.bind_out_properties(ia.dtshape(shape), storage)
-        expr.compile(expression)
-    else:
-        # For some reason, the UDF engine does not work when backend is PLAINBUFFER
-        expr = poly_llvm.create_expr([xa], ia.dtshape(shape), storage=storage,  **cparams)
-    for i in range(NITER):
-        ya = expr.eval()
-    avg = round((time() - t0) / NITER, 4)
-    print(f"Block evaluate via iarray.eval (backend: {backend}, engine: {engine_}): {avg:.4f}")
-    y1 = ia.iarray2numpy(ya)
-    np.testing.assert_almost_equal(y0, y1)
+        t0 = time()
+        if engine == "internal":
+            expr = ia.Expr(**cparams)
+            expr.bind('x', xa)
+            expr.bind_out_properties(ia.dtshape(shape), storage)
+            expr.compile(expression)
+        else:
+            # For some reason, the UDF engine does not work when backend is PLAINBUFFER
+            expr = poly_llvm.create_expr([xa], ia.dtshape(shape), storage=storage,  **cparams)
+        for i in range(NITER):
+            ya = expr.eval()
+        avg = round((time() - t0) / NITER, 4)
+        print(f"Block evaluate via iarray.eval (backend: {backend}, engine: {engine}): {avg:.4f}")
+        y1 = ia.iarray2numpy(ya)
+        np.testing.assert_almost_equal(y0, y1)
 
     # TODO: support math ufuncs for lazy expressions
     # t0 = time()
