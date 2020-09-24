@@ -33,7 +33,7 @@ for i, shape in enumerate(shapes):
     shape = (shape,)
     print(shape)
 
-    storage = ia.StorageProperties("blosc", chunkshape, blockshape)
+    storage = ia.StorageProperties(chunkshape, blockshape)
 
     data = ia.linspace(ia.dtshape(shape, dtype=DTYPE), 0, 1, storage=storage, **cparams)
 

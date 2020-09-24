@@ -22,9 +22,9 @@ def evaluate(command):
         cparams = dict(clib=ia.LZ4, clevel=5, nthreads=NTHREADS)
 
         iax = ia.linspace(ia.dtshape(shape, dtype), 0, 1,
-                          storage=ia.StorageProperties("blosc", chunkshape, blockshape), **cparams)
-        iay = iax.copy(storage=ia.StorageProperties("blosc", chunkshape, blockshape), **cparams)
-        iaz = iax.copy(storage=ia.StorageProperties("blosc", chunkshape, blockshape), **cparams)
+                          storage=ia.StorageProperties(chunkshape, blockshape), **cparams)
+        iay = iax.copy(storage=ia.StorageProperties(chunkshape, blockshape), **cparams)
+        iaz = iax.copy(storage=ia.StorageProperties(chunkshape, blockshape), **cparams)
 
         return command
 
@@ -36,7 +36,8 @@ def evaluate(command):
         expr.bind('x', iax)
         expr.bind('y', iay)
         expr.bind('z', iaz)
-        expr.bind_out_properties(ia.dtshape(shape, dtype), ia.StorageProperties("blosc", chunkshape, blockshape))
+        expr.bind_out_properties(ia.dtshape(shape, dtype),
+                                 ia.StorageProperties(chunkshape, blockshape))
         expr.compile(command)
         expr.eval()
 

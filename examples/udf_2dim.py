@@ -15,14 +15,11 @@ from iarray.udf import jit, Array, float64, int64
 NITER = 10
 
 # Define array params
-shape = [1000, 1000]
-cshape = [100, 90]
-bshape = [14, 11]
+shape = [1000, 10000]
 
 dtype = np.float64
 
 cparams = dict(clevel=5, nthreads=8)
-storage = ia.StorageProperties("blosc", cshape, bshape)
 dtshape = ia.dtshape(shape, dtype)
 
 
@@ -38,13 +35,13 @@ def f(out: Array(float64, 2), x: Array(float64, 2)) -> int64:
 
 
 # Create input arrays
-ia_in = ia.arange(dtshape, 0, np.prod(shape), 1, storage=storage, **cparams)
+ia_in = ia.arange(dtshape, 0, np.prod(shape), 1, **cparams)
 np_in = np.arange(0, reduce(lambda x, y: x * y, shape), 1, dtype=dtype).reshape(shape)
 ia.cmp_arrays(np_in, ia_in)
 
 # iarray udf evaluation
 print("iarray evaluation ...")
-expr = f.create_expr([ia_in], dtshape, storage=storage, **cparams)
+expr = f.create_expr([ia_in], dtshape, **cparams)
 ia_out = None
 t0 = time()
 for i in range(NITER):

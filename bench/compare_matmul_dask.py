@@ -49,13 +49,13 @@ cblockshape = (128, 128)
 compressor = Blosc(cname='lz4', clevel=CLEVEL, shuffle=Blosc.SHUFFLE, blocksize=reduce(lambda x, y: x * y, ablockshape))
 cparams = dict(clib=CLIB, clevel=CLEVEL, nthreads=NTHREADS)
 
-astorage = ia.StorageProperties("blosc", achunkshape, ablockshape)
+astorage = ia.StorageProperties(achunkshape, ablockshape)
 
 lia = ia.linspace(ia.dtshape(ashape, dtype=DTYPE), 0, 1, storage=astorage, **cparams)
 nia = ia.random_normal(ia.dtshape(ashape, dtype=DTYPE), 0, 0.0000001, storage=astorage, **cparams)
 aia = (lia + nia).eval(storage=astorage, **cparams)
 
-bstorage = ia.StorageProperties("blosc", bchunkshape, bblockshape)
+bstorage = ia.StorageProperties(bchunkshape, bblockshape)
 
 lia = ia.linspace(ia.dtshape(bshape, dtype=DTYPE), 0, 1, storage=bstorage, **cparams)
 nia = ia.random_normal(ia.dtshape(bshape, dtype=DTYPE), 0, 0.0000001, storage=bstorage, **cparams)
@@ -64,7 +64,7 @@ bia = (lia + nia).eval(storage=bstorage, **cparams)
 ablock = (500, 500)
 bblock = (500, 500)
 
-cstorage = ia.StorageProperties("blosc", cchunkshape, cblockshape)
+cstorage = ia.StorageProperties(cchunkshape, cblockshape)
 
 @profile
 def ia_matmul(aia, bia, ablock, bblock):

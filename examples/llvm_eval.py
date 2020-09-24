@@ -10,9 +10,6 @@ NITER = 10
 # Vector sizes and partitions
 shape = [100 * 1000 * 1000]
 N = int(np.prod(shape))
-cshape = [200 * 1000]
-bshape = [20 * 1000]
-# cshape, bshape = None, None  # for enforcing a plain buffer
 dtype = np.float64
 
 expression = '(x - 1.35) * (x - 4.45) * (x - 8.5)'
@@ -29,8 +26,7 @@ for i in range(NITER):
 print("Regular evaluate via numpy:", round((time() - t0) / NITER, 4))
 
 cparams = dict(clib=clib, clevel=clevel, nthreads=nthreads)
-storage = ia.StorageProperties("blosc", cshape, bshape)
-xa = ia.linspace(ia.dtshape(shape=shape, dtype=dtype), 0., 10., storage=storage, **cparams)
+xa = ia.linspace(ia.dtshape(shape=shape, dtype=dtype), 0., 10., **cparams)
 print("Operand cratio:", round(xa.cratio, 2))
 
 ya = None
@@ -39,7 +35,7 @@ t0 = time()
 eval_method = ia.EVAL_AUTO
 expr = ia.Expr(eval_method=eval_method, **cparams)
 expr.bind('x', xa)
-expr.bind_out_properties(ia.dtshape(shape, dtype=dtype), storage)
+expr.bind_out_properties(ia.dtshape(shape, dtype=dtype))
 expr.compile('(x - 1.35) * (x - 4.45) * (x - 8.5)')
 for i in range(NITER):
     ya = expr.eval()
@@ -51,8 +47,7 @@ np.testing.assert_almost_equal(y0, y1)
 t0 = time()
 x = xa
 for i in range(NITER):
-    ya = ((x - 1.35) * (x - 4.45) * (x - 8.5)).eval(method="iarray_eval", storage=storage,
-                                                    dtype=dtype, eval_method=eval_method, **cparams)
+    ya = ((x - 1.35) * (x - 4.45) * (x - 8.5)).eval(method="iarray_eval", dtype=dtype, **cparams)
 print("Block evaluate via iarray.LazyExpr.eval('iarray_eval')):", round((time() - t0) / NITER, 4))
 y1 = ia.iarray2numpy(ya)
 np.testing.assert_almost_equal(y0, y1)

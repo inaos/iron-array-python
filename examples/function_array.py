@@ -11,8 +11,7 @@ dtype = np.float64
 shape = [10000, 8000]
 cshape = [1000, 800]
 bshape = [100, 100]
-storage = ia.StorageProperties(backend="blosc", chunkshape=cshape, blockshape=bshape,
-                               enforce_frame=False, filename=None)
+storage = ia.StorageProperties(chunkshape=cshape, blockshape=bshape)
 kwargs = dict(eval_method=ia.EVAL_ITERBLOSC, storage=storage)
 
 

@@ -47,13 +47,13 @@ if PROFILE:
     a1_fname = "a1.iarray"
     if not os.path.isfile(a1_fname):
         print(f"Creating {a1_fname}")
-        a1_storage = ia.StorageProperties("blosc", chunkshape, blockshape, True, a1_fname)
+        a1_storage = ia.StorageProperties(chunkshape, blockshape, a1_fname)
         a1 = ia.linspace(ia.dtshape(shape, dtype), 0, 10, storage=a1_storage, **cparams)
     else:
         print(f"Reading {a1_fname}")
         a1 = ia.load(a1_fname, load_in_mem=True)
 else:
-    a1_storage = ia.StorageProperties("blosc", chunkshape, blockshape)
+    a1_storage = ia.StorageProperties(chunkshape, blockshape)
     a1 = ia.linspace(ia.dtshape(shape, dtype), 0, 10, storage=a1_storage, **cparams)
 
 a2 = np.linspace(0, 10, shape[0], dtype=dtype).reshape(shape)
@@ -79,7 +79,7 @@ print("Time for numexpr eval:", round((time() - t0) / NITER, 3))
 print(bne)
 
 
-a1_storage = ia.StorageProperties("blosc", chunkshape, blockshape)
+a1_storage = ia.StorageProperties(chunkshape, blockshape)
 eval_method = ia.EVAL_ITERBLOSC
 iax = a1.copy(view=False, storage=a1_storage, **cparams)
 iay = a1.copy(view=False, storage=a1_storage, **cparams)

@@ -29,7 +29,7 @@ def cmp_udf_np(f, start_stop, shape, chunkshape, blockshape, dtype, cparams):
     if type(start_stop) is tuple:
         start_stop = [start_stop]
 
-    storage = ia.StorageProperties("blosc", chunkshape, blockshape)
+    storage = ia.StorageProperties(chunkshape, blockshape)
     dtshape = ia.dtshape(shape, dtype)
     inputs = [ia.linspace(dtshape, start, stop, storage=storage, **cparams) for start, stop in start_stop]
     expr = f.create_expr(inputs, dtshape, storage=storage, **cparams)
@@ -55,7 +55,7 @@ def cmp_udf_np_strict(f, start, stop, shape, chunkshape, blockshape, dtype, cpar
     assert len(chunkshape) == 1
     assert len(blockshape) == 1
 
-    storage = ia.StorageProperties("blosc", chunkshape, blockshape)
+    storage = ia.StorageProperties(chunkshape, blockshape)
     dtshape = ia.dtshape(shape, dtype)
     x = ia.linspace(dtshape, start, stop, storage=storage, **cparams)
     expr = f.create_expr([x], dtshape, storage=storage, **cparams)
@@ -197,7 +197,7 @@ def test_error(f):
     cparams = dict(clib=ia.LZ4, clevel=5, nthreads=1)
     start, stop = 0, 10
 
-    storage = ia.StorageProperties("blosc", chunkshape, blockshape)
+    storage = ia.StorageProperties(chunkshape, blockshape)
     dtshape = ia.dtshape(shape, dtype)
     x = ia.linspace(dtshape, start, stop, storage=storage, **cparams)
     expr = f.create_expr([x], dtshape, storage=storage, **cparams)

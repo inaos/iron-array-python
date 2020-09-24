@@ -15,7 +15,7 @@ sexpr = "(cos(%s) - sin(%s)) * (%s - 1.35) * (%s - 4.45)"
 npexpr = "(np.cos(%s) - np.sin(%s)) * (%s - 1.35) * (%s - 4.45)"
 
 # Create initial arrays
-storage = ia.StorageProperties(backend="blosc", chunkshape=cshape, blockshape=bshape)
+storage = ia.StorageProperties(chunkshape=cshape, blockshape=bshape)
 kwargs = dict(storage=storage, fp_mantissa_bits=24)
 
 size = shape[0] * shape[1]

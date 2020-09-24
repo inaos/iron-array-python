@@ -34,7 +34,7 @@ def evaluate(command):
         blockshape = [BLOCKSHAPE]
         dtype = np.float64
         cparams = dict(clib=ia.LZ4, clevel=5, nthreads=NTHREADS)
-        storage = ia.StorageProperties("blosc", chunkshape, blockshape)
+        storage = ia.StorageProperties(chunkshape, blockshape)
         iax = ia.linspace(ia.dtshape(shape, dtype), 0, 1, storage=storage, **cparams)
         iay = ia.linspace(ia.dtshape(shape, dtype), 0, 1, storage=storage, **cparams)
         iaz = ia.linspace(ia.dtshape(shape, dtype), 0, 1, storage=storage, **cparams)
@@ -74,7 +74,8 @@ def evaluate(command):
         expr.bind('x', iax)
         expr.bind('y', iay)
         expr.bind('z', iaz)
-        expr.bind_out_properties(ia.dtshape(shape, dtype), ia.StorageProperties("blosc", chunkshape, blockshape))
+        expr.bind_out_properties(ia.dtshape(shape, dtype),
+                                 ia.StorageProperties(chunkshape, blockshape))
         expr.compile(command)
         expr.eval()
 
@@ -86,7 +87,8 @@ def evaluate(command):
         expr.bind('x', iax)
         expr.bind('y', iay)
         expr.bind('z', iaz)
-        expr.bind_out_properties(ia.dtshape(shape, dtype), ia.StorageProperties("blosc", chunkshape, blockshape))
+        expr.bind_out_properties(ia.dtshape(shape, dtype),
+                                 ia.StorageProperties(chunkshape, blockshape))
         expr.compile(command)
         expr.eval()
 

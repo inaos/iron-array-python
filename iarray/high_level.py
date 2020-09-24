@@ -161,17 +161,17 @@ class Config(ext._Config):
 # TODO: add docstrings
 class StorageProperties:
 
-    def __init__(self, backend=ia.BACKEND_BLOSC, chunkshape=None, blockshape=None, enforce_frame=False, filename=None):
+    def __init__(self, chunkshape=None, blockshape=None, filename=None, enforce_frame=False, backend=ia.BACKEND_BLOSC):
+        self.chunkshape = chunkshape
+        self.blockshape = blockshape
+        self.filename = filename
+        self.enforce_frame = True if filename else enforce_frame
         if backend not in (ia.BACKEND_BLOSC, ia.BACKEND_PLAINBUFFER):
             raise ValueError(f"backend can only be BACKEND_BLOSC or BACKEND_PLAINBUFFER")
         if backend is ia.BACKEND_PLAINBUFFER:
             if chunkshape is not None or blockshape is not None:
                 raise ValueError("%s backends does not support a chunkshape or blockshape")
         self.backend = backend
-        self.enforce_frame = True if filename else enforce_frame
-        self.filename = filename
-        self.chunkshape = chunkshape
-        self.blockshape = blockshape
 
     def get_shape_advice(self, dtshape):
         if self.backend == ia.BACKEND_PLAINBUFFER:
@@ -398,7 +398,6 @@ class IArray(ext.Container):
     def copy(self, view=False, **kwargs):
         cfg = Config(**kwargs)  # chunkshape and blockshape can be passed in storage kwarg
         cfg._storage.get_shape_advice(self.dtshape)
-        print(cfg._storage.chunkshape, cfg._storage.blockshape)
         return ext.copy(cfg, self, view)
 
     def __getitem__(self, key):

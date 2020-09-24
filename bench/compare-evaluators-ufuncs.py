@@ -111,9 +111,9 @@ def do_regular_evaluation():
 
 def do_block_evaluation(backend):
     if backend is ia.BACKEND_PLAINBUFFER:
-        storage = ia.StorageProperties(ia.BACKEND_PLAINBUFFER)
+        storage = ia.StorageProperties(backend=ia.BACKEND_PLAINBUFFER)
     else:
-        storage = ia.StorageProperties(ia.BACKEND_BLOSC, chunkshape, blockshape)
+        storage = ia.StorageProperties(chunkshape, blockshape, backend=ia.BACKEND_BLOSC)
 
     print(f"Block ({storage.backend}) evaluation of the expression:", expression, "with %d elements" % N)
     cparams = dict(clib=clib, clevel=clevel, nthreads=nthreads)

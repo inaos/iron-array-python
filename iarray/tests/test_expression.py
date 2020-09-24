@@ -33,11 +33,8 @@ def test_expression(method, shape, chunkshape, blockshape, dtype, expression):
     if chunkshape is None:
         storage = ia.StorageProperties(backend=ia.BACKEND_PLAINBUFFER)
     else:
-        storage = ia.StorageProperties(backend=ia.BACKEND_BLOSC,
-                                       chunkshape=chunkshape,
-                                       blockshape=blockshape,
-                                       enforce_frame=False,
-                                       filename=None)
+        storage = ia.StorageProperties(chunkshape=chunkshape, blockshape=blockshape, filename=None, enforce_frame=False,
+                                       backend=ia.BACKEND_BLOSC)
 
     eval_method = method
 
@@ -114,11 +111,8 @@ def test_ufuncs(ufunc, ia_expr):
     if chunkshape is None:
         storage = ia.StorageProperties(backend=ia.BACKEND_PLAINBUFFER)
     else:
-        storage = ia.StorageProperties(backend=ia.BACKEND_BLOSC,
-                                       chunkshape=chunkshape,
-                                       blockshape=bshape,
-                                       enforce_frame=False,
-                                       filename=None)
+        storage = ia.StorageProperties(chunkshape=chunkshape, blockshape=bshape, filename=None, enforce_frame=False,
+                                       backend=ia.BACKEND_BLOSC)
 
     for dtype in np.float64, np.float32:
         # The ranges below are important for not overflowing operations
@@ -188,11 +182,7 @@ def test_expr_ufuncs(ufunc):
     chunkshape = [40, 50]
     bshape = [20, 20]
     eval_method = ia.EVAL_ITERCHUNK
-    storage = ia.StorageProperties(backend="blosc",
-                                   chunkshape=chunkshape,
-                                   blockshape=bshape,
-                                   enforce_frame=False,
-                                   filename=None)
+    storage = ia.StorageProperties(chunkshape=chunkshape, blockshape=bshape)
 
     for dtype in np.float64, np.float32:
         # The ranges below are important for not overflowing operations
@@ -235,11 +225,7 @@ def test_expr_fusion(expr):
     chunkshape = [40, 50]
     bshape = [20, 20]
     eval_method = ia.EVAL_ITERCHUNK
-    storage = ia.StorageProperties(backend="blosc",
-                                   chunkshape=chunkshape,
-                                   blockshape=bshape,
-                                   enforce_frame=False,
-                                   filename=None)
+    storage = ia.StorageProperties(chunkshape=chunkshape, blockshape=bshape)
 
     for dtype in np.float64, np.float32:
         # The ranges below are important for not overflowing operations

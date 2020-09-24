@@ -5,19 +5,16 @@ import iarray as ia
 import numpy as np
 
 
-# Define the properties of an array
-shape, cshape, bshape = [2000, 2000], [200, 200], [100, 100]
-dtype = np.float64
-store = ia.StorageProperties("blosc", chunkshape=cshape, blockshape=bshape)
-a = ia.linspace(ia.dtshape(shape, dtype), -10, 10, storage=store)
+# Create an ironArray array
+a = ia.linspace(ia.dtshape([2000, 20000], np.float64), -10, 10)
 
-# Do a regular copy of an array
+# Do a regular copy
 t0 = time()
 b = a.copy()
 t1 = time()
 print(f"Time to make a copy (cont -> cont): {t1 - t0:.5f}")
 
-# Do a regular copy of an array
+# Make a view
 bn = ia.iarray2numpy(b)
 t0 = time()
 c = a.copy(view=True)

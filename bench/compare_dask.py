@@ -33,7 +33,7 @@ for i, shape in enumerate(shapes):
     print(shape, chunkshape)
     cparams = dict(clib=CLIB, clevel=CLEVEL, nthreads=NTHREADS)
 
-    storage_in = ia.StorageProperties("blosc", chunkshape, blockshape, True, "iarray_infile.iarray")
+    storage_in = ia.StorageProperties(chunkshape, blockshape, "iarray_infile.iarray")
     ia.arange(ia.dtshape(shape, DTYPE),
               storage=storage_in,
               **cparams)
@@ -44,7 +44,7 @@ for i, shape in enumerate(shapes):
     eval_method = ia.EVAL_ITERBLOSC
     expr = ia.Expr(eval_method=eval_method, **cparams)
     expr.bind("x", data)
-    storage_out = ia.StorageProperties("blosc", chunkshape, blockshape, True, "iarray_outfile.iarray")
+    storage_out = ia.StorageProperties(chunkshape, blockshape, "iarray_outfile.iarray")
     expr.bind_out_properties(ia.dtshape(shape, DTYPE), storage=storage_out)
     expr.compile(sexpr)
     res1 = expr.eval()

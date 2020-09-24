@@ -38,8 +38,8 @@ blockshape = [16 * 1024]
 dtshape = ia.dtshape(shape)
 size = int(np.prod(shape))
 
-bstorage = ia.StorageProperties(ia.BACKEND_BLOSC, chunkshape, blockshape)
-pstorage = ia.StorageProperties(ia.BACKEND_PLAINBUFFER, None, None)
+bstorage = ia.StorageProperties(chunkshape, blockshape, backend=ia.BACKEND_BLOSC)
+pstorage = ia.StorageProperties(backend=ia.BACKEND_PLAINBUFFER)
 
 eval_method = ia.EVAL_AUTO
 
