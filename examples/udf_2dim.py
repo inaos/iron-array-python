@@ -16,11 +16,9 @@ NITER = 10
 
 # Define array params
 shape = [1000, 10000]
-
 dtype = np.float64
-
-cparams = dict(clevel=5, nthreads=8)
 dtshape = ia.dtshape(shape, dtype)
+cparams = dict(clevel=5, nthreads=8)
 
 
 @jit(verbose=0)

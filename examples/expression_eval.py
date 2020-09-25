@@ -7,15 +7,14 @@ import numexpr as ne
 # Define array params
 dtype = np.float64
 shape = [16000, 8000]
-cshape = [1000, 800]
-bshape = [100, 100]
 nthreads = 8   # maximum number of threads to use
 
 sexpr = "(cos(%s) - sin(%s)) * (%s - 1.35) * (%s - 4.45)"
 npexpr = "(np.cos(%s) - np.sin(%s)) * (%s - 1.35) * (%s - 4.45)"
 
-# Create initial arrays
-storage = ia.StorageProperties(chunkshape=cshape, blockshape=bshape)
+# Create initial arrays.  You may opt to use automatic chunkshape and blockshape,
+# but you typically get optimal results when you fine-tune them.
+storage = ia.StorageProperties(chunkshape=[1000, 800], blockshape=[100, 100])
 kwargs = dict(storage=storage, fp_mantissa_bits=24)
 
 size = shape[0] * shape[1]
