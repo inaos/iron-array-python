@@ -106,7 +106,9 @@ class Config(ext._Config):
         self._nthreads = nthreads = get_ncores(nthreads)
         self._seed = seed
         self._storage = ia.StorageProperties() if storage is None else storage
-        # eval_method will typically be set in Expr.eval(), but this Config class is kind of a catchall arguments
+        # eval_method will typically be set in Expr() constructor, but this Config class is kind
+        # of a catchall arguments, so Expr() will inherit the eval_method from here in case it is
+        # not passed to the Expr() constructor itself.
         self._eval_method = eval_method
         super().__init__(clib, clevel, use_dict, filter_flags, nthreads,
                          fp_mantissa_bits, self._eval_method)
@@ -154,7 +156,7 @@ class Config(ext._Config):
             f"    Number of threads: {self.nthreads}\n"
             f"    Floating point mantissa bits: {self.fp_mantissa_bits}\n"
             f"    Storage: {self.storage}\n"
-            f"    Eval flags: {self.eval_method}\n"
+            f"    Eval method: {self.eval_method}\n"
         )
 
 
