@@ -44,10 +44,6 @@ BITSHUFFLE = 2
 DELTA = 4
 TRUNC_PREC = 8
 
-# Storage types
-BACKEND_PLAINBUFFER = 'plainbuffer'
-BACKEND_BLOSC = 'blosc'
-
 # Eval method
 class Eval(Enum):
     AUTO = auto()

@@ -31,10 +31,9 @@ import numpy as np
 def test_expression(method, shape, chunkshape, blockshape, dtype, expression):
     # The ranges below are important for not overflowing operations
     if chunkshape is None:
-        storage = ia.StorageProperties(backend=ia.BACKEND_PLAINBUFFER)
+        storage = ia.StorageProperties(plainbuffer=True)
     else:
-        storage = ia.StorageProperties(chunkshape=chunkshape, blockshape=blockshape, filename=None, enforce_frame=False,
-                                       backend=ia.BACKEND_BLOSC)
+        storage = ia.StorageProperties(chunkshape=chunkshape, blockshape=blockshape)
 
     x = ia.linspace(ia.dtshape(shape, dtype), 2.1, .2, storage=storage)
     y = ia.linspace(ia.dtshape(shape, dtype), 0, 1, storage=storage)

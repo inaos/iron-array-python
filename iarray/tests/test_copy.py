@@ -15,9 +15,9 @@ import numpy as np
                          ])
 def test_copy(shape, chunkshape, blockshape, dtype):
     if chunkshape is None:
-        storage = ia.StorageProperties(backend=ia.BACKEND_PLAINBUFFER)
+        storage = ia.StorageProperties(plainbuffer=True)
     else:
-        storage = ia.StorageProperties(chunkshape, blockshape, enforce_frame=False, backend=ia.BACKEND_BLOSC)
+        storage = ia.StorageProperties(chunkshape, blockshape)
     a_ = ia.linspace(ia.dtshape(shape, dtype), -10, 10, storage=storage)
     sl = tuple([slice(0, s - 1) for s in shape])
     a = a_[sl]

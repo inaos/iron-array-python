@@ -163,20 +163,18 @@ class Config(ext._Config):
 # TODO: add docstrings
 class StorageProperties:
 
-    def __init__(self, chunkshape=None, blockshape=None, filename=None, enforce_frame=False, backend=ia.BACKEND_BLOSC):
+    def __init__(self, chunkshape=None, blockshape=None, filename=None, enforce_frame=False, plainbuffer=False):
         self.chunkshape = chunkshape
         self.blockshape = blockshape
         self.filename = filename
         self.enforce_frame = True if filename else enforce_frame
-        if backend not in (ia.BACKEND_BLOSC, ia.BACKEND_PLAINBUFFER):
-            raise ValueError(f"backend can only be BACKEND_BLOSC or BACKEND_PLAINBUFFER")
-        if backend is ia.BACKEND_PLAINBUFFER:
+        if plainbuffer:
             if chunkshape is not None or blockshape is not None:
-                raise ValueError("%s backends does not support a chunkshape or blockshape")
-        self.backend = backend
+                raise ValueError("plainbuffer array does not support a chunkshape or blockshape")
+        self.plainbuffer = plainbuffer
 
     def get_shape_advice(self, dtshape):
-        if self.backend == ia.BACKEND_PLAINBUFFER:
+        if self.plainbuffer:
             return
         chunkshape, blockshape = self.chunkshape, self.blockshape
         if chunkshape is not None and blockshape is not None:
@@ -190,8 +188,8 @@ class StorageProperties:
             raise ValueError("You can either specify both chunkshape and blockshape or none of them.")
 
     def to_tuple(self):
-        StoreProp = namedtuple('store_properties', 'backend chunkshape blockshape enforce_frame filename')
-        return StoreProp(self.backend, self.chunkshape, self.blockshape, self.enforce_frame, self.filename)
+        StoreProp = namedtuple('store_properties', 'chunkshape blockshape enforce_frame filename plainbuffer')
+        return StoreProp(self.chunkshape, self.blockshape, self.enforce_frame, self.filename, self.plainbuffer)
 
 
 #

@@ -30,9 +30,9 @@ IARRAY_ERR_EVAL_ENGINE_OUT_OF_RANGE  = ciarray.IARRAY_ERR_EVAL_ENGINE_OUT_OF_RAN
 
 cdef set_storage(storage, ciarray.iarray_storage_t *cstore):
     cstore.enforce_frame = storage.enforce_frame
-    if storage.backend == ia.BACKEND_PLAINBUFFER:
+    if storage.plainbuffer:
         cstore.backend = ciarray.IARRAY_STORAGE_PLAINBUFFER
-    elif storage.backend == ia.BACKEND_BLOSC:
+    else:
         cstore.backend = ciarray.IARRAY_STORAGE_BLOSC
         for i in range(len(storage.chunkshape)):
             cstore.chunkshape[i] = storage.chunkshape[i]
@@ -313,13 +313,13 @@ cdef class Container:
         return tuple(shape)
 
     @property
-    def backend(self):
+    def is_plainbuffer(self):
         cdef ciarray.iarray_storage_t storage
         ciarray.iarray_get_storage(self._ctx._ctx, self._c, &storage)
         if storage.backend == ciarray.IARRAY_STORAGE_PLAINBUFFER:
-            return ia.BACKEND_PLAINBUFFER
+            return True
         else:
-            return ia.BACKEND_BLOSC
+            return False
 
     @property
     def chunkshape(self):

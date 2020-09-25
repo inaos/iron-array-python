@@ -2,6 +2,7 @@
 
 import math
 from time import time
+from itertools import zip_longest
 
 from numba import jit
 import numexpr as ne
@@ -109,31 +110,30 @@ def do_regular_evaluation():
     np.testing.assert_almost_equal(y0, y1)
 
 
-def do_block_evaluation(backend):
-    if backend is ia.BACKEND_PLAINBUFFER:
-        storage = ia.StorageProperties(backend=ia.BACKEND_PLAINBUFFER)
+def do_block_evaluation(plainbuffer):
+    if plainbuffer:
+        storage = ia.StorageProperties(plainbuffer=True)
     else:
-        storage = ia.StorageProperties(chunkshape, blockshape, backend=ia.BACKEND_BLOSC)
+        storage = ia.StorageProperties(chunkshape, blockshape)
 
-    print(f"Block ({storage.backend}) evaluation of the expression:", expression, "with %d elements" % N)
+    print(f"Block ({storage.plainbuffer}) evaluation of the expression:", expression, "with %d elements" % N)
     cparams = dict(clib=clib, clevel=clevel, nthreads=nthreads)
 
     x = np.linspace(0, 10, N, dtype=np.double).reshape(shape)
     xa = ia.linspace(ia.dtshape(shape=shape), 0., 10., storage=storage, **cparams)
 
-    if backend is ia.BACKEND_BLOSC:
+    if not plainbuffer:
         print("Operand cratio:", round(xa.cratio, 2))
 
     # Reference to compare to
     y0 = eval(expression_np)
 
-    # itershape has to be the same than chunkshape for iter_write when using blosc backends
     ya = ia.empty(ia.dtshape(shape=shape), storage=storage, **cparams)
 
     t0 = time()
     for i in range(NITER):
         ya = ia.empty(ia.dtshape(shape=shape), storage=storage, **cparams)
-        for ((j, x), (k, y)) in zip(xa.iter_read_block(), ya.iter_write_block()):
+        for ((j, x), (k, y)) in zip_longest(xa.iter_read_block(), ya.iter_write_block()):
             y[:] = eval(expression_np)
     print("Block evaluate via numpy:", round((time() - t0) / NITER, 4))
 
@@ -143,7 +143,7 @@ def do_block_evaluation(backend):
     t0 = time()
     for i in range(NITER):
         ya = ia.empty(ia.dtshape(shape=shape), storage=storage, **cparams)
-        for ((j, x), (k, y)) in zip(xa.iter_read_block(), ya.iter_write_block()):
+        for ((j, x), (k, y)) in zip_longest(xa.iter_read_block(), ya.iter_write_block()):
             ne.evaluate(expression, local_dict={'x': x}, out=y)
     print("Block evaluate via numexpr:", round((time() - t0) / NITER, 4))
     y1 = ia.iarray2numpy(ya)
@@ -152,7 +152,7 @@ def do_block_evaluation(backend):
     t0 = time()
     for i in range(NITER):
         ya = ia.empty(ia.dtshape(shape=shape), storage=storage, **cparams)
-        for ((j, x), (k, y)) in zip(xa.iter_read_block(), ya.iter_write_block()):
+        for ((j, x), (k, y)) in zip_longest(xa.iter_read_block(), ya.iter_write_block()):
             # y[:] = poly_numba(x)
             poly_numba2(x, y)
     print("Block evaluate via numba (II):", round((time() - t0) / NITER, 4))
@@ -162,7 +162,7 @@ def do_block_evaluation(backend):
     for engine in ("internal", "udf"):
         # TODO: the line below should be removed after UDF can evaluate things with plain buffers
         # See https://github.com/inaos/iron-array/issues/347
-        if backend is ia.BACKEND_PLAINBUFFER and engine == "udf":
+        if plainbuffer and engine == "udf":
             continue
 
         t0 = time()
@@ -172,12 +172,11 @@ def do_block_evaluation(backend):
             expr.bind_out_properties(ia.dtshape(shape), storage)
             expr.compile(expression)
         else:
-            # For some reason, the UDF engine does not work when backend is PLAINBUFFER
             expr = poly_llvm.create_expr([xa], ia.dtshape(shape), storage=storage,  **cparams)
         for i in range(NITER):
             ya = expr.eval()
         avg = round((time() - t0) / NITER, 4)
-        print(f"Block evaluate via iarray.eval (backend: {backend}, engine: {engine}): {avg:.4f}")
+        print(f"Block evaluate via iarray.eval (plainbuffer: {plainbuffer}, engine: {engine}): {avg:.4f}")
         y1 = ia.iarray2numpy(ya)
         np.testing.assert_almost_equal(y0, y1)
 
@@ -188,17 +187,17 @@ def do_block_evaluation(backend):
     #     ya = eval(expression_np, {"x": x})
     #     ya = ya.eval(storage=storage, **cparams)
     # avg = round((time() - t0) / NITER, 4)
-    # print(f"Block evaluate via iarray.LazyExpr.eval (backend: {backend}, engine: internal): {avg:.4f}")
+    # print(f"Block evaluate via iarray.LazyExpr.eval (plainbuffer: {plainbuffer}, engine: internal): {avg:.4f}")
     # y1 = ia.iarray2numpy(ya)
     # np.testing.assert_almost_equal(y0, y1)
 
-    if backend is ia.BACKEND_BLOSC:
+    if not plainbuffer:
         print("Result cratio:", round(ya.cratio, 2))
 
 
 if __name__ == "__main__":
     do_regular_evaluation()
     print("-*-" * 10)
-    do_block_evaluation(ia.BACKEND_PLAINBUFFER)
+    do_block_evaluation(plainbuffer=True)
     print("-*-" * 10)
-    do_block_evaluation(ia.BACKEND_BLOSC)
+    do_block_evaluation(plainbuffer=False)
