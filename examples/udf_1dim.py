@@ -52,8 +52,7 @@ print(b1_n)
 
 ia.cmp_arrays(bn, b1_n, success='OK. Results are the same.')
 
-eval_method = ia.EVAL_AUTO
-expr = ia.Expr(eval_method=eval_method, **cparams)
+expr = ia.Expr(**cparams)
 expr.bind('x', a1)
 expr.bind_out_properties(dtshape)
 expr.compile('(sin(x) - 1.35) * (x - 4.45) * (x - 8.5)')

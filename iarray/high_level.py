@@ -94,7 +94,7 @@ class dtshape:
 class Config(ext._Config):
 
     def __init__(self, clib=ia.LZ4, clevel=5, use_dict=0, filter_flags=ia.SHUFFLE, nthreads=0,
-                 fp_mantissa_bits=0, storage=None, eval_method=None, seed=0):
+                 fp_mantissa_bits=0, storage=None, eval_method=ia.Eval.AUTO, seed=0):
         self._clib = clib
         self._clevel = clevel
         self._use_dict = use_dict
@@ -105,9 +105,9 @@ class Config(ext._Config):
         # Get the number of cores using nthreads as a maximum
         self._nthreads = nthreads = get_ncores(nthreads)
         self._seed = seed
-        # TODO: should we move this to its own eval configuration?
-        self._eval_method = ia.EVAL_AUTO if eval_method is None else eval_method
         self._storage = ia.StorageProperties() if storage is None else storage
+        # eval_method will typically be set in Expr.eval(), but this Config class is kind of a catchall arguments
+        self._eval_method = eval_method
         super().__init__(clib, clevel, use_dict, filter_flags, nthreads,
                          fp_mantissa_bits, self._eval_method)
 
@@ -517,13 +517,13 @@ class IArray(ext.Container):
 class Expr(ext.Expression):
 
     def __init__(self, **kwargs):
-        cfg = Config(**kwargs)
-        super().__init__(cfg)
+        self.cfg = Config(**kwargs)
+        super().__init__(self.cfg)
 
     def bind_out_properties(self, dtshape, storage=None):
         if storage is None:
-            # Create a default storage
-            storage = StorageProperties()
+            # Use the default storage in config
+            storage = self.cfg.storage
             storage.get_shape_advice(dtshape)
         if storage.chunkshape is None or storage.blockshape is None:
             storage.get_shape_advice(dtshape)

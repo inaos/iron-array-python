@@ -12,7 +12,7 @@ shape = [10000, 8000]
 cshape = [1000, 800]
 bshape = [100, 100]
 storage = ia.StorageProperties(chunkshape=cshape, blockshape=bshape)
-kwargs = dict(eval_method=ia.EVAL_ITERBLOSC, storage=storage)
+kwargs = dict(storage=storage)
 
 
 # Create initial arrays
@@ -32,7 +32,7 @@ print("Time for numexpr evaluation: %.3f" % (t1 - t0))
 t0 = time()
 expr = ia.Expr(**kwargs)
 expr.bind("x", ia1)
-expr.bind_out_properties(ia.dtshape(shape, dtype), storage=storage)
+expr.bind_out_properties(ia.dtshape(shape, dtype))
 expr.compile("cos(x)")
 ia2 = expr.eval()
 t1 = time()
@@ -50,10 +50,9 @@ np4 = ia.iarray2numpy(ia3)
 ia.cmp_arrays(np4, np2, "OK.  Results are the same.")
 
 t0 = time()
-ia4 = ia1.cos().eval(**kwargs)
-# ia4 = ia1.cos().eval(method="numexpr", **kwargs)
+ia4 = ia1.cos().eval(engine="numexpr", **kwargs)
 t1 = time()
-print("Time for iarray via lazy evaluation (method): %.3f (cratio: %.2fx)" % ((t1 - t0), ia3.cratio))
+print("Time for iarray via lazy evaluation (numexpr engine): %.3f (cratio: %.2fx)" % ((t1 - t0), ia3.cratio))
 
 np5 = ia.iarray2numpy(ia4)
 ia.cmp_arrays(np5, np2, "OK.  Results are the same.")

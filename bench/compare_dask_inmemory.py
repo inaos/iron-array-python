@@ -39,7 +39,7 @@ for i, shape in enumerate(shapes):
 
     t0 = time()
     # TODO: the next crashes if eval_method == "iterblosc" and DTYPE = np.float32
-    eval_method = ia.EVAL_ITERBLOSC
+    eval_method = ia.Eval.ITERBLOSC
     expr = ia.Expr(eval_method=eval_method, **cparams)
     expr.bind("x", data)
     expr.bind_out_properties(ia.dtshape(shape, DTYPE), storage=storage)

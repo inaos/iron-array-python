@@ -31,7 +31,7 @@ def evaluate(command):
     def ia_llvm_parallel(command, nthreads):
         global iax, iay, iaz, shape, chunkshape, blockshape, dtype, cparams
         cparams['nthreads'] = nthreads
-        eval_method = ia.EVAL_ITERBLOSC
+        eval_method = ia.Eval.ITERBLOSC
         expr = ia.Expr(eval_method=eval_method, **cparams)
         expr.bind('x', iax)
         expr.bind('y', iay)

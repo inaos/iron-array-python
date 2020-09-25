@@ -69,7 +69,7 @@ def evaluate(command):
     def ia_compiler_parallel(command):
         global iax, iay, iaz, shape, chunkshape, blockshape, dtype, cparams
         cparams['nthreads'] = NTHREADS
-        eval_method = ia.EVAL_ITERBLOSC
+        eval_method = ia.Eval.ITERBLOSC
         expr = ia.Expr(eval_method=eval_method, **cparams)
         expr.bind('x', iax)
         expr.bind('y', iay)
@@ -82,7 +82,7 @@ def evaluate(command):
     def ia_compiler_serial(command):
         global iax, iay, iaz, shape, chunkshape, blockshape, dtype, cparams
         cparams['nthreads'] = 1
-        eval_method = ia.EVAL_ITERBLOSC
+        eval_method = ia.Eval.ITERBLOSC
         expr = ia.Expr(eval_method=eval_method, **cparams)
         expr.bind('x', iax)
         expr.bind('y', iay)

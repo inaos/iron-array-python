@@ -80,7 +80,7 @@ print(bne)
 
 
 a1_storage = ia.StorageProperties(chunkshape, blockshape)
-eval_method = ia.EVAL_ITERBLOSC
+eval_method = ia.Eval.ITERBLOSC
 iax = a1.copy(view=False, storage=a1_storage, **cparams)
 iay = a1.copy(view=False, storage=a1_storage, **cparams)
 iaz = a1.copy(view=False, storage=a1_storage, **cparams)
@@ -89,7 +89,7 @@ print("iarray evaluation...")
 cparams2 = cparams.copy()
 # cparams2.update(dict(fp_mantissa_bits=3, clevel=5))
 # cparams2.update(dict(clevel=5))
-expr = f.create_expr([iax], ia.dtshape(shape, dtype), ia.EVAL_ITERBLOSC, storage=a1_storage, **cparams2)
+expr = f.create_expr([iax], ia.dtshape(shape, dtype), ia.Eval.ITERBLOSC, storage=a1_storage, **cparams2)
 # expr = f2.create_expr([iax, iay, iaz], **cparams2)
 # And now, the expression
 t0 = time()

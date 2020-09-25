@@ -6,26 +6,26 @@ import numpy as np
 
 # Expression
 @pytest.mark.parametrize("method, shape, chunkshape, blockshape, dtype, expression", [
-    (ia.EVAL_ITERBLOSC, [100, 100], [23, 32], [10, 10], np.float64, "cos(x)"),  # TODO: fix this
-    (ia.EVAL_ITERBLOSC, [100, 100], [10, 99], [4, 12], np.float64, "x"),
-    (ia.EVAL_ITERBLOSC, [1000], [110], [55], np.float32, "x"),
-    (ia.EVAL_ITERBLOSC, [1000], [100], [30], np.float64, "(cos(x) - 1.35) * (sin(x) - 4.45) * tan(x - 8.5)"),
-    (ia.EVAL_AUTO, [1000], [100], [25], np.float64, "(cos(x) - 1.35) * (sin(x) - 4.45) * tan(x - 8.5)"),
-    (ia.EVAL_ITERCHUNK, [1000], [367], [77], np.float32, "(abs(-x) - 1.35) * ceil(x) * floor(x - 8.5)"),
-    (ia.EVAL_ITERBLOSC, [100, 100, 100], [25, 25, 33], [12, 16, 8], np.float64,
+    (ia.Eval.ITERBLOSC, [100, 100], [23, 32], [10, 10], np.float64, "cos(x)"),  # TODO: fix this
+    (ia.Eval.ITERBLOSC, [100, 100], [10, 99], [4, 12], np.float64, "x"),
+    (ia.Eval.ITERBLOSC, [1000], [110], [55], np.float32, "x"),
+    (ia.Eval.ITERBLOSC, [1000], [100], [30], np.float64, "(cos(x) - 1.35) * (sin(x) - 4.45) * tan(x - 8.5)"),
+    (ia.Eval.AUTO, [1000], [100], [25], np.float64, "(cos(x) - 1.35) * (sin(x) - 4.45) * tan(x - 8.5)"),
+    (ia.Eval.ITERCHUNK, [1000], [367], [77], np.float32, "(abs(-x) - 1.35) * ceil(x) * floor(x - 8.5)"),
+    (ia.Eval.ITERBLOSC, [100, 100, 100], [25, 25, 33], [12, 16, 8], np.float64,
      "sinh(x) + (cosh(x) - 1.35) - tanh(x + .2)"),
-    (ia.EVAL_ITERBLOSC, [223], [100], [30], np.float64, "sinh(x) + (cosh(x) - 1.35) - tanh(x + .2)"),
-    (ia.EVAL_ITERCHUNK, [100, 100, 55], [10, 5, 10], [3, 4, 3], np.float64,
+    (ia.Eval.ITERBLOSC, [223], [100], [30], np.float64, "sinh(x) + (cosh(x) - 1.35) - tanh(x + .2)"),
+    (ia.Eval.ITERCHUNK, [100, 100, 55], [10, 5, 10], [3, 4, 3], np.float64,
      "asin(x) + (acos(x) - 1.35) - atan(x + .2)"),
-    (ia.EVAL_ITERCHUNK, [100, 100, 55], [10, 5, 10], [3, 4, 3], np.float64,
+    (ia.Eval.ITERCHUNK, [100, 100, 55], [10, 5, 10], [3, 4, 3], np.float64,
      "arcsin(x) + (arccos(x) - 1.35) - arctan(x + .2)"),  # check NumPy naming convention for ufuncs
-    (ia.EVAL_AUTO, [1000], None, None, np.float64, "exp(x) + (log(x) - 1.35) - log10(x + .2)"),
-    (ia.EVAL_ITERCHUNK, [1000], None, None, np.float32, "sqrt(x) + atan2(x, x) + pow(x, x)"),
-    (ia.EVAL_AUTO, [1000], None, None, np.float32, "sqrt(x) + arctan2(x, x) + power(x, x)"),  # NumPy conventions
-    (ia.EVAL_AUTO, [100, 100], None, None, np.float64, "(x - cos(1)) * 2"),
-    (ia.EVAL_ITERCHUNK, [8, 6, 7, 4, 5], None, None, np.float32,
+    (ia.Eval.AUTO, [1000], None, None, np.float64, "exp(x) + (log(x) - 1.35) - log10(x + .2)"),
+    (ia.Eval.ITERCHUNK, [1000], None, None, np.float32, "sqrt(x) + atan2(x, x) + pow(x, x)"),
+    (ia.Eval.AUTO, [1000], None, None, np.float32, "sqrt(x) + arctan2(x, x) + power(x, x)"),  # NumPy conventions
+    (ia.Eval.AUTO, [100, 100], None, None, np.float64, "(x - cos(1)) * 2"),
+    (ia.Eval.ITERCHUNK, [8, 6, 7, 4, 5], None, None, np.float32,
      "(x - cos(y)) * (sin(x) + y) + 2 * x + y"),
-    (ia.EVAL_ITERBLOSC,  [17, 12, 15, 15, 8], [8, 6, 7, 4, 5], [4, 3, 3, 4, 5], np.float64,
+    (ia.Eval.ITERBLOSC,  [17, 12, 15, 15, 8], [8, 6, 7, 4, 5], [4, 3, 3, 4, 5], np.float64,
      "(x - cos(y)) * (sin(x) + y) + 2 * x + y"),
 ])
 def test_expression(method, shape, chunkshape, blockshape, dtype, expression):
@@ -36,14 +36,12 @@ def test_expression(method, shape, chunkshape, blockshape, dtype, expression):
         storage = ia.StorageProperties(chunkshape=chunkshape, blockshape=blockshape, filename=None, enforce_frame=False,
                                        backend=ia.BACKEND_BLOSC)
 
-    eval_method = method
-
     x = ia.linspace(ia.dtshape(shape, dtype), 2.1, .2, storage=storage)
     y = ia.linspace(ia.dtshape(shape, dtype), 0, 1, storage=storage)
     npx = ia.iarray2numpy(x)
     npy = ia.iarray2numpy(y)
 
-    expr = ia.Expr(eval_method=eval_method)
+    expr = ia.Expr(eval_method=method)
     expr.bind("x", x)
     expr.bind("y", y)
     expr.bind_out_properties(ia.dtshape(shape, dtype), storage=storage)

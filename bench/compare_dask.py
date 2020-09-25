@@ -41,7 +41,7 @@ for i, shape in enumerate(shapes):
     t0 = time()
     data = ia.load("iarray_infile.iarray", load_in_mem=False)
 
-    eval_method = ia.EVAL_ITERBLOSC
+    eval_method = ia.Eval.ITERBLOSC
     expr = ia.Expr(eval_method=eval_method, **cparams)
     expr.bind("x", data)
     storage_out = ia.StorageProperties(chunkshape, blockshape, "iarray_outfile.iarray")

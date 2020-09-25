@@ -1,4 +1,5 @@
 import os
+from enum import Enum, auto
 from ctypes import cdll
 from llvmlite import binding
 import platform
@@ -48,10 +49,11 @@ BACKEND_PLAINBUFFER = 'plainbuffer'
 BACKEND_BLOSC = 'blosc'
 
 # Eval method
+class Eval(Enum):
+    AUTO = auto()
+    ITERBLOSC = auto()
+    ITERCHUNK = auto()
 
-EVAL_AUTO = 'auto'
-EVAL_ITERBLOSC = 'iterblosc'
-EVAL_ITERCHUNK = 'iterchunk'
 RANDOM_SEED = 0
 
 # List of all know universal functions

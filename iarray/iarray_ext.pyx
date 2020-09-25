@@ -21,7 +21,6 @@ from math import ceil
 from libc.stdlib cimport malloc, free
 import iarray as ia
 from collections import namedtuple
-from iarray import EVAL_AUTO, EVAL_ITERBLOSC, EVAL_ITERCHUNK
 
 
 IARRAY_ERR_EVAL_ENGINE_FAILED = ciarray.IARRAY_ERR_EVAL_ENGINE_FAILED
@@ -165,11 +164,11 @@ cdef class _Config:
         self._cfg.use_dict = use_dict
         self._cfg.filter_flags = filter_flags
 
-        if eval_method == EVAL_AUTO:
+        if eval_method == ia.Eval.AUTO:
             method = ciarray.IARRAY_EVAL_METHOD_AUTO
-        elif eval_method == EVAL_ITERBLOSC:
+        elif eval_method == ia.Eval.ITERBLOSC:
             method = ciarray.IARRAY_EVAL_METHOD_ITERBLOSC
-        elif eval_method == EVAL_ITERCHUNK:
+        elif eval_method == ia.Eval.ITERCHUNK:
             method = ciarray.IARRAY_EVAL_METHOD_ITERCHUNK
         else:
             raise ValueError("eval_method method not recognized:", eval_method)

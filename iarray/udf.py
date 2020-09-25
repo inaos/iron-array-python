@@ -160,7 +160,7 @@ class Function(py2llvm.Function):
         ptr = self.get_field(builder, idx)
         return builder.load(ptr, name=name)
 
-    def create_expr(self, inputs, dtshape, method=ia.EVAL_AUTO, **kwargs):
+    def create_expr(self, inputs, dtshape, method=ia.Eval.AUTO, **kwargs):
         eval_method = method
         expr = ia.Expr(eval_method=eval_method, **kwargs)
         for a in inputs:

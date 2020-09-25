@@ -20,6 +20,7 @@ nthreads = 8  # number of threads for the evaluation and/or compression
 x = np.linspace(0, 10, N, dtype=dtype).reshape(shape)
 
 # Reference to compare to
+y0 = None
 t0 = time()
 for i in range(NITER):
     y0 = (x - 1.35) * (x - 4.45) * (x - 8.5)
@@ -32,8 +33,7 @@ print("Operand cratio:", round(xa.cratio, 2))
 ya = None
 
 t0 = time()
-eval_method = ia.EVAL_AUTO
-expr = ia.Expr(eval_method=eval_method, **cparams)
+expr = ia.Expr(**cparams)
 expr.bind('x', xa)
 expr.bind_out_properties(ia.dtshape(shape, dtype=dtype))
 expr.compile('(x - 1.35) * (x - 4.45) * (x - 8.5)')
