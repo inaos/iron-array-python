@@ -280,11 +280,21 @@ cdef class Container:
             ciarray.iarray_container_free(self._ctx._ctx, &self._c)
             self._ctx = None
 
-    def iter_read_block(self, block=None):
-        return ReadBlockIter(self, block)
+    def iter_read_block(self, iterblock=None):
+        if iterblock is None:
+            if self.chunkshape is not None:
+                iterblock = self.chunkshape
+            else:
+                iterblock, _ = ia.partition_advice(self.dtshape)
+        return ReadBlockIter(self, iterblock)
 
-    def iter_write_block(self, block=None):
-        return WriteBlockIter(self, block)
+    def iter_write_block(self, iterblock=None):
+        if iterblock is None:
+            if self.chunkshape:
+                iterblock = self.chunkshape
+            else:
+                iterblock, _ = ia.partition_advice(self.dtshape)
+        return WriteBlockIter(self, iterblock)
 
     def to_capsule(self):
         return PyCapsule_New(self._c, "iarray_container_t*", NULL)
@@ -461,7 +471,6 @@ def empty(cfg, dtshape):
     set_storage(cfg._storage, &store_)
 
     flags = 0 if cfg._storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
-
 
     cdef ciarray.iarray_container_t *c
     ciarray.iarray_container_new(ctx_, &dtshape_, &store_, flags, &c)

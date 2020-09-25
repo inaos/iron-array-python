@@ -1,4 +1,5 @@
-from itertools import zip_longest
+# Comparison of different array evaluators (numpy, numexpr, numba, iarray...)
+
 import math
 from time import time
 
@@ -20,7 +21,6 @@ N = int(np.prod(shape))
 
 chunkshape, blockshape = None, None  # use automatic partition advice
 # chunkshape, blockshape = [400 * 1000], [16 * 1000]  # user-defined partitions
-itershape_ = [400 * 1000]
 
 expression = '(cos(x) - 1.35) * (x - 4.45) * (sin(x) - 8.5)'
 expression_np = '(np.cos(x) - 1.35) * (x - 4.45) * (np.sin(x) - 8.5)'
@@ -129,12 +129,11 @@ def do_block_evaluation(backend):
 
     # itershape has to be the same than chunkshape for iter_write when using blosc backends
     ya = ia.empty(ia.dtshape(shape=shape), storage=storage, **cparams)
-    itershape = ya.chunkshape if backend is ia.BACKEND_BLOSC else itershape_
 
     t0 = time()
     for i in range(NITER):
         ya = ia.empty(ia.dtshape(shape=shape), storage=storage, **cparams)
-        for ((j, x), (k, y)) in zip_longest(xa.iter_read_block(itershape), ya.iter_write_block(itershape)):
+        for ((j, x), (k, y)) in zip(xa.iter_read_block(), ya.iter_write_block()):
             y[:] = eval(expression_np)
     print("Block evaluate via numpy:", round((time() - t0) / NITER, 4))
 
@@ -144,7 +143,7 @@ def do_block_evaluation(backend):
     t0 = time()
     for i in range(NITER):
         ya = ia.empty(ia.dtshape(shape=shape), storage=storage, **cparams)
-        for ((j, x), (k, y)) in zip_longest(xa.iter_read_block(itershape), ya.iter_write_block(itershape)):
+        for ((j, x), (k, y)) in zip(xa.iter_read_block(), ya.iter_write_block()):
             ne.evaluate(expression, local_dict={'x': x}, out=y)
     print("Block evaluate via numexpr:", round((time() - t0) / NITER, 4))
     y1 = ia.iarray2numpy(ya)
@@ -153,7 +152,7 @@ def do_block_evaluation(backend):
     t0 = time()
     for i in range(NITER):
         ya = ia.empty(ia.dtshape(shape=shape), storage=storage, **cparams)
-        for ((j, x), (k, y)) in zip_longest(xa.iter_read_block(itershape), ya.iter_write_block(itershape)):
+        for ((j, x), (k, y)) in zip(xa.iter_read_block(), ya.iter_write_block()):
             # y[:] = poly_numba(x)
             poly_numba2(x, y)
     print("Block evaluate via numba (II):", round((time() - t0) / NITER, 4))
