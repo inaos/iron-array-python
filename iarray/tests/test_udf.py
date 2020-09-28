@@ -9,7 +9,7 @@ from iarray import udf
 from iarray.udf import int32
 
 
-def cmp_udf_np(f, start_stop, shape, chunkshape, blockshape, dtype, cparams):
+def cmp_udf_np(f, start_stop, shape, partitions, dtype, cparams):
     """Helper function that compares UDF against numpy.
 
     Parameters:
@@ -17,8 +17,8 @@ def cmp_udf_np(f, start_stop, shape, chunkshape, blockshape, dtype, cparams):
         start_stop : Defines the input arrays, may be a tuple or a list of
                      tuples. Each tuple has 2 elements with the start and stop
                      arguments that define a linspace array.
-        chunkshape : Chunk shape for ironArray.
-        blockshape : Block shape for ironArray.
+        partitions : A tuple with the chunk and block shapes for iarrays.
+                     If None, a plainbuffer is used.
         dtype      : Data type.
         cparams    : Parameters for ironArray.
 
@@ -29,7 +29,11 @@ def cmp_udf_np(f, start_stop, shape, chunkshape, blockshape, dtype, cparams):
     if type(start_stop) is tuple:
         start_stop = [start_stop]
 
-    storage = ia.StorageProperties(chunkshape, blockshape)
+    if partitions is not None:
+        chunkshape, blockshape = partitions
+        storage = ia.StorageProperties(chunkshape, blockshape)
+    else:
+        storage = ia.StorageProperties(plainbuffer=True)
     dtshape = ia.dtshape(shape, dtype)
     inputs = [ia.linspace(dtshape, start, stop, storage=storage, **cparams) for start, stop in start_stop]
     expr = f.create_expr(inputs, dtshape, storage=storage, **cparams)
@@ -43,7 +47,7 @@ def cmp_udf_np(f, start_stop, shape, chunkshape, blockshape, dtype, cparams):
     ia.cmp_arrays(out, out_ref)
 
 
-def cmp_udf_np_strict(f, start, stop, shape, chunkshape, blockshape, dtype, cparams):
+def cmp_udf_np_strict(f, start, stop, shape, partitions, dtype, cparams):
     """Same as cmp_udf_np but the comparison is done strictly. This is to say:
     numpy arrays are evaluated chunk by chunk, this way it works even when the
     function accesses elements other than the current element.
@@ -52,10 +56,11 @@ def cmp_udf_np_strict(f, start, stop, shape, chunkshape, blockshape, dtype, cpar
     - Input is always 1 linspace array, defined by start and stop
     - Only works for 1 dimension arrays
     """
+    chunkshape, blockshape = partitions
     assert len(chunkshape) == 1
     assert len(blockshape) == 1
-
     storage = ia.StorageProperties(chunkshape, blockshape)
+
     dtshape = ia.dtshape(shape, dtype)
     x = ia.linspace(dtshape, start, stop, storage=storage, **cparams)
     expr = f.create_expr([x], dtshape, storage=storage, **cparams)
@@ -94,14 +99,23 @@ def test_1dim(f):
     cparams = dict(clib=ia.LZ4, clevel=5, nthreads=16)
     start, stop = 0, 10
 
-    cmp_udf_np(f, (start, stop), shape, chunkshape, blockshape, dtype, cparams)
+    cmp_udf_np(f, (start, stop), shape, (chunkshape, blockshape), dtype, cparams)
 
     # For the test function to return the same output as the Python function
     # the partition size must be multiple of 3. This is just an example of
     # how the result is not always the same as in the Python function.
     blockshape = [4 * 100]
     with pytest.raises(AssertionError):
-        cmp_udf_np(f, (start, stop), shape, chunkshape, blockshape, dtype, cparams)
+        cmp_udf_np(f, (start, stop), shape, (chunkshape, blockshape), dtype, cparams)
+
+@pytest.mark.parametrize('f', [f_1dim])
+def test_1dim_plain(f):
+    shape = [10 * 1000]
+    dtype = np.float64
+    cparams = dict(clib=ia.LZ4, clevel=5, nthreads=16)
+    start, stop = 0, 10
+
+    cmp_udf_np(f, (start, stop), shape, None, dtype, cparams)
 
 
 @udf.jit
@@ -124,8 +138,17 @@ def test_2dim(f):
     cparams = dict(clib=ia.LZ4, clevel=5)
     start, stop = 0, 10
 
-    cmp_udf_np(f, (start, stop), shape, chunkshape, blockshape, dtype, cparams)
+    cmp_udf_np(f, (start, stop), shape, (chunkshape, blockshape), dtype, cparams)
 
+
+@pytest.mark.parametrize('f', [f_2dim])
+def test_2dim_plain(f):
+    shape = [400, 800]
+    dtype = np.float64
+    cparams = dict(clib=ia.LZ4, clevel=5)
+    start, stop = 0, 10
+
+    cmp_udf_np(f, (start, stop), shape, None, dtype, cparams)
 
 @udf.jit
 def f_while(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
@@ -147,7 +170,7 @@ def test_while(f):
     cparams = dict(clib=ia.LZ4, clevel=5)
     start, stop = 0, 10
 
-    cmp_udf_np(f, (start, stop), shape, chunkshape, blockshape, dtype, cparams)
+    cmp_udf_np(f, (start, stop), shape, (chunkshape, blockshape), dtype, cparams)
 
 
 @udf.jit
@@ -171,7 +194,7 @@ def test_avg(f):
     cparams = dict(clib=ia.LZ4, clevel=5)
     start, stop = 0, 10
 
-    cmp_udf_np_strict(f, start, stop, shape, chunkshape, blockshape, dtype, cparams)
+    cmp_udf_np_strict(f, start, stop, shape, (chunkshape, blockshape), dtype, cparams)
 
 
 @udf.jit
@@ -253,4 +276,4 @@ def test_math(f):
     cparams = dict(clib=ia.LZ4, clevel=5, nthreads=16)
     start, stop = 0, 10
 
-    cmp_udf_np(f, [(start, stop), (start, stop)], shape, chunkshape, blockshape, dtype, cparams)
+    cmp_udf_np(f, [(start, stop), (start, stop)], shape, (chunkshape, blockshape), dtype, cparams)
