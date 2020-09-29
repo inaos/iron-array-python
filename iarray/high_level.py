@@ -470,6 +470,18 @@ class IArray(ext.Container):
     def arctan2(self, op2):
         return LazyExpr(new_op=(self, 'atan2', op2))
 
+    def acos(self):
+        return LazyExpr(new_op=(self, 'acos', None))
+
+    def asin(self):
+        return LazyExpr(new_op=(self, 'asin', None))
+
+    def atan(self):
+        return LazyExpr(new_op=(self, 'atan', None))
+
+    def atan2(self, op2):
+        return LazyExpr(new_op=(self, 'atan2', op2))
+
     def ceil(self):
         return LazyExpr(new_op=(self, 'ceil', None))
 
