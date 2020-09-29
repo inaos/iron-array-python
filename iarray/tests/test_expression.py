@@ -35,7 +35,7 @@ def test_expression(method, shape, chunkshape, blockshape, dtype, expression):
     else:
         storage = ia.StorageProperties(chunkshape=chunkshape, blockshape=blockshape)
 
-    x = ia.linspace(ia.dtshape(shape, dtype), 2.1, .2, storage=storage)
+    x = ia.linspace(ia.dtshape(shape, dtype), .1, .2, storage=storage)
     y = ia.linspace(ia.dtshape(shape, dtype), 0, 1, storage=storage)
     npx = ia.iarray2numpy(x)
     npy = ia.iarray2numpy(y)
