@@ -40,15 +40,23 @@ def test_expression(method, shape, chunkshape, blockshape, dtype, expression):
     npx = ia.iarray2numpy(x)
     npy = ia.iarray2numpy(y)
 
+    # Low-level eval
     expr = ia.Expr(eval_method=method)
     expr.bind("x", x)
     expr.bind("y", y)
     expr.bind_out_properties(ia.dtshape(shape, dtype), storage=storage)
-
     expr.compile(expression)
-
     iout = expr.eval()
     npout = ia.iarray2numpy(iout)
+
+    # High-level eval
+    expr = ia.create_expr(expression, {"x": x, "y": y},
+                          ia.dtshape(shape, dtype), storage=storage)
+    iout2 = expr.eval()
+    npout2 = ia.iarray2numpy(iout2)
+
+    decimal = 5 if dtype is np.float32 else 10
+    np.testing.assert_almost_equal(npout, npout2, decimal=decimal)
 
     # Evaluate using a different engine
     ufunc_repls = {
@@ -71,8 +79,6 @@ def test_expression(method, shape, chunkshape, blockshape, dtype, expression):
             if "np." not in expression[idx - len("np.arc"):idx]:
                 expression = expression.replace(ufunc + "(", "np." + ufunc + "(")
     npout2 = eval(expression, {"x": npx, "y": npy, "np": numpy})
-
-    decimal = 5 if dtype is np.float32 else 10
 
     np.testing.assert_almost_equal(npout, npout2, decimal=decimal)
 
@@ -113,7 +119,7 @@ def test_ufuncs(ufunc, ia_expr):
         npx = ia.iarray2numpy(x)
         npy = ia.iarray2numpy(y)
 
-        # Low-level ironarray eval
+        # Low-level eval
         expr = ia.Expr()
         expr.bind("x", x)
         expr.bind("y", y)
@@ -124,13 +130,20 @@ def test_ufuncs(ufunc, ia_expr):
 
         decimal = 6 if dtype is np.float32 else 7
 
-        # High-level ironarray eval
+        # High-level eval
+        expr = ia.create_expr(ia_expr, {"x": x, "y": y},
+                              ia.dtshape(shape, dtype), storage=storage)
+        iout2 = expr.eval()
+        npout2 = ia.iarray2numpy(iout2)
+        np.testing.assert_almost_equal(npout, npout2, decimal=decimal)
+
+        # Lazy expression eval
         lazy_expr = eval("ia." + ufunc, {"ia": ia, "x": x, "y": y})
         iout2 = lazy_expr.eval(dtype=dtype)
         npout2 = ia.iarray2numpy(iout2)
         np.testing.assert_almost_equal(npout, npout2, decimal=decimal)
 
-        # High-level ironarray eval, but via numpy ufunc machinery
+        # Lazy expression eval, but via numpy ufunc machinery
         # TODO: the next ufuncs still have some problems with the numpy machinery (bug?)
         # abs(x) : TypeError: bad operand type for abs(): 'IArray'
         # ceil(x) : TypeError: must be real number, not IArray
@@ -188,7 +201,7 @@ def test_expr_ufuncs(ufunc):
         else:
             npout = eval("1 + 2 * np.%s(x)" % ufunc, {"np": np, "x": npx})
 
-        # High-level ironarray eval
+        # Lazy expression eval
         if ufunc in ("arctan2", "power"):
             lazy_expr = eval("1 + 2* x.%s(y)" % ufunc, {"x": x, "y": y})
         else:

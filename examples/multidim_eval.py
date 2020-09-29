@@ -1,3 +1,5 @@
+# Comparing performance of iarray vs numpy and numexpr (transcendental expressions and multidim arrays)
+
 from time import time
 import iarray as ia
 import numpy as np
@@ -7,6 +9,7 @@ import numexpr as ne
 # Define array params
 dtype = np.float64
 shape = [16000, 8000]
+dtshape = ia.dtshape(shape, dtype)
 nthreads = 8   # maximum number of threads to use
 
 sexpr = "(cos(%s) - sin(%s)) * (%s - 1.35) * (%s - 4.45)"
@@ -41,11 +44,8 @@ except AssertionError:
     print("ERROR. Results are different.")
 
 t0 = time()
-expr = ia.Expr(**kwargs)
-expr.bind("x", ia0)
-expr.bind("y", ia1)
-expr.bind_out_properties(ia.dtshape(shape, dtype), storage=storage)
-expr.compile(sexpr % (("x", "y") * 2))
+expr = ia.create_expr(sexpr % (("x", "y") * 2), {"x": ia0, "y": ia1}, dtshape, **kwargs)
+
 ia2 = expr.eval()
 t1 = time()
 print("Time for iarray evaluation: %.3f (cratio: %.2fx)" % ((t1 - t0), ia2.cratio))

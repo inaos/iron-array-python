@@ -62,7 +62,8 @@ UFUNC_LIST = (
 
 from . import iarray_ext as ext
 
-from .high_level import (IArray, dtshape, StorageProperties, Config, RandomContext, Expr, LazyExpr,
+from .high_level import (IArray, dtshape, StorageProperties, Config, RandomContext,
+                         create_expr, Expr, LazyExpr,
                          empty, arange, linspace, zeros, ones, full, load, save,
                          cmp_arrays, iarray2numpy, numpy2iarray, matmul,
                          # random constructors

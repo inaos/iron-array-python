@@ -52,10 +52,7 @@ print(b1_n)
 
 ia.cmp_arrays(bn, b1_n, success='OK. Results are the same.')
 
-expr = ia.Expr(**cparams)
-expr.bind('x', a1)
-expr.bind_out_properties(dtshape)
-expr.compile('(sin(x) - 1.35) * (x - 4.45) * (x - 8.5)')
+expr = ia.create_expr('(sin(x) - 1.35) * (x - 4.45) * (x - 8.5)', {'x': a1}, dtshape, **cparams)
 b2 = None
 t0 = time()
 for i in range(NITER):

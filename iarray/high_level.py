@@ -196,6 +196,16 @@ class StorageProperties:
 # Expresssions
 #
 
+# TODO: create docstrings
+def create_expr(str_expr, inputs, dtshape, **kwargs):
+    expr = ia.Expr(**kwargs)
+    for i in inputs:
+        expr.bind(i, inputs[i])
+    expr.bind_out_properties(dtshape)
+    expr.compile(str_expr)
+    return expr
+
+
 def fuse_operands(operands1, operands2):
     new_operands = {}
     dup_operands = {}
@@ -246,7 +256,6 @@ class RandomContext(ext.RandomContext):
     def __init__(self, **kwargs):
         cfg = Config(**kwargs)
         super().__init__(cfg)
-
 
 class LazyExpr:
 
