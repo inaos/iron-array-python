@@ -1,4 +1,4 @@
-# Evaluation of complex expressions via low-level API and high-level (lazy) one.
+# Evaluation of complex expressions via low-level and high-level (lazy) API of iarray.
 
 from time import time
 import iarray as ia
@@ -47,7 +47,7 @@ np.testing.assert_almost_equal(y0, y1)
 t0 = time()
 x = xa
 for i in range(NITER):
-    ya = ((x - 1.35) * (x - 4.45) * (x - 8.5)).eval(method="iarray_eval", dtype=dtype, **cparams)
+    ya = ((x - 1.35) * (x - 4.45) * (x - 8.5)).eval(dtype=dtype, **cparams)
 print("Block evaluate via iarray.LazyExpr.eval('iarray_eval')):", round((time() - t0) / NITER, 4))
 y1 = ia.iarray2numpy(ya)
 np.testing.assert_almost_equal(y0, y1)

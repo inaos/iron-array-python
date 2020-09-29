@@ -796,8 +796,8 @@ if __name__ == "__main__":
     a3 += 2
     print(a3)
     a3_np = np.sin(ia.iarray2numpy(a1)) + 2 * ia.iarray2numpy(a1) + 1 + 2
-    # a4 = a3.eval(method="numexpr")
-    a4 = a3.eval(method="iarray_eval")
+    # a4 = a3.eval(engine="numexpr")
+    a4 = a3.eval(engine="iarray")
     a4_np = ia.iarray2numpy(a4)
     print(a4_np)
     np.testing.assert_allclose(a3_np, a4_np)
