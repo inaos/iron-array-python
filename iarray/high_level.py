@@ -78,6 +78,11 @@ class dtshape:
     def __init__(self, shape=None, dtype=np.float64):
         if shape is None:
             raise ValueError("shape cannot be None")
+        # Check shape somewhat more
+        try:
+            sum(shape)
+        except:
+            raise ValueError("shape can only be a sequence of numbers")
         dtype = np.dtype(dtype)
         if dtype.type not in (np.float32, np.float64):
             raise NotImplementedError("Only float32 and float64 types are supported for now")
@@ -782,8 +787,8 @@ def tanh(iarr):
 
 if __name__ == "__main__":
     # Create initial containers
-    dtshape = ia.dtshape([40, 20])
-    a1 = ia.linspace(dtshape, 0, 10)
+    dtshape_ = ia.dtshape([40, 20])
+    a1 = ia.linspace(dtshape_, 0, 10)
 
     # Evaluate with different methods
     a3 = a1.sin() + 2 * a1 + 1
@@ -791,7 +796,7 @@ if __name__ == "__main__":
     a3 += 2
     print(a3)
     a3_np = np.sin(ia.iarray2numpy(a1)) + 2 * ia.iarray2numpy(a1) + 1 + 2
-    a4 = a3.eval(dtshape)
+    a4 = a3.eval(dtshape_)
     a4_np = ia.iarray2numpy(a4)
     print(a4_np)
     np.testing.assert_allclose(a3_np, a4_np)

@@ -10,20 +10,19 @@ import iarray as ia
 import matplotlib.pyplot as plt
 
 
-DTYPE = np.float64
 NTHREADS = 8
 CLEVEL = 5
 CLIB = ia.LZ4
 
 shapes = np.logspace(6, 8, 10, dtype=np.int64)
-chunkshape = (100 * 1000,)
-blockshape = (16 * 1000,)
+# chunkshape, blockshape = (100 * 1000,), (16 * 1000,)
+chunkshape, blockshape = None, None
 
-compressor = Blosc(cname='lz4', clevel=CLEVEL, shuffle=Blosc.SHUFFLE,
-                   blocksize=int(np.prod(blockshape) * np.dtype(DTYPE).itemsize))
+dtype = np.float64
+compressor = Blosc(cname='lz4', clevel=CLEVEL, shuffle=Blosc.SHUFFLE)
 cparams = dict(clib=CLIB, clevel=CLEVEL, nthreads=NTHREADS)
 
-sexpr = "(sin(x) - 3.2) * (cos(x) + 1.2)"
+sexpr = "(x - 1.35) * (x - 4.45) * (x - 8.5)"
 
 t_iarray = []
 t_dask = []
@@ -32,25 +31,19 @@ t_ratio = []
 for i, shape in enumerate(shapes):
     shape = (shape,)
     print(shape)
-
+    dtshape = ia.dtshape(shape, dtype)
     storage = ia.StorageProperties(chunkshape, blockshape)
-
-    data = ia.linspace(ia.dtshape(shape, dtype=DTYPE), 0, 1, storage=storage, **cparams)
+    data = ia.linspace(dtshape, 0, 1, storage=storage, **cparams)
 
     t0 = time()
-    # TODO: the next crashes if eval_method == "iterblosc" and DTYPE = np.float32
-    eval_method = ia.Eval.ITERBLOSC
-    expr = ia.Expr(eval_method=eval_method, **cparams)
-    expr.bind("x", data)
-    expr.bind_out_properties(ia.dtshape(shape, DTYPE), storage=storage)
-    expr.compile(sexpr)
+    expr = ia.create_expr(sexpr, {"x": data}, dtshape, **cparams)
     res1 = expr.eval()
     t1 = time()
     t_iarray.append(t1 - t0)
 
     print("Time for computing '%s' expression (via ia.Expr()): %.3f" % (sexpr, (t1 - t0)))
 
-    data2 = zarr.zeros(shape=shape, chunks=chunkshape, dtype=DTYPE, compressor=compressor)
+    data2 = zarr.zeros(shape=shape, chunks=chunkshape, dtype=dtype, compressor=compressor)
 
     for info, block in data.iter_read_block(chunkshape):
         sl = tuple([slice(i, i + s) for i, s in zip(info.elemindex, info.shape)])
@@ -60,8 +53,8 @@ for i, shape in enumerate(shapes):
     t0 = time()
     with dask.config.set(scheduler=scheduler):
         d = da.from_zarr(data2)
-        res = (np.sin(d) - 3.2) * (np.cos(d) + 1.2)
-        z2 = zarr.empty(shape, dtype=DTYPE, compressor=compressor, chunks=chunkshape)
+        res = (d - 1.35) * (d - 4.45) * (d - 8.5)
+        z2 = zarr.empty(shape, dtype=dtype, compressor=compressor, chunks=chunkshape)
         da.to_zarr(res, z2)
     t1 = time()
     t_dask.append(t1 - t0)
