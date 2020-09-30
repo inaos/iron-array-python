@@ -17,7 +17,8 @@ BLOCKSHAPE = 64 * 1000
 def evaluate(command):
     x, y, z = (None,) * 3
     iax, iay, iaz = (None,) * 3
-    shape, chunkshape, blockshape, dtype, cparams = (None,) * 5
+    shape, chunkshape, blockshape, dtype = (None,) * 4
+    cparams = {}
     zx, zy, zz = (None,) * 3
     zcompr = None
 

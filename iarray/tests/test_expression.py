@@ -58,7 +58,7 @@ def test_expression(method, shape, chunkshape, blockshape, dtype, expression):
     decimal = 5 if dtype is np.float32 else 10
     np.testing.assert_almost_equal(npout, npout2, decimal=decimal)
 
-    # Evaluate using a different engine
+    # Evaluate using a different engine (numpy)
     ufunc_repls = {
         "asin": "arcsin",
         "acos": "arccos",
@@ -113,9 +113,10 @@ def test_ufuncs(ufunc, ia_expr):
     storage = ia.StorageProperties(chunkshape=chunkshape, blockshape=bshape)
 
     for dtype in np.float64, np.float32:
+        dtshape = ia.dtshape(shape, dtype)
         # The ranges below are important for not overflowing operations
-        x = ia.linspace(ia.dtshape(shape, dtype), .1, .9, storage=storage)
-        y = ia.linspace(ia.dtshape(shape, dtype), 0, 1, storage=storage)
+        x = ia.linspace(dtshape, .1, .9, storage=storage)
+        y = ia.linspace(dtshape, 0, 1, storage=storage)
         npx = ia.iarray2numpy(x)
         npy = ia.iarray2numpy(y)
 
@@ -123,7 +124,7 @@ def test_ufuncs(ufunc, ia_expr):
         expr = ia.Expr()
         expr.bind("x", x)
         expr.bind("y", y)
-        expr.bind_out_properties(ia.dtshape(shape, dtype), storage=storage)
+        expr.bind_out_properties(dtshape, storage=storage)
         expr.compile(ia_expr)
         iout = expr.eval()
         npout = ia.iarray2numpy(iout)
@@ -131,15 +132,14 @@ def test_ufuncs(ufunc, ia_expr):
         decimal = 6 if dtype is np.float32 else 7
 
         # High-level eval
-        expr = ia.create_expr(ia_expr, {"x": x, "y": y},
-                              ia.dtshape(shape, dtype), storage=storage)
+        expr = ia.create_expr(ia_expr, {"x": x, "y": y}, dtshape, storage=storage)
         iout2 = expr.eval()
         npout2 = ia.iarray2numpy(iout2)
         np.testing.assert_almost_equal(npout, npout2, decimal=decimal)
 
         # Lazy expression eval
         lazy_expr = eval("ia." + ufunc, {"ia": ia, "x": x, "y": y})
-        iout2 = lazy_expr.eval(dtype=dtype)
+        iout2 = lazy_expr.eval(dtshape)
         npout2 = ia.iarray2numpy(iout2)
         np.testing.assert_almost_equal(npout, npout2, decimal=decimal)
 
@@ -152,7 +152,7 @@ def test_ufuncs(ufunc, ia_expr):
         # power(x,y) : TypeError: unsupported operand type(s) for ** or pow(): 'IArray' and 'IArray'
         if ufunc not in ("abs(x)", "ceil(x)", "floor(x)", "negative(x)", "power(x, y)"):
             lazy_expr = eval("np." + ufunc, {"np": np, "x": x, "y": y})
-            iout2 = lazy_expr.eval(dtype=dtype)
+            iout2 = lazy_expr.eval(dtshape)
             npout2 = ia.iarray2numpy(iout2)
             np.testing.assert_almost_equal(npout, npout2, decimal=decimal)
 
@@ -184,14 +184,15 @@ def test_ufuncs(ufunc, ia_expr):
 ])
 def test_expr_ufuncs(ufunc):
     shape = [200, 300]
-    chunkshape = [40, 50]
+    cshape = [40, 50]
     bshape = [20, 20]
-    storage = ia.StorageProperties(chunkshape=chunkshape, blockshape=bshape)
+    storage = ia.StorageProperties(chunkshape=cshape, blockshape=bshape)
 
     for dtype in np.float64, np.float32:
+        dtshape = ia.dtshape(shape, dtype)
         # The ranges below are important for not overflowing operations
-        x = ia.linspace(ia.dtshape(shape, dtype), .1, .9, storage=storage)
-        y = ia.linspace(ia.dtshape(shape, dtype), 0, 1, storage=storage)
+        x = ia.linspace(dtshape, .1, .9, storage=storage)
+        y = ia.linspace(dtshape, 0, 1, storage=storage)
 
         # NumPy computation
         npx = ia.iarray2numpy(x)
@@ -206,7 +207,7 @@ def test_expr_ufuncs(ufunc):
             lazy_expr = eval("1 + 2* x.%s(y)" % ufunc, {"x": x, "y": y})
         else:
             lazy_expr = eval("1 + 2 * x.%s()" % ufunc, {"x": x})
-        iout2 = lazy_expr.eval(dtype=dtype)
+        iout2 = lazy_expr.eval(dtshape)
         npout2 = ia.iarray2numpy(iout2)
 
         decimal = 6 if dtype is np.float32 else 7
@@ -231,11 +232,12 @@ def test_expr_fusion(expr):
     storage = ia.StorageProperties(chunkshape=chunkshape, blockshape=bshape)
 
     for dtype in np.float64, np.float32:
+        dtshape = ia.dtshape(shape, dtype)
         # The ranges below are important for not overflowing operations
-        x = ia.linspace(ia.dtshape(shape, dtype), .1, .9, storage=storage)
-        y = ia.linspace(ia.dtshape(shape, dtype), 0., 1., storage=storage)
-        z = ia.linspace(ia.dtshape(shape, dtype), 0., 2., storage=storage)
-        t = ia.linspace(ia.dtshape(shape, dtype), 0., 3., storage=storage)
+        x = ia.linspace(dtshape, .1, .9, storage=storage)
+        y = ia.linspace(dtshape, 0., 1., storage=storage)
+        z = ia.linspace(dtshape, 0., 2., storage=storage)
+        t = ia.linspace(dtshape, 0., 3., storage=storage)
 
         # NumPy computation
         npx = ia.iarray2numpy(x)
@@ -246,7 +248,7 @@ def test_expr_fusion(expr):
 
         # High-level ironarray eval
         lazy_expr = eval(expr, {"x": x, "y": y, "z": z, "t": t})
-        iout2 = lazy_expr.eval(dtype=dtype)
+        iout2 = lazy_expr.eval(dtshape)
         npout2 = ia.iarray2numpy(iout2)
 
         decimal = 6 if dtype is np.float32 else 7

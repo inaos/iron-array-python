@@ -10,7 +10,6 @@
 ###########################################################################################
 
 import numpy as np
-import numexpr as ne
 import iarray as ia
 from iarray import iarray_ext as ext
 from itertools import zip_longest as zip
@@ -357,42 +356,17 @@ class LazyExpr:
     def __rtruediv__(self, value):
         return self.update_expr(new_op=(value, '/', self))
 
-    def eval(self, engine="iarray", dtype=None, **kwargs):
-        # TODO: see if shape and chunkshape can be instance variables, or better stay like this
-        o0 = self.operands['o0']
-        shape_ = o0.shape
-
+    def eval(self, dtshape, **kwargs):
         cfg = Config(**kwargs)
-        # TODO: figure out a better way to set a default for the dtype
-        dtype = o0.dtype if dtype is None else dtype
-        if engine == "iarray":
-            expr = Expr(**kwargs)
-            for k, v in self.operands.items():
-                if isinstance(v, IArray):
-                    expr.bind(k, v)
+        expr = Expr(**kwargs)
+        for k, v in self.operands.items():
+            if isinstance(v, IArray):
+                expr.bind(k, v)
 
-            dtshape = ia.dtshape(shape_, dtype)
-            cfg._storage.get_shape_advice(dtshape)
-            expr.bind_out_properties(dtshape, cfg._storage)
-            expr.compile(self.expression)
-            out = expr.eval()
-
-        elif engine == "numexpr":
-            chunkshape = shape_ if cfg._storage.chunkshape is None else cfg._storage.chunkshape
-            out = ia.empty(ia.dtshape(shape=shape_, dtype=dtype), **kwargs)
-            operand_iters = tuple(o.iter_read_block(chunkshape)
-                                  for o in self.operands.values()
-                                  if isinstance(o, IArray))
-            # put the iterator for the output at the end
-            all_iters = operand_iters + (out.iter_write_block(chunkshape),)
-            for block in zip(*all_iters):
-                block_operands = {o: block[i][1] for (i, o) in enumerate(self.operands.keys(), start=0)}
-                out_block = block[-1][1]  # the block for output is at the end, by construction
-                # block_operands = {o: block[i][1] for (i, o) in enumerate(self.operands.keys(), start=1)}
-                # out_block = block[0][1]  # the block for output is at the front, by construction
-                ne.evaluate(self.expression, local_dict=block_operands, out=out_block)
-        else:
-            raise ValueError(f"Unrecognized '{engine}' method")
+        cfg._storage.get_shape_advice(dtshape)
+        expr.bind_out_properties(dtshape, cfg._storage)
+        expr.compile(self.expression)
+        out = expr.eval()
 
         return out
 
@@ -808,8 +782,8 @@ def tanh(iarr):
 
 if __name__ == "__main__":
     # Create initial containers
-    shape = ia.dtshape([40, 20])
-    a1 = ia.linspace(shape, 0, 10)
+    dtshape = ia.dtshape([40, 20])
+    a1 = ia.linspace(dtshape, 0, 10)
 
     # Evaluate with different methods
     a3 = a1.sin() + 2 * a1 + 1
@@ -817,8 +791,7 @@ if __name__ == "__main__":
     a3 += 2
     print(a3)
     a3_np = np.sin(ia.iarray2numpy(a1)) + 2 * ia.iarray2numpy(a1) + 1 + 2
-    # a4 = a3.eval(engine="numexpr")
-    a4 = a3.eval(engine="iarray")
+    a4 = a3.eval(dtshape)
     a4_np = ia.iarray2numpy(a4)
     print(a4_np)
     np.testing.assert_allclose(a3_np, a4_np)

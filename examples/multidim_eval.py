@@ -1,4 +1,5 @@
-# Comparing performance of iarray vs numpy and numexpr (transcendental expressions and multidim arrays)
+# Comparing performance of iarray vs numpy and numexpr (transcendental expressions and multidim arrays).
+# You will need to install numexpr for this.
 
 from time import time
 import iarray as ia

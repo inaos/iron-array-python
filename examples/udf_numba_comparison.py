@@ -1,12 +1,11 @@
 # Example showing different combinations of complex expression, including transcendental functions.
-# It compares iArray UDF expressions with numba.
+# It compares iArray UDF expressions with numba, so you will need numba installed.
 
 import math
 import iarray as ia
 import numpy as np
 from time import time
 from iarray.udf import Array, jit, float64, int64
-import numexpr as ne
 import numba as nb
 
 
@@ -42,14 +41,12 @@ def func_udf(y: Array(float64, 1), x: Array(float64, 1)) -> int64:
     return 0
 
 @nb.njit(parallel=True)
-def func_numba(x):
-    y = np.empty(x.shape, x.dtype)
+def func_numba(x, y):
     for i in nb.prange(len(x)):
         s = math.sin(x[i])
         a = math.atan(x[i])
         #a = math.pow(x[i], 0.5)  # try this!
         y[i] = s * a
-    return y
 
 # iarray UDF
 t0 = time()
@@ -66,26 +63,27 @@ expr.bind_out_properties(dtshape)
 expr.compile(str_expr)
 b2 = expr.eval()
 t1 = time()
-print("Time to evaluate expression with iarray (internal engine, low-level API):", round(t1 - t0, 3))
+print("Time to evaluate expression with iarray (low-level API, internal engine):", round(t1 - t0, 3))
 
 # iarray internal engine (high level API)
 t0 = time()
 expr = ia.create_expr(str_expr, {"x": a1}, dtshape, **kwargs)
 b3 = expr.eval()
 t1 = time()
-print("Time to evaluate expression with iarray (internal engine, high-level API):", round(t1 - t0, 3))
+print("Time to evaluate expression with iarray (high-level API, internal engine):", round(t1 - t0, 3))
 
 # iarray internal engine (lazy expressions)
 t0 = time()
 x = a1
-(a1.sin() * a1.atan()).eval(**kwargs)
+(a1.sin() * a1.atan()).eval(dtshape, **kwargs)
 t1 = time()
-print("Time to evaluate expression with iarray (internal engine, lazy eval):", round(t1 - t0, 3))
+print("Time to evaluate expression with iarray (lazy eval, internal engine):", round(t1 - t0, 3))
 
 # numba
 nb.set_num_threads(nthreads)
+np0 = np.empty(x.shape, x.dtype)
 t0 = time()
-np0 = func_numba(np_a1)
+func_numba(np_a1, np0)
 t1 = time()
 print("Time to evaluate expression with numba:", round(t1 - t0, 3))
 

@@ -3,7 +3,7 @@
 from itertools import zip_longest
 from time import time
 
-from numba import jit
+import numba as nb
 import numexpr as ne
 import numpy as np
 
@@ -35,18 +35,17 @@ def poly_python(x):
     return y
 
 
-# @jit(nopython=True, cache=True, parallel=True)
-@jit(nopython=True, cache=True)
+@nb.jit(nopython=True, cache=True, parallel=True)
 def poly_numba(x):
     y = np.empty(x.shape, x.dtype)
-    for i in range(len(x)):
+    for i in nb.prange(len(x)):
         y[i] = (x[i] - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
     return y
 
 
-@jit(nopython=True, cache=True)
+@nb.jit(nopython=True, cache=True, parallel=True)
 def poly_numba2(x, y):
-    for i in range(len(x)):
+    for i in nb.prange(len(x)):
         y[i] = (x[i] - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
 
 
@@ -60,7 +59,7 @@ def poly_llvm(out: udf.Array(float64, 1), x: udf.Array(float64, 1)) -> int64:
 
 
 def do_regular_evaluation():
-    print("Regular evaluation of the expression:", expression, "with %d elements" % N)
+    print(f"Regular evaluation of the expression: {expression} with {N} elements")
 
     x = np.linspace(0, 10, N, dtype=np.double).reshape(shape)
 
@@ -95,6 +94,7 @@ def do_regular_evaluation():
     print("Regular evaluate via numexpr (multi-thread):", round((time() - t0) / NITER, 4))
     np.testing.assert_almost_equal(y0, y1)
 
+    nb.set_num_threads(1)
     t0 = time()
     for i in range(NITER):
         y1 = poly_numba(x)
@@ -105,6 +105,13 @@ def do_regular_evaluation():
     for i in range(NITER):
         y1 = poly_numba(x)
     print("Regular evaluate via numba (II):", round((time() - t0) / NITER, 4))
+    np.testing.assert_almost_equal(y0, y1)
+
+    nb.set_num_threads(nthreads)
+    t0 = time()
+    for i in range(NITER):
+        y1 = poly_numba(x)
+    print("Regular evaluate via numba (II, multi-thread):", round((time() - t0) / NITER, 4))
     np.testing.assert_almost_equal(y0, y1)
 
     t0 = time()
@@ -121,16 +128,17 @@ def do_regular_evaluation():
 
 
 def do_block_evaluation(plainbuffer):
+    print(f"Block evaluation (plainbuffer={plainbuffer})")
     if plainbuffer:
         storage = ia.StorageProperties(plainbuffer=True)
     else:
         storage = ia.StorageProperties(chunkshape, blockshape)
 
-    print(f"Block ({storage.plainbuffer}) evaluation of the expression:", expression, "with %d elements" % N)
-    cparams = dict(clib=clib, clevel=clevel, nthreads=nthreads)
+    cparams = dict(clib=clib, clevel=clevel, nthreads=nthreads, storage=storage)
 
     x = np.linspace(0, 10, N, dtype=np.double).reshape(shape)
-    xa = ia.linspace(ia.dtshape(shape=shape), 0., 10., storage=storage, **cparams)
+    dtshape = ia.dtshape(shape=shape)
+    xa = ia.linspace(dtshape, 0., 10., **cparams)
 
     if not plainbuffer:
         print("Operand cratio:", round(xa.cratio, 2))
@@ -138,11 +146,11 @@ def do_block_evaluation(plainbuffer):
     # Reference to compare to
     y0 = eval(expression)
 
-    ya = ia.empty(ia.dtshape(shape=shape), storage=storage, **cparams)
+    ya = ia.empty(dtshape, **cparams)
 
     t0 = time()
     for i in range(NITER):
-        ya = ia.empty(ia.dtshape(shape=shape), storage=storage, **cparams)
+        ya = ia.empty(dtshape, **cparams)
         for ((j, x), (k, y)) in zip_longest(xa.iter_read_block(), ya.iter_write_block()):
             y[:] = eval(expression)
     print("Block evaluate via numpy:", round((time() - t0) / NITER, 4))
@@ -150,18 +158,30 @@ def do_block_evaluation(plainbuffer):
     y1 = ia.iarray2numpy(ya)
     np.testing.assert_almost_equal(y0, y1)
 
+    ne.set_num_threads(1)
     t0 = time()
     for i in range(NITER):
-        ya = ia.empty(ia.dtshape(shape=shape), storage=storage, **cparams)
+        ya = ia.empty(dtshape, **cparams)
         for ((j, x), (k, y)) in zip_longest(xa.iter_read_block(), ya.iter_write_block()):
             ne.evaluate(expression, local_dict={'x': x}, out=y)
     print("Block evaluate via numexpr:", round((time() - t0) / NITER, 4))
     y1 = ia.iarray2numpy(ya)
     np.testing.assert_almost_equal(y0, y1)
 
+    ne.set_num_threads(nthreads)
     t0 = time()
     for i in range(NITER):
-        ya = ia.empty(ia.dtshape(shape=shape), storage=storage, **cparams)
+        ya = ia.empty(dtshape, **cparams)
+        for ((j, x), (k, y)) in zip_longest(xa.iter_read_block(), ya.iter_write_block()):
+            ne.evaluate(expression, local_dict={'x': x}, out=y)
+    print("Block evaluate via numexpr (multi-thread):", round((time() - t0) / NITER, 4))
+    y1 = ia.iarray2numpy(ya)
+    np.testing.assert_almost_equal(y0, y1)
+
+    nb.set_num_threads(1)
+    t0 = time()
+    for i in range(NITER):
+        ya = ia.empty(dtshape, **cparams)
         for ((j, x), (k, y)) in zip_longest(xa.iter_read_block(), ya.iter_write_block()):
             # y[:] = poly_numba(x)
             poly_numba2(x, y)
@@ -169,9 +189,20 @@ def do_block_evaluation(plainbuffer):
     y1 = ia.iarray2numpy(ya)
     np.testing.assert_almost_equal(y0, y1)
 
+    nb.set_num_threads(nthreads)
     t0 = time()
     for i in range(NITER):
-        ya = ia.empty(ia.dtshape(shape=shape), storage=storage, **cparams)
+        ya = ia.empty(dtshape, **cparams)
+        for ((j, x), (k, y)) in zip_longest(xa.iter_read_block(), ya.iter_write_block()):
+            # y[:] = poly_numba(x)
+            poly_numba2(x, y)
+    print("Block evaluate via numba (II, multi-thread):", round((time() - t0) / NITER, 4))
+    y1 = ia.iarray2numpy(ya)
+    np.testing.assert_almost_equal(y0, y1)
+
+    t0 = time()
+    for i in range(NITER):
+        ya = ia.empty(dtshape, **cparams)
         for ((j, x), (k, y)) in zip_longest(xa.iter_read_block(), ya.iter_write_block()):
             y[:] = ia.ext.poly_cython(x)
     print("Block evaluate via cython:", round((time() - t0) / NITER, 4))
@@ -180,7 +211,7 @@ def do_block_evaluation(plainbuffer):
 
     t0 = time()
     for i in range(NITER):
-        ya = ia.empty(ia.dtshape(shape=shape), storage=storage, **cparams)
+        ya = ia.empty(dtshape, **cparams)
         for ((j, x), (k, y)) in zip_longest(xa.iter_read_block(), ya.iter_write_block()):
             y[:] = ia.ext.poly_cython_nogil(x)
     print("Block evaluate via cython (nogil):", round((time() - t0) / NITER, 4))
@@ -188,34 +219,25 @@ def do_block_evaluation(plainbuffer):
     np.testing.assert_almost_equal(y0, y1)
 
     for engine in ("internal", "udf"):
-        # TODO: the line below should be removed after UDF can evaluate things with plain buffers
-        # See https://github.com/inaos/iron-array/issues/347
-        if plainbuffer and engine == "udf":
-            continue
-
         t0 = time()
         if engine == "internal":
-            expr = ia.Expr(**cparams)
-            expr.bind('x', xa)
-            expr.bind_out_properties(ia.dtshape(shape), storage)
-            expr.compile(expression)
+            expr = ia.create_expr(expression, {'x': xa}, dtshape, **cparams)
         else:
-            expr = poly_llvm.create_expr([xa], ia.dtshape(shape), storage=storage,  **cparams)
+            expr = poly_llvm.create_expr([xa], dtshape, **cparams)
         for i in range(NITER):
             ya = expr.eval()
         avg = round((time() - t0) / NITER, 4)
-        print(f"Block evaluate via iarray.eval (plainbuffer: {plainbuffer}, engine: {engine}): {avg:.4f}")
+        print(f"Block evaluate via iarray.eval (engine: {engine}): {avg:.4f}")
         y1 = ia.iarray2numpy(ya)
         np.testing.assert_almost_equal(y0, y1)
-
 
     t0 = time()
     x = xa
     for i in range(NITER):
         ya = eval(expression, {"x": x})
-        ya = ya.eval(storage=storage, **cparams)
+        ya = ya.eval(dtshape, **cparams)
     avg = round((time() - t0) / NITER, 4)
-    print(f"Block evaluate via iarray.LazyExpr.eval (plainbuffer: {plainbuffer}, engine: internal): {avg:.4f}")
+    print(f"Block evaluate via iarray.LazyExpr.eval (engine: internal): {avg:.4f}")
     y1 = ia.iarray2numpy(ya)
     np.testing.assert_almost_equal(y0, y1)
 
