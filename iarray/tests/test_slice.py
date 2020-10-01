@@ -14,10 +14,9 @@ import numpy as np
                          ])
 def test_slice(shape, chunkshape, blockshape, start, stop, dtype):
     if chunkshape is None:
-        storage = ia.StorageProperties("plainbuffer")
+        storage = ia.StorageProperties(plainbuffer=True)
     else:
-        storage = ia.StorageProperties("blosc", chunkshape, blockshape
-                                       , True)
+        storage = ia.StorageProperties(chunkshape, blockshape, enforce_frame=True)
 
     slices = tuple(slice(start[i], stop[i]) for i in range(len(start)))
     if len(start) == 1:

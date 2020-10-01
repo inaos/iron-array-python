@@ -1,3 +1,6 @@
+# Comparing performance of iarray vs numpy and numexpr (transcendental expressions and multidim arrays).
+# You will need to install numexpr for this.
+
 from time import time
 import iarray as ia
 import numpy as np
@@ -7,15 +10,15 @@ import numexpr as ne
 # Define array params
 dtype = np.float64
 shape = [16000, 8000]
-cshape = [1000, 800]
-bshape = [100, 100]
+dtshape = ia.dtshape(shape, dtype)
 nthreads = 8   # maximum number of threads to use
 
 sexpr = "(cos(%s) - sin(%s)) * (%s - 1.35) * (%s - 4.45)"
 npexpr = "(np.cos(%s) - np.sin(%s)) * (%s - 1.35) * (%s - 4.45)"
 
-# Create initial arrays
-storage = ia.StorageProperties(backend="blosc", chunkshape=cshape, blockshape=bshape)
+# Create initial arrays.  You may opt to use automatic chunkshape and blockshape,
+# but you typically get optimal results when you fine-tune them.
+storage = ia.StorageProperties(chunkshape=[1000, 800], blockshape=[100, 100])
 kwargs = dict(storage=storage, fp_mantissa_bits=24)
 
 size = shape[0] * shape[1]
@@ -42,12 +45,8 @@ except AssertionError:
     print("ERROR. Results are different.")
 
 t0 = time()
-eval_method = ia.EVAL_ITERBLOSC
-expr = ia.Expr(eval_method=eval_method, **kwargs)
-expr.bind("x", ia0)
-expr.bind("y", ia1)
-expr.bind_out_properties(ia.dtshape(shape, dtype), storage=storage)
-expr.compile(sexpr % (("x", "y") * 2))
+expr = ia.create_expr(sexpr % (("x", "y") * 2), {"x": ia0, "y": ia1}, dtshape, **kwargs)
+
 ia2 = expr.eval()
 t1 = time()
 print("Time for iarray evaluation: %.3f (cratio: %.2fx)" % ((t1 - t0), ia2.cratio))

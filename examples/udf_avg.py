@@ -15,14 +15,9 @@ NITER = 1
 
 # Define array params
 shape = [1000]
-cshape = [200]
-bshape = [40]
 dtype = np.float64
-
-blocksize = reduce(lambda x, y: x * y, bshape) * dtype(0).itemsize
-cparams = dict(clib=ia.LZ4, clevel=5, nthreads=16, blocksize=blocksize)
-storage = ia.StorageProperties("blosc", cshape, bshape)
 dtshape = ia.dtshape(shape, dtype)
+cparams = dict(clib=ia.LZ4, clevel=5, nthreads=16)
 
 
 @jit(verbose=0)
@@ -40,19 +35,17 @@ def f(out: Array(float64, 1), x: Array(float64, 1)) -> int64:
 
 
 # Create input arrays
-ia_in = ia.linspace(dtshape, 0, 10, storage=storage, **cparams)
+ia_in = ia.linspace(dtshape, 0, 10, **cparams)
 np_in = np.linspace(0, 10, reduce(lambda x, y: x * y, shape), dtype=dtype).reshape(shape)
 ia.cmp_arrays(np_in, ia_in)
-
-print(np_in)
+#print(np_in)
 
 # iarray UDF evaluation
-print("iarray UDF evaluation ...")
-expr = f.create_expr([ia_in], dtshape, storage=storage, **cparams)
+expr = f.create_expr([ia_in], dtshape, **cparams)
 ia_out = None  # fix a warning
 t0 = time()
 for i in range(NITER):
     ia_out = expr.eval()
 print("Time for UDF eval:", round((time() - t0) / NITER, 3))
 ia_out = ia.iarray2numpy(ia_out)
-print(ia_out)
+#print(ia_out)

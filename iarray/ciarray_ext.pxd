@@ -128,11 +128,10 @@ cdef extern from "libiarray/iarray.h":
 
     ina_rc_t iarray_get_ncores(int *ncores, int64_t max_ncores);
 
-    ina_rc_t iarray_chunk_advice(iarray_context_t *ctx,
-                                 iarray_dtshape_t *dtshape,
-                                 iarray_storage_t *storage,
-                                 int64_t low,
-                                 int64_t high);
+    ina_rc_t iarray_partition_advice(iarray_context_t *ctx, iarray_dtshape_t *dtshape,
+                                     iarray_storage_t *storage,
+                                     int64_t min_chunksize, int64_t max_chunksize,
+                                     int64_t min_blocksize, int64_t max_blocksize);
 
     ina_rc_t iarray_container_new(iarray_context_t *ctx,
                                        iarray_dtshape_t *dtshape,

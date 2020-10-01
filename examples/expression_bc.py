@@ -12,7 +12,7 @@ cshape = [200 * 1000]
 bshape = [20 * 1000]
 dtype = np.float64
 
-storage = ia.StorageProperties("blosc", cshape, bshape)
+storage = ia.StorageProperties(cshape, bshape)
 dtshape = ia.dtshape(shape, dtype)
 
 # Create initial containers
@@ -23,7 +23,7 @@ a2 = np.linspace(0, 10, shape[0], dtype=dtype).reshape(shape)
 print("iarray evaluation...")
 
 # And now, the expression
-expr = ia.Expr(eval_method=ia.EVAL_ITERBLOSC, nthreads=1)
+expr = ia.Expr(eval_method=ia.Eval.ITERBLOSC, nthreads=1)
 expr.bind("x", a1)
 expr.bind_out_properties(dtshape, storage)
 bc = open('examples/expression.bc', 'rb').read()

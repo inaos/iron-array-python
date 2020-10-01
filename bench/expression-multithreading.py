@@ -38,10 +38,10 @@ blockshape = [16 * 1024]
 dtshape = ia.dtshape(shape)
 size = int(np.prod(shape))
 
-bstorage = ia.StorageProperties("blosc", chunkshape, blockshape)
-pstorage = ia.StorageProperties("plainbuffer", None, None)
+bstorage = ia.StorageProperties(chunkshape, blockshape)
+pstorage = ia.StorageProperties(plainbuffer=True)
 
-eval_method = ia.EVAL_AUTO
+eval_method = ia.Eval.AUTO
 
 res = []
 
@@ -132,7 +132,7 @@ for num_threads in range(1, max_num_threads + 1):
 
     # Superchunk with compression and UDF
     a1 = ia.linspace(dtshape, 0, 10, storage=bstorage, clevel=9, **kwargs)
-    expr = poly_udf.create_expr([a1], dtshape, storage=bstorage, method=ia.EVAL_ITERBLOSC, clevel=9, **kwargs)
+    expr = poly_udf.create_expr([a1], dtshape, storage=bstorage, method=ia.Eval.ITERBLOSC, clevel=9, **kwargs)
     t = []
     for _ in range(nrep):
         t0 = time()
