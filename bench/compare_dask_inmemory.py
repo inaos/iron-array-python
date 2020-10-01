@@ -3,6 +3,7 @@ import numpy as np
 
 import dask
 import dask.array as da
+from multiprocessing.pool import ThreadPool
 import zarr
 from numcodecs import Blosc
 
@@ -15,7 +16,7 @@ CLEVEL = 5
 CLIB = ia.LZ4
 
 shapes = np.logspace(6, 8, 10, dtype=np.int64)
-# chunkshape, blockshape = (100 * 1000,), (16 * 1000,)
+# chunkshape, blockshape = (100_000,), (8_000,)
 chunkshape, blockshape = None, None
 
 dtype = np.float64
@@ -43,15 +44,14 @@ for i, shape in enumerate(shapes):
 
     print("Time for computing '%s' expression (via ia.Expr()): %.3f" % (sexpr, (t1 - t0)))
 
-    data2 = zarr.zeros(shape=shape, chunks=chunkshape, dtype=dtype, compressor=compressor)
-
+    data2 = zarr.empty(shape=shape, chunks=chunkshape, dtype=dtype, compressor=compressor)
     for info, block in data.iter_read_block(chunkshape):
         sl = tuple([slice(i, i + s) for i, s in zip(info.elemindex, info.shape)])
         data2[sl] = block[:]
 
     scheduler = "single-threaded" if NTHREADS == 1 else "threads"
     t0 = time()
-    with dask.config.set(scheduler=scheduler):
+    with dask.config.set(scheduler=scheduler, pool=ThreadPool(NTHREADS)):
         d = da.from_zarr(data2)
         res = (d - 1.35) * (d - 4.45) * (d - 8.5)
         z2 = zarr.empty(shape, dtype=dtype, compressor=compressor, chunks=chunkshape)
