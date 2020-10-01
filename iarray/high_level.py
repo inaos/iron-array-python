@@ -33,8 +33,7 @@ def get_ncores(max_ncores=0):
 
 
 def partition_advice(dtshape, min_chunksize=0, max_chunksize=0, min_blocksize=0, max_blocksize=0, config=None):
-    """
-    Provide advice for the chunk and block shapes for a certain `dtshape`.
+    """Provide advice for the chunk and block shapes for a certain `dtshape`.
 
     `min_` and `max_` params contain minimum and maximum values for chunksize and blocksize.
     If `min_` or `max_` are 0, they default to sensible values (fractions of CPU caches).
@@ -56,6 +55,13 @@ def partition_advice(dtshape, min_chunksize=0, max_chunksize=0, min_blocksize=0,
 
 
 def cmp_arrays(a, b, success=None):
+    """Quick and dirty comparison between arrays `a` and `b`.
+
+    The arrays `a` and `b` are converted internally to numpy arrays, so
+    this can require a lot of memory.  This is maninly used for quick testing.
+
+    If success, and the string passed in `success` is not None, it is printed.
+    """
     if type(a) is ia.high_level.IArray:
         a = ia.iarray2numpy(a)
 
@@ -72,10 +78,16 @@ def cmp_arrays(a, b, success=None):
         print(success)
 
 
-# TODO: add docstrings
 class dtshape:
 
     def __init__(self, shape=None, dtype=np.float64):
+        """Container for the `shape` and the `dtype`.
+
+        The `shape` can be any sequence (typically list or tuple).
+
+        The `dtype` can only be `np.float32` or `np.float64`.
+        """
+
         if shape is None:
             raise ValueError("shape cannot be None")
         # Check shape somewhat more
@@ -94,11 +106,17 @@ class dtshape:
         return Dtshape(self.shape, self.dtype)
 
 
-# TODO: add docstrings
 class Config(ext._Config):
 
     def __init__(self, clib=ia.LZ4, clevel=5, use_dict=0, filter_flags=ia.SHUFFLE, nthreads=0,
                  fp_mantissa_bits=0, storage=None, eval_method=ia.Eval.AUTO, seed=0):
+        """Container bag for most of params related with array and expr creation.
+
+        If `storage` is None, a `StorageProperties()` instance is computed automatically.
+
+        Most of the other parameters should be self-explanatory.
+        """
+
         self._clib = clib
         self._clevel = clevel
         self._use_dict = use_dict
@@ -164,10 +182,23 @@ class Config(ext._Config):
         )
 
 
-# TODO: add docstrings
 class StorageProperties:
 
     def __init__(self, chunkshape=None, blockshape=None, filename=None, enforce_frame=False, plainbuffer=False):
+        """Set of properties for the storage backend of arrays.
+
+        `chunkshape` and `blockshape` specify the partitioning.  If *both* are None, then an automatic
+        partitioning is done.  Specifying one and not the other will raise and error.  In case
+        `plainfuffer` is passed as True, both `chunkshape` and `blockshape` needs to be None.
+
+        `filename` specifies a file name for the array. `enforce_frame` will be set automatically to True.
+
+        If `enforce_frame` is False (default), a super-chunk is chosen as storage.  If True, a frame
+        format is chosen instead.
+
+        If `plainbuffer` is False (default), a chunked format is used as storage.  If True, a contiguous
+        buffer is used instead.
+        """
         self.chunkshape = chunkshape
         self.blockshape = blockshape
         self.filename = filename
@@ -200,8 +231,18 @@ class StorageProperties:
 # Expresssions
 #
 
-# TODO: create docstrings
 def create_expr(str_expr, inputs, dtshape, **kwargs):
+    """Create an `Expr` instance.
+
+    `str_expr` is the expression in string format.
+
+    `inputs` is a dictionary that maps variables in `str_expr` to actual arrays.
+
+    `dtshape` is a `dtshape` instance with the shape and dtype of the resulting array.
+
+    `**kwargs` can be any argument supported by the `Config()` constructor.  These will
+    be used for both the evaluation process and the resulting array.
+    """
     expr = ia.Expr(**kwargs)
     for i in inputs:
         expr.bind(i, inputs[i])
