@@ -19,12 +19,18 @@ if platform_system == 'Linux':
     # https://stackoverflow.com/questions/6543847/setting-ld-library-path-from-inside-python
     # We can disable this when/if we can package iron-array into its own wheel
     # and make a dependency of it.  The same goes for other platforms.
-    binding.load_library_permanently(os.path.join(install_dir, "libintlc.so.5"))
-    binding.load_library_permanently(os.path.join(install_dir, "libsvml.so"))
+    try:
+        binding.load_library_permanently("libintlc.so.5")
+        binding.load_library_permanently("libsvml.so")
+    except RuntimeError:
+        # Runtime libraries are not in the path.  Probably we are runing from wheels,
+        # and wheels ensure than libraries are in the same directory than this file.
+        binding.load_library_permanently(os.path.join(install_dir, "libintlc.so.5"))
+        binding.load_library_permanently(os.path.join(install_dir, "libsvml.so"))
     lib0 = cdll.LoadLibrary(os.path.join(install_dir, 'libiarray.so'))
 elif platform_system == 'Darwin':
-    lib0 = cdll.LoadLibrary(os.path.join(install_dir, 'libiarray.dylib'))
     binding.load_library_permanently("libsvml.dylib")
+    lib0 = cdll.LoadLibrary(os.path.join(install_dir, 'libiarray.dylib'))
 else:
     binding.load_library_permanently(os.path.join(install_dir, "svml_dispmd.dll"))
     lib1 = cdll.LoadLibrary(os.path.join(install_dir, "iarray.dll"))
