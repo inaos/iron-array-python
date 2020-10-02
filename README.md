@@ -73,13 +73,6 @@ Sometimes the `llvm_config` command does not work as intended (as in Clear Linux
 python setup.py build_ext -j 4 --build-type=RelWithDebInfo -- -DDISABLE_LLVM_CONFIG=True
 ```
 
-For interactive use, you may need to manually copy the next libs (for some reason, this copy only happens for wheels; To Be Fixed):
-
-```
-cp iarray/iarray-c-develop/build/libintlc.so.5 iarray
-cp iarray/iarray-c-develop/build/libsvml.so iarray/
-```
-
 
 ### Test
 
