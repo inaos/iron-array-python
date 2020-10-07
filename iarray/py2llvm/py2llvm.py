@@ -86,7 +86,7 @@ def values_to_type(left, right):
 LEAFS = {
     ast.Constant,  # 3.8
     ast.Name,
-    ast.NameConstant,
+    ast.NameConstant,  # 3.7
     ast.Num,  # 3.7
     # boolop
     ast.And,
