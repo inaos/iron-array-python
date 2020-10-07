@@ -30,6 +30,7 @@ We are using semantic versioning: https://semver.org/
 * Use [Python with pleasure](https://github.com/arogozhnikov/python3_with_pleasure)
   guidelines.  They bring insightful advices on coding for modern Python 3.
 * Use Black as an automatic formatter: https://black.readthedocs.io/en/stable/
+  For automatically run Black before each commit, do `pre-commit install` in the root directory.
 * Remember: PEP 8 is the definite reference.
 
 ### Be proactive and avoid runtime warnings
