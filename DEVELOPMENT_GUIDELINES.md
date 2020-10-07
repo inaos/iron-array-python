@@ -26,7 +26,7 @@ We are using semantic versioning: https://semver.org/
 
 ## Style and code conventions
 
-* Do not exceed 100 columns (110 is a maximum).
+* Do not exceed 99 columns (hard limit, really).
 * Use [Python with pleasure](https://github.com/arogozhnikov/python3_with_pleasure)
   guidelines.  They bring insightful advices on coding for modern Python 3.
 * Use Black as an automatic formatter: https://black.readthedocs.io/en/stable/
