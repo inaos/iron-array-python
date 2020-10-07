@@ -3,65 +3,6 @@ from enum import Enum, auto
 from ctypes import cdll
 from llvmlite import binding
 import platform
-from . import iarray_ext as ext
-from .high_level import (
-    IArray,
-    dtshape,
-    StorageProperties,
-    Config,
-    RandomContext,
-    create_expr,
-    Expr,
-    LazyExpr,
-    empty,
-    arange,
-    linspace,
-    zeros,
-    ones,
-    full,
-    load,
-    save,
-    cmp_arrays,
-    iarray2numpy,
-    numpy2iarray,
-    matmul,
-    # random constructors
-    random_set_seed,
-    random_rand,
-    random_randn,
-    random_beta,
-    random_lognormal,
-    random_exponential,
-    random_uniform,
-    random_normal,
-    random_bernoulli,
-    random_binomial,
-    random_poisson,
-    random_kstest,
-    # ufuncs
-    abs,
-    arccos,
-    arcsin,
-    arctan,
-    arctan2,
-    ceil,
-    cos,
-    cosh,
-    exp,
-    floor,
-    log,
-    log10,
-    negative,
-    power,
-    sin,
-    sinh,
-    sqrt,
-    tan,
-    tanh,
-    # utils
-    get_ncores,
-    partition_advice,
-)
 
 
 # This is the source of truth for version
@@ -143,5 +84,66 @@ UFUNC_LIST = (
     "tanh",
 )
 
+# That must come here so as to avoid circular import errors
+from .high_level import (
+    IArray,
+    dtshape,
+    StorageProperties,
+    Config,
+    RandomContext,
+    create_expr,
+    Expr,
+    LazyExpr,
+    empty,
+    arange,
+    linspace,
+    zeros,
+    ones,
+    full,
+    load,
+    save,
+    cmp_arrays,
+    iarray2numpy,
+    numpy2iarray,
+    matmul,
+    # random constructors
+    random_set_seed,
+    random_rand,
+    random_randn,
+    random_beta,
+    random_lognormal,
+    random_exponential,
+    random_uniform,
+    random_normal,
+    random_bernoulli,
+    random_binomial,
+    random_poisson,
+    random_kstest,
+    # ufuncs
+    abs,
+    arccos,
+    arcsin,
+    arctan,
+    arctan2,
+    ceil,
+    cos,
+    cosh,
+    exp,
+    floor,
+    log,
+    log10,
+    negative,
+    power,
+    sin,
+    sinh,
+    sqrt,
+    tan,
+    tanh,
+    # utils
+    get_ncores,
+    partition_advice,
+)
+
+from . import iarray_ext as ext
 
 ext.IArrayInit()
