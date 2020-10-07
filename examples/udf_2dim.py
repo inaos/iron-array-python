@@ -56,4 +56,4 @@ for i in range(NITER):
 print("Time for numpy eval:", round((time() - t0) / NITER, 3))
 
 # compare
-ia.cmp_arrays(np_out, ia_out, success='OK. Results are the same.')
+ia.cmp_arrays(np_out, ia_out, success="OK. Results are the same.")

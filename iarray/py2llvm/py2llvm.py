@@ -21,14 +21,13 @@ plugins = [default]
 
 
 class Range:
-
     def __init__(self, builder, *args):
         start = step = None
 
         # Unpack
         n = len(args)
         if n == 1:
-            stop, = args
+            (stop,) = args
         elif n == 2:
             start, stop = args
         else:
@@ -87,19 +86,48 @@ def values_to_type(left, right):
 LEAFS = {
     ast.Constant,  # 3.8
     ast.Name,
-    ast.NameConstant, ast.Num,  # 3.7
+    ast.NameConstant,
+    ast.Num,  # 3.7
     # boolop
-    ast.And, ast.Or,
+    ast.And,
+    ast.Or,
     # operator
-    ast.Add, ast.Sub, ast.Mult, ast.MatMult, ast.Div, ast.Mod, ast.Pow,
-    ast.LShift, ast.RShift, ast.BitOr, ast.BitXor, ast.BitAnd, ast.FloorDiv,
+    ast.Add,
+    ast.Sub,
+    ast.Mult,
+    ast.MatMult,
+    ast.Div,
+    ast.Mod,
+    ast.Pow,
+    ast.LShift,
+    ast.RShift,
+    ast.BitOr,
+    ast.BitXor,
+    ast.BitAnd,
+    ast.FloorDiv,
     # unaryop
-    ast.Invert, ast.Not, ast.UAdd, ast.USub,
+    ast.Invert,
+    ast.Not,
+    ast.UAdd,
+    ast.USub,
     # cmpop
-    ast.Eq, ast.NotEq, ast.Lt, ast.LtE, ast.Gt, ast.GtE, ast.Is, ast.IsNot,
-    ast.In, ast.NotIn,
+    ast.Eq,
+    ast.NotEq,
+    ast.Lt,
+    ast.LtE,
+    ast.Gt,
+    ast.GtE,
+    ast.Is,
+    ast.IsNot,
+    ast.In,
+    ast.NotIn,
     # expr_context
-    ast.Load, ast.Store, ast.Del, ast.AugLoad, ast.AugStore, ast.Param,
+    ast.Load,
+    ast.Store,
+    ast.Del,
+    ast.AugLoad,
+    ast.AugStore,
+    ast.Param,
 }
 
 
@@ -149,7 +177,7 @@ class BaseNodeVisitor:
         fields = {
             # Skip "decorator_list", and traverse "returns" before "body"
             # ('name', 'args', 'body', 'decorator_list', 'returns')
-            ast.FunctionDef: ('name', 'args', 'returns', 'body'),
+            ast.FunctionDef: ("name", "args", "returns", "body"),
         }
 
         return fields.get(type(node), node._fields)
@@ -164,11 +192,11 @@ class BaseNodeVisitor:
 
     def traverse(self, node, parent=None):
         if node.__class__ in LEAFS:
-            return self.callback('visit', node, parent)
+            return self.callback("visit", node, parent)
 
         # Enter
         # enter callback return False to skip traversing the subtree
-        if self.callback('enter', node, parent) is False:
+        if self.callback("enter", node, parent) is False:
             return None
 
         self.depth += 1
@@ -188,11 +216,11 @@ class BaseNodeVisitor:
 
         # Exit
         self.depth -= 1
-        return self.callback('exit', node, parent, *args)
+        return self.callback("exit", node, parent, *args)
 
     def callback(self, event, node, parent, *args):
         for cls in node.__class__.__mro__:
-            method = f'{cls.__name__}_{event}'
+            method = f"{cls.__name__}_{event}"
             cb = getattr(self, method, None)
             if cb is not None:
                 break
@@ -204,42 +232,41 @@ class BaseNodeVisitor:
         if self.verbose > 1:
             name = node.__class__.__name__
             line = None
-            if event == 'enter':
-                line = f'<{name}>'
+            if event == "enter":
+                line = f"<{name}>"
                 if node._fields:
-                    attrs = ' '.join(f'{k}' for k, _ in ast.iter_fields(node))
-                    line = f'<{name} {attrs}>'
+                    attrs = " ".join(f"{k}" for k, _ in ast.iter_fields(node))
+                    line = f"<{name} {attrs}>"
 
                 if value is False:
-                    line += ' SKIP'
-            elif event == 'exit':
-                line = f'</{name}> -> {value}'
-#               if args:
-#                   attrs = ' '.join(repr(x) for x in args)
-#                   line = f'</{name} {attrs}>'
-#               else:
-#                   line = f'</{name}>'
-            elif event == 'visit':
+                    line += " SKIP"
+            elif event == "exit":
+                line = f"</{name}> -> {value}"
+            #               if args:
+            #                   attrs = ' '.join(repr(x) for x in args)
+            #                   line = f'</{name} {attrs}>'
+            #               else:
+            #                   line = f'</{name}>'
+            elif event == "visit":
                 if node._fields:
-                    attrs = ' '.join(f'{k}' for k, _ in ast.iter_fields(node))
-                    line = f'<{name} {attrs} />'
+                    attrs = " ".join(f"{k}" for k, _ in ast.iter_fields(node))
+                    line = f"<{name} {attrs} />"
                 else:
-                    line = f'<{name} />'
+                    line = f"<{name} />"
                 if cb is not None:
-                    line += f' -> {value}'
+                    line += f" -> {value}"
             else:
                 if cb is not None:
-                    attrs = ' '.join([repr(x) for x in args])
-                    line = f'_{event}({attrs})'
+                    attrs = " ".join([repr(x) for x in args])
+                    line = f"_{event}({attrs})"
 
             if line:
-                print(self.depth * ' ' + line)
+                print(self.depth * " " + line)
 
         return value
 
 
 class NodeVisitor(BaseNodeVisitor):
-
     def lookup(self, name):
         if name in self.locals:
             return self.locals[name]
@@ -272,7 +299,7 @@ class NodeVisitor(BaseNodeVisitor):
         FunctionDef(identifier name, arguments args,
                     stmt* body, expr* decorator_list, expr? returns)
         """
-        assert type(parent) is ast.Module, 'nested functions not implemented'
+        assert type(parent) is ast.Module, "nested functions not implemented"
 
         # Initialize function context
         node.locals = {}
@@ -291,7 +318,7 @@ class NodeVisitor(BaseNodeVisitor):
         Assign(expr* targets, expr value)
         Assign(expr* targets, expr value, string? type_comment) # 3.8
         """
-        assert len(node.targets) == 1, 'Unpacking not supported'
+        assert len(node.targets) == 1, "Unpacking not supported"
 
     #
     # Leaf nodes
@@ -336,7 +363,7 @@ class NodeVisitor(BaseNodeVisitor):
         elif ctx is ast.Store:
             return name
 
-        raise NotImplementedError(f'unexpected ctx={ctx}')
+        raise NotImplementedError(f"unexpected ctx={ctx}")
 
 
 class InferVisitor(NodeVisitor):
@@ -396,7 +423,7 @@ class BlockVisitor(NodeVisitor):
         # The first block, named "vars", is where all local variables will be
         # allocated. We will keep it open until we close the function in the
         # 2nd pass.
-        block_vars = function.append_basic_block('vars')
+        block_vars = function.append_basic_block("vars")
         builder = ir.IRBuilder(block_vars)
 
         # Function start: allocate a local variable for every argument
@@ -426,7 +453,7 @@ class BlockVisitor(NodeVisitor):
 
         # Create the second block, this is where the code proper will start,
         # after allocation of the local variables.
-        block_start = function.append_basic_block('start')
+        block_start = function.append_basic_block("start")
         builder.position_at_end(block_start)
 
         # Keep stuff we will need in this first pass
@@ -442,47 +469,47 @@ class BlockVisitor(NodeVisitor):
         """
         If(expr test, stmt* body, stmt* orelse)
         """
-        node.block_true = self.function.append_basic_block('if_true')
+        node.block_true = self.function.append_basic_block("if_true")
 
     def If_body(self, node, parent, body):
-        node.block_false = self.function.append_basic_block('if_false')
+        node.block_false = self.function.append_basic_block("if_false")
 
     def If_orelse(self, node, parent, orelse):
-        node.block_next = self.function.append_basic_block('if_next')
+        node.block_next = self.function.append_basic_block("if_next")
 
     def IfExp_test(self, node, parent, test):
         """
         IfExp(expr test, expr body, expr orelse)
         """
-        node.block_true = self.function.append_basic_block('ifexp_true')
+        node.block_true = self.function.append_basic_block("ifexp_true")
 
     def IfExp_body(self, node, parent, body):
-        node.block_false = self.function.append_basic_block('ifexp_false')
+        node.block_false = self.function.append_basic_block("ifexp_false")
 
     def IfExp_orelse(self, node, parent, orelse):
-        node.block_next = self.function.append_basic_block('ifexp_next')
+        node.block_next = self.function.append_basic_block("ifexp_next")
 
     def For_enter(self, node, parent):
         """
         For(expr target, expr iter, stmt* body, stmt* orelse)
         """
         assert not node.orelse, '"for ... else .." not supported'
-        node.block_for = self.function.append_basic_block('for')
-        node.block_body = self.function.append_basic_block('for_body')
+        node.block_for = self.function.append_basic_block("for")
+        node.block_body = self.function.append_basic_block("for_body")
 
     def For_exit(self, node, parent, *args):
-        node.block_next = self.function.append_basic_block('for_out')
+        node.block_next = self.function.append_basic_block("for_out")
 
     def While_enter(self, node, parent):
         """
         While(expr test, stmt* body, stmt* orelse)
         """
         assert not node.orelse, '"while ... else .." not supported'
-        node.block_while = self.function.append_basic_block('while')
-        node.block_body = self.function.append_basic_block('while_body')
+        node.block_while = self.function.append_basic_block("while")
+        node.block_body = self.function.append_basic_block("while_body")
 
     def While_exit(self, node, parent, *args):
-        node.block_next = self.function.append_basic_block('while_out')
+        node.block_next = self.function.append_basic_block("while_out")
 
 
 class GenVisitor(NodeVisitor):
@@ -501,11 +528,11 @@ class GenVisitor(NodeVisitor):
     ltype = None  # Type of the local variable
 
     def print(self, line):
-        print(self.depth * ' ' + line)
+        print(self.depth * " " + line)
 
     def debug(self, node, parent):
         for name, field in ast.iter_fields(node):
-            self.print(f'- {name} {field}')
+            self.print(f"- {name} {field}")
 
     def convert(self, value, type_):
         """
@@ -529,7 +556,7 @@ class GenVisitor(NodeVisitor):
         elif ctx is ast.Store:
             return name
 
-        raise NotImplementedError(f'unexpected ctx={ctx}')
+        raise NotImplementedError(f"unexpected ctx={ctx}")
 
     def boolop_visit(self, node, parent):
         return type(node)
@@ -541,22 +568,22 @@ class GenVisitor(NodeVisitor):
         return type(node)
 
     def Eq_visit(self, node, parent):
-        return '=='
+        return "=="
 
     def NotEq_visit(self, node, parent):
-        return '!='
+        return "!="
 
     def Lt_visit(self, node, parent):
-        return '<'
+        return "<"
 
     def LtE_visit(self, node, parent):
-        return '<='
+        return "<="
 
     def Gt_visit(self, node, parent):
-        return '>'
+        return ">"
 
     def GtE_visit(self, node, parent):
-        return '>='
+        return ">="
 
     #
     # Literals
@@ -574,7 +601,7 @@ class GenVisitor(NodeVisitor):
         elif n == 1:
             py_type = py_types.pop()
         else:
-            raise TypeError('all list elements must be of the same type')
+            raise TypeError("all list elements must be of the same type")
 
         el_type = types.type_to_ir_type(py_type)
         typ = ir.ArrayType(el_type, len(elts))
@@ -625,7 +652,8 @@ class GenVisitor(NodeVisitor):
             py_op = ast2op.get(op)
             if py_op is None:
                 raise NotImplementedError(
-                    f'{op.__name__} operator for {type_} type not implemented')
+                    f"{op.__name__} operator for {type_} type not implemented"
+                )
             return py_op(left, right)
 
         # One or more IR values
@@ -650,8 +678,7 @@ class GenVisitor(NodeVisitor):
         base_type = type(type_)
         ir_op = d.get((op, base_type))
         if ir_op is None:
-            raise NotImplementedError(
-                f'{op.__name__} operator for {type_} type not implemented')
+            raise NotImplementedError(f"{op.__name__} operator for {type_} type not implemented")
 
         return ir_op(left, right)
 
@@ -717,12 +744,12 @@ class GenVisitor(NodeVisitor):
         # Two Python values
         if not isinstance(type_, ir.Type):
             ast2op = {
-                '==': operator.eq,
-                '!=': operator.ne,
-                '<': operator.lt,
-                '<=': operator.le,
-                '>': operator.gt,
-                '>=': operator.ge,
+                "==": operator.eq,
+                "!=": operator.ne,
+                "<": operator.lt,
+                "<=": operator.le,
+                ">": operator.gt,
+                ">=": operator.ge,
             }
             py_op = ast2op.get(op)
             return py_op(left, right)
@@ -751,7 +778,7 @@ class GenVisitor(NodeVisitor):
         Subscript(expr value, slice slice, expr_context ctx)
         """
         # An smart object
-        subscript = getattr(value, 'subscript', None)
+        subscript = getattr(value, "subscript", None)
         if subscript is not None:
             return subscript(self, slice, ctx)
 
@@ -761,7 +788,7 @@ class GenVisitor(NodeVisitor):
             ptr = self.builder.gep(ptr, [slice])
             return self.builder.load(ptr)
 
-        raise NotImplementedError(f'{type(value)} does not support subscript []')
+        raise NotImplementedError(f"{type(value)} does not support subscript []")
 
     def Tuple_exit(self, node, parent, elts, ctx):
         """
@@ -806,39 +833,39 @@ class GenVisitor(NodeVisitor):
             start = types.zero
             stop = ir.Constant(types.int64, expr.type.count)
             node.step = types.one
-            name = 'i'
+            name = "i"
             # Allocate and store the literal array to iterate
             arr = self.builder.alloca(expr.type)
             self.builder.store(expr, arr)
 
         # Allocate and initialize the index variable
         node.i = self.builder.alloca(stop.type, name=name)
-        self.builder.store(start, node.i)                         # i = start
-        self.builder.branch(node.block_for)                       # br %for
+        self.builder.store(start, node.i)  # i = start
+        self.builder.branch(node.block_for)  # br %for
 
         # Stop condition
-        self.builder.position_at_end(node.block_for)                  # %for
-        idx = self.builder.load(node.i)                               # %idx = i
-        test = self.builder.icmp_unsigned('<', idx, stop)             # %idx < stop
+        self.builder.position_at_end(node.block_for)  # %for
+        idx = self.builder.load(node.i)  # %idx = i
+        test = self.builder.icmp_unsigned("<", idx, stop)  # %idx < stop
         self.builder.cbranch(test, node.block_body, node.block_next)  # br %test %body %next
-        self.builder.position_at_end(node.block_body)                 # %body
+        self.builder.position_at_end(node.block_body)  # %body
 
         # Keep variable to use within the loop
         if isinstance(expr, Range):
             self.locals[target] = idx
         else:
-            ptr = self.builder.gep(arr, [types.zero, idx])        # expr[idx]
-            x = self.builder.load(ptr)                            # % = expr[i]
+            ptr = self.builder.gep(arr, [types.zero, idx])  # expr[idx]
+            x = self.builder.load(ptr)  # % = expr[i]
             self.locals[target] = x
 
     def For_exit(self, node, parent, *args):
         # Increment index variable
-        a = self.builder.load(node.i)                             # % = i
-        b = self.builder.add(a, node.step)                        # % = % + step
-        self.builder.store(b, node.i)                             # i = %
+        a = self.builder.load(node.i)  # % = i
+        b = self.builder.add(a, node.step)  # % = % + step
+        self.builder.store(b, node.i)  # i = %
         # Continue
-        self.builder.branch(node.block_for)                       # br %for
-        self.builder.position_at_end(node.block_next)             # %next
+        self.builder.branch(node.block_for)  # br %for
+        self.builder.position_at_end(node.block_next)  # %next
 
     #
     # while ...
@@ -900,7 +927,7 @@ class GenVisitor(NodeVisitor):
 
     def Assign_exit(self, node, parent, targets, value, *args):
         if len(targets) > 1:
-            raise NotImplementedError('unpacking not supported')
+            raise NotImplementedError("unpacking not supported")
 
         builder = self.builder
         value = types.value_to_ir_value(builder, value)
@@ -957,23 +984,27 @@ class GenVisitor(NodeVisitor):
 
         func = self.root.compiled.get(func, func)
         if not isinstance(func, ir.Function):
-            raise TypeError(f'unexpected {func}')
+            raise TypeError(f"unexpected {func}")
 
         # Check the number of arguments is correct
         if len(args) != len(func.args):
             n = len(func.args)
             raise TypeError(
-                f'{func.name} takes exactly one argument ({len(args)} given)' if n == 1 else
-                f'{func.name} expects {n} arguments, got {len(args)}')
+                f"{func.name} takes exactly one argument ({len(args)} given)"
+                if n == 1
+                else f"{func.name} expects {n} arguments, got {len(args)}"
+            )
 
         # Convert to IR values of the correct type
-        args = [types.value_to_ir_value(self.builder, arg, type_=func_arg.type)
-                for arg, func_arg in zip(args, func.args)]
+        args = [
+            types.value_to_ir_value(self.builder, arg, type_=func_arg.type)
+            for arg, func_arg in zip(args, func.args)
+        ]
 
         return self.builder.call(func, args)
 
 
-Parameter = collections.namedtuple('Parameter', ['name', 'type'])
+Parameter = collections.namedtuple("Parameter", ["name", "type"])
 
 
 class Signature:
@@ -1016,8 +1047,9 @@ class Function:
         params = []
         for i, name in enumerate(inspect_signature.parameters):
             param = inspect_signature.parameters[name]
-            assert param.kind <= inspect.Parameter.POSITIONAL_OR_KEYWORD, \
-                   'only positional arguments are supported'
+            assert (
+                param.kind <= inspect.Parameter.POSITIONAL_OR_KEYWORD
+            ), "only positional arguments are supported"
 
             type_ = param.annotation if signature is None else signature[i]
             params.append(Parameter(name, type_))
@@ -1056,15 +1088,15 @@ class Function:
                 dtype = types.type_to_ir_type(dtype).as_pointer()
                 params.append(Parameter(name, dtype))
                 for n in range(type_.ndim):
-                    params.append(Parameter(f'{name}_{n}', types.int64))
+                    params.append(Parameter(f"{name}_{n}", types.int64))
             elif type(type_) is type and issubclass(type_, types.StructType):
                 dtype = self.llvm.get_dtype(self.ir_module, type_)
                 params.append(Parameter(name, dtype))
-            elif getattr(type_, '__origin__', None) is typing.List:
+            elif getattr(type_, "__origin__", None) is typing.List:
                 dtype = type_.__args__[0]
                 dtype = types.type_to_ir_type(dtype).as_pointer()
                 params.append(Parameter(name, dtype))
-                params.append(Parameter(f'{name}_0', types.int64))
+                params.append(Parameter(f"{name}_0", types.int64))
             else:
                 dtype = types.type_to_ir_type(type_)
                 params.append(Parameter(name, dtype))
@@ -1091,7 +1123,7 @@ class Function:
         # (1) Python AST
         self.py_source = inspect.getsource(self.py_function)
         if verbose:
-            print('====== Source ======')
+            print("====== Source ======")
             print(self.py_source)
 
         node = ast.parse(self.py_source)
@@ -1104,22 +1136,29 @@ class Function:
         # (4) For libffi
         self.nargs = len(ir_signature.parameters)
         self.argtypes = [p.type for p in ir_signature.parameters]
-        self.argtypes = [
-            ('p' if x.is_pointer else x.intrinsic_name)
-            for x in self.argtypes]
+        self.argtypes = [("p" if x.is_pointer else x.intrinsic_name) for x in self.argtypes]
 
         if ir_signature.return_type is types.void:
-            self.rtype = ''
+            self.rtype = ""
         elif ir_signature.return_type.is_pointer:
-            self.rtype = 'p'
+            self.rtype = "p"
         else:
             self.rtype = ir_signature.return_type.intrinsic_name
 
         # (5) Load functions
         node.compiled = {}
         ft_f64 = ir.FunctionType(types.float64, (types.float64,))
-        fs = [math.acos, math.asin, math.atan, math.cos, math.cosh, math.sin,
-              math.sinh, math.tan, math.tanh]
+        fs = [
+            math.acos,
+            math.asin,
+            math.atan,
+            math.cos,
+            math.cosh,
+            math.sin,
+            math.sinh,
+            math.tan,
+            math.tanh,
+        ]
         for f in fs:
             name = f.__name__
             node.compiled[f] = ir.Function(self.ir_module, ft_f64, name=name)
@@ -1130,14 +1169,13 @@ class Function:
             node.compiled[f] = ir.Function(self.ir_module, ft_f64_f64, name=name)
 
         for plugin in plugins:
-            load_functions = getattr(plugin, 'load_functions', None)
+            load_functions = getattr(plugin, "load_functions", None)
             if load_functions is not None:
                 node.compiled.update(load_functions(self.ir_module))
 
         # (6) The IR module and function
         f_type = ir.FunctionType(
-            ir_signature.return_type,
-            tuple(type_ for name, type_ in ir_signature.parameters)
+            ir_signature.return_type, tuple(type_ for name, type_ in ir_signature.parameters)
         )
         ir_function = ir.Function(self.ir_module, f_type, self.name)
 
@@ -1148,17 +1186,17 @@ class Function:
         node.ir_function = ir_function
 
         if verbose > 1:
-            print('====== Debug: 1st pass ======')
+            print("====== Debug: 1st pass ======")
         BlockVisitor(verbose, self).traverse(node)
 
         # (8) AST pass: generate
         if verbose > 1:
-            print('====== Debug: 2nd pass ======')
+            print("====== Debug: 2nd pass ======")
         GenVisitor(verbose).traverse(node)
 
         # (9) IR code
         if verbose:
-            print('====== IR ======')
+            print("====== IR ======")
             print(self.ir)
 
         # Compile
@@ -1183,7 +1221,7 @@ class Function:
         for py_arg in args:
             c_type = self.ir_signature.parameters[len(c_args)].type
             for plugin in plugins:
-                expand_argument = getattr(plugin, 'expand_argument', None)
+                expand_argument = getattr(plugin, "expand_argument", None)
                 if expand_argument is not None:
                     arguments = expand_argument(py_arg, c_type)
                     if arguments is not None:
@@ -1196,9 +1234,9 @@ class Function:
 
         value = self.call(c_args)
         if verbose:
-            print('====== Output ======')
-            print(f'args = {args}')
-            print(f'ret  = {value}')
+            print("====== Output ======")
+            print(f"args = {args}")
+            print(f"ret  = {value}")
 
         return value
 
@@ -1207,7 +1245,6 @@ class Function:
 
 
 class LLVM:
-
     def __init__(self, fclass):
         self.fclass = fclass
         self.dtypes = {}
@@ -1252,7 +1289,7 @@ class LLVM:
         mod.verify()
         # Assign triple, so the IR can be saved and compiled with llc
         if verbose:
-            print('====== IR (parsed) ======')
+            print("====== IR (parsed) ======")
             print(mod)
 
         # Optimize
@@ -1272,7 +1309,7 @@ class LLVM:
             mpm.run(mod)
 
             if verbose:
-                print('====== IR (optimized) ======')
+                print("====== IR (optimized) ======")
                 print(mod)
 
         return mod

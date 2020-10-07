@@ -25,14 +25,18 @@ def get_ncores(max_ncores=0):
     """
     ncores = ext.get_ncores(max_ncores)
     if ncores < 0:
-        warnings.warn("Error getting the number of cores in this system (please report this)."
-                      "  Falling back to 1.",
-                      UserWarning)
+        warnings.warn(
+            "Error getting the number of cores in this system (please report this)."
+            "  Falling back to 1.",
+            UserWarning,
+        )
         return 1
     return ncores
 
 
-def partition_advice(dtshape, min_chunksize=0, max_chunksize=0, min_blocksize=0, max_blocksize=0, config=None):
+def partition_advice(
+    dtshape, min_chunksize=0, max_chunksize=0, min_blocksize=0, max_blocksize=0, config=None
+):
     """Provide advice for the chunk and block shapes for a certain `dtshape`.
 
     `min_` and `max_` params contain minimum and maximum values for chunksize and blocksize.
@@ -45,12 +49,15 @@ def partition_advice(dtshape, min_chunksize=0, max_chunksize=0, min_blocksize=0,
     """
     if config is None:
         config = Config()
-    chunkshape, blockshape = ext.partition_advice(dtshape, min_chunksize, max_chunksize,
-                                                  min_blocksize, max_blocksize, config)
+    chunkshape, blockshape = ext.partition_advice(
+        dtshape, min_chunksize, max_chunksize, min_blocksize, max_blocksize, config
+    )
     if chunkshape is None:
-        warnings.warn("Error in providing partition advice (please report this)."
-                      "  Please do not trust on the chunkshape and blockshape in `storage`!",
-                      UserWarning)
+        warnings.warn(
+            "Error in providing partition advice (please report this)."
+            "  Please do not trust on the chunkshape and blockshape in `storage`!",
+            UserWarning,
+        )
     return chunkshape, blockshape
 
 
@@ -79,7 +86,6 @@ def cmp_arrays(a, b, success=None):
 
 
 class dtshape:
-
     def __init__(self, shape=None, dtype=np.float64):
         """Container for the `shape` and the `dtype`.
 
@@ -102,14 +108,23 @@ class dtshape:
         self.dtype = dtype
 
     def to_tuple(self):
-        Dtshape = namedtuple('dtshape', 'shape dtype')
+        Dtshape = namedtuple("dtshape", "shape dtype")
         return Dtshape(self.shape, self.dtype)
 
 
 class Config(ext._Config):
-
-    def __init__(self, clib=ia.LZ4, clevel=5, use_dict=0, filter_flags=ia.SHUFFLE, nthreads=0,
-                 fp_mantissa_bits=0, storage=None, eval_method=ia.Eval.AUTO, seed=0):
+    def __init__(
+        self,
+        clib=ia.LZ4,
+        clevel=5,
+        use_dict=0,
+        filter_flags=ia.SHUFFLE,
+        nthreads=0,
+        fp_mantissa_bits=0,
+        storage=None,
+        eval_method=ia.Eval.AUTO,
+        seed=0,
+    ):
         """Container bag for most of params related with array and expr creation.
 
         If `storage` is None, a `StorageProperties()` instance is computed automatically.
@@ -132,8 +147,9 @@ class Config(ext._Config):
         # of a catchall arguments, so Expr() will inherit the eval_method from here in case it is
         # not passed to the Expr() constructor itself.
         self._eval_method = eval_method
-        super().__init__(clib, clevel, use_dict, filter_flags, nthreads,
-                         fp_mantissa_bits, self._eval_method)
+        super().__init__(
+            clib, clevel, use_dict, filter_flags, nthreads, fp_mantissa_bits, self._eval_method
+        )
 
     @property
     def clib(self):
@@ -183,8 +199,14 @@ class Config(ext._Config):
 
 
 class StorageProperties:
-
-    def __init__(self, chunkshape=None, blockshape=None, filename=None, enforce_frame=False, plainbuffer=False):
+    def __init__(
+        self,
+        chunkshape=None,
+        blockshape=None,
+        filename=None,
+        enforce_frame=False,
+        plainbuffer=False,
+    ):
         """Set of properties for the storage backend of arrays.
 
         `chunkshape` and `blockshape` specify the partitioning.  If *both* are None, then an automatic
@@ -220,16 +242,23 @@ class StorageProperties:
             self.blockshape = blockshape_
             return
         else:
-            raise ValueError("You can either specify both chunkshape and blockshape or none of them.")
+            raise ValueError(
+                "You can either specify both chunkshape and blockshape or none of them."
+            )
 
     def to_tuple(self):
-        StoreProp = namedtuple('store_properties', 'chunkshape blockshape enforce_frame filename plainbuffer')
-        return StoreProp(self.chunkshape, self.blockshape, self.enforce_frame, self.filename, self.plainbuffer)
+        StoreProp = namedtuple(
+            "store_properties", "chunkshape blockshape enforce_frame filename plainbuffer"
+        )
+        return StoreProp(
+            self.chunkshape, self.blockshape, self.enforce_frame, self.filename, self.plainbuffer
+        )
 
 
 #
 # Expresssions
 #
+
 
 def create_expr(str_expr, inputs, dtshape, **kwargs):
     """Create an `Expr` instance.
@@ -275,14 +304,14 @@ def fuse_expressions(expr, new_base, dup_op):
     for i in range(len(expr)):
         if i < skip_to_char:
             continue
-        if expr[i] == 'o':
+        if expr[i] == "o":
             try:
-                j = expr[i + 1:].index(' ')
+                j = expr[i + 1 :].index(" ")
             except ValueError:
-                j = expr[i + 1:].index(')')
-            if expr[i + j] == ')':
+                j = expr[i + 1 :].index(")")
+            if expr[i + j] == ")":
                 j -= 1
-            old_pos = int(expr[i+1:i+j+1])
+            old_pos = int(expr[i + 1 : i + j + 1])
             old_op = f"o{old_pos}"
             if old_op not in dup_op:
                 new_pos = old_base + new_base
@@ -297,13 +326,12 @@ def fuse_expressions(expr, new_base, dup_op):
 
 
 class RandomContext(ext.RandomContext):
-
     def __init__(self, **kwargs):
         cfg = Config(**kwargs)
         super().__init__(cfg)
 
-class LazyExpr:
 
+class LazyExpr:
     def __init__(self, new_op):
         value1, op, value2 = new_op
         if value2 is None:
@@ -361,7 +389,9 @@ class LazyExpr:
                 self.expression = f"({self.expression} {op} {value2})"
             else:
                 try:
-                    op_name = list(value1.operands.keys())[list(value1.operands.values()).index(value2)]
+                    op_name = list(value1.operands.keys())[
+                        list(value1.operands.values()).index(value2)
+                    ]
                 except ValueError:
                     op_name = f"o{len(self.operands)}"
                     self.operands[op_name] = value2
@@ -371,7 +401,9 @@ class LazyExpr:
                 self.expression = f"({value1} {op} {self.expression})"
             else:
                 try:
-                    op_name = list(value2.operands.keys())[list(value2.operands.values()).index(value1)]
+                    op_name = list(value2.operands.keys())[
+                        list(value2.operands.values()).index(value1)
+                    ]
                 except ValueError:
                     op_name = f"o{len(self.operands)}"
                     self.operands[op_name] = value1
@@ -379,28 +411,28 @@ class LazyExpr:
         return self
 
     def __add__(self, value):
-        return self.update_expr(new_op=(self, '+', value))
+        return self.update_expr(new_op=(self, "+", value))
 
     def __radd__(self, value):
-        return self.update_expr(new_op=(value, '+', self))
+        return self.update_expr(new_op=(value, "+", self))
 
     def __sub__(self, value):
-        return self.update_expr(new_op=(self, '-', value))
+        return self.update_expr(new_op=(self, "-", value))
 
     def __rsub__(self, value):
-        return self.update_expr(new_op=(value, '-', self))
+        return self.update_expr(new_op=(value, "-", self))
 
     def __mul__(self, value):
-        return self.update_expr(new_op=(self, '*', value))
+        return self.update_expr(new_op=(self, "*", value))
 
     def __rmul__(self, value):
-        return self.update_expr(new_op=(value, '*', self))
+        return self.update_expr(new_op=(value, "*", self))
 
     def __truediv__(self, value):
-        return self.update_expr(new_op=(self, '/', value))
+        return self.update_expr(new_op=(self, "/", value))
 
     def __rtruediv__(self, value):
-        return self.update_expr(new_op=(value, '/', self))
+        return self.update_expr(new_op=(value, "/", self))
 
     def eval(self, dtshape, **kwargs):
         cfg = Config(**kwargs)
@@ -423,7 +455,6 @@ class LazyExpr:
 
 # The main IronArray container (not meant to be called from user space)
 class IArray(ext.Container):
-
     def copy(self, view=False, **kwargs):
         cfg = Config(**kwargs)  # chunkshape and blockshape can be passed in storage kwarg
         cfg._storage.get_shape_advice(self.dtshape)
@@ -435,7 +466,10 @@ class IArray(ext.Container):
             key = [key]
         start = [s.start if s.start is not None else 0 for s in key]
         start = [st if st < sh else sh for st, sh in zip(start, self.shape, fillvalue=0)]
-        stop = [s.stop if s.stop is not None else sh for s, sh in zip(key, self.shape, fillvalue=slice(0))]
+        stop = [
+            s.stop if s.stop is not None else sh
+            for s, sh in zip(key, self.shape, fillvalue=slice(0))
+        ]
         stop = [sh if st == 0 else st for st, sh in zip(stop, self.shape)]
         stop = [st if st < sh else sh for st, sh in zip(stop, self.shape)]
 
@@ -449,28 +483,28 @@ class IArray(ext.Container):
         return super().__getitem__([start, stop])
 
     def __add__(self, value):
-        return LazyExpr(new_op=(self, '+', value))
+        return LazyExpr(new_op=(self, "+", value))
 
     def __radd__(self, value):
-        return LazyExpr(new_op=(value, '+', self))
+        return LazyExpr(new_op=(value, "+", self))
 
     def __sub__(self, value):
-        return LazyExpr(new_op=(self, '-', value))
+        return LazyExpr(new_op=(self, "-", value))
 
     def __rsub__(self, value):
-        return LazyExpr(new_op=(value, '-', self))
+        return LazyExpr(new_op=(value, "-", self))
 
     def __mul__(self, value):
-        return LazyExpr(new_op=(self, '*', value))
+        return LazyExpr(new_op=(self, "*", value))
 
     def __rmul__(self, value):
-        return LazyExpr(new_op=(value, '*', self))
+        return LazyExpr(new_op=(value, "*", self))
 
     def __truediv__(self, value):
-        return LazyExpr(new_op=(self, '/', value))
+        return LazyExpr(new_op=(self, "/", value))
 
     def __rtruediv__(self, value):
-        return LazyExpr(new_op=(value, '/', self))
+        return LazyExpr(new_op=(value, "/", self))
 
     # def __array_function__(self, func, types, args, kwargs):
     #     if not all(issubclass(t, np.ndarray) for t in types):
@@ -485,78 +519,77 @@ class IArray(ext.Container):
     #     print("method:", method)
 
     def abs(self):
-        return LazyExpr(new_op=(self, 'abs', None))
+        return LazyExpr(new_op=(self, "abs", None))
 
     def arccos(self):
-        return LazyExpr(new_op=(self, 'acos', None))
+        return LazyExpr(new_op=(self, "acos", None))
 
     def arcsin(self):
-        return LazyExpr(new_op=(self, 'asin', None))
+        return LazyExpr(new_op=(self, "asin", None))
 
     def arctan(self):
-        return LazyExpr(new_op=(self, 'atan', None))
+        return LazyExpr(new_op=(self, "atan", None))
 
     def arctan2(self, op2):
-        return LazyExpr(new_op=(self, 'atan2', op2))
+        return LazyExpr(new_op=(self, "atan2", op2))
 
     def acos(self):
-        return LazyExpr(new_op=(self, 'acos', None))
+        return LazyExpr(new_op=(self, "acos", None))
 
     def asin(self):
-        return LazyExpr(new_op=(self, 'asin', None))
+        return LazyExpr(new_op=(self, "asin", None))
 
     def atan(self):
-        return LazyExpr(new_op=(self, 'atan', None))
+        return LazyExpr(new_op=(self, "atan", None))
 
     def atan2(self, op2):
-        return LazyExpr(new_op=(self, 'atan2', op2))
+        return LazyExpr(new_op=(self, "atan2", op2))
 
     def ceil(self):
-        return LazyExpr(new_op=(self, 'ceil', None))
+        return LazyExpr(new_op=(self, "ceil", None))
 
     def cos(self):
-        return LazyExpr(new_op=(self, 'cos', None))
+        return LazyExpr(new_op=(self, "cos", None))
 
     def cosh(self):
-        return LazyExpr(new_op=(self, 'cosh', None))
+        return LazyExpr(new_op=(self, "cosh", None))
 
     def exp(self):
-        return LazyExpr(new_op=(self, 'exp', None))
+        return LazyExpr(new_op=(self, "exp", None))
 
     def floor(self):
-        return LazyExpr(new_op=(self, 'floor', None))
+        return LazyExpr(new_op=(self, "floor", None))
 
     def log(self):
-        return LazyExpr(new_op=(self, 'log', None))
+        return LazyExpr(new_op=(self, "log", None))
 
     def log10(self):
-        return LazyExpr(new_op=(self, 'log10', None))
+        return LazyExpr(new_op=(self, "log10", None))
 
     def negative(self):
-        return LazyExpr(new_op=(self, 'negate', None))
+        return LazyExpr(new_op=(self, "negate", None))
 
     def power(self, op2):
-        return LazyExpr(new_op=(self, 'pow', op2))
+        return LazyExpr(new_op=(self, "pow", op2))
 
     def sin(self):
-        return LazyExpr(new_op=(self, 'sin', None))
+        return LazyExpr(new_op=(self, "sin", None))
 
     def sinh(self):
-        return LazyExpr(new_op=(self, 'sinh', None))
+        return LazyExpr(new_op=(self, "sinh", None))
 
     def sqrt(self):
-        return LazyExpr(new_op=(self, 'sqrt', None))
+        return LazyExpr(new_op=(self, "sqrt", None))
 
     def tan(self):
-        return LazyExpr(new_op=(self, 'tan', None))
+        return LazyExpr(new_op=(self, "tan", None))
 
     def tanh(self):
-        return LazyExpr(new_op=(self, 'tanh', None))
+        return LazyExpr(new_op=(self, "tanh", None))
 
 
 # The main expression class
 class Expr(ext.Expression):
-
     def __init__(self, **kwargs):
         self.cfg = Config(**kwargs)
         super().__init__(self.cfg)
@@ -574,6 +607,7 @@ class Expr(ext.Expression):
 #
 # Constructors
 #
+
 
 def empty(dtshape, **kwargs):
     cfg = Config(**kwargs)
@@ -662,13 +696,16 @@ def numpy2iarray(c, **kwargs):
     cfg._storage.get_shape_advice(dtshape)
     return ext.numpy2iarray(cfg, c, dtshape)
 
+
 def random_set_seed(seed):
     ia.RANDOM_SEED = seed
+
 
 def random_pre(**kwargs):
     ia.RANDOM_SEED += 1
     kwargs["seed"] = ia.RANDOM_SEED
     return kwargs
+
 
 def random_rand(dtshape, **kwargs):
     kwargs = random_pre(**kwargs)

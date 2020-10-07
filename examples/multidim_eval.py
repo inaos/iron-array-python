@@ -11,7 +11,7 @@ import numexpr as ne
 dtype = np.float64
 shape = [16000, 8000]
 dtshape = ia.dtshape(shape, dtype)
-nthreads = 8   # maximum number of threads to use
+nthreads = 8  # maximum number of threads to use
 
 sexpr = "(cos(%s) - sin(%s)) * (%s - 1.35) * (%s - 4.45)"
 npexpr = "(np.cos(%s) - np.sin(%s)) * (%s - 1.35) * (%s - 4.45)"

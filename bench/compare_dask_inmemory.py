@@ -20,7 +20,7 @@ shapes = np.logspace(6, 8, 10, dtype=np.int64)
 chunkshape, blockshape = None, None
 
 dtype = np.float64
-compressor = Blosc(cname='lz4', clevel=CLEVEL, shuffle=Blosc.SHUFFLE)
+compressor = Blosc(cname="lz4", clevel=CLEVEL, shuffle=Blosc.SHUFFLE)
 cparams = dict(clib=CLIB, clevel=CLEVEL, nthreads=NTHREADS)
 
 sexpr = "(x - 1.35) * (x - 4.45) * (x - 8.5)"

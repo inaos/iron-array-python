@@ -35,12 +35,16 @@ def cmp_udf_np(f, start_stop, shape, partitions, dtype, cparams):
     else:
         storage = ia.StorageProperties(plainbuffer=True)
     dtshape = ia.dtshape(shape, dtype)
-    inputs = [ia.linspace(dtshape, start, stop, storage=storage, **cparams) for start, stop in start_stop]
+    inputs = [
+        ia.linspace(dtshape, start, stop, storage=storage, **cparams) for start, stop in start_stop
+    ]
     expr = f.create_expr(inputs, dtshape, storage=storage, **cparams)
     out = expr.eval()
 
     num = functools.reduce(lambda x, y: x * y, shape)
-    inputs_ref = [np.linspace(start, stop, num, dtype=dtype).reshape(shape) for start, stop in start_stop]
+    inputs_ref = [
+        np.linspace(start, stop, num, dtype=dtype).reshape(shape) for start, stop in start_stop
+    ]
     out_ref = np.empty(num, dtype=dtype).reshape(shape)
     f.py_function(out_ref, *inputs_ref)
 
@@ -70,7 +74,9 @@ def cmp_udf_np_strict(f, start, stop, shape, partitions, dtype, cparams):
     x_ref = np.linspace(start, stop, num, dtype=dtype).reshape(shape)
     out_ref = np.empty(num, dtype=dtype).reshape(shape)
     indices = range(0, num, blockshape[0])
-    for out_ref_slice, x_ref_slice in zip(np.array_split(out_ref, indices), np.array_split(x_ref, indices)):
+    for out_ref_slice, x_ref_slice in zip(
+        np.array_split(out_ref, indices), np.array_split(x_ref, indices)
+    ):
         f.py_function(out_ref_slice, x_ref_slice)
 
     ia.cmp_arrays(out, out_ref)
@@ -90,7 +96,7 @@ def f_1dim(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
     return 0
 
 
-@pytest.mark.parametrize('f', [f_1dim])
+@pytest.mark.parametrize("f", [f_1dim])
 def test_1dim(f):
     shape = [10 * 1000]
     chunkshape = [3 * 1000]
@@ -108,7 +114,8 @@ def test_1dim(f):
     with pytest.raises(AssertionError):
         cmp_udf_np(f, (start, stop), shape, (chunkshape, blockshape), dtype, cparams)
 
-@pytest.mark.parametrize('f', [f_1dim])
+
+@pytest.mark.parametrize("f", [f_1dim])
 def test_1dim_plain(f):
     shape = [10 * 1000]
     dtype = np.float64
@@ -129,7 +136,7 @@ def f_2dim(out: udf.Array(udf.float64, 2), x: udf.Array(udf.float64, 2)):
     return 0
 
 
-@pytest.mark.parametrize('f', [f_2dim])
+@pytest.mark.parametrize("f", [f_2dim])
 def test_2dim(f):
     shape = [400, 800]
     chunkshape = [60, 200]
@@ -141,7 +148,7 @@ def test_2dim(f):
     cmp_udf_np(f, (start, stop), shape, (chunkshape, blockshape), dtype, cparams)
 
 
-@pytest.mark.parametrize('f', [f_2dim])
+@pytest.mark.parametrize("f", [f_2dim])
 def test_2dim_plain(f):
     shape = [400, 800]
     dtype = np.float64
@@ -149,6 +156,7 @@ def test_2dim_plain(f):
     start, stop = 0, 10
 
     cmp_udf_np(f, (start, stop), shape, None, dtype, cparams)
+
 
 @udf.jit
 def f_while(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
@@ -161,7 +169,7 @@ def f_while(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
     return 0
 
 
-@pytest.mark.parametrize('f', [f_while])
+@pytest.mark.parametrize("f", [f_while])
 def test_while(f):
     shape = [2000]
     chunkshape = [1000]
@@ -185,7 +193,7 @@ def f_avg(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
     return 0
 
 
-@pytest.mark.parametrize('f', [f_avg])
+@pytest.mark.parametrize("f", [f_avg])
 def test_avg(f):
     shape = [1000]
     chunkshape = [300]
@@ -211,7 +219,7 @@ def f_error_user(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
     return 1
 
 
-@pytest.mark.parametrize('f', [f_error_bug, f_error_user])
+@pytest.mark.parametrize("f", [f_error_bug, f_error_user])
 def test_error(f):
     shape = [20 * 1000]
     chunkshape = [4 * 1000]
@@ -248,9 +256,10 @@ def test_function_call_errors():
         udf.jit(f_bad_argument_count)
 
 
-
 @udf.jit
-def f_pow(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1), y: udf.Array(udf.float64, 1)):
+def f_pow(
+    out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1), y: udf.Array(udf.float64, 1)
+):
     n = out.shape[0]
     for i in range(n):
         out[i] = math.pow(x[i], y[i])
@@ -259,7 +268,9 @@ def f_pow(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1), y: udf.A
 
 
 @udf.jit
-def f_atan2(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1), y: udf.Array(udf.float64, 1)):
+def f_atan2(
+    out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1), y: udf.Array(udf.float64, 1)
+):
     n = out.shape[0]
     for i in range(n):
         out[i] = math.atan2(x[i], y[i])
@@ -267,7 +278,7 @@ def f_atan2(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1), y: udf
     return 0
 
 
-@pytest.mark.parametrize('f', [f_pow, f_atan2])
+@pytest.mark.parametrize("f", [f_pow, f_atan2])
 def test_math(f):
     shape = [10 * 1000]
     chunkshape = [3 * 1000]

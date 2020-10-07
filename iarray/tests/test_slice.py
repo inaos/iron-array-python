@@ -4,14 +4,15 @@ import numpy as np
 
 
 # Slice
-@pytest.mark.parametrize("shape, chunkshape, blockshape, start, stop, dtype",
-                         [
-                             ([200], [70], [30], [20], [30], np.float64),
-                             ([100, 100], [20, 20], [10, 13], [5, 10], [30, 40], np.float32),
-                             ([100, 100], None, None, [5, 10], [30, 40], np.float64),
-                             ([100, 100, 100], None, None, [5, 46, 10], [30, 77, 40], np.float32)
-
-                         ])
+@pytest.mark.parametrize(
+    "shape, chunkshape, blockshape, start, stop, dtype",
+    [
+        ([200], [70], [30], [20], [30], np.float64),
+        ([100, 100], [20, 20], [10, 13], [5, 10], [30, 40], np.float32),
+        ([100, 100], None, None, [5, 10], [30, 40], np.float64),
+        ([100, 100, 100], None, None, [5, 46, 10], [30, 77, 40], np.float32),
+    ],
+)
 def test_slice(shape, chunkshape, blockshape, start, stop, dtype):
     if chunkshape is None:
         storage = ia.StorageProperties(plainbuffer=True)

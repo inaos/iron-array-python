@@ -13,7 +13,7 @@ import numba as nb
 
 # For the internal iarray computational engine
 str_expr = "sin(x) * arctan(x)"
-#str_expr = "sin(x) * pow(x, 0.5)"  # try this!
+# str_expr = "sin(x) * pow(x, 0.5)"  # try this!
 
 # Define array params
 shape = [10 * 1000 * 1000]
@@ -35,18 +35,20 @@ def func_udf(y: Array(float64, 1), x: Array(float64, 1)) -> int64:
     for i in range(n):
         s = math.sin(x[i])
         a = math.atan(x[i])
-        #a = math.pow(x[i], 0.5)  # try this!
+        # a = math.pow(x[i], 0.5)  # try this!
         y[i] = s * a  # try this!
 
     return 0
+
 
 @nb.njit(parallel=True)
 def func_numba(x, y):
     for i in nb.prange(len(x)):
         s = math.sin(x[i])
         a = math.atan(x[i])
-        #a = math.pow(x[i], 0.5)  # try this!
+        # a = math.pow(x[i], 0.5)  # try this!
         y[i] = s * a
+
 
 # iarray UDF
 t0 = time()
@@ -63,14 +65,18 @@ expr.bind_out_properties(dtshape)
 expr.compile(str_expr)
 b2 = expr.eval()
 t1 = time()
-print("Time to evaluate expression with iarray (low-level API, internal engine):", round(t1 - t0, 3))
+print(
+    "Time to evaluate expression with iarray (low-level API, internal engine):", round(t1 - t0, 3)
+)
 
 # iarray internal engine (high level API)
 t0 = time()
 expr = ia.create_expr(str_expr, {"x": a1}, dtshape, **kwargs)
 b3 = expr.eval()
 t1 = time()
-print("Time to evaluate expression with iarray (high-level API, internal engine):", round(t1 - t0, 3))
+print(
+    "Time to evaluate expression with iarray (high-level API, internal engine):", round(t1 - t0, 3)
+)
 
 # iarray internal engine (lazy expressions)
 t0 = time()

@@ -38,7 +38,7 @@ def f(out: Array(float64, 1), x: Array(float64, 1)) -> int64:
 ia_in = ia.linspace(dtshape, 0, 10, **cparams)
 np_in = np.linspace(0, 10, reduce(lambda x, y: x * y, shape), dtype=dtype).reshape(shape)
 ia.cmp_arrays(np_in, ia_in)
-#print(np_in)
+# print(np_in)
 
 # iarray UDF evaluation
 expr = f.create_expr([ia_in], dtshape, **cparams)
@@ -48,4 +48,4 @@ for i in range(NITER):
     ia_out = expr.eval()
 print("Time for UDF eval:", round((time() - t0) / NITER, 3))
 ia_out = ia.iarray2numpy(ia_out)
-#print(ia_out)
+# print(ia_out)

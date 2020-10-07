@@ -5,11 +5,22 @@ from .types import Array, Struct, StructType
 
 
 __all__ = [
-    'float32', 'float64', 'void',       # Basic types
-    'int8', 'int16', 'int32', 'int64',  # Integers
-    'int8p', 'int32p', 'int64p',        # Pointers
-    'Array',                            # Arrays
-    'StructType', 'Struct',             # Structs
+    "float32",
+    "float64",
+    "void",  # Basic types
+    "int8",
+    "int16",
+    "int32",
+    "int64",  # Integers
+    "int8p",
+    "int32p",
+    "int64p",  # Pointers
+    "Array",  # Arrays
+    "StructType",
+    "Struct",  # Structs
     # To override behaviour
-    'LLVM', 'Function', 'Signature', 'Parameter',
+    "LLVM",
+    "Function",
+    "Signature",
+    "Parameter",
 ]

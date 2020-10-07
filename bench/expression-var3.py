@@ -12,10 +12,10 @@ from iarray.udf import Array
 from iarray.py2llvm import float64, int64
 
 
-NITER = 10    # number of iterations per benchmark
+NITER = 10  # number of iterations per benchmark
 PROFILE = False
-NVARS = 3   # number of variables in expression (only 1 or 3)
-assert(NVARS in (1, 3))
+NVARS = 3  # number of variables in expression (only 1 or 3)
+assert NVARS in (1, 3)
 
 expr1 = "(x - 1.35) * (x - 4.45) * (x - 8.5)"
 expr3 = "(x - 1.35) * (y - 4.45) * (z - 8.5)"
@@ -42,9 +42,12 @@ def f1(out: Array(float64, 1), x: Array(float64, 1)) -> int64:
 
     return 0
 
+
 # Version with 3 parameters
 @udf.jit(verbose=0)
-def f3(out: Array(float64, 1), x: Array(float64, 1), y: Array(float64, 1), z: Array(float64, 1)) -> int64:
+def f3(
+    out: Array(float64, 1), x: Array(float64, 1), y: Array(float64, 1), z: Array(float64, 1)
+) -> int64:
     n = out.shape[0]
     for i in range(n):
         out[i] = (x[i] - 1.35) * (y[i] - 4.45) * (z[i] - 8.5)
@@ -117,9 +120,9 @@ b1_n = ia.iarray2numpy(b1)
 b2 = None  # avoid a warning
 t0 = time()
 if NVARS == 1:
-    expr = ia.create_expr(expr1, {'x': iax}, dtshape, **cparams2)
+    expr = ia.create_expr(expr1, {"x": iax}, dtshape, **cparams2)
 else:
-    expr = ia.create_expr(expr3, {'x': iax, 'y': iay, 'z': iaz}, dtshape, **cparams2)
+    expr = ia.create_expr(expr3, {"x": iax, "y": iay, "z": iaz}, dtshape, **cparams2)
 for i in range(NITER):
     b2 = expr.eval()
 print("Time for internal eval engine:", round((time() - t0) / NITER, 3))
