@@ -1,2 +1,26 @@
 [build-system]
 requires = ["setuptools", "wheel", "scikit-build", "cmake", "ninja", "numpy", "llvmlite", "numexpr"]
+
+[tool.black]
+line-length = 99
+target-version = ['py37']
+include = '\.pyi?$'
+exclude = '''
+
+(
+  /(
+      \.eggs         # exclude a few common directories in the
+    | \.git          # root of the project
+    | \.hg
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | _build
+    | buck-out
+    | build
+    | dist
+    | PyData-NYC-2019
+    | iarray/iarray-c-develop
+  )/
+)
+'''
