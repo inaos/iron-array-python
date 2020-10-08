@@ -782,9 +782,13 @@ def random_kstest(a, b, **kwargs):
     return ext.random_kstest(cfg, a, b)
 
 
-def matmul(a, b, block_a, block_b, **kwargs):
+def matmul(a, b, **kwargs):
     cfg = Config(**kwargs)
-    return ext.matmul(cfg, a, b, block_a, block_b)
+    return ext.matmul(
+        cfg,
+        a,
+        b,
+    )
 
 
 def abs(iarr):
