@@ -101,6 +101,14 @@ import numpy as np
             np.float64,
             "(x - cos(y)) * (sin(x) + y) + 2 * x + y",
         ),
+        (
+            ia.Eval.ITERBLOSC,
+            [17, 12, 15, 15, 8],
+            [8, 6, 7, 4, 5],
+            [4, 3, 3, 4, 5],
+            np.float64,
+            "(x - cos(0.5)) * (sin(.1) + y) + 2 * x + y",
+        ),
     ],
 )
 def test_expression(method, shape, chunkshape, blockshape, dtype, expression):
