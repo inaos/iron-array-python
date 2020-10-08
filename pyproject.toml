@@ -13,6 +13,7 @@ exclude = '''
     | \.git          # root of the project
     | \.mypy_cache
     | \.tox
+    | \.venv.*       # exclude different virtual envs, like .venv37
     | _build
     | buck-out
     | build
