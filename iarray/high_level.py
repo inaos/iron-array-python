@@ -91,7 +91,7 @@ class DTShape:
     dtype: (np.float32, np.float64) = np.float64
 
 
-class Config(ext._Config):
+class Config(ext.Config):
     def __init__(
         self,
         clib=ia.LZ4,
@@ -412,8 +412,8 @@ class LazyExpr:
             if isinstance(v, IArray):
                 expr.bind(k, v)
 
-        cfg._storage.get_shape_advice(dtshape)
-        expr.bind_out_properties(dtshape, cfg._storage)
+        cfg.storage.get_shape_advice(dtshape)
+        expr.bind_out_properties(dtshape, cfg.storage)
         expr.compile(self.expression)
         out = expr.eval()
 
@@ -428,7 +428,7 @@ class LazyExpr:
 class IArray(ext.Container):
     def copy(self, view=False, **kwargs):
         cfg = Config(**kwargs)  # chunkshape and blockshape can be passed in storage kwarg
-        cfg._storage.get_shape_advice(self.dtshape)
+        cfg.storage.get_shape_advice(self.dtshape)
         return ext.copy(cfg, self, view)
 
     def __getitem__(self, key):
@@ -582,13 +582,13 @@ class Expr(ext.Expression):
 
 def empty(dtshape, **kwargs):
     cfg = Config(**kwargs)
-    cfg._storage.get_shape_advice(dtshape)
+    cfg.storage.get_shape_advice(dtshape)
     return ext.empty(cfg, dtshape)
 
 
 def arange(dtshape, start=None, stop=None, step=None, **kwargs):
     cfg = Config(**kwargs)
-    cfg._storage.get_shape_advice(dtshape)
+    cfg.storage.get_shape_advice(dtshape)
 
     if (start, stop, step) == (None, None, None):
         stop = np.prod(dtshape.shape)
@@ -612,7 +612,7 @@ def arange(dtshape, start=None, stop=None, step=None, **kwargs):
 
 def linspace(dtshape, start, stop, nelem=50, **kwargs):
     cfg = Config(**kwargs)
-    cfg._storage.get_shape_advice(dtshape)
+    cfg.storage.get_shape_advice(dtshape)
 
     nelem = np.prod(dtshape.shape) if dtshape is not None else nelem
 
@@ -621,19 +621,19 @@ def linspace(dtshape, start, stop, nelem=50, **kwargs):
 
 def zeros(dtshape, **kwargs):
     cfg = Config(**kwargs)
-    cfg._storage.get_shape_advice(dtshape)
+    cfg.storage.get_shape_advice(dtshape)
     return ext.zeros(cfg, dtshape)
 
 
 def ones(dtshape, **kwargs):
     cfg = Config(**kwargs)
-    cfg._storage.get_shape_advice(dtshape)
+    cfg.storage.get_shape_advice(dtshape)
     return ext.ones(cfg, dtshape)
 
 
 def full(dtshape, fill_value, **kwargs):
     cfg = Config(**kwargs)
-    cfg._storage.get_shape_advice(dtshape)
+    cfg.storage.get_shape_advice(dtshape)
     return ext.full(cfg, fill_value, dtshape)
 
 
@@ -663,7 +663,7 @@ def numpy2iarray(c, **kwargs):
         raise NotImplementedError("Only float32 and float64 types are supported for now")
 
     dtshape = ia.DTShape(c.shape, dtype)
-    cfg._storage.get_shape_advice(dtshape)
+    cfg.storage.get_shape_advice(dtshape)
     return ext.numpy2iarray(cfg, c, dtshape)
 
 
@@ -680,70 +680,70 @@ def random_pre(**kwargs):
 def random_rand(dtshape, **kwargs):
     kwargs = random_pre(**kwargs)
     cfg = Config(**kwargs)
-    cfg._storage.get_shape_advice(dtshape)
+    cfg.storage.get_shape_advice(dtshape)
     return ext.random_rand(cfg, dtshape)
 
 
 def random_randn(dtshape, **kwargs):
     kwargs = random_pre(**kwargs)
     cfg = Config(**kwargs)
-    cfg._storage.get_shape_advice(dtshape)
+    cfg.storage.get_shape_advice(dtshape)
     return ext.random_randn(cfg, dtshape)
 
 
 def random_beta(dtshape, alpha, beta, **kwargs):
     kwargs = random_pre(**kwargs)
     cfg = Config(**kwargs)
-    cfg._storage.get_shape_advice(dtshape)
+    cfg.storage.get_shape_advice(dtshape)
     return ext.random_beta(cfg, alpha, beta, dtshape)
 
 
 def random_lognormal(dtshape, mu, sigma, **kwargs):
     kwargs = random_pre(**kwargs)
     cfg = Config(**kwargs)
-    cfg._storage.get_shape_advice(dtshape)
+    cfg.storage.get_shape_advice(dtshape)
     return ext.random_lognormal(cfg, mu, sigma, dtshape)
 
 
 def random_exponential(dtshape, beta, **kwargs):
     kwargs = random_pre(**kwargs)
     cfg = Config(**kwargs)
-    cfg._storage.get_shape_advice(dtshape)
+    cfg.storage.get_shape_advice(dtshape)
     return ext.random_exponential(cfg, beta, dtshape)
 
 
 def random_uniform(dtshape, a, b, **kwargs):
     kwargs = random_pre(**kwargs)
     cfg = Config(**kwargs)
-    cfg._storage.get_shape_advice(dtshape)
+    cfg.storage.get_shape_advice(dtshape)
     return ext.random_uniform(cfg, a, b, dtshape)
 
 
 def random_normal(dtshape, mu, sigma, **kwargs):
     kwargs = random_pre(**kwargs)
     cfg = Config(**kwargs)
-    cfg._storage.get_shape_advice(dtshape)
+    cfg.storage.get_shape_advice(dtshape)
     return ext.random_normal(cfg, mu, sigma, dtshape)
 
 
 def random_bernoulli(dtshape, p, **kwargs):
     kwargs = random_pre(**kwargs)
     cfg = Config(**kwargs)
-    cfg._storage.get_shape_advice(dtshape)
+    cfg.storage.get_shape_advice(dtshape)
     return ext.random_bernoulli(cfg, p, dtshape)
 
 
 def random_binomial(dtshape, m, p, **kwargs):
     kwargs = random_pre(**kwargs)
     cfg = Config(**kwargs)
-    cfg._storage.get_shape_advice(dtshape)
+    cfg.storage.get_shape_advice(dtshape)
     return ext.random_binomial(cfg, m, p, dtshape)
 
 
 def random_poisson(dtshape, lamb, **kwargs):
     kwargs = random_pre(**kwargs)
     cfg = Config(**kwargs)
-    cfg._storage.get_shape_advice(dtshape)
+    cfg.storage.get_shape_advice(dtshape)
     return ext.random_poisson(cfg, lamb, dtshape)
 
 
