@@ -34,7 +34,7 @@ def cmp_udf_np(f, start_stop, shape, partitions, dtype, cparams):
         storage = ia.StorageProperties(chunkshape, blockshape)
     else:
         storage = ia.StorageProperties(plainbuffer=True)
-    dtshape = ia.dtshape(shape, dtype)
+    dtshape = ia.DTShape(shape, dtype)
     inputs = [
         ia.linspace(dtshape, start, stop, storage=storage, **cparams) for start, stop in start_stop
     ]
@@ -65,7 +65,7 @@ def cmp_udf_np_strict(f, start, stop, shape, partitions, dtype, cparams):
     assert len(blockshape) == 1
     storage = ia.StorageProperties(chunkshape, blockshape)
 
-    dtshape = ia.dtshape(shape, dtype)
+    dtshape = ia.DTShape(shape, dtype)
     x = ia.linspace(dtshape, start, stop, storage=storage, **cparams)
     expr = f.create_expr([x], dtshape, storage=storage, **cparams)
     out = expr.eval()
@@ -229,7 +229,7 @@ def test_error(f):
     start, stop = 0, 10
 
     storage = ia.StorageProperties(chunkshape, blockshape)
-    dtshape = ia.dtshape(shape, dtype)
+    dtshape = ia.DTShape(shape, dtype)
     x = ia.linspace(dtshape, start, stop, storage=storage, **cparams)
     expr = f.create_expr([x], dtshape, storage=storage, **cparams)
 

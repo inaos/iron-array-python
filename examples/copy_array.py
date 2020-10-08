@@ -6,7 +6,7 @@ import numpy as np
 
 
 # Create an ironArray array
-a = ia.linspace(ia.dtshape([2000, 20000], np.float64), -10, 10)
+a = ia.linspace(ia.DTShape([2000, 20000], np.float64), -10, 10)
 
 # Do a regular copy
 t0 = time()

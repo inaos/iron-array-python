@@ -20,7 +20,7 @@ def test_linspace(start, stop, shape, chunkshape, blockshape, dtype):
     else:
         storage = ia.StorageProperties(chunkshape, blockshape)
     size = int(np.prod(shape))
-    a = ia.linspace(ia.dtshape(shape, dtype), start, stop, storage=storage)
+    a = ia.linspace(ia.DTShape(shape, dtype), start, stop, storage=storage)
     b = ia.iarray2numpy(a)
     npdtype = np.float64 if dtype == np.float64 else np.float32
     c = np.linspace(start, stop, size, dtype=npdtype).reshape(shape)
@@ -44,7 +44,7 @@ def test_arange(start, stop, shape, chunkshape, blockshape, dtype):
         storage = ia.StorageProperties(chunkshape, blockshape)
     size = int(np.prod(shape))
     step = (stop - start) / size
-    a = ia.arange(ia.dtshape(shape=shape, dtype=dtype), start, stop, step, storage=storage)
+    a = ia.arange(ia.DTShape(shape=shape, dtype=dtype), start, stop, step, storage=storage)
     b = ia.iarray2numpy(a)
     npdtype = np.float64 if dtype == np.float64 else np.float32
     c = np.arange(start, stop, step, dtype=npdtype).reshape(shape)
@@ -104,7 +104,7 @@ def test_slice(start, stop, slice, shape, chunkshape, blockshape, dtype):
         storage = ia.StorageProperties(chunkshape, blockshape)
     size = int(np.prod(shape))
     step = (stop - start) / size
-    a = ia.arange(ia.dtshape(shape=shape, dtype=dtype), start, stop, step, storage=storage)
+    a = ia.arange(ia.DTShape(shape=shape, dtype=dtype), start, stop, step, storage=storage)
     b = a[slice]
     c = ia.iarray2numpy(b)
     npdtype = np.float64 if dtype == np.float64 else np.float32
@@ -125,7 +125,7 @@ def test_empty(shape, chunkshape, blockshape, dtype):
         storage = ia.StorageProperties(plainbuffer=True)
     else:
         storage = ia.StorageProperties(chunkshape, blockshape)
-    a = ia.empty(ia.dtshape(shape, dtype), storage=storage)
+    a = ia.empty(ia.DTShape(shape, dtype), storage=storage)
     b = ia.iarray2numpy(a)
     npdtype = np.float64 if dtype == np.float64 else np.float32
     assert b.dtype == npdtype
@@ -147,7 +147,7 @@ def test_zeros(shape, chunkshape, blockshape, dtype):
         storage = ia.StorageProperties(plainbuffer=True)
     else:
         storage = ia.StorageProperties(chunkshape, blockshape)
-    a = ia.zeros(ia.dtshape(shape, dtype), storage=storage)
+    a = ia.zeros(ia.DTShape(shape, dtype), storage=storage)
     b = ia.iarray2numpy(a)
     npdtype = np.float64 if dtype == np.float64 else np.float32
     c = np.zeros(shape, dtype=npdtype)
@@ -169,7 +169,7 @@ def test_ones(shape, chunkshape, blockshape, dtype):
         storage = ia.StorageProperties(plainbuffer=True)
     else:
         storage = ia.StorageProperties(chunkshape, blockshape, enforce_frame=True)
-    a = ia.ones(ia.dtshape(shape, dtype), storage=storage)
+    a = ia.ones(ia.DTShape(shape, dtype), storage=storage)
     b = ia.iarray2numpy(a)
     npdtype = np.float64 if dtype == np.float64 else np.float32
     c = np.ones(shape, dtype=npdtype)
@@ -191,7 +191,7 @@ def test_full(fill_value, shape, chunkshape, blockshape, dtype):
         storage = ia.StorageProperties(plainbuffer=True)
     else:
         storage = ia.StorageProperties(chunkshape, blockshape)
-    a = ia.full(ia.dtshape(shape, dtype), fill_value, storage=storage)
+    a = ia.full(ia.DTShape(shape, dtype), fill_value, storage=storage)
     b = ia.iarray2numpy(a)
     npdtype = np.float64 if dtype == np.float64 else np.float32
     c = np.full(shape, fill_value, dtype=npdtype)

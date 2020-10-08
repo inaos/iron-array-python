@@ -24,14 +24,14 @@ def test_matmul(
         astorage = ia.StorageProperties(plainbuffer=True)
     else:
         astorage = ia.StorageProperties(achunkshape, ablockshape)
-    a = ia.linspace(ia.dtshape(ashape, dtype), -10, 1, storage=astorage)
+    a = ia.linspace(ia.DTShape(ashape, dtype), -10, 1, storage=astorage)
     an = ia.iarray2numpy(a)
 
     if bchunkshape is None:
         bstorage = ia.StorageProperties(plainbuffer=True)
     else:
         bstorage = ia.StorageProperties(bchunkshape, bblockshape)
-    b = ia.linspace(ia.dtshape(bshape, dtype), -1, 10, storage=bstorage)
+    b = ia.linspace(ia.DTShape(bshape, dtype), -1, 10, storage=bstorage)
     bn = ia.iarray2numpy(b)
 
     if abshape is None and bbshape is None:
@@ -207,7 +207,7 @@ def test_matmul_slice(
         astorage = ia.StorageProperties(plainbuffer=True)
     else:
         astorage = ia.StorageProperties(achunkshape, ablockshape)
-    a = ia.linspace(ia.dtshape(ashape, dtype), -1, -2, storage=astorage)
+    a = ia.linspace(ia.DTShape(ashape, dtype), -1, -2, storage=astorage)
     an = ia.iarray2numpy(a)
     aslices = tuple(slice(astart[i], astop[i]) for i in range(len(astart)))
     if len(astart) == 1:
@@ -218,7 +218,7 @@ def test_matmul_slice(
         bstorage = ia.StorageProperties(plainbuffer=True)
     else:
         bstorage = ia.StorageProperties(bchunkshape, bblockshape)
-    b = ia.linspace(ia.dtshape(bshape, dtype), 1, 200, storage=bstorage)
+    b = ia.linspace(ia.DTShape(bshape, dtype), 1, 200, storage=bstorage)
     bn = ia.iarray2numpy(b)
     bslices = tuple(slice(bstart[i], bstop[i]) for i in range(len(bstart)))
     if len(bstart) == 1:

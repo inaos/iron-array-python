@@ -57,14 +57,14 @@ cparams = dict(clib=CLIB, clevel=CLEVEL, nthreads=NTHREADS)
 
 astorage = ia.StorageProperties(achunkshape, ablockshape)
 
-lia = ia.linspace(ia.dtshape(ashape, dtype=DTYPE), 0, 1, storage=astorage, **cparams)
-nia = ia.random_normal(ia.dtshape(ashape, dtype=DTYPE), 0, 0.0000001, storage=astorage, **cparams)
+lia = ia.linspace(ia.DTShape(ashape, dtype=DTYPE), 0, 1, storage=astorage, **cparams)
+nia = ia.random_normal(ia.DTShape(ashape, dtype=DTYPE), 0, 0.0000001, storage=astorage, **cparams)
 aia = (lia + nia).eval(storage=astorage, **cparams)
 
 bstorage = ia.StorageProperties(bchunkshape, bblockshape)
 
-lia = ia.linspace(ia.dtshape(bshape, dtype=DTYPE), 0, 1, storage=bstorage, **cparams)
-nia = ia.random_normal(ia.dtshape(bshape, dtype=DTYPE), 0, 0.0000001, storage=bstorage, **cparams)
+lia = ia.linspace(ia.DTShape(bshape, dtype=DTYPE), 0, 1, storage=bstorage, **cparams)
+nia = ia.random_normal(ia.DTShape(bshape, dtype=DTYPE), 0, 0.0000001, storage=bstorage, **cparams)
 bia = (lia + nia).eval(storage=bstorage, **cparams)
 
 ablock = (500, 500)

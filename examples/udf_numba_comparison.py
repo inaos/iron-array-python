@@ -17,7 +17,7 @@ str_expr = "sin(x) * arctan(x)"
 
 # Define array params
 shape = [10 * 1000 * 1000]
-dtshape = ia.dtshape(shape)
+dtshape = ia.DTShape(shape)
 size = int(np.prod(shape))
 nthreads = 8
 clevel = 9

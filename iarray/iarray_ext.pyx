@@ -231,7 +231,7 @@ cdef class _DTShape:
 
 
     def __str__(self):
-        res = f"IARRAY DTSHAPE OBJECT\n"
+        res = f"_DTShape object\n"
         ndim = f"    Dimensions: {self.ndim}\n"
         shape = f"    Shape: {self.shape}\n"
         dtype = f"    Datatype: {self.dtype}"
@@ -348,7 +348,7 @@ cdef class Container:
 
     @property
     def dtshape(self):
-        return ia.dtshape(self.shape, self.dtype)
+        return ia.DTShape(self.shape, self.dtype)
 
     @property
     def cratio(self):
@@ -620,7 +620,7 @@ def get_slice(ctx, data, start, stop, view, storage):
         data.to_capsule(), "iarray_container_t*")
 
     shape = [sp%s - st%s for sp, st, s in zip(stop, start, data.shape)]
-    dtshape = ia.dtshape(shape, data.dtype)
+    dtshape = ia.DTShape(shape, data.dtype)
 
     flags = 0
 
@@ -973,14 +973,14 @@ def matmul(cfg, a, b, block_a, block_b):
 
     if a.chunkshape is None and b.chunkshape is None:
         if len(b.shape) == 1:
-            dtshape = _DTShape(ia.dtshape((a.shape[0],), a.dtype)).to_dict()
+            dtshape = _DTShape(ia.DTShape((a.shape[0],), a.dtype)).to_dict()
         else:
-            dtshape = _DTShape(ia.dtshape((a.shape[0], b.shape[1]), a.dtype)).to_dict()
+            dtshape = _DTShape(ia.DTShape((a.shape[0], b.shape[1]), a.dtype)).to_dict()
     else:
         if len(b.shape) == 1:
-            dtshape = _DTShape(ia.dtshape(tuple([a.shape[0]]), a.dtype)).to_dict()
+            dtshape = _DTShape(ia.DTShape(tuple([a.shape[0]]), a.dtype)).to_dict()
         else:
-            dtshape = _DTShape(ia.dtshape((a.shape[0], b.shape[1]), a.dtype)).to_dict()
+            dtshape = _DTShape(ia.DTShape((a.shape[0], b.shape[1]), a.dtype)).to_dict()
 
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 

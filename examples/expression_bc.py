@@ -13,7 +13,7 @@ bshape = [20 * 1000]
 dtype = np.float64
 
 storage = ia.StorageProperties(cshape, bshape)
-dtshape = ia.dtshape(shape, dtype)
+dtshape = ia.DTShape(shape, dtype)
 
 # Create initial containers
 a1 = ia.linspace(dtshape, 0, 10, storage=storage)

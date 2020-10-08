@@ -27,7 +27,7 @@ for i in range(NITER):
 print("Regular evaluate via numpy:", round((time() - t0) / NITER, 4))
 
 cparams = dict(clib=clib, clevel=clevel, nthreads=nthreads)
-dtshape = ia.dtshape(shape=shape, dtype=dtype)
+dtshape = ia.DTShape(shape=shape, dtype=dtype)
 xa = ia.linspace(dtshape, 0.0, 10.0, **cparams)
 print("Operand cratio:", round(xa.cratio, 2))
 

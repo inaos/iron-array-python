@@ -86,7 +86,7 @@ def cmp_arrays(a, b, success=None):
 
 
 @dataclass
-class dtshape:
+class DTShape:
     shape: (tuple, list)
     dtype: (np.float32, np.float64) = np.float64
 
@@ -662,7 +662,7 @@ def numpy2iarray(c, **kwargs):
     else:
         raise NotImplementedError("Only float32 and float64 types are supported for now")
 
-    dtshape = ia.dtshape(c.shape, dtype)
+    dtshape = ia.DTShape(c.shape, dtype)
     cfg._storage.get_shape_advice(dtshape)
     return ext.numpy2iarray(cfg, c, dtshape)
 
@@ -835,7 +835,7 @@ def tanh(iarr):
 
 if __name__ == "__main__":
     # Create initial containers
-    dtshape_ = ia.dtshape([40, 20])
+    dtshape_ = ia.DTShape([40, 20])
     a1 = ia.linspace(dtshape_, 0, 10)
 
     # Evaluate with different methods

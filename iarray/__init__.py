@@ -87,7 +87,7 @@ UFUNC_LIST = (
 # That must come here so as to avoid circular import errors
 from .high_level import (
     IArray,
-    dtshape,
+    DTShape,
     StorageProperties,
     Config,
     RandomContext,

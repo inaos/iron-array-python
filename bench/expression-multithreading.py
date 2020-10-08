@@ -38,7 +38,7 @@ def poly_udf(x: udf.Array(float64, 1), y: udf.Array(float64, 1)):
 shape = [32 * 512 * 1024]
 chunkshape = [32 * 1024]
 blockshape = [16 * 1024]
-dtshape = ia.dtshape(shape)
+dtshape = ia.DTShape(shape)
 size = int(np.prod(shape))
 
 bstorage = ia.StorageProperties(chunkshape, blockshape)

@@ -137,7 +137,7 @@ def do_block_evaluation(plainbuffer):
     cparams = dict(clib=clib, clevel=clevel, nthreads=nthreads, storage=storage)
 
     x = np.linspace(0, 10, N, dtype=np.double).reshape(shape)
-    dtshape = ia.dtshape(shape=shape)
+    dtshape = ia.DTShape(shape=shape)
     xa = ia.linspace(dtshape, 0.0, 10.0, **cparams)
 
     if not plainbuffer:

@@ -12,10 +12,10 @@ mkl_get_max_threads = mkl_rt.MKL_Get_Max_Threads
 mkl_set_num_threads(1)
 print(f"Numpy max threads: {mkl_get_max_threads()}")
 
-dtshape_a = ia.dtshape([2000, 2000], np.float64)
+dtshape_a = ia.DTShape([2000, 2000], np.float64)
 bshape_a = [2000, 2000]
 
-dtshape_b = ia.dtshape([2000, 2000], np.float64)
+dtshape_b = ia.DTShape([2000, 2000], np.float64)
 bshape_b = [2000, 2000]
 
 a = ia.arange(dtshape_a, clevel=0)

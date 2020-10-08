@@ -16,7 +16,7 @@ import numpy as np
 def test_load_save(shape, chunkshape, blockshape, dtype, load_in_mem):
 
     storage = ia.StorageProperties(chunkshape, blockshape)
-    a = ia.linspace(ia.dtshape(shape, dtype), -10, 10, storage=storage)
+    a = ia.linspace(ia.DTShape(shape, dtype), -10, 10, storage=storage)
     an = ia.iarray2numpy(a)
 
     ia.save(a, "test_load_save.iarray")

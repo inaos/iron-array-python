@@ -10,8 +10,8 @@ from itertools import zip_longest
 # Create an empty container for filling it with another one
 # Note how dtypes can be different.
 shape = (10, 100)
-dtshape1 = ia.dtshape(shape=shape, dtype=np.float64)
-dtshape2 = ia.dtshape(shape=shape, dtype=np.float32)
+dtshape1 = ia.DTShape(shape=shape, dtype=np.float64)
+dtshape2 = ia.DTShape(shape=shape, dtype=np.float32)
 c1 = ia.arange(dtshape1)
 c2 = ia.empty(dtshape2, storage=ia.StorageProperties(plainbuffer=True))
 

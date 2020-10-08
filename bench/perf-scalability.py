@@ -39,7 +39,7 @@ def evaluate(command):
         dtype = np.float64
         cparams = dict(clevel=CLEVEL, nthreads=NTHREADS)
         storage = ia.StorageProperties(chunkshape, blockshape)
-        dtshape = ia.dtshape(shape, dtype)
+        dtshape = ia.DTShape(shape, dtype)
         iax = ia.linspace(dtshape, 0, 1, storage=storage, **cparams)
         iay = ia.linspace(dtshape, 0, 1, storage=storage, **cparams)
         iaz = ia.linspace(dtshape, 0, 1, storage=storage, **cparams)
@@ -73,7 +73,7 @@ def evaluate(command):
         global iax, iay, iaz, shape, chunkshape, blockshape, dtype, cparams
         cparams["nthreads"] = NTHREADS
         cparams["storage"] = ia.StorageProperties(chunkshape, blockshape)
-        dtshape = ia.dtshape(shape, dtype)
+        dtshape = ia.DTShape(shape, dtype)
         expr = ia.create_expr(command, {"x": iax, "y": iay, "z": iaz}, dtshape, **cparams)
         expr.eval()
 
@@ -81,7 +81,7 @@ def evaluate(command):
         global iax, iay, iaz, shape, chunkshape, blockshape, dtype, cparams
         cparams["nthreads"] = 1
         cparams["storage"] = ia.StorageProperties(chunkshape, blockshape)
-        dtshape = ia.dtshape(shape, dtype)
+        dtshape = ia.DTShape(shape, dtype)
         expr = ia.create_expr(command, {"x": iax, "y": iay, "z": iaz}, dtshape, **cparams)
         expr.eval()
 

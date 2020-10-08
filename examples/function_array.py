@@ -13,7 +13,7 @@ cshape = [1000, 800]
 bshape = [100, 100]
 storage = ia.StorageProperties(chunkshape=cshape, blockshape=bshape)
 kwargs = dict(storage=storage)
-dtshape = ia.dtshape(shape, dtype)
+dtshape = ia.DTShape(shape, dtype)
 
 # Create initial arrays
 ia1 = ia.linspace(dtshape, 0, 10, **kwargs)

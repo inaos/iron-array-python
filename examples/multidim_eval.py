@@ -10,7 +10,7 @@ import numexpr as ne
 # Define array params
 dtype = np.float64
 shape = [16000, 8000]
-dtshape = ia.dtshape(shape, dtype)
+dtshape = ia.DTShape(shape, dtype)
 nthreads = 8  # maximum number of threads to use
 
 sexpr = "(cos(%s) - sin(%s)) * (%s - 1.35) * (%s - 4.45)"

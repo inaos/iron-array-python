@@ -27,7 +27,7 @@ chunkshape, blockshape = [4_000_000], [20_000]
 dtype = np.float64
 nthreads = 8
 
-dtshape = ia.dtshape(shape=shape, dtype=dtype)
+dtshape = ia.DTShape(shape=shape, dtype=dtype)
 cparams = dict(clib=ia.LZ4, clevel=9, nthreads=nthreads)
 # Reduce the precision for the output
 cparams2 = cparams.copy()

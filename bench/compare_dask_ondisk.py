@@ -27,7 +27,7 @@ t_ratio = []
 
 for i, shape in enumerate(shapes):
     shape = (shape,)
-    dtshape = ia.dtshape(shape, dtype)
+    dtshape = ia.DTShape(shape, dtype)
     print(shape, chunkshape)
     cparams = dict(clib=CLIB, clevel=CLEVEL, nthreads=NTHREADS)
 

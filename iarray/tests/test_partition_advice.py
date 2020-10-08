@@ -23,7 +23,7 @@ import numpy as np
     ],
 )
 def test_partition_advice(shape, chunkshape, blockshape, dtype):
-    dtshape = ia.dtshape(shape, dtype)
+    dtshape = ia.DTShape(shape, dtype)
     # We want to specify max for chunskize, blocksize explicitly, because L2/L3 size is CPU-dependent
     chunkshape_, blockshape_ = ia.partition_advice(
         dtshape, max_chunksize=1024 * 1024, max_blocksize=64 * 1024

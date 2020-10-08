@@ -24,7 +24,7 @@ def test_rand(shape, chunkshape, blockshape, dtype, plainbuffer):
     storage = ia.StorageProperties(chunkshape, blockshape, plainbuffer=plainbuffer)
 
     size = int(np.prod(shape))
-    a = ia.random_rand(ia.dtshape(shape, dtype), storage=storage)
+    a = ia.random_rand(ia.DTShape(shape, dtype), storage=storage)
     b = np.random.rand(size).reshape(shape).astype(dtype)
     c = ia.numpy2iarray(b, storage=storage)
 
@@ -47,7 +47,7 @@ def test_randn(shape, chunkshape, blockshape, dtype, plainbuffer):
     storage = ia.StorageProperties(chunkshape, blockshape, plainbuffer=plainbuffer)
 
     size = int(np.prod(shape))
-    a = ia.random_randn(ia.dtshape(shape, dtype), storage=storage)
+    a = ia.random_randn(ia.DTShape(shape, dtype), storage=storage)
     b = np.random.randn(size).reshape(shape).astype(dtype)
     c = ia.numpy2iarray(b, storage=storage)
 
@@ -70,7 +70,7 @@ def test_beta(alpha, beta, shape, chunkshape, blockshape, dtype, plainbuffer):
     storage = ia.StorageProperties(chunkshape, blockshape, plainbuffer=plainbuffer)
 
     size = int(np.prod(shape))
-    a = ia.random_beta(ia.dtshape(shape, dtype), alpha, beta, storage=storage)
+    a = ia.random_beta(ia.DTShape(shape, dtype), alpha, beta, storage=storage)
     b = np.random.beta(alpha, beta, size).reshape(shape).astype(dtype)
     c = ia.numpy2iarray(b, storage=storage)
 
@@ -93,7 +93,7 @@ def test_lognormal(mu, sigma, shape, chunkshape, blockshape, dtype, plainbuffer)
     storage = ia.StorageProperties(chunkshape, blockshape, plainbuffer=plainbuffer)
 
     size = int(np.prod(shape))
-    a = ia.random_lognormal(ia.dtshape(shape, dtype), mu, sigma, storage=storage)
+    a = ia.random_lognormal(ia.DTShape(shape, dtype), mu, sigma, storage=storage)
     b = np.random.lognormal(mu, sigma, size).reshape(shape).astype(dtype)
     c = ia.numpy2iarray(b, storage=storage)
 
@@ -116,7 +116,7 @@ def test_exponential(beta, shape, chunkshape, blockshape, dtype, plainbuffer):
     storage = ia.StorageProperties(chunkshape, blockshape, plainbuffer=plainbuffer)
 
     size = int(np.prod(shape))
-    a = ia.random_exponential(ia.dtshape(shape, dtype), beta, storage=storage)
+    a = ia.random_exponential(ia.DTShape(shape, dtype), beta, storage=storage)
     b = np.random.exponential(beta, size).reshape(shape).astype(dtype)
     c = ia.numpy2iarray(b, storage=storage)
 
@@ -139,7 +139,7 @@ def test_uniform(a_, b_, shape, chunkshape, blockshape, dtype, plainbuffer):
     storage = ia.StorageProperties(chunkshape, blockshape, plainbuffer=plainbuffer)
 
     size = int(np.prod(shape))
-    a = ia.random_uniform(ia.dtshape(shape, dtype), a_, b_, storage=storage)
+    a = ia.random_uniform(ia.DTShape(shape, dtype), a_, b_, storage=storage)
     b = np.random.uniform(a_, b_, size).reshape(shape).astype(dtype)
     c = ia.numpy2iarray(b, storage=storage)
 
@@ -162,7 +162,7 @@ def test_normal(mu, sigma, shape, chunkshape, blockshape, dtype, plainbuffer):
     storage = ia.StorageProperties(chunkshape, blockshape, plainbuffer=plainbuffer)
 
     size = int(np.prod(shape))
-    a = ia.random_normal(ia.dtshape(shape, dtype), mu, sigma, storage=storage)
+    a = ia.random_normal(ia.DTShape(shape, dtype), mu, sigma, storage=storage)
     b = np.random.normal(mu, sigma, size).reshape(shape).astype(dtype)
     c = ia.numpy2iarray(b, storage=storage)
 
@@ -185,7 +185,7 @@ def test_bernoulli(p, shape, chunkshape, blockshape, dtype, plainbuffer):
     storage = ia.StorageProperties(chunkshape, blockshape, plainbuffer=plainbuffer)
 
     size = int(np.prod(shape))
-    a = ia.random_bernoulli(ia.dtshape(shape, dtype), p, storage=storage)
+    a = ia.random_bernoulli(ia.DTShape(shape, dtype), p, storage=storage)
     b = np.random.binomial(1, p, size).reshape(shape).astype(dtype)
     c = ia.numpy2iarray(b, storage=storage)
 
@@ -208,7 +208,7 @@ def test_binomial(n, p, shape, chunkshape, blockshape, dtype, plainbuffer):
     storage = ia.StorageProperties(chunkshape, blockshape, plainbuffer=plainbuffer)
 
     size = int(np.prod(shape))
-    a = ia.random_binomial(ia.dtshape(shape, dtype), n, p, storage=storage)
+    a = ia.random_binomial(ia.DTShape(shape, dtype), n, p, storage=storage)
     b = np.random.binomial(n, p, size).reshape(shape).astype(dtype)
     c = ia.numpy2iarray(b, storage=storage)
 
@@ -231,7 +231,7 @@ def test_poisson(lamb, shape, chunkshape, blockshape, dtype, plainbuffer):
     storage = ia.StorageProperties(chunkshape, blockshape, plainbuffer=plainbuffer)
 
     size = int(np.prod(shape))
-    a = ia.random_poisson(ia.dtshape(shape, dtype), lamb, storage=storage)
+    a = ia.random_poisson(ia.DTShape(shape, dtype), lamb, storage=storage)
     b = np.random.poisson(lamb, size).reshape(shape).astype(dtype)
     c = ia.numpy2iarray(b, storage=storage)
 

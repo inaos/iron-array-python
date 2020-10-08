@@ -23,7 +23,7 @@ def test_slice(shape, chunkshape, blockshape, start, stop, dtype):
     if len(start) == 1:
         slices = slices[0]
 
-    a = ia.linspace(ia.dtshape(shape, dtype), -10, 10, storage=storage)
+    a = ia.linspace(ia.DTShape(shape, dtype), -10, 10, storage=storage)
     an = ia.iarray2numpy(a)
 
     b = a[slices]

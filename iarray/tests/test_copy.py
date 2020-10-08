@@ -20,7 +20,7 @@ def test_copy(shape, chunkshape, blockshape, dtype):
         storage = ia.StorageProperties(plainbuffer=True)
     else:
         storage = ia.StorageProperties(chunkshape, blockshape)
-    a_ = ia.linspace(ia.dtshape(shape, dtype), -10, 10, storage=storage)
+    a_ = ia.linspace(ia.DTShape(shape, dtype), -10, 10, storage=storage)
     sl = tuple([slice(0, s - 1) for s in shape])
     a = a_[sl]
     b = a.copy()
