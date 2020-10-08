@@ -45,12 +45,14 @@ jobs:
 
   strategy:
     matrix:
-      Python36:
-        python.version: '3.6'
       Python37:
         python.version: '3.7'
       Python38:
         python.version: '3.8'
+      # Activate 3.9 when Azure pipelines would support it
+      # https://github.com/Azure/azure-functions-python-worker/issues/742
+      # Python39:
+      #   python.version: '3.9'
 
   steps:
   - task: UsePythonVersion@0
@@ -137,12 +139,14 @@ jobs:
 
   strategy:
     matrix:
-      Python36:
-        python.version: '3.6'
       Python37:
         python.version: '3.7'
       Python38:
         python.version: '3.8'
+      # Activate 3.9 when Azure pipelines would support it
+      # https://github.com/Azure/azure-functions-python-worker/issues/742
+      # Python39:
+      #   python.version: '3.9'
 
   steps:
   - task: UsePythonVersion@0
