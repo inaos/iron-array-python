@@ -8,11 +8,12 @@ from iarray import udf
 from iarray.py2llvm import float64
 from numba import config, njit, prange
 
-#omp = ctypes.CDLL('libiomp5.so')
-#omp_set_num_threads = omp.omp_set_num_threads
+# omp = ctypes.CDLL('libiomp5.so')
+# omp_set_num_threads = omp.omp_set_num_threads
 
 max_num_threads = 4
 nrep = 5
+
 
 @njit(parallel=True)
 def poly_numba(x):
@@ -21,7 +22,9 @@ def poly_numba(x):
         y[i] = (x[i] - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
     return y
 
-#config.THREADING_LAYER = 'omp'
+
+# config.THREADING_LAYER = 'omp'
+
 
 @udf.jit
 def poly_udf(x: udf.Array(float64, 1), y: udf.Array(float64, 1)):
@@ -79,7 +82,7 @@ for num_threads in range(1, max_num_threads + 1):
     ne.set_num_threads(num_threads)
     for _ in range(nrep):
         t0 = time()
-        b1 = ne.evaluate("(x - 1.35) * (x - 4.45) * (x - 8.5)", local_dict={'x': a1})
+        b1 = ne.evaluate("(x - 1.35) * (x - 4.45) * (x - 8.5)", local_dict={"x": a1})
         t1 = time()
         t.append(round(size / 2 ** 20 * 8 / (t1 - t0), 2))
     t.remove(max(t))
@@ -132,7 +135,9 @@ for num_threads in range(1, max_num_threads + 1):
 
     # Superchunk with compression and UDF
     a1 = ia.linspace(dtshape, 0, 10, storage=bstorage, clevel=9, **kwargs)
-    expr = poly_udf.create_expr([a1], dtshape, storage=bstorage, method=ia.Eval.ITERBLOSC, clevel=9, **kwargs)
+    expr = poly_udf.create_expr(
+        [a1], dtshape, storage=bstorage, method=ia.Eval.ITERBLOSC, clevel=9, **kwargs
+    )
     t = []
     for _ in range(nrep):
         t0 = time()

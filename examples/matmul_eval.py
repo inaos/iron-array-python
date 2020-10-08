@@ -5,7 +5,7 @@ import numpy as np
 from time import time
 import ctypes
 
-mkl_rt = ctypes.CDLL('libmkl_rt.dylib')
+mkl_rt = ctypes.CDLL("libmkl_rt.dylib")
 mkl_set_num_threads = mkl_rt.MKL_Set_Num_Threads
 mkl_get_max_threads = mkl_rt.MKL_Get_Max_Threads
 

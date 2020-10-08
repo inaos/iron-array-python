@@ -13,9 +13,9 @@ NTHREADS = 8
 CLEVEL = 5
 CLIB = ia.LZ4
 
-compressor = Blosc(cname='lz4', clevel=CLEVEL, shuffle=Blosc.SHUFFLE)
+compressor = Blosc(cname="lz4", clevel=CLEVEL, shuffle=Blosc.SHUFFLE)
 shapes = np.logspace(6, 8, 10, dtype=np.int64)
-#chunkshape, blockshape = (100_000,), (8_000,)
+# chunkshape, blockshape = (100_000,), (8_000,)
 chunkshape, blockshape = None, None  # use automatic partitioning
 dtype = np.float64
 
@@ -42,7 +42,9 @@ for i, shape in enumerate(shapes):
     t_iarray.append(t1 - t0)
     print("Time for computing '%s' expression (via ia.Expr()): %.3f" % (sexpr, (t1 - t0)))
 
-    data2 = zarr.open("zarr_infile.zarr", "w", shape=shape, chunks=chunkshape, dtype=dtype, compressor=compressor)
+    data2 = zarr.open(
+        "zarr_infile.zarr", "w", shape=shape, chunks=chunkshape, dtype=dtype, compressor=compressor
+    )
     for info, block in data.iter_read_block():
         sl = tuple([slice(i, i + s) for i, s in zip(info.elemindex, info.shape)])
         data2[sl] = block[:]
@@ -56,8 +58,14 @@ for i, shape in enumerate(shapes):
         # res = ((d) - 3.2) * ((d) + 1.2)
         res = (d - 1.35) * (d - 4.45) * (d - 8.5)
         # z2 = zarr.empty(shape, dtype=dtype, compressor=compressor, chunks=pshape)
-        z2 = zarr.open("zarr_outfile.zarr", "w", shape=shape, chunks=chunkshape,
-                       dtype=dtype, compressor=compressor)
+        z2 = zarr.open(
+            "zarr_outfile.zarr",
+            "w",
+            shape=shape,
+            chunks=chunkshape,
+            dtype=dtype,
+            compressor=compressor,
+        )
         da.to_zarr(res, z2)
     t1 = time()
     t_dask.append(t1 - t0)

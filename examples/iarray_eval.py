@@ -12,8 +12,8 @@ shape = [100 * 1000 * 1000]
 N = int(np.prod(shape))
 dtype = np.float64
 
-expression = '(x - 1.35) * (x - 4.45) * (x - 8.5)'
-clevel = 1   # compression level
+expression = "(x - 1.35) * (x - 4.45) * (x - 8.5)"
+clevel = 1  # compression level
 clib = ia.LZ4  # compression codec
 nthreads = 8  # number of threads for the evaluation and/or compression
 
@@ -28,16 +28,16 @@ print("Regular evaluate via numpy:", round((time() - t0) / NITER, 4))
 
 cparams = dict(clib=clib, clevel=clevel, nthreads=nthreads)
 dtshape = ia.dtshape(shape=shape, dtype=dtype)
-xa = ia.linspace(dtshape, 0., 10., **cparams)
+xa = ia.linspace(dtshape, 0.0, 10.0, **cparams)
 print("Operand cratio:", round(xa.cratio, 2))
 
 ya = None
 
 t0 = time()
 expr = ia.Expr(**cparams)
-expr.bind('x', xa)
+expr.bind("x", xa)
 expr.bind_out_properties(dtshape)
-expr.compile('(x - 1.35) * (x - 4.45) * (x - 8.5)')
+expr.compile("(x - 1.35) * (x - 4.45) * (x - 8.5)")
 for i in range(NITER):
     ya = expr.eval()
 print("Result cratio:", round(ya.cratio, 2))

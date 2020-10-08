@@ -5,17 +5,19 @@ from itertools import zip_longest as izip
 
 
 # Expression
-@pytest.mark.parametrize("shape, chunkshape, blockshape, itershape, dtype",
-                         [
-                             ([100, 100], [20, 20], [10, 10], [20, 20], np.float64),
-                             ([100, 100], [15, 15], [7, 8], [15, 15], np.float32),
-                             ([10, 10, 10], [4, 5, 6], [2, 3, 6], [4, 5, 6], np.float64),
-                             ([10, 10, 10, 10], [3, 4, 3, 4], [2, 2, 2, 2], [3, 4, 3, 4], np.float32),
-                             ([100, 100], None, None, [30, 30], np.float64),
-                             ([100, 100], None, None, [15, 15], np.float32),
-                             ([10, 10, 10], None, None, [4, 5, 6], np.float64),
-                             ([10, 10, 10, 10], None, None, [3, 4, 3, 4], np.float32)
-                         ])
+@pytest.mark.parametrize(
+    "shape, chunkshape, blockshape, itershape, dtype",
+    [
+        ([100, 100], [20, 20], [10, 10], [20, 20], np.float64),
+        ([100, 100], [15, 15], [7, 8], [15, 15], np.float32),
+        ([10, 10, 10], [4, 5, 6], [2, 3, 6], [4, 5, 6], np.float64),
+        ([10, 10, 10, 10], [3, 4, 3, 4], [2, 2, 2, 2], [3, 4, 3, 4], np.float32),
+        ([100, 100], None, None, [30, 30], np.float64),
+        ([100, 100], None, None, [15, 15], np.float32),
+        ([10, 10, 10], None, None, [4, 5, 6], np.float64),
+        ([10, 10, 10, 10], None, None, [3, 4, 3, 4], np.float32),
+    ],
+)
 def test_iterator(shape, chunkshape, blockshape, itershape, dtype):
     if chunkshape is None:
         storage = ia.StorageProperties(plainbuffer=True)

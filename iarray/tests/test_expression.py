@@ -5,29 +5,104 @@ import numpy as np
 
 
 # Expression
-@pytest.mark.parametrize("method, shape, chunkshape, blockshape, dtype, expression", [
-    (ia.Eval.ITERBLOSC, [100, 100], [23, 32], [10, 10], np.float64, "cos(x)"),  # TODO: fix this
-    (ia.Eval.ITERBLOSC, [100, 100], [10, 99], [4, 12], np.float64, "x"),
-    (ia.Eval.ITERBLOSC, [1000], [110], [55], np.float32, "x"),
-    (ia.Eval.ITERBLOSC, [1000], [100], [30], np.float64, "(cos(x) - 1.35) * (sin(x) - 4.45) * tan(x - 8.5)"),
-    (ia.Eval.AUTO, [1000], [100], [25], np.float64, "(cos(x) - 1.35) * (sin(x) - 4.45) * tan(x - 8.5)"),
-    (ia.Eval.ITERCHUNK, [1000], [367], [77], np.float32, "(abs(-x) - 1.35) * ceil(x) * floor(x - 8.5)"),
-    (ia.Eval.ITERBLOSC, [100, 100, 100], [25, 25, 33], [12, 16, 8], np.float64,
-     "sinh(x) + (cosh(x) - 1.35) - tanh(x + .2)"),
-    (ia.Eval.ITERBLOSC, [223], [100], [30], np.float64, "sinh(x) + (cosh(x) - 1.35) - tanh(x + .2)"),
-    (ia.Eval.ITERCHUNK, [100, 100, 55], [10, 5, 10], [3, 4, 3], np.float64,
-     "asin(x) + (acos(x) - 1.35) - atan(x + .2)"),
-    (ia.Eval.ITERCHUNK, [100, 100, 55], [10, 5, 10], [3, 4, 3], np.float64,
-     "arcsin(x) + (arccos(x) - 1.35) - arctan(x + .2)"),  # check NumPy naming convention for ufuncs
-    (ia.Eval.AUTO, [1000], None, None, np.float64, "exp(x) + (log(x) - 1.35) - log10(x + .2)"),
-    (ia.Eval.ITERCHUNK, [1000], None, None, np.float32, "sqrt(x) + atan2(x, x) + pow(x, x)"),
-    (ia.Eval.AUTO, [1000], None, None, np.float32, "sqrt(x) + arctan2(x, x) + power(x, x)"),  # NumPy conventions
-    (ia.Eval.AUTO, [100, 100], None, None, np.float64, "(x - cos(1)) * 2"),
-    (ia.Eval.ITERCHUNK, [8, 6, 7, 4, 5], None, None, np.float32,
-     "(x - cos(y)) * (sin(x) + y) + 2 * x + y"),
-    (ia.Eval.ITERBLOSC,  [17, 12, 15, 15, 8], [8, 6, 7, 4, 5], [4, 3, 3, 4, 5], np.float64,
-     "(x - cos(y)) * (sin(x) + y) + 2 * x + y"),
-])
+@pytest.mark.parametrize(
+    "method, shape, chunkshape, blockshape, dtype, expression",
+    [
+        (
+            ia.Eval.ITERBLOSC,
+            [100, 100],
+            [23, 32],
+            [10, 10],
+            np.float64,
+            "cos(x)",
+        ),  # TODO: fix this
+        (ia.Eval.ITERBLOSC, [100, 100], [10, 99], [4, 12], np.float64, "x"),
+        (ia.Eval.ITERBLOSC, [1000], [110], [55], np.float32, "x"),
+        (
+            ia.Eval.ITERBLOSC,
+            [1000],
+            [100],
+            [30],
+            np.float64,
+            "(cos(x) - 1.35) * (sin(x) - 4.45) * tan(x - 8.5)",
+        ),
+        (
+            ia.Eval.AUTO,
+            [1000],
+            [100],
+            [25],
+            np.float64,
+            "(cos(x) - 1.35) * (sin(x) - 4.45) * tan(x - 8.5)",
+        ),
+        (
+            ia.Eval.ITERCHUNK,
+            [1000],
+            [367],
+            [77],
+            np.float32,
+            "(abs(-x) - 1.35) * ceil(x) * floor(x - 8.5)",
+        ),
+        (
+            ia.Eval.ITERBLOSC,
+            [100, 100, 100],
+            [25, 25, 33],
+            [12, 16, 8],
+            np.float64,
+            "sinh(x) + (cosh(x) - 1.35) - tanh(x + .2)",
+        ),
+        (
+            ia.Eval.ITERBLOSC,
+            [223],
+            [100],
+            [30],
+            np.float64,
+            "sinh(x) + (cosh(x) - 1.35) - tanh(x + .2)",
+        ),
+        (
+            ia.Eval.ITERCHUNK,
+            [100, 100, 55],
+            [10, 5, 10],
+            [3, 4, 3],
+            np.float64,
+            "asin(x) + (acos(x) - 1.35) - atan(x + .2)",
+        ),
+        (
+            ia.Eval.ITERCHUNK,
+            [100, 100, 55],
+            [10, 5, 10],
+            [3, 4, 3],
+            np.float64,
+            "arcsin(x) + (arccos(x) - 1.35) - arctan(x + .2)",
+        ),  # check NumPy naming convention for ufuncs
+        (ia.Eval.AUTO, [1000], None, None, np.float64, "exp(x) + (log(x) - 1.35) - log10(x + .2)"),
+        (ia.Eval.ITERCHUNK, [1000], None, None, np.float32, "sqrt(x) + atan2(x, x) + pow(x, x)"),
+        (
+            ia.Eval.AUTO,
+            [1000],
+            None,
+            None,
+            np.float32,
+            "sqrt(x) + arctan2(x, x) + power(x, x)",
+        ),  # NumPy conventions
+        (ia.Eval.AUTO, [100, 100], None, None, np.float64, "(x - cos(1)) * 2"),
+        (
+            ia.Eval.ITERCHUNK,
+            [8, 6, 7, 4, 5],
+            None,
+            None,
+            np.float32,
+            "(x - cos(y)) * (sin(x) + y) + 2 * x + y",
+        ),
+        (
+            ia.Eval.ITERBLOSC,
+            [17, 12, 15, 15, 8],
+            [8, 6, 7, 4, 5],
+            [4, 3, 3, 4, 5],
+            np.float64,
+            "(x - cos(y)) * (sin(x) + y) + 2 * x + y",
+        ),
+    ],
+)
 def test_expression(method, shape, chunkshape, blockshape, dtype, expression):
     # The ranges below are important for not overflowing operations
     if chunkshape is None:
@@ -35,7 +110,7 @@ def test_expression(method, shape, chunkshape, blockshape, dtype, expression):
     else:
         storage = ia.StorageProperties(chunkshape=chunkshape, blockshape=blockshape)
 
-    x = ia.linspace(ia.dtshape(shape, dtype), .1, .2, storage=storage)
+    x = ia.linspace(ia.dtshape(shape, dtype), 0.1, 0.2, storage=storage)
     y = ia.linspace(ia.dtshape(shape, dtype), 0, 1, storage=storage)
     npx = ia.iarray2numpy(x)
     npy = ia.iarray2numpy(y)
@@ -50,8 +125,7 @@ def test_expression(method, shape, chunkshape, blockshape, dtype, expression):
     npout = ia.iarray2numpy(iout)
 
     # High-level eval
-    expr = ia.create_expr(expression, {"x": x, "y": y},
-                          ia.dtshape(shape, dtype), storage=storage)
+    expr = ia.create_expr(expression, {"x": x, "y": y}, ia.dtshape(shape, dtype), storage=storage)
     iout2 = expr.eval()
     npout2 = ia.iarray2numpy(iout2)
 
@@ -76,7 +150,7 @@ def test_expression(method, shape, chunkshape, blockshape, dtype, expression):
         if ufunc in expression:
             idx = expression.find(ufunc)
             # Prevent replacing an ufunc with np.ufunc twice (not terribly solid, but else, test will crash)
-            if "np." not in expression[idx - len("np.arc"):idx]:
+            if "np." not in expression[idx - len("np.arc") : idx]:
                 expression = expression.replace(ufunc + "(", "np." + ufunc + "(")
     npout2 = eval(expression, {"x": npx, "y": npy, "np": numpy})
 
@@ -84,27 +158,30 @@ def test_expression(method, shape, chunkshape, blockshape, dtype, expression):
 
 
 # ufuncs
-@pytest.mark.parametrize("ufunc, ia_expr", [
-    ("abs(x)", "abs(x)"),
-    ("arccos(x)", "acos(x)"),
-    ("arcsin(x)", "asin(x)"),
-    ("arctan(x)", "atan(x)"),
-    ("arctan2(x, y)", "atan2(x, y)"),
-    ("ceil(x)", "ceil(x)"),
-    ("cos(x)", "cos(x)"),
-    ("cosh(x)", "cosh(x)"),
-    ("exp(x)", "exp(x)"),
-    ("floor(x)", "floor(x)"),
-    ("log(x)", "log(x)"),
-    ("log10(x)", "log10(x)"),
-    # ("negative(x)", "negate(x)"),
-    ("power(x, y)", "pow(x, y)"),
-    ("sin(x)", "sin(x)"),
-    ("sinh(x)", "sinh(x)"),
-    ("sqrt(x)", "sqrt(x)"),
-    ("tan(x)", "tan(x)"),
-    ("tanh(x)", "tanh(x)"),
-])
+@pytest.mark.parametrize(
+    "ufunc, ia_expr",
+    [
+        ("abs(x)", "abs(x)"),
+        ("arccos(x)", "acos(x)"),
+        ("arcsin(x)", "asin(x)"),
+        ("arctan(x)", "atan(x)"),
+        ("arctan2(x, y)", "atan2(x, y)"),
+        ("ceil(x)", "ceil(x)"),
+        ("cos(x)", "cos(x)"),
+        ("cosh(x)", "cosh(x)"),
+        ("exp(x)", "exp(x)"),
+        ("floor(x)", "floor(x)"),
+        ("log(x)", "log(x)"),
+        ("log10(x)", "log10(x)"),
+        # ("negative(x)", "negate(x)"),
+        ("power(x, y)", "pow(x, y)"),
+        ("sin(x)", "sin(x)"),
+        ("sinh(x)", "sinh(x)"),
+        ("sqrt(x)", "sqrt(x)"),
+        ("tan(x)", "tan(x)"),
+        ("tanh(x)", "tanh(x)"),
+    ],
+)
 def test_ufuncs(ufunc, ia_expr):
     shape = [200, 300]
     chunkshape = [40, 40]
@@ -115,7 +192,7 @@ def test_ufuncs(ufunc, ia_expr):
     for dtype in np.float64, np.float32:
         dtshape = ia.dtshape(shape, dtype)
         # The ranges below are important for not overflowing operations
-        x = ia.linspace(dtshape, .1, .9, storage=storage)
+        x = ia.linspace(dtshape, 0.1, 0.9, storage=storage)
         y = ia.linspace(dtshape, 0, 1, storage=storage)
         npx = ia.iarray2numpy(x)
         npy = ia.iarray2numpy(y)
@@ -156,32 +233,35 @@ def test_ufuncs(ufunc, ia_expr):
             npout2 = ia.iarray2numpy(iout2)
             np.testing.assert_almost_equal(npout, npout2, decimal=decimal)
 
-        npout2 = eval("np." + ufunc, {"np": np, "x": npx, "y": npy})   # pure numpy
+        npout2 = eval("np." + ufunc, {"np": np, "x": npx, "y": npy})  # pure numpy
         np.testing.assert_almost_equal(npout, npout2, decimal=decimal)
 
 
 # ufuncs inside of expressions
-@pytest.mark.parametrize("ufunc", [
-    "abs",
-    "arccos",
-    "arcsin",
-    "arctan",
-    "arctan2",
-    "ceil",
-    "cos",
-    "cosh",
-    "exp",
-    "floor",
-    "log",
-    "log10",
-    # "negative",
-    "power",
-    "sin",
-    "sinh",
-    "sqrt",
-    "tan",
-    "tanh",
-])
+@pytest.mark.parametrize(
+    "ufunc",
+    [
+        "abs",
+        "arccos",
+        "arcsin",
+        "arctan",
+        "arctan2",
+        "ceil",
+        "cos",
+        "cosh",
+        "exp",
+        "floor",
+        "log",
+        "log10",
+        # "negative",
+        "power",
+        "sin",
+        "sinh",
+        "sqrt",
+        "tan",
+        "tanh",
+    ],
+)
 def test_expr_ufuncs(ufunc):
     shape = [200, 300]
     cshape = [40, 50]
@@ -191,7 +271,7 @@ def test_expr_ufuncs(ufunc):
     for dtype in np.float64, np.float32:
         dtshape = ia.dtshape(shape, dtype)
         # The ranges below are important for not overflowing operations
-        x = ia.linspace(dtshape, .1, .9, storage=storage)
+        x = ia.linspace(dtshape, 0.1, 0.9, storage=storage)
         y = ia.linspace(dtshape, 0, 1, storage=storage)
 
         # NumPy computation
@@ -215,16 +295,19 @@ def test_expr_ufuncs(ufunc):
 
 
 # Different operand fusions inside expressions
-@pytest.mark.parametrize("expr", [
-    "x + y",
-    "(x + y) + z",
-    "(x + y) * (x + z)",
-    "(x + y + z) * (x + z)",
-    "(x + y - z) * (x + y + t)",
-    "(x - z + t) * (x + y - z)",
-    "(x - z + t) * (z + t - x)",
-    "(x - z + t + y) * (t - y + z - x)",
-])
+@pytest.mark.parametrize(
+    "expr",
+    [
+        "x + y",
+        "(x + y) + z",
+        "(x + y) * (x + z)",
+        "(x + y + z) * (x + z)",
+        "(x + y - z) * (x + y + t)",
+        "(x - z + t) * (x + y - z)",
+        "(x - z + t) * (z + t - x)",
+        "(x - z + t + y) * (t - y + z - x)",
+    ],
+)
 def test_expr_fusion(expr):
     shape = [200, 300]
     chunkshape = [40, 50]
@@ -234,10 +317,10 @@ def test_expr_fusion(expr):
     for dtype in np.float64, np.float32:
         dtshape = ia.dtshape(shape, dtype)
         # The ranges below are important for not overflowing operations
-        x = ia.linspace(dtshape, .1, .9, storage=storage)
-        y = ia.linspace(dtshape, 0., 1., storage=storage)
-        z = ia.linspace(dtshape, 0., 2., storage=storage)
-        t = ia.linspace(dtshape, 0., 3., storage=storage)
+        x = ia.linspace(dtshape, 0.1, 0.9, storage=storage)
+        y = ia.linspace(dtshape, 0.0, 1.0, storage=storage)
+        z = ia.linspace(dtshape, 0.0, 2.0, storage=storage)
+        t = ia.linspace(dtshape, 0.0, 3.0, storage=storage)
 
         # NumPy computation
         npx = ia.iarray2numpy(x)

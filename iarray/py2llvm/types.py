@@ -10,6 +10,7 @@ except ImportError:
 try:
     from numba.core.cgutils import printf
 except ImportError:
+
     def printf(builder, fmt, *args):
         pass
 
@@ -66,7 +67,7 @@ def type_to_ir_type(type_):
     if type_ in types:
         return types[type_]
 
-    raise ValueError(f'unexpected {type_}')
+    raise ValueError(f"unexpected {type_}")
 
 
 def value_to_type(value):
@@ -125,7 +126,7 @@ def value_to_ir_value(builder, value, type_=None):
         # To or from float
         conversion = conversions.get((type(value.type), type(type_)))
         if conversion is None:
-            err = f'Conversion from {value.type} to {type_} not supported'
+            err = f"Conversion from {value.type} to {type_} not supported"
             raise NotImplementedError(err)
 
     return conversion(value, type_)
@@ -135,8 +136,8 @@ def value_to_ir_value(builder, value, type_=None):
 # Compound types
 #
 
-class ComplexType:
 
+class ComplexType:
     def __init__(self, function, name, args):
         self.name = name
         self.ptr = args[name]
@@ -146,7 +147,6 @@ class ComplexType:
 
 
 class ArrayShape:
-
     def __init__(self, shape):
         self.shape = shape
 
@@ -160,11 +160,10 @@ class ArrayShape:
 
 
 class ArrayType(ComplexType):
-
     def __init__(self, function, name, args):
         super().__init__(function, name, args)
         # Keep a pointer to every dimension
-        prefix = f'{name}_'
+        prefix = f"{name}_"
         n = len(prefix)
         shape = {int(x[n:]): args[x] for x in args if x.startswith(prefix)}
         self.shape = ArrayShape(shape)
@@ -191,7 +190,7 @@ class ArrayType(ComplexType):
         # x[i,j,k] = i * strides[0] + j * strides[1] + k * strides[2]
         # Strides represent the gap in bytes.
         for dim in range(self.ndim):
-            #stride = self.strides.get(visitor.builder, dim)
+            # stride = self.strides.get(visitor.builder, dim)
             stride = self.strides_cache[dim]
             idx = slice[dim]
             idx = value_to_ir_value(builder, idx)
@@ -207,21 +206,15 @@ class ArrayType(ComplexType):
 
 
 def Array(dtype, ndim):
-    return type(
-        f'Array[{dtype}, {ndim}]',
-        (ArrayType,),
-        dict(dtype=dtype, ndim=ndim)
-    )
+    return type(f"Array[{dtype}, {ndim}]", (ArrayType,), dict(dtype=dtype, ndim=ndim))
 
 
 class Node:
-
     def Attribute_exit(self, visitor):
         return self
 
 
 class StructAttrNode(Node):
-
     def __init__(self, ptr, i):
         self.ptr = ptr
         self.i = i
@@ -234,7 +227,6 @@ class StructAttrNode(Node):
 
 
 class StructType(ComplexType):
-
     @classmethod
     def get_body(self):
         return [type_to_ir_type(type_) for name, type_ in self._fields_]
@@ -249,18 +241,18 @@ class StructType(ComplexType):
     def __getattr__(self, attr):
         i = self.get_index(attr)
         if i is None:
-            raise AttributeError(f'Unexpected {attr}')
+            raise AttributeError(f"Unexpected {attr}")
 
         return StructAttrNode(self.ptr, i)
 
 
 def Struct(name, **kw):
     type_dict = {
-        '_name_': name,
-        '_fields_': kw.items(),
+        "_name_": name,
+        "_fields_": kw.items(),
     }
     return type(
-        f'Struct[{name}, {kw}]',
+        f"Struct[{name}, {kw}]",
         (StructType,),
         type_dict,
     )

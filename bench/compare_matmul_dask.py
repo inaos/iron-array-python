@@ -9,7 +9,7 @@ import zarr
 
 import iarray as ia
 
-mkl_rt = ctypes.CDLL('libmkl_rt.dylib')
+mkl_rt = ctypes.CDLL("libmkl_rt.dylib")
 mkl_get_max_threads = mkl_rt.mkl_get_max_threads
 
 
@@ -21,6 +21,7 @@ MEMPROF = True
 if MEMPROF:
     from memory_profiler import profile
 else:
+
     def profile(f):
         return f
 
@@ -46,7 +47,12 @@ cchunkshape = (500, 500)
 cblockshape = (128, 128)
 
 
-compressor = Blosc(cname='lz4', clevel=CLEVEL, shuffle=Blosc.SHUFFLE, blocksize=reduce(lambda x, y: x * y, ablockshape))
+compressor = Blosc(
+    cname="lz4",
+    clevel=CLEVEL,
+    shuffle=Blosc.SHUFFLE,
+    blocksize=reduce(lambda x, y: x * y, ablockshape),
+)
 cparams = dict(clib=CLIB, clevel=CLEVEL, nthreads=NTHREADS)
 
 astorage = ia.StorageProperties(achunkshape, ablockshape)
@@ -65,6 +71,7 @@ ablock = (500, 500)
 bblock = (500, 500)
 
 cstorage = ia.StorageProperties(cchunkshape, cblockshape)
+
 
 @profile
 def ia_matmul(aia, bia, ablock, bblock):
@@ -102,8 +109,12 @@ def dask_matmul(azarr, bzarr):
         ad = da.from_zarr(azarr)
         bd = da.from_zarr(bzarr)
         cd = da.matmul(ad, bd)
-        czarr = zarr.empty((ashape[0], bshape[1]), dtype=DTYPE,
-                           compressor=compressor, chunks=(ablock[0], bblock[1]))
+        czarr = zarr.empty(
+            (ashape[0], bshape[1]),
+            dtype=DTYPE,
+            compressor=compressor,
+            chunks=(ablock[0], bblock[1]),
+        )
         da.to_zarr(cd, czarr)
         return czarr
 

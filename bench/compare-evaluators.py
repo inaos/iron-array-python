@@ -22,8 +22,8 @@ N = int(np.prod(shape))
 chunkshape, blockshape = None, None  # use automatic partition advice
 # chunkshape, blockshape = [400 * 1000], [16 * 1000]  # user-defined partitions
 
-expression = '(x - 1.35) * (x - 4.45) * (x - 8.5)'
-clevel = 9   # compression level
+expression = "(x - 1.35) * (x - 4.45) * (x - 8.5)"
+clevel = 9  # compression level
 clib = ia.LZ4  # compression codec
 nthreads = 8  # number of threads for the evaluation and/or compression
 
@@ -83,14 +83,14 @@ def do_regular_evaluation():
     t0 = time()
     ne.set_num_threads(1)
     for i in range(NITER):
-        y1 = ne.evaluate(expression, local_dict={'x': x})
+        y1 = ne.evaluate(expression, local_dict={"x": x})
     print("Regular evaluate via numexpr:", round((time() - t0) / NITER, 4))
     np.testing.assert_almost_equal(y0, y1)
 
     t0 = time()
     ne.set_num_threads(nthreads)
     for i in range(NITER):
-        y1 = ne.evaluate(expression, local_dict={'x': x})
+        y1 = ne.evaluate(expression, local_dict={"x": x})
     print("Regular evaluate via numexpr (multi-thread):", round((time() - t0) / NITER, 4))
     np.testing.assert_almost_equal(y0, y1)
 
@@ -138,7 +138,7 @@ def do_block_evaluation(plainbuffer):
 
     x = np.linspace(0, 10, N, dtype=np.double).reshape(shape)
     dtshape = ia.dtshape(shape=shape)
-    xa = ia.linspace(dtshape, 0., 10., **cparams)
+    xa = ia.linspace(dtshape, 0.0, 10.0, **cparams)
 
     if not plainbuffer:
         print("Operand cratio:", round(xa.cratio, 2))
@@ -163,7 +163,7 @@ def do_block_evaluation(plainbuffer):
     for i in range(NITER):
         ya = ia.empty(dtshape, **cparams)
         for ((j, x), (k, y)) in zip_longest(xa.iter_read_block(), ya.iter_write_block()):
-            ne.evaluate(expression, local_dict={'x': x}, out=y)
+            ne.evaluate(expression, local_dict={"x": x}, out=y)
     print("Block evaluate via numexpr:", round((time() - t0) / NITER, 4))
     y1 = ia.iarray2numpy(ya)
     np.testing.assert_almost_equal(y0, y1)
@@ -173,7 +173,7 @@ def do_block_evaluation(plainbuffer):
     for i in range(NITER):
         ya = ia.empty(dtshape, **cparams)
         for ((j, x), (k, y)) in zip_longest(xa.iter_read_block(), ya.iter_write_block()):
-            ne.evaluate(expression, local_dict={'x': x}, out=y)
+            ne.evaluate(expression, local_dict={"x": x}, out=y)
     print("Block evaluate via numexpr (multi-thread):", round((time() - t0) / NITER, 4))
     y1 = ia.iarray2numpy(ya)
     np.testing.assert_almost_equal(y0, y1)
@@ -221,7 +221,7 @@ def do_block_evaluation(plainbuffer):
     for engine in ("internal", "udf"):
         t0 = time()
         if engine == "internal":
-            expr = ia.create_expr(expression, {'x': xa}, dtshape, **cparams)
+            expr = ia.create_expr(expression, {"x": xa}, dtshape, **cparams)
         else:
             expr = poly_llvm.create_expr([xa], dtshape, **cparams)
         for i in range(NITER):

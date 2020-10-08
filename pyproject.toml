@@ -1,2 +1,31 @@
 [build-system]
 requires = ["setuptools", "wheel", "scikit-build", "cmake", "ninja", "numpy", "llvmlite", "numexpr"]
+
+[tool.black]
+line-length = 99
+target-version = ['py37']
+include = '\.pyi?$'
+exclude = '''
+
+(
+  /(
+      \.eggs         # exclude a few common directories in the
+    | \.git          # root of the project
+    | \.mypy_cache
+    | \.tox
+    | \.venv.*       # exclude different virtual envs, like .venv37
+    | _build
+    | buck-out
+    | build
+    | dist
+    | PyData-NYC-2019
+    | iarray/iarray-c-develop
+  )/
+)
+'''
+
+[tool.pylint.messages_control]
+disable = "C0330, C0326"
+
+[tool.pylint.format]
+max-line-length = "99"

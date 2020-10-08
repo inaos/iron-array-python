@@ -71,16 +71,16 @@ def evaluate(command):
 
     def ia_compiler_parallel(command):
         global iax, iay, iaz, shape, chunkshape, blockshape, dtype, cparams
-        cparams['nthreads'] = NTHREADS
-        cparams['storage'] = ia.StorageProperties(chunkshape, blockshape)
+        cparams["nthreads"] = NTHREADS
+        cparams["storage"] = ia.StorageProperties(chunkshape, blockshape)
         dtshape = ia.dtshape(shape, dtype)
         expr = ia.create_expr(command, {"x": iax, "y": iay, "z": iaz}, dtshape, **cparams)
         expr.eval()
 
     def ia_compiler_serial(command):
         global iax, iay, iaz, shape, chunkshape, blockshape, dtype, cparams
-        cparams['nthreads'] = 1
-        cparams['storage'] = ia.StorageProperties(chunkshape, blockshape)
+        cparams["nthreads"] = 1
+        cparams["storage"] = ia.StorageProperties(chunkshape, blockshape)
         dtshape = ia.dtshape(shape, dtype)
         expr = ia.create_expr(command, {"x": iax, "y": iay, "z": iaz}, dtshape, **cparams)
         expr.eval()
@@ -119,18 +119,19 @@ def evaluate(command):
             dask_parallel,
             dask_serial,
         ],
-        labels=["numpy",
-                # "numexpr parallel",
-                # "numexpr serial",
-                "iarray parallel",
-                "iarray serial",
-                "dask parallel",
-                "dask serial",
-                ],
+        labels=[
+            "numpy",
+            # "numexpr parallel",
+            # "numexpr serial",
+            "iarray parallel",
+            "iarray serial",
+            "dask parallel",
+            "dask serial",
+        ],
         logx=False,
         logy=False,
         title=f"Eval {command} (nthreads={NTHREADS})",
-        xlabel='len(x)',
+        xlabel="len(x)",
         equality_check=None,
         flops=lambda n: 5 * n,
     )
