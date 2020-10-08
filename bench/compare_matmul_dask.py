@@ -59,27 +59,25 @@ astorage = ia.StorageProperties(achunkshape, ablockshape)
 
 lia = ia.linspace(ia.dtshape(ashape, dtype=DTYPE), 0, 1, storage=astorage, **cparams)
 nia = ia.random_normal(ia.dtshape(ashape, dtype=DTYPE), 0, 0.0000001, storage=astorage, **cparams)
-aia = (lia + nia).eval(storage=astorage, **cparams)
+aia = (lia + nia).eval(storage=astorage, dtshape=ia.dtshape(ashape, dtype=DTYPE), **cparams)
 
 bstorage = ia.StorageProperties(bchunkshape, bblockshape)
 
 lia = ia.linspace(ia.dtshape(bshape, dtype=DTYPE), 0, 1, storage=bstorage, **cparams)
 nia = ia.random_normal(ia.dtshape(bshape, dtype=DTYPE), 0, 0.0000001, storage=bstorage, **cparams)
-bia = (lia + nia).eval(storage=bstorage, **cparams)
-
-ablock = (500, 500)
-bblock = (500, 500)
+bia = (lia + nia).eval(storage=bstorage, dtshape=ia.dtshape(bshape, dtype=DTYPE), **cparams)
 
 cstorage = ia.StorageProperties(cchunkshape, cblockshape)
 
 
 @profile
-def ia_matmul(aia, bia, ablock, bblock):
-    return ia.matmul(aia, bia, ablock, bblock, storage=cstorage, **cparams)
+def ia_matmul(aia, bia):
+    return ia.matmul(aia, bia, storage=cstorage, **cparams)
 
 
+mkl_set_num_threads(1)
 t0 = time()
-cia = ia_matmul(aia, bia, ablock, bblock)
+cia = ia_matmul(aia, bia)
 t1 = time()
 tia = t1 - t0
 print("Time for computing matmul (via iarray): %.3f" % (tia))
@@ -100,8 +98,6 @@ for info, block in bia.iter_read_block(bchunkshape):
 
 scheduler = "single-threaded" if NTHREADS == 1 else "threads"
 
-mkl_set_num_threads(1)
-
 
 @profile
 def dask_matmul(azarr, bzarr):
@@ -113,12 +109,13 @@ def dask_matmul(azarr, bzarr):
             (ashape[0], bshape[1]),
             dtype=DTYPE,
             compressor=compressor,
-            chunks=(ablock[0], bblock[1]),
+            chunks=cchunkshape,
         )
         da.to_zarr(cd, czarr)
         return czarr
 
 
+mkl_set_num_threads(1)
 t0 = time()
 czarr = dask_matmul(azarr, bzarr)
 t1 = time()
