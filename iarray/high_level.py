@@ -65,7 +65,7 @@ def cmp_arrays(a, b, success=None):
     """Quick and dirty comparison between arrays `a` and `b`.
 
     The arrays `a` and `b` are converted internally to numpy arrays, so
-    this can require a lot of memory.  This is maninly used for quick testing.
+    this can require a lot of memory.  This is mainly used for quick testing.
 
     If success, and the string passed in `success` is not None, it is printed.
     """
@@ -227,7 +227,7 @@ class StorageProperties:
 
 
 #
-# Expresssions
+# Expressions
 #
 
 
