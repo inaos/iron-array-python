@@ -5,7 +5,9 @@ import numpy as np
 
 # Matmul
 @pytest.mark.parametrize(
-    "ashape, achunkshape, ablockshape, bshape, bchunkshape, bblockshape, cchunkshape, cblockshape, dtype",
+    "ashape, achunkshape, ablockshape,"
+    "bshape, bchunkshape, bblockshape,"
+    "cchunkshape, cblockshape, dtype",
     [
         ([20, 20], [10, 10], [5, 5], [20, 20], [10, 10], [5, 5], [10, 10], [5, 5], np.float64),
         ([100, 100], None, None, [100, 100], None, None, None, None, np.float32),
