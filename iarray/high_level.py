@@ -13,7 +13,7 @@ import numpy as np
 import iarray as ia
 from iarray import iarray_ext as ext
 from itertools import zip_longest as zip
-from collections import namedtuple
+from dataclasses import dataclass
 import warnings
 
 
@@ -85,31 +85,10 @@ def cmp_arrays(a, b, success=None):
         print(success)
 
 
+@dataclass
 class dtshape:
-    def __init__(self, shape=None, dtype=np.float64):
-        """Container for the `shape` and the `dtype`.
-
-        The `shape` can be any sequence (typically list or tuple).
-
-        The `dtype` can only be `np.float32` or `np.float64`.
-        """
-
-        if shape is None:
-            raise ValueError("shape cannot be None")
-        # Check shape somewhat more
-        try:
-            sum(shape)
-        except:
-            raise ValueError("shape can only be a sequence of numbers")
-        dtype = np.dtype(dtype)
-        if dtype.type not in (np.float32, np.float64):
-            raise NotImplementedError("Only float32 and float64 types are supported for now")
-        self.shape = shape
-        self.dtype = dtype
-
-    def to_tuple(self):
-        Dtshape = namedtuple("dtshape", "shape dtype")
-        return Dtshape(self.shape, self.dtype)
+    shape: (tuple, list)
+    dtype: (np.float32, np.float64) = np.float64
 
 
 class Config(ext._Config):
@@ -245,14 +224,6 @@ class StorageProperties:
             raise ValueError(
                 "You can either specify both chunkshape and blockshape or none of them."
             )
-
-    def to_tuple(self):
-        StoreProp = namedtuple(
-            "store_properties", "chunkshape blockshape enforce_frame filename plainbuffer"
-        )
-        return StoreProp(
-            self.chunkshape, self.blockshape, self.enforce_frame, self.filename, self.plainbuffer
-        )
 
 
 #
@@ -643,8 +614,7 @@ def linspace(dtshape, start, stop, nelem=50, **kwargs):
     cfg = Config(**kwargs)
     cfg._storage.get_shape_advice(dtshape)
 
-    shape, dtype = dtshape.to_tuple()
-    nelem = np.prod(shape) if dtshape is not None else nelem
+    nelem = np.prod(dtshape.shape) if dtshape is not None else nelem
 
     return ext.linspace(cfg, nelem, start, stop, dtshape)
 
