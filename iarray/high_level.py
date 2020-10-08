@@ -12,7 +12,7 @@
 import numpy as np
 import iarray as ia
 from iarray import iarray_ext as ext
-from itertools import zip_longest as zip
+from itertools import zip_longest
 from dataclasses import dataclass
 import warnings
 
@@ -436,17 +436,17 @@ class IArray(ext.Container):
         if self.ndim == 1:
             key = [key]
         start = [s.start if s.start is not None else 0 for s in key]
-        start = [st if st < sh else sh for st, sh in zip(start, self.shape, fillvalue=0)]
+        start = [st if st < sh else sh for st, sh in zip_longest(start, self.shape, fillvalue=0)]
         stop = [
             s.stop if s.stop is not None else sh
-            for s, sh in zip(key, self.shape, fillvalue=slice(0))
+            for s, sh in zip_longest(key, self.shape, fillvalue=slice(0))
         ]
-        stop = [sh if st == 0 else st for st, sh in zip(stop, self.shape)]
-        stop = [st if st < sh else sh for st, sh in zip(stop, self.shape)]
+        stop = [sh if st == 0 else st for st, sh in zip_longest(stop, self.shape)]
+        stop = [st if st < sh else sh for st, sh in zip_longest(stop, self.shape)]
 
         # Check that the final size is not zero, as this is not supported yet in iArray
         length = 1
-        for s0, s1 in zip(start, stop):
+        for s0, s1 in zip_longest(start, stop):
             length *= s1 - s0
         if length < 1:
             raise ValueError("Slices with 0 or negative dims are not supported yet")
