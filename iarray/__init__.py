@@ -47,11 +47,13 @@ class Codecs(Enum):
 
 
 # Filters
-NOFILTER = 0
-SHUFFLE = 1
-BITSHUFFLE = 2
-DELTA = 4
-TRUNC_PREC = 8
+class Filters(Enum):
+    NOFILTER = 0
+    SHUFFLE = 1
+    BITSHUFFLE = 2
+    DELTA = 4
+    TRUNC_PREC = 8
+
 
 # Eval method
 class Eval(Enum):

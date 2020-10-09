@@ -15,6 +15,7 @@ import iarray as ia
 from iarray import iarray_ext as ext
 from itertools import zip_longest
 from dataclasses import dataclass, field
+from typing import List
 import warnings
 
 
@@ -145,12 +146,16 @@ def default_storage():
     return StorageProperties()
 
 
+def default_filters():
+    return [ia.Filters.SHUFFLE]
+
+
 @dataclass
 class Config(ext.Config):
     codec: int = ia.Codecs.LZ4
     clevel: int = 5
     use_dict: bool = False
-    filter_flags: int = ia.SHUFFLE
+    filters: List[int] = field(default_factory=default_filters)
     nthreads: int = 0
     fp_mantissa_bits: int = 0
     storage: StorageProperties = field(default_factory=default_storage)
@@ -166,7 +171,7 @@ class Config(ext.Config):
             self.codec,
             self.clevel,
             self.use_dict,
-            self.filter_flags,
+            self.filters,
             self.nthreads,
             self.fp_mantissa_bits,
             self.eval_method,

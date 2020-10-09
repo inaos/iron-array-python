@@ -157,11 +157,17 @@ cdef class IArrayInit:
 cdef class Config:
     cdef ciarray.iarray_config_t _cfg
 
-    def __init__(self, compression_codec, compression_level, use_dict, filter_flags,
+    def __init__(self, compression_codec, compression_level, use_dict, filters,
                  max_num_threads, fp_mantissa_bits, eval_method):
         self._cfg.compression_codec = compression_codec.value
         self._cfg.compression_level = compression_level
         self._cfg.use_dict = 1 if use_dict else 0
+        cdef int filter_flags = 0
+        # TODO: filters are really a pipeline, and here we are just ORing them, which is tricky.
+        # This should be fixed (probably at C iArray level and then propagating the change here).
+        # At any rate, `filters` should be a list for displaying puposes in high level Config().
+        for filter in filters:
+            filter_flags |= filter.value
         self._cfg.filter_flags = filter_flags
 
         if eval_method == ia.Eval.AUTO:
