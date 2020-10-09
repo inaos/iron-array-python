@@ -28,7 +28,7 @@ dtype = np.float64
 nthreads = 8
 
 dtshape = ia.DTShape(shape=shape, dtype=dtype)
-cparams = dict(clib=ia.LZ4, clevel=9, nthreads=nthreads)
+cparams = dict(clevel=9, nthreads=nthreads)
 # Reduce the precision for the output
 cparams2 = cparams.copy()
 cparams2.update(dict(fp_mantissa_bits=20))

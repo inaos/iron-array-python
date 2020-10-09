@@ -36,13 +36,15 @@ else:
     binding.load_library_permanently(os.path.join(install_dir, "svml_dispmd.dll"))
     lib1 = cdll.LoadLibrary(os.path.join(install_dir, "iarray.dll"))
 
-# Codecs
-BLOSCLZ = 0
-LZ4 = 1
-LZ4HC = 2
-ZLIB = 4
-ZSTD = 5
-LIZARD = 6
+# Compression codecs
+class Codecs(Enum):
+    BLOSCLZ = 0
+    LZ4 = 1
+    LZ4HC = 2
+    ZLIB = 4
+    ZSTD = 5
+    LIZARD = 6
+
 
 # Filters
 NOFILTER = 0
@@ -50,7 +52,6 @@ SHUFFLE = 1
 BITSHUFFLE = 2
 DELTA = 4
 TRUNC_PREC = 8
-
 
 # Eval method
 class Eval(Enum):

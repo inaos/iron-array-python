@@ -10,10 +10,11 @@
 ###########################################################################################
 
 import numpy as np
+
 import iarray as ia
 from iarray import iarray_ext as ext
 from itertools import zip_longest
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import warnings
 
 
@@ -85,96 +86,10 @@ def cmp_arrays(a, b, success=None):
         print(success)
 
 
-@dataclass
+@dataclass(frozen=True)
 class DTShape:
     shape: (tuple, list)
     dtype: (np.float32, np.float64) = np.float64
-
-
-class Config(ext.Config):
-    def __init__(
-        self,
-        clib=ia.LZ4,
-        clevel=5,
-        use_dict=0,
-        filter_flags=ia.SHUFFLE,
-        nthreads=0,
-        fp_mantissa_bits=0,
-        storage=None,
-        eval_method=ia.Eval.AUTO,
-        seed=0,
-    ):
-        """Container bag for most of params related with array and expr creation.
-
-        If `storage` is None, a `StorageProperties()` instance is computed automatically.
-
-        Most of the other parameters should be self-explanatory.
-        """
-
-        self._clib = clib
-        self._clevel = clevel
-        self._use_dict = use_dict
-        self._fp_mantissa_bits = fp_mantissa_bits
-        if fp_mantissa_bits > 0:
-            filter_flags |= ia.TRUNC_PREC
-        self._filter_flags = filter_flags
-        # Get the number of cores using nthreads as a maximum
-        self._nthreads = nthreads = get_ncores(nthreads)
-        self._seed = seed
-        self._storage = ia.StorageProperties() if storage is None else storage
-        # eval_method will typically be set in Expr() constructor, but this Config class is kind
-        # of a catchall arguments, so Expr() will inherit the eval_method from here in case it is
-        # not passed to the Expr() constructor itself.
-        self._eval_method = eval_method
-        super().__init__(
-            clib, clevel, use_dict, filter_flags, nthreads, fp_mantissa_bits, self._eval_method
-        )
-
-    @property
-    def clib(self):
-        clibs = ["BloscLZ", "LZ4", "LZ4HC", "Snappy", "Zlib", "Zstd", "Lizard"]
-        return clibs[self._clib]
-
-    @property
-    def clevel(self):
-        return self._clevel
-
-    @property
-    def filter_flags(self):
-        flags = {0: "NOFILTER", 1: "SHUFFLE", 2: "BITSHUFFLE", 4: "DELTA", 8: "TRUNC_PREC"}
-        return flags[self._filter_flags]
-
-    @property
-    def nthreads(self):
-        return self._nthreads
-
-    @property
-    def fp_mantissa_bits(self):
-        return self._fp_mantissa_bits
-
-    @property
-    def storage(self):
-        return self._storage
-
-    @property
-    def eval_method(self):
-        return self._eval_method
-
-    @property
-    def seed(self):
-        return self._seed
-
-    def __str__(self):
-        return (
-            "IArray Config object:\n"
-            f"    Compression library: {self.clib}\n"
-            f"    Compression level: {self.clevel}\n"
-            f"    Filter flags: {self.filter_flags}\n"
-            f"    Number of threads: {self.nthreads}\n"
-            f"    Floating point mantissa bits: {self.fp_mantissa_bits}\n"
-            f"    Storage: {self.storage}\n"
-            f"    Eval method: {self.eval_method}\n"
-        )
 
 
 class StorageProperties:
@@ -224,6 +139,38 @@ class StorageProperties:
             raise ValueError(
                 "You can either specify both chunkshape and blockshape or none of them."
             )
+
+
+def default_storage():
+    return StorageProperties()
+
+
+@dataclass
+class Config(ext.Config):
+    codec: int = ia.Codecs.LZ4
+    clevel: int = 5
+    use_dict: bool = False
+    filter_flags: int = ia.SHUFFLE
+    nthreads: int = 0
+    fp_mantissa_bits: int = 0
+    storage: StorageProperties = field(default_factory=default_storage)
+    eval_method: int = ia.Eval.AUTO
+    seed: int = 0
+
+    def __post_init__(self):
+        self.nthreads = get_ncores(self.nthreads)
+        if self.storage is None:
+            self.storage = StorageProperties()
+
+        super().__init__(
+            self.codec,
+            self.clevel,
+            self.use_dict,
+            self.filter_flags,
+            self.nthreads,
+            self.fp_mantissa_bits,
+            self.eval_method,
+        )
 
 
 #
@@ -834,6 +781,10 @@ def tanh(iarr):
 
 
 if __name__ == "__main__":
+    # Check representations of default configs
+    print(Config())
+
+    print()
     # Create initial containers
     dtshape_ = ia.DTShape([40, 20])
     a1 = ia.linspace(dtshape_, 0, 10)
@@ -842,9 +793,10 @@ if __name__ == "__main__":
     a3 = a1.sin() + 2 * a1 + 1
     print(a3)
     a3 += 2
-    print(a3)
+    # print(a3)
     a3_np = np.sin(ia.iarray2numpy(a1)) + 2 * ia.iarray2numpy(a1) + 1 + 2
     a4 = a3.eval(dtshape_)
     a4_np = ia.iarray2numpy(a4)
-    print(a4_np)
+    # print(a4_np)
     np.testing.assert_allclose(a3_np, a4_np)
+    print("Everything is working fine")

@@ -102,7 +102,7 @@ def test_1dim(f):
     chunkshape = [3 * 1000]
     blockshape = [3 * 100]
     dtype = np.float64
-    cparams = dict(clib=ia.LZ4, clevel=5, nthreads=16)
+    cparams = dict(nthreads=16)
     start, stop = 0, 10
 
     cmp_udf_np(f, (start, stop), shape, (chunkshape, blockshape), dtype, cparams)
@@ -119,7 +119,7 @@ def test_1dim(f):
 def test_1dim_plain(f):
     shape = [10 * 1000]
     dtype = np.float64
-    cparams = dict(clib=ia.LZ4, clevel=5, nthreads=16)
+    cparams = dict(clevel=5, nthreads=16)
     start, stop = 0, 10
 
     cmp_udf_np(f, (start, stop), shape, None, dtype, cparams)
@@ -142,7 +142,7 @@ def test_2dim(f):
     chunkshape = [60, 200]
     blockshape = [11, 200]
     dtype = np.float64
-    cparams = dict(clib=ia.LZ4, clevel=5)
+    cparams = dict()
     start, stop = 0, 10
 
     cmp_udf_np(f, (start, stop), shape, (chunkshape, blockshape), dtype, cparams)
@@ -152,7 +152,7 @@ def test_2dim(f):
 def test_2dim_plain(f):
     shape = [400, 800]
     dtype = np.float64
-    cparams = dict(clib=ia.LZ4, clevel=5)
+    cparams = dict()
     start, stop = 0, 10
 
     cmp_udf_np(f, (start, stop), shape, None, dtype, cparams)
@@ -175,7 +175,7 @@ def test_while(f):
     chunkshape = [1000]
     blockshape = [300]
     dtype = np.float64
-    cparams = dict(clib=ia.LZ4, clevel=5)
+    cparams = dict()
     start, stop = 0, 10
 
     cmp_udf_np(f, (start, stop), shape, (chunkshape, blockshape), dtype, cparams)
@@ -199,7 +199,7 @@ def test_avg(f):
     chunkshape = [300]
     blockshape = [100]
     dtype = np.float64
-    cparams = dict(clib=ia.LZ4, clevel=5)
+    cparams = dict()
     start, stop = 0, 10
 
     cmp_udf_np_strict(f, start, stop, shape, (chunkshape, blockshape), dtype, cparams)
@@ -225,7 +225,7 @@ def test_error(f):
     chunkshape = [4 * 1000]
     blockshape = [1 * 1000]
     dtype = np.float64
-    cparams = dict(clib=ia.LZ4, clevel=5, nthreads=1)
+    cparams = dict(nthreads=1)
     start, stop = 0, 10
 
     storage = ia.StorageProperties(chunkshape, blockshape)
@@ -284,7 +284,7 @@ def test_math(f):
     chunkshape = [3 * 1000]
     blockshape = [3 * 100]
     dtype = np.float64
-    cparams = dict(clib=ia.LZ4, clevel=5, nthreads=16)
+    cparams = dict(nthreads=16)
     start, stop = 0, 10
 
     cmp_udf_np(f, [(start, stop), (start, stop)], shape, (chunkshape, blockshape), dtype, cparams)

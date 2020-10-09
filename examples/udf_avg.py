@@ -17,7 +17,7 @@ NITER = 1
 shape = [1000]
 dtype = np.float64
 dtshape = ia.DTShape(shape, dtype)
-cparams = dict(clib=ia.LZ4, clevel=5, nthreads=16)
+cparams = dict(nthreads=16)
 
 
 @jit(verbose=0)

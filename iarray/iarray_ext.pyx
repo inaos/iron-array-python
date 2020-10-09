@@ -159,9 +159,9 @@ cdef class Config:
 
     def __init__(self, compression_codec, compression_level, use_dict, filter_flags,
                  max_num_threads, fp_mantissa_bits, eval_method):
-        self._cfg.compression_codec = compression_codec
+        self._cfg.compression_codec = compression_codec.value
         self._cfg.compression_level = compression_level
-        self._cfg.use_dict = use_dict
+        self._cfg.use_dict = 1 if use_dict else 0
         self._cfg.filter_flags = filter_flags
 
         if eval_method == ia.Eval.AUTO:
