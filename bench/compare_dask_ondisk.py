@@ -31,7 +31,7 @@ for i, shape in enumerate(shapes):
     print(shape, chunkshape)
     cparams = dict(clib=CLIB, clevel=CLEVEL, nthreads=NTHREADS)
 
-    storage_in = ia.StorageProperties(chunkshape, blockshape, "iarray_infile.iarray")
+    storage_in = ia.Storage(chunkshape, blockshape, "iarray_infile.iarray")
     ia.arange(dtshape, storage=storage_in, **cparams)
 
     t0 = time()

@@ -55,13 +55,13 @@ compressor = Blosc(
 )
 cparams = dict(clib=CLIB, clevel=CLEVEL, nthreads=NTHREADS)
 
-astorage = ia.StorageProperties(achunkshape, ablockshape)
+astorage = ia.Storage(achunkshape, ablockshape)
 
 lia = ia.linspace(ia.DTShape(ashape, dtype=DTYPE), 0, 1, storage=astorage, **cparams)
 nia = ia.random_normal(ia.DTShape(ashape, dtype=DTYPE), 0, 0.0000001, storage=astorage, **cparams)
 aia = (lia + nia).eval(storage=astorage, **cparams)
 
-bstorage = ia.StorageProperties(bchunkshape, bblockshape)
+bstorage = ia.Storage(bchunkshape, bblockshape)
 
 lia = ia.linspace(ia.DTShape(bshape, dtype=DTYPE), 0, 1, storage=bstorage, **cparams)
 nia = ia.random_normal(ia.DTShape(bshape, dtype=DTYPE), 0, 0.0000001, storage=bstorage, **cparams)
@@ -70,7 +70,7 @@ bia = (lia + nia).eval(storage=bstorage, **cparams)
 ablock = (500, 500)
 bblock = (500, 500)
 
-cstorage = ia.StorageProperties(cchunkshape, cblockshape)
+cstorage = ia.Storage(cchunkshape, cblockshape)
 
 
 @profile

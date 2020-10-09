@@ -11,7 +11,7 @@ dtype = np.float64
 shape = [10000, 8000]
 cshape = [1000, 800]
 bshape = [100, 100]
-storage = ia.StorageProperties(chunkshape=cshape, blockshape=bshape)
+storage = ia.Storage(chunkshape=cshape, blockshape=bshape)
 kwargs = dict(storage=storage)
 dtshape = ia.DTShape(shape, dtype)
 

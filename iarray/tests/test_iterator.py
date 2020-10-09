@@ -20,9 +20,9 @@ from itertools import zip_longest as izip
 )
 def test_iterator(shape, chunkshape, blockshape, itershape, dtype):
     if chunkshape is None:
-        storage = ia.StorageProperties(plainbuffer=True)
+        storage = ia.Storage(plainbuffer=True)
     else:
-        storage = ia.StorageProperties(chunkshape, blockshape)
+        storage = ia.Storage(chunkshape, blockshape)
     a = ia.linspace(ia.DTShape(shape, dtype), -10, 10, storage=storage)
     an = ia.iarray2numpy(a)
 

@@ -94,7 +94,7 @@ class DTShape:
 
 
 @dataclass
-class StorageProperties:
+class Storage:
     chunkshape: Sequence = None
     blockshape: Sequence = None
     filename: str = None
@@ -125,7 +125,7 @@ class StorageProperties:
 
 
 def default_storage():
-    return StorageProperties()
+    return Storage()
 
 
 def default_filters():
@@ -140,14 +140,14 @@ class Config(ext.Config):
     filters: List[int] = field(default_factory=default_filters)
     nthreads: int = 0
     fp_mantissa_bits: int = 0
-    storage: StorageProperties = field(default_factory=default_storage)
+    storage: Storage = field(default_factory=default_storage)
     eval_method: int = ia.Eval.AUTO
     seed: int = 0
 
     def __post_init__(self):
         self.nthreads = get_ncores(self.nthreads)
         if self.storage is None:
-            self.storage = StorageProperties()
+            self.storage = Storage()
 
         super().__init__(
             self.codec,
@@ -770,7 +770,7 @@ def tanh(iarr):
 if __name__ == "__main__":
     # Check representations of default configs
     print(Config())
-    print(StorageProperties())
+    print(Storage())
 
     print()
     # Create initial containers

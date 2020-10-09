@@ -18,7 +18,7 @@ npexpr = "(np.cos(%s) - np.sin(%s)) * (%s - 1.35) * (%s - 4.45)"
 
 # Create initial arrays.  You may opt to use automatic chunkshape and blockshape,
 # but you typically get optimal results when you fine-tune them.
-storage = ia.StorageProperties(chunkshape=[1000, 800], blockshape=[100, 100])
+storage = ia.Storage(chunkshape=[1000, 800], blockshape=[100, 100])
 kwargs = dict(storage=storage, fp_mantissa_bits=24)
 
 size = shape[0] * shape[1]

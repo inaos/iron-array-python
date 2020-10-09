@@ -114,9 +114,9 @@ import numpy as np
 def test_expression(method, shape, chunkshape, blockshape, dtype, expression):
     # The ranges below are important for not overflowing operations
     if chunkshape is None:
-        storage = ia.StorageProperties(plainbuffer=True)
+        storage = ia.Storage(plainbuffer=True)
     else:
-        storage = ia.StorageProperties(chunkshape=chunkshape, blockshape=blockshape)
+        storage = ia.Storage(chunkshape=chunkshape, blockshape=blockshape)
 
     x = ia.linspace(ia.DTShape(shape, dtype), 0.1, 0.2, storage=storage)
     y = ia.linspace(ia.DTShape(shape, dtype), 0, 1, storage=storage)
@@ -195,7 +195,7 @@ def test_ufuncs(ufunc, ia_expr):
     chunkshape = [40, 40]
     bshape = [10, 17]
 
-    storage = ia.StorageProperties(chunkshape=chunkshape, blockshape=bshape)
+    storage = ia.Storage(chunkshape=chunkshape, blockshape=bshape)
 
     for dtype in np.float64, np.float32:
         dtshape = ia.DTShape(shape, dtype)
@@ -274,7 +274,7 @@ def test_expr_ufuncs(ufunc):
     shape = [200, 300]
     cshape = [40, 50]
     bshape = [20, 20]
-    storage = ia.StorageProperties(chunkshape=cshape, blockshape=bshape)
+    storage = ia.Storage(chunkshape=cshape, blockshape=bshape)
 
     for dtype in np.float64, np.float32:
         dtshape = ia.DTShape(shape, dtype)
@@ -320,7 +320,7 @@ def test_expr_fusion(expr):
     shape = [200, 300]
     chunkshape = [40, 50]
     bshape = [20, 20]
-    storage = ia.StorageProperties(chunkshape=chunkshape, blockshape=bshape)
+    storage = ia.Storage(chunkshape=chunkshape, blockshape=bshape)
 
     for dtype in np.float64, np.float32:
         dtshape = ia.DTShape(shape, dtype)

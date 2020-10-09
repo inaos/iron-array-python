@@ -91,7 +91,7 @@ UFUNC_LIST = (
 from .high_level import (
     IArray,
     DTShape,
-    StorageProperties,
+    Storage,
     Config,
     RandomContext,
     create_expr,

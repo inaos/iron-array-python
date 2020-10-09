@@ -130,9 +130,9 @@ def do_regular_evaluation():
 def do_block_evaluation(plainbuffer):
     print(f"Block evaluation (plainbuffer={plainbuffer})")
     if plainbuffer:
-        storage = ia.StorageProperties(plainbuffer=True)
+        storage = ia.Storage(plainbuffer=True)
     else:
-        storage = ia.StorageProperties(chunkshape, blockshape)
+        storage = ia.Storage(chunkshape, blockshape)
 
     cparams = dict(clib=clib, clevel=clevel, nthreads=nthreads, storage=storage)
 

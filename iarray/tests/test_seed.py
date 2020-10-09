@@ -20,9 +20,9 @@ import numpy as np
 )
 def test_rand(shape, chunkshape, blockshape, dtype, seed):
     if chunkshape is None:
-        storage = ia.StorageProperties(plainbuffer=True)
+        storage = ia.Storage(plainbuffer=True)
     else:
-        storage = ia.StorageProperties(chunkshape, blockshape)
+        storage = ia.Storage(chunkshape, blockshape)
 
     ia.random_set_seed(seed)
     a = ia.random_rand(ia.DTShape(shape, dtype), storage=storage)
@@ -44,9 +44,9 @@ def test_rand(shape, chunkshape, blockshape, dtype, seed):
 )
 def test_randn(shape, chunkshape, blockshape, dtype, seed):
     if chunkshape is None:
-        storage = ia.StorageProperties(plainbuffer=True)
+        storage = ia.Storage(plainbuffer=True)
     else:
-        storage = ia.StorageProperties(chunkshape, blockshape)
+        storage = ia.Storage(chunkshape, blockshape)
 
     ia.random_set_seed(seed)
     a = ia.random_randn(ia.DTShape(shape, dtype), storage=storage)
@@ -68,9 +68,9 @@ def test_randn(shape, chunkshape, blockshape, dtype, seed):
 )
 def test_beta(alpha, beta, shape, chunkshape, blockshape, dtype, seed):
     if chunkshape is None:
-        storage = ia.StorageProperties(plainbuffer=True)
+        storage = ia.Storage(plainbuffer=True)
     else:
-        storage = ia.StorageProperties(chunkshape, blockshape)
+        storage = ia.Storage(chunkshape, blockshape)
 
     ia.random_set_seed(seed)
     a = ia.random_beta(ia.DTShape(shape, dtype), alpha, beta, storage=storage)
@@ -92,9 +92,9 @@ def test_beta(alpha, beta, shape, chunkshape, blockshape, dtype, seed):
 )
 def test_lognormal(mu, sigma, shape, chunkshape, blockshape, dtype, seed):
     if chunkshape is None:
-        storage = ia.StorageProperties(plainbuffer=True)
+        storage = ia.Storage(plainbuffer=True)
     else:
-        storage = ia.StorageProperties(chunkshape, blockshape)
+        storage = ia.Storage(chunkshape, blockshape)
 
     ia.random_set_seed(seed)
     a = ia.random_lognormal(ia.DTShape(shape, dtype), mu, sigma, storage=storage)
@@ -116,9 +116,9 @@ def test_lognormal(mu, sigma, shape, chunkshape, blockshape, dtype, seed):
 )
 def test_exponential(beta, shape, chunkshape, blockshape, dtype, seed):
     if chunkshape is None:
-        storage = ia.StorageProperties(plainbuffer=True)
+        storage = ia.Storage(plainbuffer=True)
     else:
-        storage = ia.StorageProperties(chunkshape, blockshape)
+        storage = ia.Storage(chunkshape, blockshape)
 
     ia.random_set_seed(seed)
     a = ia.random_exponential(ia.DTShape(shape, dtype), beta, storage=storage)
@@ -140,9 +140,9 @@ def test_exponential(beta, shape, chunkshape, blockshape, dtype, seed):
 )
 def test_uniform(a_, b_, shape, chunkshape, blockshape, dtype, seed):
     if chunkshape is None:
-        storage = ia.StorageProperties(plainbuffer=True)
+        storage = ia.Storage(plainbuffer=True)
     else:
-        storage = ia.StorageProperties(chunkshape, blockshape)
+        storage = ia.Storage(chunkshape, blockshape)
 
     ia.random_set_seed(seed)
     a = ia.random_uniform(ia.DTShape(shape, dtype), a_, b_, storage=storage)
@@ -164,9 +164,9 @@ def test_uniform(a_, b_, shape, chunkshape, blockshape, dtype, seed):
 )
 def test_normal(mu, sigma, shape, chunkshape, blockshape, dtype, seed):
     if chunkshape is None:
-        storage = ia.StorageProperties(plainbuffer=True)
+        storage = ia.Storage(plainbuffer=True)
     else:
-        storage = ia.StorageProperties(chunkshape, blockshape)
+        storage = ia.Storage(chunkshape, blockshape)
 
     ia.random_set_seed(seed)
     a = ia.random_normal(ia.DTShape(shape, dtype), mu, sigma, storage=storage)
@@ -188,9 +188,9 @@ def test_normal(mu, sigma, shape, chunkshape, blockshape, dtype, seed):
 )
 def test_bernoulli(p, shape, chunkshape, blockshape, dtype, seed):
     if chunkshape is None:
-        storage = ia.StorageProperties(plainbuffer=True)
+        storage = ia.Storage(plainbuffer=True)
     else:
-        storage = ia.StorageProperties(chunkshape, blockshape)
+        storage = ia.Storage(chunkshape, blockshape)
 
     ia.random_set_seed(seed)
     a = ia.random_bernoulli(ia.DTShape(shape, dtype), p, storage=storage)
@@ -212,9 +212,9 @@ def test_bernoulli(p, shape, chunkshape, blockshape, dtype, seed):
 )
 def test_binomial(n, p, shape, chunkshape, blockshape, dtype, seed):
     if chunkshape is None:
-        storage = ia.StorageProperties(plainbuffer=True)
+        storage = ia.Storage(plainbuffer=True)
     else:
-        storage = ia.StorageProperties(chunkshape, blockshape)
+        storage = ia.Storage(chunkshape, blockshape)
 
     ia.random_set_seed(seed)
     a = ia.random_binomial(ia.DTShape(shape, dtype), n, p, storage=storage)
@@ -236,9 +236,9 @@ def test_binomial(n, p, shape, chunkshape, blockshape, dtype, seed):
 )
 def test_poisson(lamb, shape, chunkshape, blockshape, dtype, seed):
     if chunkshape is None:
-        storage = ia.StorageProperties(plainbuffer=True)
+        storage = ia.Storage(plainbuffer=True)
     else:
-        storage = ia.StorageProperties(chunkshape, blockshape)
+        storage = ia.Storage(chunkshape, blockshape)
 
     ia.random_set_seed(seed)
     a = ia.random_poisson(ia.DTShape(shape, dtype), lamb, storage=storage)

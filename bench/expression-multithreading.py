@@ -41,8 +41,8 @@ blockshape = [16 * 1024]
 dtshape = ia.DTShape(shape)
 size = int(np.prod(shape))
 
-bstorage = ia.StorageProperties(chunkshape, blockshape)
-pstorage = ia.StorageProperties(plainbuffer=True)
+bstorage = ia.Storage(chunkshape, blockshape)
+pstorage = ia.Storage(plainbuffer=True)
 
 eval_method = ia.Eval.AUTO
 

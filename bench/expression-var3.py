@@ -61,17 +61,17 @@ if PROFILE:
     a1_fname = "a1.iarray"
     if not os.path.isfile(a1_fname):
         print(f"Creating {a1_fname}")
-        a1_storage = ia.StorageProperties(chunkshape, blockshape, a1_fname)
+        a1_storage = ia.Storage(chunkshape, blockshape, a1_fname)
         a1 = ia.linspace(dtshape, 0, 10, storage=a1_storage, **cparams)
     else:
         print(f"Reading {a1_fname}")
         a1 = ia.load(a1_fname, load_in_mem=True)
 else:
-    a1_storage = ia.StorageProperties(chunkshape, blockshape)
+    a1_storage = ia.Storage(chunkshape, blockshape)
     a1 = ia.linspace(dtshape, 0, 10, storage=a1_storage, **cparams)
 
 # New variables will always be created in-memory
-new_storage = ia.StorageProperties(chunkshape, blockshape)
+new_storage = ia.Storage(chunkshape, blockshape)
 cparams.update(storage=new_storage)
 
 a2 = np.linspace(0, 10, shape[0], dtype=dtype).reshape(shape)
