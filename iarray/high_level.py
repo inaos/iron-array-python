@@ -15,7 +15,7 @@ import iarray as ia
 from iarray import iarray_ext as ext
 from itertools import zip_longest
 from dataclasses import dataclass, field
-from typing import List
+from typing import List, Sequence
 import warnings
 
 
@@ -89,41 +89,23 @@ def cmp_arrays(a, b, success=None):
 
 @dataclass(frozen=True)
 class DTShape:
-    shape: (tuple, list)
+    shape: Sequence
     dtype: (np.float32, np.float64) = np.float64
 
 
+@dataclass
 class StorageProperties:
-    def __init__(
-        self,
-        chunkshape=None,
-        blockshape=None,
-        filename=None,
-        enforce_frame=False,
-        plainbuffer=False,
-    ):
-        """Set of properties for the storage backend of arrays.
+    chunkshape: Sequence = None
+    blockshape: Sequence = None
+    filename: str = None
+    enforce_frame: bool = False
+    plainbuffer: bool = False
 
-        `chunkshape` and `blockshape` specify the partitioning.  If *both* are None, then an automatic
-        partitioning is done.  Specifying one and not the other will raise and error.  In case
-        `plainfuffer` is passed as True, both `chunkshape` and `blockshape` needs to be None.
-
-        `filename` specifies a file name for the array. `enforce_frame` will be set automatically to True.
-
-        If `enforce_frame` is False (default), a super-chunk is chosen as storage.  If True, a frame
-        format is chosen instead.
-
-        If `plainbuffer` is False (default), a chunked format is used as storage.  If True, a contiguous
-        buffer is used instead.
-        """
-        self.chunkshape = chunkshape
-        self.blockshape = blockshape
-        self.filename = filename
-        self.enforce_frame = True if filename else enforce_frame
-        if plainbuffer:
-            if chunkshape is not None or blockshape is not None:
+    def __post_init__(self):
+        self.enforce_frame = True if self.filename else self.enforce_frame
+        if self.plainbuffer:
+            if self.chunkshape is not None or self.blockshape is not None:
                 raise ValueError("plainbuffer array does not support a chunkshape or blockshape")
-        self.plainbuffer = plainbuffer
 
     def get_shape_advice(self, dtshape):
         if self.plainbuffer:
@@ -788,6 +770,7 @@ def tanh(iarr):
 if __name__ == "__main__":
     # Check representations of default configs
     print(Config())
+    print(StorageProperties())
 
     print()
     # Create initial containers
