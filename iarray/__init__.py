@@ -92,7 +92,7 @@ from .high_level import (
     IArray,
     DTShape,
     Storage,
-    Config,
+    ConfigParams,
     RandomContext,
     create_expr,
     Expr,
