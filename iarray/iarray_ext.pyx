@@ -90,6 +90,7 @@ cdef class ReadBlockIter:
         elem_index = tuple(self.ia_block_val.elem_index[i] for i in range(self.container.ndim))
         index = tuple(self.ia_block_val.block_index[i] for i in range(self.container.ndim))
         nblock = self.ia_block_val.nblock
+
         info = self.Info(index=index, elemindex=elem_index, nblock=nblock, shape=shape, size=size)
         return info, a.reshape(shape)
 
@@ -201,7 +202,7 @@ cdef class Context:
         return PyCapsule_New(self.ia_ctx, "iarray_context_t*", NULL)
 
 
-cdef class IA_DTShape:
+cdef class IaDTShape:
     cdef ciarray.iarray_dtshape_t ia_dtshape
 
     def __cinit__(self, dtshape):
@@ -389,7 +390,7 @@ cdef class Expression:
         ciarray.iarray_expr_bind(self.ia_expr, var2, c_)
 
     def bind_out_properties(self, dtshape, storage):
-        dtshape = IA_DTShape(dtshape).to_dict()
+        dtshape = IaDTShape(dtshape).to_dict()
         cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
         cdef ciarray.iarray_storage_t store_
@@ -461,7 +462,7 @@ def empty(cfg, dtshape):
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
         ctx.to_capsule(), "iarray_context_t*")
 
-    dtshape = IA_DTShape(dtshape).to_dict()
+    dtshape = IaDTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
@@ -485,7 +486,7 @@ def arange(cfg, slice_, dtshape):
     if dtshape.shape is None:
         dtshape.shape = [ceil((stop - start)/step)]
 
-    dtshape = IA_DTShape(dtshape).to_dict()
+    dtshape = IaDTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
@@ -507,7 +508,7 @@ def linspace(cfg, nelem, start, stop, dtshape):
 
     if dtshape.shape is None:
         dtshape.shape = [nelem]
-    dtshape = IA_DTShape(dtshape).to_dict()
+    dtshape = IaDTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
@@ -527,7 +528,7 @@ def zeros(cfg, dtshape):
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
         ctx.to_capsule(), "iarray_context_t*")
 
-    dtshape = IA_DTShape(dtshape).to_dict()
+    dtshape = IaDTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
@@ -547,7 +548,7 @@ def ones(cfg, dtshape):
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
         ctx.to_capsule(), "iarray_context_t*")
 
-    dtshape = IA_DTShape(dtshape).to_dict()
+    dtshape = IaDTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
@@ -567,7 +568,7 @@ def full(cfg, fill_value, dtshape):
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
         ctx.to_capsule(), "iarray_context_t*")
 
-    dtshape = IA_DTShape(dtshape).to_dict()
+    dtshape = IaDTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
@@ -646,7 +647,7 @@ def numpy2iarray(cfg, a, dtshape):
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
         ctx.to_capsule(), "iarray_context_t*")
 
-    dtshape = IA_DTShape(dtshape).to_dict()
+    dtshape = IaDTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
@@ -697,7 +698,7 @@ def random_rand(cfg, dtshape):
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
     cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(), "iarray_random_ctx_t*")
 
-    dtshape = IA_DTShape(dtshape).to_dict()
+    dtshape = IaDTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
@@ -718,7 +719,7 @@ def random_randn(cfg, dtshape):
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
     cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(), "iarray_random_ctx_t*")
 
-    dtshape = IA_DTShape(dtshape).to_dict()
+    dtshape = IaDTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
@@ -746,7 +747,7 @@ def random_beta(cfg, alpha, beta, dtshape):
         ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_ALPHA, alpha)
         ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_BETA, beta)
 
-    dtshape = IA_DTShape(dtshape).to_dict()
+    dtshape = IaDTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
@@ -774,7 +775,7 @@ def random_lognormal(cfg, mu, sigma, dtshape):
         ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_MU, mu)
         ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_SIGMA, sigma)
 
-    dtshape = IA_DTShape(dtshape).to_dict()
+    dtshape = IaDTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
@@ -800,7 +801,7 @@ def random_exponential(cfg, beta, dtshape):
     else:
         ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_BETA, beta)
 
-    dtshape = IA_DTShape(dtshape).to_dict()
+    dtshape = IaDTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
@@ -828,7 +829,7 @@ def random_uniform(cfg, a, b, dtshape):
         ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_A, a)
         ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_B, b)
 
-    dtshape = IA_DTShape(dtshape).to_dict()
+    dtshape = IaDTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
@@ -856,7 +857,7 @@ def random_normal(cfg, mu, sigma, dtshape):
         ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_MU, mu)
         ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_SIGMA, sigma)
 
-    dtshape = IA_DTShape(dtshape).to_dict()
+    dtshape = IaDTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
@@ -882,7 +883,7 @@ def random_bernoulli(cfg, p, dtshape):
     else:
         ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_P, p)
 
-    dtshape = IA_DTShape(dtshape).to_dict()
+    dtshape = IaDTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
@@ -910,7 +911,7 @@ def random_binomial(cfg, m, p, dtshape):
         ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_P, p)
         ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_M, m)
 
-    dtshape = IA_DTShape(dtshape).to_dict()
+    dtshape = IaDTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
@@ -936,7 +937,7 @@ def random_poisson(cfg, l, dtshape):
     else:
         ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_LAMBDA, l)
 
-    dtshape = IA_DTShape(dtshape).to_dict()
+    dtshape = IaDTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
@@ -970,14 +971,14 @@ def matmul(cfg, a, b, block_a, block_b):
 
     if a.chunkshape is None and b.chunkshape is None:
         if len(b.shape) == 1:
-            dtshape = IA_DTShape(ia.DTShape((a.shape[0],), a.dtype)).to_dict()
+            dtshape = IaDTShape(ia.DTShape((a.shape[0],), a.dtype)).to_dict()
         else:
-            dtshape = IA_DTShape(ia.DTShape((a.shape[0], b.shape[1]), a.dtype)).to_dict()
+            dtshape = IaDTShape(ia.DTShape((a.shape[0], b.shape[1]), a.dtype)).to_dict()
     else:
         if len(b.shape) == 1:
-            dtshape = IA_DTShape(ia.DTShape(tuple([a.shape[0]]), a.dtype)).to_dict()
+            dtshape = IaDTShape(ia.DTShape(tuple([a.shape[0]]), a.dtype)).to_dict()
         else:
-            dtshape = IA_DTShape(ia.DTShape((a.shape[0], b.shape[1]), a.dtype)).to_dict()
+            dtshape = IaDTShape(ia.DTShape((a.shape[0], b.shape[1]), a.dtype)).to_dict()
 
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
@@ -1020,7 +1021,7 @@ def get_ncores(max_ncores):
 
 
 def partition_advice(dtshape, min_chunksize, max_chunksize, min_blocksize, max_blocksize, cfg):
-    _dtshape = IA_DTShape(dtshape).to_dict()
+    _dtshape = IaDTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> _dtshape
 
     ctx = Context(cfg)
