@@ -151,7 +151,7 @@ cdef class IArrayInit:
     def __cinit__(self):
         ciarray.iarray_init()
 
-    def __delloc(self):
+    def __dealloc__(self):
         ciarray.iarray_destroy()
 
 
@@ -166,7 +166,7 @@ cdef class ConfigParams:
         cdef int filter_flags = 0
         # TODO: filters are really a pipeline, and here we are just ORing them, which is tricky.
         # This should be fixed (probably at C iArray level and then propagating the change here).
-        # At any rate, `filters` should be a list for displaying puposes in high level Config().
+        # At any rate, `filters` should be a list for displaying purposes in high level Config().
         for f in filters:
             filter_flags |= f.value
         self.cparams.filter_flags = filter_flags
@@ -678,13 +678,13 @@ def iarray2numpy(cfg, c):
         shape.append(dtshape.shape[i])
     size = np.prod(shape, dtype=np.int64)
 
-    npdtype = np.float64 if dtshape.dtype == ciarray.IARRAY_DATA_TYPE_DOUBLE else np.float32
+    dtype = np.float64 if dtshape.dtype == ciarray.IARRAY_DATA_TYPE_DOUBLE else np.float32
     if ciarray.iarray_is_empty(c_):
         # Return an empty array.  Another possibility would be to raise an exception here?  Let's wait for a use case...
-        return np.empty(size, dtype=npdtype).reshape(shape)
+        return np.empty(size, dtype=dtype).reshape(shape)
 
-    a = np.zeros(size, dtype=npdtype).reshape(shape)
-    ciarray.iarray_to_buffer(ctx_, c_, np.PyArray_DATA(a), size * sizeof(npdtype))
+    a = np.zeros(size, dtype=dtype).reshape(shape)
+    ciarray.iarray_to_buffer(ctx_, c_, np.PyArray_DATA(a), size * sizeof(dtype))
     return a
 
 

@@ -62,8 +62,6 @@ class Eval(Enum):
     ITERCHUNK = auto()
 
 
-RANDOM_SEED = 0
-
 # List of all know universal functions
 UFUNC_LIST = (
     "abs",
@@ -87,12 +85,22 @@ UFUNC_LIST = (
     "tanh",
 )
 
+
 # That must come here so as to avoid circular import errors
+
+from .config_params import (
+    ConfigParams,
+    Storage,
+    # utils
+    get_ncores,
+    partition_advice,
+    RANDOM_SEED,
+)
+
+
 from .high_level import (
     IArray,
     DTShape,
-    Storage,
-    ConfigParams,
     RandomContext,
     create_expr,
     Expr,
@@ -142,11 +150,9 @@ from .high_level import (
     sqrt,
     tan,
     tanh,
-    # utils
-    get_ncores,
-    partition_advice,
 )
 
+# For some reason this needs to go to the end, else matmul function does not work.
 from . import iarray_ext as ext
 
 ext.IArrayInit()

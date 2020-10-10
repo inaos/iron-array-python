@@ -14,53 +14,8 @@ import numpy as np
 import iarray as ia
 from iarray import iarray_ext as ext
 from itertools import zip_longest
-from dataclasses import dataclass, field
-from typing import List, Sequence
-import warnings
-
-
-def get_ncores(max_ncores=0):
-    """Return the number of logical cores in the system.
-
-    This number is capped at `max_ncores`.  When `max_ncores` is 0,
-    there is no cap at all.
-    """
-    ncores = ext.get_ncores(max_ncores)
-    if ncores < 0:
-        warnings.warn(
-            "Error getting the number of cores in this system (please report this)."
-            "  Falling back to 1.",
-            UserWarning,
-        )
-        return 1
-    return ncores
-
-
-def partition_advice(
-    dtshape, min_chunksize=0, max_chunksize=0, min_blocksize=0, max_blocksize=0, config=None
-):
-    """Provide advice for the chunk and block shapes for a certain `dtshape`.
-
-    `min_` and `max_` params contain minimum and maximum values for chunksize and blocksize.
-    If `min_` or `max_` are 0, they default to sensible values (fractions of CPU caches).
-
-    `config` is an `Config` instance, and if not passed, a default configuration is used.
-
-    If success, the tuple (chunkshape, blockshape) containing the advice is returned.
-    In case of error, a (None, None) tuple is returned and a warning is issued.
-    """
-    if config is None:
-        config = ConfigParams()
-    chunkshape, blockshape = ext.partition_advice(
-        dtshape, min_chunksize, max_chunksize, min_blocksize, max_blocksize, config
-    )
-    if chunkshape is None:
-        warnings.warn(
-            "Error in providing partition advice (please report this)."
-            "  Please do not trust on the chunkshape and blockshape in `storage`!",
-            UserWarning,
-        )
-    return chunkshape, blockshape
+from dataclasses import dataclass
+from typing import Sequence
 
 
 def cmp_arrays(a, b, success=None):
@@ -91,73 +46,6 @@ def cmp_arrays(a, b, success=None):
 class DTShape:
     shape: Sequence
     dtype: (np.float32, np.float64) = np.float64
-
-
-@dataclass
-class Storage:
-    chunkshape: Sequence = None
-    blockshape: Sequence = None
-    filename: str = None
-    enforce_frame: bool = False
-    plainbuffer: bool = False
-
-    def __post_init__(self):
-        self.enforce_frame = True if self.filename else self.enforce_frame
-        if self.plainbuffer:
-            if self.chunkshape is not None or self.blockshape is not None:
-                raise ValueError("plainbuffer array does not support a chunkshape or blockshape")
-
-    def get_shape_advice(self, dtshape):
-        if self.plainbuffer:
-            return
-        chunkshape, blockshape = self.chunkshape, self.blockshape
-        if chunkshape is not None and blockshape is not None:
-            return
-        if chunkshape is None and blockshape is None:
-            chunkshape_, blockshape_ = partition_advice(dtshape)
-            self.chunkshape = chunkshape_
-            self.blockshape = blockshape_
-            return
-        else:
-            raise ValueError(
-                "You can either specify both chunkshape and blockshape or none of them."
-            )
-
-
-def default_storage():
-    return Storage()
-
-
-def default_filters():
-    return [ia.Filters.SHUFFLE]
-
-
-@dataclass
-class ConfigParams(ext.ConfigParams):
-    codec: int = ia.Codecs.LZ4
-    clevel: int = 5
-    use_dict: bool = False
-    filters: List[int] = field(default_factory=default_filters)
-    nthreads: int = 0
-    fp_mantissa_bits: int = 0
-    storage: Storage = field(default_factory=default_storage)
-    eval_method: int = ia.Eval.AUTO
-    seed: int = 0
-
-    def __post_init__(self):
-        self.nthreads = get_ncores(self.nthreads)
-        if self.storage is None:
-            self.storage = Storage()
-
-        super().__init__(
-            self.codec,
-            self.clevel,
-            self.use_dict,
-            self.filters,
-            self.nthreads,
-            self.fp_mantissa_bits,
-            self.eval_method,
-        )
 
 
 #
@@ -232,7 +120,7 @@ def fuse_expressions(expr, new_base, dup_op):
 
 class RandomContext(ext.RandomContext):
     def __init__(self, **kwargs):
-        cparams = ConfigParams(**kwargs)
+        cparams = ia.ConfigParams(**kwargs)
         super().__init__(cparams)
 
 
@@ -340,7 +228,7 @@ class LazyExpr:
         return self.update_expr(new_op=(value, "/", self))
 
     def eval(self, dtshape, **kwargs):
-        cparams = ConfigParams(**kwargs)
+        cparams = ia.ConfigParams(**kwargs)
         expr = Expr(**kwargs)
         for k, v in self.operands.items():
             if isinstance(v, IArray):
@@ -361,7 +249,7 @@ class LazyExpr:
 # The main IronArray container (not meant to be called from user space)
 class IArray(ext.Container):
     def copy(self, view=False, **kwargs):
-        cparams = ConfigParams(
+        cparams = ia.ConfigParams(
             **kwargs
         )  # chunkshape and blockshape can be passed in storage kwarg
         cparams.storage.get_shape_advice(self.dtshape)
@@ -498,7 +386,7 @@ class IArray(ext.Container):
 # The main expression class
 class Expr(ext.Expression):
     def __init__(self, **kwargs):
-        self.cparams = ConfigParams(**kwargs)
+        self.cparams = ia.ConfigParams(**kwargs)
         super().__init__(self.cparams)
 
     def bind_out_properties(self, dtshape, storage=None):
@@ -517,13 +405,13 @@ class Expr(ext.Expression):
 
 
 def empty(dtshape, **kwargs):
-    cparams = ConfigParams(**kwargs)
+    cparams = ia.ConfigParams(**kwargs)
     cparams.storage.get_shape_advice(dtshape)
     return ext.empty(cparams, dtshape)
 
 
 def arange(dtshape, start=None, stop=None, step=None, **kwargs):
-    cparams = ConfigParams(**kwargs)
+    cparams = ia.ConfigParams(**kwargs)
     cparams.storage.get_shape_advice(dtshape)
 
     if (start, stop, step) == (None, None, None):
@@ -547,7 +435,7 @@ def arange(dtshape, start=None, stop=None, step=None, **kwargs):
 
 
 def linspace(dtshape, start, stop, nelem=50, **kwargs):
-    cparams = ConfigParams(**kwargs)
+    cparams = ia.ConfigParams(**kwargs)
     cparams.storage.get_shape_advice(dtshape)
 
     nelem = np.prod(dtshape.shape) if dtshape is not None else nelem
@@ -556,40 +444,40 @@ def linspace(dtshape, start, stop, nelem=50, **kwargs):
 
 
 def zeros(dtshape, **kwargs):
-    cparams = ConfigParams(**kwargs)
+    cparams = ia.ConfigParams(**kwargs)
     cparams.storage.get_shape_advice(dtshape)
     return ext.zeros(cparams, dtshape)
 
 
 def ones(dtshape, **kwargs):
-    cparams = ConfigParams(**kwargs)
+    cparams = ia.ConfigParams(**kwargs)
     cparams.storage.get_shape_advice(dtshape)
     return ext.ones(cparams, dtshape)
 
 
 def full(dtshape, fill_value, **kwargs):
-    cparams = ConfigParams(**kwargs)
+    cparams = ia.ConfigParams(**kwargs)
     cparams.storage.get_shape_advice(dtshape)
     return ext.full(cparams, fill_value, dtshape)
 
 
 def save(c, filename, **kwargs):
-    cparams = ConfigParams(**kwargs)
+    cparams = ia.ConfigParams(**kwargs)
     return ext.save(cparams, c, filename)
 
 
 def load(filename, load_in_mem=False, **kwargs):
-    cparams = ConfigParams(**kwargs)
+    cparams = ia.ConfigParams(**kwargs)
     return ext.load(cparams, filename, load_in_mem)
 
 
 def iarray2numpy(iarr, **kwargs):
-    cparams = ConfigParams(**kwargs)
+    cparams = ia.ConfigParams(**kwargs)
     return ext.iarray2numpy(cparams, iarr)
 
 
 def numpy2iarray(c, **kwargs):
-    cparams = ConfigParams(**kwargs)
+    cparams = ia.ConfigParams(**kwargs)
 
     if c.dtype == np.float64:
         dtype = np.float64
@@ -615,81 +503,81 @@ def random_pre(**kwargs):
 
 def random_rand(dtshape, **kwargs):
     kwargs = random_pre(**kwargs)
-    cparams = ConfigParams(**kwargs)
+    cparams = ia.ConfigParams(**kwargs)
     cparams.storage.get_shape_advice(dtshape)
     return ext.random_rand(cparams, dtshape)
 
 
 def random_randn(dtshape, **kwargs):
     kwargs = random_pre(**kwargs)
-    cparams = ConfigParams(**kwargs)
+    cparams = ia.ConfigParams(**kwargs)
     cparams.storage.get_shape_advice(dtshape)
     return ext.random_randn(cparams, dtshape)
 
 
 def random_beta(dtshape, alpha, beta, **kwargs):
     kwargs = random_pre(**kwargs)
-    cparams = ConfigParams(**kwargs)
+    cparams = ia.ConfigParams(**kwargs)
     cparams.storage.get_shape_advice(dtshape)
     return ext.random_beta(cparams, alpha, beta, dtshape)
 
 
 def random_lognormal(dtshape, mu, sigma, **kwargs):
     kwargs = random_pre(**kwargs)
-    cparams = ConfigParams(**kwargs)
+    cparams = ia.ConfigParams(**kwargs)
     cparams.storage.get_shape_advice(dtshape)
     return ext.random_lognormal(cparams, mu, sigma, dtshape)
 
 
 def random_exponential(dtshape, beta, **kwargs):
     kwargs = random_pre(**kwargs)
-    cparams = ConfigParams(**kwargs)
+    cparams = ia.ConfigParams(**kwargs)
     cparams.storage.get_shape_advice(dtshape)
     return ext.random_exponential(cparams, beta, dtshape)
 
 
 def random_uniform(dtshape, a, b, **kwargs):
     kwargs = random_pre(**kwargs)
-    cparams = ConfigParams(**kwargs)
+    cparams = ia.ConfigParams(**kwargs)
     cparams.storage.get_shape_advice(dtshape)
     return ext.random_uniform(cparams, a, b, dtshape)
 
 
 def random_normal(dtshape, mu, sigma, **kwargs):
     kwargs = random_pre(**kwargs)
-    cparams = ConfigParams(**kwargs)
+    cparams = ia.ConfigParams(**kwargs)
     cparams.storage.get_shape_advice(dtshape)
     return ext.random_normal(cparams, mu, sigma, dtshape)
 
 
 def random_bernoulli(dtshape, p, **kwargs):
     kwargs = random_pre(**kwargs)
-    cparams = ConfigParams(**kwargs)
+    cparams = ia.ConfigParams(**kwargs)
     cparams.storage.get_shape_advice(dtshape)
     return ext.random_bernoulli(cparams, p, dtshape)
 
 
 def random_binomial(dtshape, m, p, **kwargs):
     kwargs = random_pre(**kwargs)
-    cparams = ConfigParams(**kwargs)
+    cparams = ia.ConfigParams(**kwargs)
     cparams.storage.get_shape_advice(dtshape)
     return ext.random_binomial(cparams, m, p, dtshape)
 
 
 def random_poisson(dtshape, lamb, **kwargs):
     kwargs = random_pre(**kwargs)
-    cparams = ConfigParams(**kwargs)
+    cparams = ia.ConfigParams(**kwargs)
     cparams.storage.get_shape_advice(dtshape)
     return ext.random_poisson(cparams, lamb, dtshape)
 
 
 def random_kstest(a, b, **kwargs):
-    cparams = ConfigParams(**kwargs)
+    cparams = ia.ConfigParams(**kwargs)
     return ext.random_kstest(cparams, a, b)
 
 
 def matmul(a, b, block_a, block_b, **kwargs):
-    cparams = ConfigParams(**kwargs)
+    cparams = ia.ConfigParams(**kwargs)
     return ext.matmul(cparams, a, b, block_a, block_b)
 
 
@@ -771,8 +659,8 @@ def tanh(iarr):
 
 if __name__ == "__main__":
     # Check representations of default configs
-    print(ConfigParams())
-    print(Storage())
+    print(ia.ConfigParams())
+    print(ia.Storage())
 
     print()
     # Create initial containers
