@@ -95,6 +95,7 @@ from .config_params import (
     get_ncores,
     partition_advice,
     RANDOM_SEED,
+    defaults,
 )
 
 
