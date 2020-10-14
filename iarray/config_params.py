@@ -294,12 +294,14 @@ set_config()
 
 
 @contextmanager
-def config(**kwargs):
+def config(dtshape=None, **kwargs):
     """Execute a context with some defaults"""
     cparams_orig = defaults.cparams
     defaults.cparams = ConfigParams(**kwargs)
+    if dtshape is not None:
+        defaults.cparams.storage.get_shape_advice(dtshape)
 
-    yield
+    yield defaults.cparams
 
     defaults.cparams = cparams_orig
 
@@ -311,6 +313,5 @@ if __name__ == "__main__":
     cfg = get_config()
     print(cfg)
 
-    with config(clevel=0, storage=Storage(plainbuffer=True)):
-        cfg = get_config()
+    with config(clevel=0, storage=Storage(plainbuffer=True)) as cfg:
         print(cfg)

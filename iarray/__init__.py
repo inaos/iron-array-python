@@ -89,9 +89,7 @@ UFUNC_LIST = (
 # That must come here so as to avoid circular import errors
 
 from .config_params import (
-    ConfigParams,
     Storage,
-    # utils
     get_ncores,
     partition_advice,
     RANDOM_SEED,

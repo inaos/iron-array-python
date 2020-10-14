@@ -47,6 +47,10 @@ class DTShape:
     shape: Sequence
     dtype: (np.float32, np.float64) = np.float64
 
+    def __post_init__(self):
+        if not self.shape:
+            raise ValueError("shape must be non-empty")
+
 
 #
 # Expressions
@@ -62,7 +66,7 @@ def create_expr(str_expr, inputs, dtshape, **kwargs):
 
     `dtshape` is a `dtshape` instance with the shape and dtype of the resulting array.
 
-    `**kwargs` can be any argument supported by the `Config()` constructor.  These will
+    `**kwargs` can be any argument supported by the `ia.set_config()` constructor.  These will
     be used for both the evaluation process and the resulting array.
     """
     expr = ia.Expr(**kwargs)
@@ -120,8 +124,8 @@ def fuse_expressions(expr, new_base, dup_op):
 
 class RandomContext(ext.RandomContext):
     def __init__(self, **kwargs):
-        cparams = ia.ConfigParams(**kwargs)
-        super().__init__(cparams)
+        with ia.config(**kwargs) as cfg:
+            super().__init__(cfg)
 
 
 class LazyExpr:
@@ -228,18 +232,18 @@ class LazyExpr:
         return self.update_expr(new_op=(value, "/", self))
 
     def eval(self, dtshape, **kwargs):
-        cparams = ia.ConfigParams(**kwargs)
-        expr = Expr(**kwargs)
-        for k, v in self.operands.items():
-            if isinstance(v, IArray):
-                expr.bind(k, v)
+        with ia.config(**kwargs) as cparams:
+            expr = Expr(**kwargs)
+            for k, v in self.operands.items():
+                if isinstance(v, IArray):
+                    expr.bind(k, v)
 
-        cparams.storage.get_shape_advice(dtshape)
-        expr.bind_out_properties(dtshape, cparams.storage)
-        expr.compile(self.expression)
-        out = expr.eval()
+            cparams.storage.get_shape_advice(dtshape)
+            expr.bind_out_properties(dtshape, cparams.storage)
+            expr.compile(self.expression)
+            out = expr.eval()
 
-        return out
+            return out
 
     def __str__(self):
         expression = f"{self.expression}"
@@ -249,11 +253,9 @@ class LazyExpr:
 # The main IronArray container (not meant to be called from user space)
 class IArray(ext.Container):
     def copy(self, view=False, **kwargs):
-        cparams = ia.ConfigParams(
-            **kwargs
-        )  # chunkshape and blockshape can be passed in storage kwarg
-        cparams.storage.get_shape_advice(self.dtshape)
-        return ext.copy(cparams, self, view)
+        with ia.config(**kwargs) as cfg:
+            cfg.storage.get_shape_advice(self.dtshape)
+        return ext.copy(cfg, self, view)
 
     def __getitem__(self, key):
         # Massage the key a bit so that it is compatible with self.shape
@@ -386,8 +388,9 @@ class IArray(ext.Container):
 # The main expression class
 class Expr(ext.Expression):
     def __init__(self, **kwargs):
-        self.cparams = ia.ConfigParams(**kwargs)
-        super().__init__(self.cparams)
+        with ia.config(**kwargs) as cfg:
+            self.cparams = cfg
+            super().__init__(self.cparams)
 
     def bind_out_properties(self, dtshape, storage=None):
         if storage is None:
@@ -405,15 +408,12 @@ class Expr(ext.Expression):
 
 
 def empty(dtshape, **kwargs):
-    cparams = ia.ConfigParams(**kwargs)
-    cparams.storage.get_shape_advice(dtshape)
-    return ext.empty(cparams, dtshape)
+    with ia.config(**kwargs) as cfg:
+        cfg.storage.get_shape_advice(dtshape)
+        return ext.empty(cfg, dtshape)
 
 
 def arange(dtshape, start=None, stop=None, step=None, **kwargs):
-    cparams = ia.ConfigParams(**kwargs)
-    cparams.storage.get_shape_advice(dtshape)
-
     if (start, stop, step) == (None, None, None):
         stop = np.prod(dtshape.shape)
         start = 0
@@ -429,56 +429,49 @@ def arange(dtshape, start=None, stop=None, step=None, **kwargs):
             step = 1
         else:
             step = (stop - start) / np.prod(dtshape.shape)
-
     slice_ = slice(start, stop, step)
-    return ext.arange(cparams, slice_, dtshape)
+
+    with ia.config(dtshape, **kwargs) as cfg:
+        return ext.arange(cfg, slice_, dtshape)
 
 
-def linspace(dtshape, start, stop, nelem=50, **kwargs):
-    cparams = ia.ConfigParams(**kwargs)
-    cparams.storage.get_shape_advice(dtshape)
-
-    nelem = np.prod(dtshape.shape) if dtshape is not None else nelem
-
-    return ext.linspace(cparams, nelem, start, stop, dtshape)
+def linspace(dtshape, start, stop, nelem=None, **kwargs):
+    with ia.config(dtshape, **kwargs) as cfg:
+        nelem = np.prod(dtshape.shape) if nelem is None else nelem
+        return ext.linspace(cfg, nelem, start, stop, dtshape)
 
 
 def zeros(dtshape, **kwargs):
-    cparams = ia.ConfigParams(**kwargs)
-    cparams.storage.get_shape_advice(dtshape)
-    return ext.zeros(cparams, dtshape)
+    with ia.config(dtshape, **kwargs) as cfg:
+        return ext.zeros(cfg, dtshape)
 
 
 def ones(dtshape, **kwargs):
-    cparams = ia.ConfigParams(**kwargs)
-    cparams.storage.get_shape_advice(dtshape)
-    return ext.ones(cparams, dtshape)
+    with ia.config(dtshape, **kwargs) as cfg:
+        return ext.ones(cfg, dtshape)
 
 
 def full(dtshape, fill_value, **kwargs):
-    cparams = ia.ConfigParams(**kwargs)
-    cparams.storage.get_shape_advice(dtshape)
-    return ext.full(cparams, fill_value, dtshape)
+    with ia.config(dtshape, **kwargs) as cfg:
+        return ext.full(cfg, fill_value, dtshape)
 
 
 def save(c, filename, **kwargs):
-    cparams = ia.ConfigParams(**kwargs)
-    return ext.save(cparams, c, filename)
+    with ia.config(**kwargs) as cfg:
+        return ext.save(cfg, c, filename)
 
 
 def load(filename, load_in_mem=False, **kwargs):
-    cparams = ia.ConfigParams(**kwargs)
-    return ext.load(cparams, filename, load_in_mem)
+    with ia.config(**kwargs) as cfg:
+        return ext.load(cfg, filename, load_in_mem)
 
 
 def iarray2numpy(iarr, **kwargs):
-    cparams = ia.ConfigParams(**kwargs)
-    return ext.iarray2numpy(cparams, iarr)
+    with ia.config(**kwargs) as cfg:
+        return ext.iarray2numpy(cfg, iarr)
 
 
 def numpy2iarray(c, **kwargs):
-    cparams = ia.ConfigParams(**kwargs)
-
     if c.dtype == np.float64:
         dtype = np.float64
     elif c.dtype == np.float32:
@@ -487,8 +480,8 @@ def numpy2iarray(c, **kwargs):
         raise NotImplementedError("Only float32 and float64 types are supported for now")
 
     dtshape = ia.DTShape(c.shape, dtype)
-    cparams.storage.get_shape_advice(dtshape)
-    return ext.numpy2iarray(cparams, c, dtshape)
+    with ia.config(dtshape, **kwargs) as cfg:
+        return ext.numpy2iarray(cfg, c, dtshape)
 
 
 def random_set_seed(seed):
@@ -503,82 +496,72 @@ def random_pre(**kwargs):
 
 def random_rand(dtshape, **kwargs):
     kwargs = random_pre(**kwargs)
-    cparams = ia.ConfigParams(**kwargs)
-    cparams.storage.get_shape_advice(dtshape)
-    return ext.random_rand(cparams, dtshape)
+    with ia.config(dtshape, **kwargs) as cfg:
+        return ext.random_rand(cfg, dtshape)
 
 
 def random_randn(dtshape, **kwargs):
     kwargs = random_pre(**kwargs)
-    cparams = ia.ConfigParams(**kwargs)
-    cparams.storage.get_shape_advice(dtshape)
-    return ext.random_randn(cparams, dtshape)
+    with ia.config(dtshape, **kwargs) as cfg:
+        return ext.random_randn(cfg, dtshape)
 
 
 def random_beta(dtshape, alpha, beta, **kwargs):
     kwargs = random_pre(**kwargs)
-    cparams = ia.ConfigParams(**kwargs)
-    cparams.storage.get_shape_advice(dtshape)
-    return ext.random_beta(cparams, alpha, beta, dtshape)
+    with ia.config(dtshape, **kwargs) as cfg:
+        return ext.random_beta(cfg, alpha, beta, dtshape)
 
 
 def random_lognormal(dtshape, mu, sigma, **kwargs):
     kwargs = random_pre(**kwargs)
-    cparams = ia.ConfigParams(**kwargs)
-    cparams.storage.get_shape_advice(dtshape)
-    return ext.random_lognormal(cparams, mu, sigma, dtshape)
+    with ia.config(dtshape, **kwargs) as cfg:
+        return ext.random_lognormal(cfg, mu, sigma, dtshape)
 
 
 def random_exponential(dtshape, beta, **kwargs):
     kwargs = random_pre(**kwargs)
-    cparams = ia.ConfigParams(**kwargs)
-    cparams.storage.get_shape_advice(dtshape)
-    return ext.random_exponential(cparams, beta, dtshape)
+    with ia.config(dtshape, **kwargs) as cfg:
+        return ext.random_exponential(cfg, beta, dtshape)
 
 
 def random_uniform(dtshape, a, b, **kwargs):
     kwargs = random_pre(**kwargs)
-    cparams = ia.ConfigParams(**kwargs)
-    cparams.storage.get_shape_advice(dtshape)
-    return ext.random_uniform(cparams, a, b, dtshape)
+    with ia.config(dtshape, **kwargs) as cfg:
+        return ext.random_uniform(cfg, a, b, dtshape)
 
 
 def random_normal(dtshape, mu, sigma, **kwargs):
     kwargs = random_pre(**kwargs)
-    cparams = ia.ConfigParams(**kwargs)
-    cparams.storage.get_shape_advice(dtshape)
-    return ext.random_normal(cparams, mu, sigma, dtshape)
+    with ia.config(dtshape, **kwargs) as cfg:
+        return ext.random_normal(cfg, mu, sigma, dtshape)
 
 
 def random_bernoulli(dtshape, p, **kwargs):
     kwargs = random_pre(**kwargs)
-    cparams = ia.ConfigParams(**kwargs)
-    cparams.storage.get_shape_advice(dtshape)
-    return ext.random_bernoulli(cparams, p, dtshape)
+    with ia.config(dtshape, **kwargs) as cfg:
+        return ext.random_bernoulli(cfg, p, dtshape)
 
 
 def random_binomial(dtshape, m, p, **kwargs):
     kwargs = random_pre(**kwargs)
-    cparams = ia.ConfigParams(**kwargs)
-    cparams.storage.get_shape_advice(dtshape)
-    return ext.random_binomial(cparams, m, p, dtshape)
+    with ia.config(dtshape, **kwargs) as cfg:
+        return ext.random_binomial(cfg, m, p, dtshape)
 
 
 def random_poisson(dtshape, lamb, **kwargs):
     kwargs = random_pre(**kwargs)
-    cparams = ia.ConfigParams(**kwargs)
-    cparams.storage.get_shape_advice(dtshape)
-    return ext.random_poisson(cparams, lamb, dtshape)
+    with ia.config(dtshape, **kwargs) as cfg:
+        return ext.random_poisson(cfg, lamb, dtshape)
 
 
 def random_kstest(a, b, **kwargs):
-    cparams = ia.ConfigParams(**kwargs)
-    return ext.random_kstest(cparams, a, b)
+    with ia.config(**kwargs) as cfg:
+        return ext.random_kstest(cfg, a, b)
 
 
 def matmul(a, b, block_a, block_b, **kwargs):
-    cparams = ia.ConfigParams(**kwargs)
-    return ext.matmul(cparams, a, b, block_a, block_b)
+    with ia.config(**kwargs) as cfg:
+        return ext.matmul(cfg, a, b, block_a, block_b)
 
 
 def abs(iarr):
@@ -658,9 +641,8 @@ def tanh(iarr):
 
 
 if __name__ == "__main__":
-    # Check representations of default configs
-    print(ia.ConfigParams())
-    print(ia.Storage())
+    # Check representations of default config
+    print(ia.get_config())
 
     print()
     # Create initial containers
