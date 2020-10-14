@@ -12,7 +12,7 @@
 import iarray as ia
 from iarray import iarray_ext as ext
 from dataclasses import dataclass, field
-from typing import List, Sequence, Any
+from typing import List, Sequence, Any, Union
 import warnings
 from contextlib import contextmanager
 
@@ -163,7 +163,7 @@ class Defaults(object):
     @cparams.setter
     def cparams(self, value):
         if not hasattr(value, "codec"):
-            raise ValueError(f"You need to use a `ConfigParams` class")
+            raise ValueError(f"You need to use a `ConfigParams` instance")
         self._codec = value.codec
         self._clevel = value.clevel
         self._use_dict = value.use_dict
@@ -206,7 +206,7 @@ class Defaults(object):
     @storage.setter
     def storage(self, value):
         if not hasattr(value, "chunkshape"):
-            raise ValueError(f"You need to use a `Storage` class")
+            raise ValueError(f"You need to use a `Storage` instance")
         self._chunkshape = value.chunkshape
         self._blockshape = value.blockshape
         self._filename = value.filename
@@ -218,10 +218,24 @@ class Defaults(object):
 defaults = Defaults()
 
 
+def set_config(**kwargs):
+    storage = None
+    if "storage" in kwargs:
+        storage = kwargs["storage"]
+    if storage is None:
+        storage = Storage()
+    defaults.cparams = ConfigParams(**kwargs)
+    defaults.storage = storage
+
+
+def get_config():
+    return defaults.cparams
+
+
 @dataclass
 class Storage:
-    chunkshape: Sequence = field(default_factory=defaults.chunkshape)
-    blockshape: Sequence = field(default_factory=defaults.blockshape)
+    chunkshape: Union[Sequence, None] = field(default_factory=defaults.chunkshape)
+    blockshape: Union[Sequence, None] = field(default_factory=defaults.blockshape)
     filename: str = field(default_factory=defaults.filename)
     enforce_frame: bool = field(default_factory=defaults.enforce_frame)
     plainbuffer: bool = field(default_factory=defaults.plainbuffer)
@@ -279,6 +293,10 @@ class ConfigParams(ext.ConfigParams):
         )
 
 
+# Initialize the configuration
+set_config()
+
+
 @contextmanager
 def defaults_ctx(cparams=None, storage=None):
     """Execute a context with some defaults"""
@@ -296,3 +314,11 @@ def defaults_ctx(cparams=None, storage=None):
         defaults.cparams = cparams_orig
     if storage_orig:
         defaults.storage = storage_orig
+
+
+if __name__ == "__main__":
+    cfg = get_config()
+    print(cfg)
+    set_config(storage=Storage(enforce_frame=True))
+    cfg = get_config()
+    print(cfg)

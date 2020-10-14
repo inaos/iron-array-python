@@ -96,6 +96,8 @@ from .config_params import (
     partition_advice,
     RANDOM_SEED,
     defaults,
+    set_config,
+    get_config,
 )
 
 
