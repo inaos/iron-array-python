@@ -39,22 +39,22 @@ def get_ncores(max_ncores=0):
 
 
 def partition_advice(
-    dtshape, min_chunksize=0, max_chunksize=0, min_blocksize=0, max_blocksize=0, config=None
+    dtshape, min_chunksize=0, max_chunksize=0, min_blocksize=0, max_blocksize=0, cparams=None
 ):
     """Provide advice for the chunk and block shapes for a certain `dtshape`.
 
     `min_` and `max_` params contain minimum and maximum values for chunksize and blocksize.
     If `min_` or `max_` are 0, they default to sensible values (fractions of CPU caches).
 
-    `config` is an `Config` instance, and if not passed, a default configuration is used.
+    `config` is a `ConfigParams` instance, and if not passed, a default configuration is used.
 
     If success, the tuple (chunkshape, blockshape) containing the advice is returned.
     In case of error, a (None, None) tuple is returned and a warning is issued.
     """
-    if config is None:
-        config = ConfigParams()
+    if cparams is None:
+        cparams = ConfigParams()
     chunkshape, blockshape = ext.partition_advice(
-        dtshape, min_chunksize, max_chunksize, min_blocksize, max_blocksize, config
+        dtshape, min_chunksize, max_chunksize, min_blocksize, max_blocksize, cparams
     )
     if chunkshape is None:
         warnings.warn(
@@ -171,6 +171,8 @@ class Defaults(object):
         self._nthreads = value.nthreads
         self._fp_mantissa_bits = value.fp_mantissa_bits
         self._storage = value.storage
+        if self._storage is not None:
+            self.storage = self._storage
         self._eval_method = value.eval_method
         self._seed = value.seed
         self._cparams = value
@@ -219,13 +221,7 @@ defaults = Defaults()
 
 
 def set_config(**kwargs):
-    storage = None
-    if "storage" in kwargs:
-        storage = kwargs["storage"]
-    if storage is None:
-        storage = Storage()
     defaults.cparams = ConfigParams(**kwargs)
-    defaults.storage = storage
 
 
 def get_config():
@@ -298,22 +294,14 @@ set_config()
 
 
 @contextmanager
-def defaults_ctx(cparams=None, storage=None):
+def config(**kwargs):
     """Execute a context with some defaults"""
-    cparams_orig, storage_orig = None, None
-    if cparams:
-        cparams_orig = defaults.cparams
-        defaults.cparams = cparams
-    if storage:
-        storage_orig = defaults.storage
-        defaults.storage = storage
+    cparams_orig = defaults.cparams
+    defaults.cparams = ConfigParams(**kwargs)
 
     yield
 
-    if cparams_orig:
-        defaults.cparams = cparams_orig
-    if storage_orig:
-        defaults.storage = storage_orig
+    defaults.cparams = cparams_orig
 
 
 if __name__ == "__main__":
@@ -322,3 +310,7 @@ if __name__ == "__main__":
     set_config(storage=Storage(enforce_frame=True))
     cfg = get_config()
     print(cfg)
+
+    with config(clevel=0, storage=Storage(plainbuffer=True)):
+        cfg = get_config()
+        print(cfg)

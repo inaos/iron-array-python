@@ -98,6 +98,7 @@ from .config_params import (
     defaults,
     set_config,
     get_config,
+    config,
 )
 
 
