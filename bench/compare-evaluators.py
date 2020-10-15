@@ -24,7 +24,6 @@ chunkshape, blockshape = None, None  # use automatic partition advice
 
 expression = "(x - 1.35) * (x - 4.45) * (x - 8.5)"
 clevel = 9  # compression level
-clib = ia.LZ4  # compression codec
 nthreads = 8  # number of threads for the evaluation and/or compression
 
 
@@ -132,13 +131,14 @@ def do_block_evaluation(plainbuffer):
     if plainbuffer:
         storage = ia.Storage(plainbuffer=True)
     else:
-        storage = ia.Storage(chunkshape, blockshape)
+        storage = ia.Storage(chunkshape, blockshape, plainbuffer=False)
 
-    cparams = dict(clib=clib, clevel=clevel, nthreads=nthreads, storage=storage)
+    ia.set_config(clevel=clevel, nthreads=nthreads, storage=storage, fp_mantissa_bits=24)
+    print(ia.get_config())
 
-    x = np.linspace(0, 10, N, dtype=np.double).reshape(shape)
+    x = np.linspace(0, 10, N).reshape(shape)
     dtshape = ia.DTShape(shape=shape)
-    xa = ia.linspace(dtshape, 0.0, 10.0, **cparams)
+    xa = ia.linspace(dtshape, 0.0, 10.0)
 
     if not plainbuffer:
         print("Operand cratio:", round(xa.cratio, 2))
@@ -146,11 +146,11 @@ def do_block_evaluation(plainbuffer):
     # Reference to compare to
     y0 = eval(expression)
 
-    ya = ia.empty(dtshape, **cparams)
+    ya = ia.empty(dtshape)
 
     t0 = time()
     for i in range(NITER):
-        ya = ia.empty(dtshape, **cparams)
+        ya = ia.empty(dtshape)
         for ((j, x), (k, y)) in zip_longest(xa.iter_read_block(), ya.iter_write_block()):
             y[:] = eval(expression)
     print("Block evaluate via numpy:", round((time() - t0) / NITER, 4))
@@ -161,7 +161,7 @@ def do_block_evaluation(plainbuffer):
     ne.set_num_threads(1)
     t0 = time()
     for i in range(NITER):
-        ya = ia.empty(dtshape, **cparams)
+        ya = ia.empty(dtshape)
         for ((j, x), (k, y)) in zip_longest(xa.iter_read_block(), ya.iter_write_block()):
             ne.evaluate(expression, local_dict={"x": x}, out=y)
     print("Block evaluate via numexpr:", round((time() - t0) / NITER, 4))
@@ -171,7 +171,7 @@ def do_block_evaluation(plainbuffer):
     ne.set_num_threads(nthreads)
     t0 = time()
     for i in range(NITER):
-        ya = ia.empty(dtshape, **cparams)
+        ya = ia.empty(dtshape)
         for ((j, x), (k, y)) in zip_longest(xa.iter_read_block(), ya.iter_write_block()):
             ne.evaluate(expression, local_dict={"x": x}, out=y)
     print("Block evaluate via numexpr (multi-thread):", round((time() - t0) / NITER, 4))
@@ -181,7 +181,7 @@ def do_block_evaluation(plainbuffer):
     nb.set_num_threads(1)
     t0 = time()
     for i in range(NITER):
-        ya = ia.empty(dtshape, **cparams)
+        ya = ia.empty(dtshape)
         for ((j, x), (k, y)) in zip_longest(xa.iter_read_block(), ya.iter_write_block()):
             # y[:] = poly_numba(x)
             poly_numba2(x, y)
@@ -192,7 +192,7 @@ def do_block_evaluation(plainbuffer):
     nb.set_num_threads(nthreads)
     t0 = time()
     for i in range(NITER):
-        ya = ia.empty(dtshape, **cparams)
+        ya = ia.empty(dtshape)
         for ((j, x), (k, y)) in zip_longest(xa.iter_read_block(), ya.iter_write_block()):
             # y[:] = poly_numba(x)
             poly_numba2(x, y)
@@ -202,7 +202,7 @@ def do_block_evaluation(plainbuffer):
 
     t0 = time()
     for i in range(NITER):
-        ya = ia.empty(dtshape, **cparams)
+        ya = ia.empty(dtshape)
         for ((j, x), (k, y)) in zip_longest(xa.iter_read_block(), ya.iter_write_block()):
             y[:] = ia.ext.poly_cython(x)
     print("Block evaluate via cython:", round((time() - t0) / NITER, 4))
@@ -211,7 +211,7 @@ def do_block_evaluation(plainbuffer):
 
     t0 = time()
     for i in range(NITER):
-        ya = ia.empty(dtshape, **cparams)
+        ya = ia.empty(dtshape)
         for ((j, x), (k, y)) in zip_longest(xa.iter_read_block(), ya.iter_write_block()):
             y[:] = ia.ext.poly_cython_nogil(x)
     print("Block evaluate via cython (nogil):", round((time() - t0) / NITER, 4))
@@ -221,9 +221,9 @@ def do_block_evaluation(plainbuffer):
     for engine in ("internal", "udf"):
         t0 = time()
         if engine == "internal":
-            expr = ia.create_expr(expression, {"x": xa}, dtshape, **cparams)
+            expr = ia.create_expr(expression, {"x": xa}, dtshape)
         else:
-            expr = poly_llvm.create_expr([xa], dtshape, **cparams)
+            expr = poly_llvm.create_expr([xa], dtshape)
         for i in range(NITER):
             ya = expr.eval()
         avg = round((time() - t0) / NITER, 4)
@@ -235,7 +235,7 @@ def do_block_evaluation(plainbuffer):
     x = xa
     for i in range(NITER):
         ya = eval(expression, {"x": x})
-        ya = ya.eval(dtshape, **cparams)
+        ya = ya.eval(dtshape)
     avg = round((time() - t0) / NITER, 4)
     print(f"Block evaluate via iarray.LazyExpr.eval (engine: internal): {avg:.4f}")
     y1 = ia.iarray2numpy(ya)

@@ -2,11 +2,10 @@ import iarray as ia
 import numpy as np
 from time import time
 import ctypes
-import matplotlib.pyplot as plt
 import numexpr as ne
 from iarray import udf
 from iarray.py2llvm import float64
-from numba import config, njit, prange
+from numba import njit, prange
 
 # omp = ctypes.CDLL('libiomp5.so')
 # omp_set_num_threads = omp.omp_set_num_threads
@@ -43,8 +42,6 @@ size = int(np.prod(shape))
 
 bstorage = ia.Storage(chunkshape, blockshape)
 pstorage = ia.Storage(plainbuffer=True)
-
-eval_method = ia.Eval.AUTO
 
 res = []
 
@@ -90,7 +87,7 @@ for num_threads in range(1, max_num_threads + 1):
 
     # Plainbuffer
     a1 = ia.linspace(dtshape, 0, 10, storage=pstorage, nthreads=num_threads)
-    expr = ia.Expr(eval_method=eval_method, nthreads=num_threads)
+    expr = ia.Expr(nthreads=num_threads)
     expr.bind("x", a1)
     expr.bind_out_properties(dtshape, storage=pstorage)
     expr.compile("(x - 1.35) * (x - 4.45) * (x - 8.5)")
@@ -105,7 +102,7 @@ for num_threads in range(1, max_num_threads + 1):
 
     # Superchunk without compression
     a1 = ia.linspace(dtshape, 0, 10, storage=bstorage, clevel=0, **kwargs)
-    expr = ia.Expr(eval_method=eval_method, clevel=0, **kwargs)
+    expr = ia.Expr(clevel=0, **kwargs)
     expr.bind("x", a1)
     expr.bind_out_properties(dtshape, storage=bstorage)
     expr.compile("(x - 1.35) * (x - 4.45) * (x - 8.5)")
@@ -120,7 +117,7 @@ for num_threads in range(1, max_num_threads + 1):
 
     # Superchunk with compression
     a1 = ia.linspace(dtshape, 0, 10, storage=bstorage, clevel=9, **kwargs)
-    expr = ia.Expr(eval_method=eval_method, clevel=9, **kwargs)
+    expr = ia.Expr(clevel=9, **kwargs)
     expr.bind("x", a1)
     expr.bind_out_properties(dtshape, storage=bstorage)
     expr.compile("(x - 1.35) * (x - 4.45) * (x - 8.5)")
@@ -135,9 +132,7 @@ for num_threads in range(1, max_num_threads + 1):
 
     # Superchunk with compression and UDF
     a1 = ia.linspace(dtshape, 0, 10, storage=bstorage, clevel=9, **kwargs)
-    expr = poly_udf.create_expr(
-        [a1], dtshape, storage=bstorage, method=ia.Eval.ITERBLOSC, clevel=9, **kwargs
-    )
+    expr = poly_udf.create_expr([a1], dtshape, storage=bstorage, clevel=9, **kwargs)
     t = []
     for _ in range(nrep):
         t0 = time()

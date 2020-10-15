@@ -29,7 +29,7 @@ else:
 DTYPE = np.float32
 NTHREADS = 8
 CLEVEL = 5
-CLIB = ia.LZ4
+CODEC = ia.Codecs.LZ4
 
 t_iarray = []
 t_dask = []
@@ -53,29 +53,33 @@ compressor = Blosc(
     shuffle=Blosc.SHUFFLE,
     blocksize=reduce(lambda x, y: x * y, ablockshape),
 )
-cparams = dict(clib=CLIB, clevel=CLEVEL, nthreads=NTHREADS)
+ia.set_config(codec=CODEC, clevel=CLEVEL, nthreads=NTHREADS)
 
 astorage = ia.Storage(achunkshape, ablockshape)
-
-lia = ia.linspace(ia.DTShape(ashape, dtype=DTYPE), 0, 1, storage=astorage, **cparams)
-nia = ia.random_normal(ia.DTShape(ashape, dtype=DTYPE), 0, 0.0000001, storage=astorage, **cparams)
-aia = (lia + nia).eval(storage=astorage, **cparams)
+dtshape = ia.DTShape(ashape, dtype=DTYPE)
+lia = ia.linspace(dtshape, 0, 1, storage=astorage)
+nia = ia.random_normal(
+    dtshape,
+    0,
+    0.0000001,
+    storage=astorage,
+)
+aia = (lia + nia).eval(dtshape, storage=astorage)
 
 bstorage = ia.Storage(bchunkshape, bblockshape)
-
-lia = ia.linspace(ia.DTShape(bshape, dtype=DTYPE), 0, 1, storage=bstorage, **cparams)
-nia = ia.random_normal(ia.DTShape(bshape, dtype=DTYPE), 0, 0.0000001, storage=bstorage, **cparams)
-bia = (lia + nia).eval(storage=bstorage, **cparams)
+dtshape = ia.DTShape(bshape, dtype=DTYPE)
+lia = ia.linspace(dtshape, 0, 1, storage=bstorage)
+nia = ia.random_normal(dtshape, 0, 0.0000001, storage=bstorage)
+bia = (lia + nia).eval(dtshape, storage=bstorage)
 
 ablock = (500, 500)
 bblock = (500, 500)
-
 cstorage = ia.Storage(cchunkshape, cblockshape)
 
 
 @profile
 def ia_matmul(aia, bia, ablock, bblock):
-    return ia.matmul(aia, bia, ablock, bblock, storage=cstorage, **cparams)
+    return ia.matmul(aia, bia, ablock, bblock, storage=cstorage)
 
 
 t0 = time()
@@ -147,6 +151,6 @@ cia = ia_matmul(anp, bnp)
 t1 = time()
 tnp = t1 - t0
 
-print("Time for computing matmul (via numpy): %.3f" % (tnp))
+print("Time for computing matmul (via numpy): %.3f" % tnp)
 print(f"Speed-up vs zarr: {tzarr / tia}")
 print(f"Speed-up vs numpy (MKL): {tnp / tia}")

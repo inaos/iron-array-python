@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 
 NTHREADS = 8
 CLEVEL = 5
-CLIB = ia.LZ4
+CODEC = ia.Codecs.LZ4
 
 compressor = Blosc(cname="lz4", clevel=CLEVEL, shuffle=Blosc.SHUFFLE)
 shapes = np.logspace(6, 8, 10, dtype=np.int64)
@@ -29,7 +29,7 @@ for i, shape in enumerate(shapes):
     shape = (shape,)
     dtshape = ia.DTShape(shape, dtype)
     print(shape, chunkshape)
-    cparams = dict(clib=CLIB, clevel=CLEVEL, nthreads=NTHREADS)
+    cparams = dict(codec=CODEC, clevel=CLEVEL, nthreads=NTHREADS)
 
     storage_in = ia.Storage(chunkshape, blockshape, "iarray_infile.iarray")
     ia.arange(dtshape, storage=storage_in, **cparams)
