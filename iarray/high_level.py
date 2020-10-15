@@ -788,7 +788,10 @@ def random_kstest(a, b, **kwargs):
 
 def matmul(a, b, **kwargs):
     cfg = Config(**kwargs)
-    dtshape = ia.dtshape((a.shape[0], b.shape[1]), a.dtype)
+    if b.ndim == 1:
+        dtshape = ia.dtshape((a.shape[0],), a.dtype)
+    else:
+        dtshape = ia.dtshape((a.shape[0], b.shape[1]), a.dtype)
     cfg._storage.get_shape_advice(dtshape)
     return ext.matmul(cfg, a, b)
 
