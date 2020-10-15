@@ -2,11 +2,11 @@ import iarray as ia
 import numpy as np
 import sys
 
-persistent = False
+persistent = True
 
-shape = (8192, 8192)
-chunkshape = (2048, 2048)
-blockshape = (512, 512)
+shape = (16384, 16384)
+chunkshape = (4096, 4096)
+blockshape = (1024, 1024)
 
 if len(sys.argv) == 1:
     nthreads = 1

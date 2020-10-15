@@ -7,14 +7,14 @@ import sys
 
 import ctypes
 
-mkl_rt = ctypes.CDLL("libmkl_rt.dylib")
+mkl_rt = ctypes.CDLL("libmkl_rt.so")
 mkl_set_num_threads = mkl_rt.MKL_Set_Num_Threads
 mkl_set_num_threads(1)
 
 persistent = True
 
-shape = (8192, 8192)
-chunkshape = (2048, 2048)
+shape = (16384, 16384)
+chunkshape = (4096, 4096)
 
 if len(sys.argv) == 1:
     nthreads = 1
