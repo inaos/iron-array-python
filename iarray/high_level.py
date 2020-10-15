@@ -435,10 +435,9 @@ def arange(dtshape, start=None, stop=None, step=None, **kwargs):
         return ext.arange(cfg, slice_, dtshape)
 
 
-def linspace(dtshape, start, stop, nelem=None, **kwargs):
+def linspace(dtshape, start, stop, **kwargs):
     with ia.config(dtshape, **kwargs) as cfg:
-        nelem = np.prod(dtshape.shape) if nelem is None else nelem
-        return ext.linspace(cfg, nelem, start, stop, dtshape)
+        return ext.linspace(cfg, start, stop, dtshape)
 
 
 def zeros(dtshape, **kwargs):

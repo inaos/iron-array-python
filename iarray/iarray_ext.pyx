@@ -483,8 +483,6 @@ def arange(cfg, slice_, dtshape):
         ctx.to_capsule(), "iarray_context_t*")
 
     start, stop, step = slice_.start, slice_.stop, slice_.step
-    if dtshape.shape is None:
-        dtshape.shape = [ceil((stop - start)/step)]
 
     dtshape = IaDTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
@@ -501,13 +499,14 @@ def arange(cfg, slice_, dtshape):
     return ia.IArray(ctx, c_c)
 
 
-def linspace(cfg, nelem, start, stop, dtshape):
+def linspace(cfg, start, stop, dtshape):
     ctx = Context(cfg)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
         ctx.to_capsule(), "iarray_context_t*")
 
-    if dtshape.shape is None:
-        dtshape.shape = [nelem]
+    cdef nelem = 1
+    for i in dtshape.shape:
+        nelem *= i
     dtshape = IaDTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
