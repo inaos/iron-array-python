@@ -116,7 +116,6 @@ class Defaults(object):
     def __post_init__(self):
         # Initialize cparams and storage with its getters and setters
         self.cparams = self.cparams
-        self.storage = self.storage
 
     # Accessors only meant to serve as default_factory
     def codec(self):
@@ -172,7 +171,7 @@ class Defaults(object):
         self._fp_mantissa_bits = value.fp_mantissa_bits
         self._storage = value.storage
         if self._storage is not None:
-            self.storage = self._storage
+            self.set_storage(self._storage)
         self._eval_method = value.eval_method
         self._seed = value.seed
         self._cparams = value
@@ -205,8 +204,7 @@ class Defaults(object):
             )
         return self._storage
 
-    @storage.setter
-    def storage(self, value):
+    def set_storage(self, value):
         if not hasattr(value, "chunkshape"):
             raise ValueError(f"You need to use a `Storage` instance")
         self._chunkshape = value.chunkshape
