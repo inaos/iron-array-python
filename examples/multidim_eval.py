@@ -13,28 +13,27 @@ shape = [16000, 8000]
 dtshape = ia.DTShape(shape, dtype)
 nthreads = 8  # maximum number of threads to use
 
-sexpr = "(cos(%s) - sin(%s)) * (%s - 1.35) * (%s - 4.45)"
-npexpr = "(np.cos(%s) - np.sin(%s)) * (%s - 1.35) * (%s - 4.45)"
+sexpr = "(cos(x) - sin(y)) * (x - 1.35) * (y - 4.45)"
 
 # Create initial arrays.  You may opt to use automatic chunkshape and blockshape,
 # but you typically get optimal results when you fine-tune them.
 storage = ia.Storage(chunkshape=[1000, 800], blockshape=[100, 100])
-kwargs = dict(storage=storage, fp_mantissa_bits=24)
+ia.set_config(storage=storage, fp_mantissa_bits=24, nthreads=nthreads)
 
 size = shape[0] * shape[1]
 np0 = np.linspace(0, 10, size, dtype=dtype).reshape(shape)
-ia0 = ia.numpy2iarray(np0, **kwargs)
+ia0 = ia.numpy2iarray(np0)
 np1 = np.linspace(0, 1, size, dtype=dtype).reshape(shape)
-ia1 = ia.numpy2iarray(np1, **kwargs)
+ia1 = ia.numpy2iarray(np1)
 
 t0 = time()
-np2 = eval(npexpr % (("np0", "np1") * 2))
+np2 = eval("(np.cos(np0) - np.sin(np1)) * (np0 - 1.35) * (np1 - 4.45)")
 t1 = time()
 print("Time for numpy evaluation: %.3f" % (t1 - t0))
 
 ne.set_num_threads(nthreads)
 t0 = time()
-np3 = ne.evaluate(sexpr % (("np0", "np1") * 2))
+np3 = ne.evaluate(sexpr, {"x": np0, "y": np1})
 t1 = time()
 print("Time for numexpr evaluation: %.3f" % (t1 - t0))
 
@@ -45,7 +44,7 @@ except AssertionError:
     print("ERROR. Results are different.")
 
 t0 = time()
-expr = ia.create_expr(sexpr % (("x", "y") * 2), {"x": ia0, "y": ia1}, dtshape, **kwargs)
+expr = ia.create_expr(sexpr, {"x": ia0, "y": ia1}, dtshape)
 
 ia2 = expr.eval()
 t1 = time()

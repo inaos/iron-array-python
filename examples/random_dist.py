@@ -8,11 +8,12 @@ shape = [size]
 
 ia.random_set_seed(1)
 
-a1 = ia.random_uniform(ia.DTShape(shape, dtype=np.float32), 0, 1)
+dtshape = ia.DTShape(shape, dtype=np.float32)
+a1 = ia.random_uniform(dtshape, 0, 1)
 a2 = ia.iarray2numpy(a1)
 print(a2[:10])
 
-a1 = ia.random_uniform(ia.DTShape(shape, dtype=np.float32), 0, 1)
+a1 = ia.random_uniform(dtshape, 0, 1)
 a2 = ia.iarray2numpy(a1)
 print(a2[:10])
 

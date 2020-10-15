@@ -16,7 +16,8 @@ NITER = 10
 # Define array params
 shape = [20 * 1000 * 1000]
 dtshape = ia.DTShape(shape, np.float64)
-cparams = dict(clevel=5, nthreads=8)
+# Most of modern computers can reach 8 threads
+ia.set_config(nthreads=8)
 
 
 @jit(verbose=0)
@@ -29,7 +30,7 @@ def f(out: Array(float64, 1), x: Array(float64, 1)) -> int64:
 
 
 # Create initial containers
-a1 = ia.linspace(dtshape, 0, 10, **cparams)
+a1 = ia.linspace(dtshape, 0, 10)
 a2 = np.linspace(0, 10, shape[0], dtshape.dtype).reshape(shape)
 
 print("numpy evaluation...")
@@ -41,7 +42,7 @@ print("Time for numpy eval:", round((time() - t0) / NITER, 3))
 print(bn)
 
 print("iarray evaluation ...")
-expr = f.create_expr([a1], dtshape, **cparams)
+expr = f.create_expr([a1], dtshape)
 b1 = None
 t0 = time()
 for i in range(NITER):
@@ -52,7 +53,7 @@ print(b1_n)
 
 ia.cmp_arrays(bn, b1_n, success="OK. Results are the same.")
 
-expr = ia.create_expr("(sin(x) - 1.35) * (x - 4.45) * (x - 8.5)", {"x": a1}, dtshape, **cparams)
+expr = ia.create_expr("(sin(x) - 1.35) * (x - 4.45) * (x - 8.5)", {"x": a1}, dtshape)
 b2 = None
 t0 = time()
 for i in range(NITER):
