@@ -5,9 +5,9 @@ import os
 
 persistent = True
 
-shape = (8192, 8192)
-chunkshape = (2048, 2048)
-blockshape = (512, 512)
+shape = (16384, 16384)
+chunkshape = (4096, 4096)
+blockshape = (1024, 1024)
 
 shape = (1000, 1000)
 chunkshape = (500, 500)
