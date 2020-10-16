@@ -482,6 +482,10 @@ class IArray(ext.Container):
 
         return super().__getitem__([start, stop])
 
+    def __matmul__(self, value):
+        a = self
+        return matmul(a, value)
+
     def __add__(self, value):
         return LazyExpr(new_op=(self, "+", value))
 
@@ -782,9 +786,14 @@ def random_kstest(a, b, **kwargs):
     return ext.random_kstest(cfg, a, b)
 
 
-def matmul(a, b, block_a, block_b, **kwargs):
+def matmul(a, b, **kwargs):
     cfg = Config(**kwargs)
-    return ext.matmul(cfg, a, b, block_a, block_b)
+    if b.ndim == 1:
+        dtshape = ia.dtshape((a.shape[0],), a.dtype)
+    else:
+        dtshape = ia.dtshape((a.shape[0], b.shape[1]), a.dtype)
+    cfg._storage.get_shape_advice(dtshape)
+    return ext.matmul(cfg, a, b)
 
 
 def abs(iarr):
