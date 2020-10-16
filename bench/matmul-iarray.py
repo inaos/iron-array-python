@@ -1,12 +1,17 @@
 import iarray as ia
 import numpy as np
 import sys
+import os
 
-persistent = False
+persistent = True
 
 shape = (8192, 8192)
 chunkshape = (2048, 2048)
 blockshape = (512, 512)
+
+shape = (1000, 1000)
+chunkshape = (500, 500)
+blockshape = (250, 250)
 
 if len(sys.argv) == 1:
     nthreads = 1
@@ -17,17 +22,9 @@ clib = ia.LZ4
 clevel = 5
 
 if persistent:
-    import os
-
     afilename = "a.iarray"
-    if os.path.exists(afilename):
-        os.remove(afilename)
     bfilename = "b.iarray"
-    if os.path.exists(bfilename):
-        os.remove(bfilename)
     cfilename = "c.iarray"
-    if os.path.exists(cfilename):
-        os.remove(cfilename)
 else:
     afilename = None
     bfilename = None
@@ -41,34 +38,29 @@ cstorage = ia.StorageProperties(chunkshape, blockshape, filename=cfilename)
 
 cparams = dict(clib=clib, clevel=clevel, nthreads=nthreads)
 
-
-@profile
-def create_data():
+if persistent:
+    if not os.path.exists(afilename):
+        aia = ia.linspace(dtshape, -1, 1, storage=astorage, **cparams)
+    else:
+        aia = ia.load("a.iarray", load_in_mem=False)
+else:
     aia = ia.linspace(dtshape, -1, 1, storage=astorage, **cparams)
-    bia = ia.linspace(dtshape, -1, 1, storage=bstorage, **cparams)
-    return aia, bia
-
-
-aia, bia = create_data()
-
-
-@profile
-def matmul():
-    cia = ia.matmul(aia, bia, storage=cstorage, **cparams)
-    return cia
-
-
-cia = matmul()
-
 
 if persistent:
-    if os.path.exists(afilename):
-        os.remove(afilename)
-    if os.path.exists(bfilename):
-        os.remove(bfilename)
+    if not os.path.exists(bfilename):
+        bia = ia.linspace(dtshape, -1, 1, storage=bstorage, **cparams)
+    else:
+        bia = ia.load("b.iarray", load_in_mem=False)
+else:
+    bia = ia.linspace(dtshape, -1, 1, storage=bstorage, **cparams)
+
+print("start matmul")
+cia = ia.matmul(aia, bia, storage=cstorage, **cparams)
+
+if persistent:
+    # if os.path.exists(afilename):
+    #     os.remove(afilename)
+    # if os.path.exists(bfilename):
+    #     os.remove(bfilename)
     if os.path.exists(cfilename):
         os.remove(cfilename)
-
-print(aia.cratio)
-print(bia.cratio)
-print(cia.cratio)
