@@ -285,10 +285,8 @@ cdef extern from "libiarray/iarray.h":
     ina_rc_t iarray_linalg_matmul(iarray_context_t *ctx,
                                   iarray_container_t *a,
                                   iarray_container_t *b,
-                                  iarray_container_t *result,
-                                  int64_t *blockshape_a,
-                                  int64_t *blockshape_b,
-                                  iarray_operator_hint_t hint)
+                                  iarray_storage_t *store,
+                                  iarray_container_t **result)
 
     # Iterators
 

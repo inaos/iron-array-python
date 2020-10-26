@@ -72,21 +72,20 @@ lia = ia.linspace(dtshape, 0, 1, storage=bstorage)
 nia = ia.random_normal(dtshape, 0, 0.0000001, storage=bstorage)
 bia = (lia + nia).eval(dtshape, storage=bstorage)
 
-ablock = (500, 500)
-bblock = (500, 500)
 cstorage = ia.Storage(cchunkshape, cblockshape)
 
 
 @profile
-def ia_matmul(aia, bia, ablock, bblock):
-    return ia.matmul(aia, bia, ablock, bblock, storage=cstorage)
+def ia_matmul(aia, bia):
+    return ia.matmul(aia, bia, storage=cstorage)
 
 
+mkl_set_num_threads(1)
 t0 = time()
-cia = ia_matmul(aia, bia, ablock, bblock)
+cia = ia_matmul(aia, bia)
 t1 = time()
 tia = t1 - t0
-print("Time for computing matmul (via iarray): %.3f" % (tia))
+print("Time for computing matmul (via iarray): %.3f" % tia)
 print(f"a cratio: {aia.cratio}")
 print(f"b cratio: {bia.cratio}")
 print(f"out cratio: {cia.cratio}")
@@ -104,8 +103,6 @@ for info, block in bia.iter_read_block(bchunkshape):
 
 scheduler = "single-threaded" if NTHREADS == 1 else "threads"
 
-mkl_set_num_threads(1)
-
 
 @profile
 def dask_matmul(azarr, bzarr):
@@ -117,17 +114,18 @@ def dask_matmul(azarr, bzarr):
             (ashape[0], bshape[1]),
             dtype=DTYPE,
             compressor=compressor,
-            chunks=(ablock[0], bblock[1]),
+            chunks=cchunkshape,
         )
         da.to_zarr(cd, czarr)
         return czarr
 
 
+mkl_set_num_threads(1)
 t0 = time()
 czarr = dask_matmul(azarr, bzarr)
 t1 = time()
-tzarr = t1 - t0
-print("Time for computing matmul (via dask): %.3f" % (tzarr))
+tzdask = t1 - t0
+print("Time for computing matmul (via dask): %.3f" % (tzdask))
 print(f"a cratio: {azarr.nbytes / azarr.nbytes_stored}")
 print(f"b cratio: {bzarr.nbytes / bzarr.nbytes_stored}")
 print(f"out cratio: {czarr.nbytes / czarr.nbytes_stored}")
@@ -152,5 +150,5 @@ t1 = time()
 tnp = t1 - t0
 
 print("Time for computing matmul (via numpy): %.3f" % tnp)
-print(f"Speed-up vs zarr: {tzarr / tia}")
+print(f"Speed-up vs dask: {tzdask / tia}")
 print(f"Speed-up vs numpy (MKL): {tnp / tia}")

@@ -279,6 +279,10 @@ class IArray(ext.Container):
 
         return super().__getitem__([start, stop])
 
+    def __matmul__(self, value):
+        a = self
+        return matmul(a, value)
+
     def __add__(self, value):
         return LazyExpr(new_op=(self, "+", value))
 
@@ -558,9 +562,9 @@ def random_kstest(a, b, **kwargs):
         return ext.random_kstest(cfg, a, b)
 
 
-def matmul(a, b, block_a, block_b, **kwargs):
+def matmul(a, b, **kwargs):
     with ia.config(**kwargs) as cfg:
-        return ext.matmul(cfg, a, b, block_a, block_b)
+        return ext.matmul(cfg, a, b)
 
 
 def abs(iarr):

@@ -9,14 +9,11 @@ mkl_rt = ctypes.CDLL("libmkl_rt.dylib")
 mkl_set_num_threads = mkl_rt.MKL_Set_Num_Threads
 mkl_get_max_threads = mkl_rt.MKL_Get_Max_Threads
 
-mkl_set_num_threads(1)
-print(f"Numpy max threads: {mkl_get_max_threads()}")
+nthreads = 4
 
 dtshape_a = ia.DTShape([2000, 2000], np.float64)
-bshape_a = [2000, 2000]
 
 dtshape_b = ia.DTShape([2000, 2000], np.float64)
-bshape_b = [2000, 2000]
 
 a = ia.arange(dtshape_a, clevel=0)
 an = ia.iarray2numpy(a)
@@ -29,6 +26,7 @@ nrep = 10
 c = None
 cn2 = None
 
+mkl_set_num_threads(nthreads)
 t0 = time()
 for _ in range(nrep):
     cn2 = np.matmul(an, bn)
@@ -36,9 +34,10 @@ t1 = time()
 
 print(f"Time to compute matmul with numpy: {(t1-t0)/nrep} s")
 
+mkl_set_num_threads(1)
 t0 = time()
 for i in range(nrep):
-    c = ia.matmul(a, b, bshape_a, bshape_b, clevel=0, nthreads=1)
+    c = ia.matmul(a, b, clevel=0, nthreads=nthreads)
 t1 = time()
 print(f"Time to compute matmul with iarray: {(t1-t0)/nrep} s")
 

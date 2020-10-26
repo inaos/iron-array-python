@@ -961,50 +961,19 @@ def random_kstest(cfg, a, b):
     return res
 
 
-def matmul(cfg, a, b, block_a, block_b):
+def matmul(cfg, a, b):
     ctx = Context(cfg)
     cdef ciarray.iarray_container_t *a_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(a.to_capsule(), "iarray_container_t*")
     cdef ciarray.iarray_container_t *b_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(b.to_capsule(), "iarray_container_t*")
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
     cdef ciarray.iarray_container_t *c
 
-    if a.chunkshape is None and b.chunkshape is None:
-        if len(b.shape) == 1:
-            dtshape = IaDTShape(ia.DTShape((a.shape[0],), a.dtype)).to_dict()
-        else:
-            dtshape = IaDTShape(ia.DTShape((a.shape[0], b.shape[1]), a.dtype)).to_dict()
-    else:
-        if len(b.shape) == 1:
-            dtshape = IaDTShape(ia.DTShape(tuple([a.shape[0]]), a.dtype)).to_dict()
-        else:
-            dtshape = IaDTShape(ia.DTShape((a.shape[0], b.shape[1]), a.dtype)).to_dict()
-
-    cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
-
     cdef ciarray.iarray_storage_t store_
     set_storage(cfg.storage, &store_)
 
-    flags = 0 if cfg.storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
-
-    ciarray.iarray_container_new(ctx_, &dtshape_, &store_, flags, &c)
-
-    cdef ciarray.int64_t *block_a_
-    cdef ciarray.int64_t *block_b_
-
-    block_a_ = <ciarray.int64_t*> malloc(a.ndim * sizeof(ciarray.int64_t))
-    for i in range(a.ndim):
-        block_a_[i] = block_a[i]
-
-    block_b_ = <ciarray.int64_t*> malloc(a.ndim * sizeof(ciarray.int64_t))
-    for i in range(b.ndim):
-        block_b_[i] = block_b[i]
-
-    err = ciarray.iarray_linalg_matmul(ctx_, a_, b_, c, block_a_, block_b_, ciarray.IARRAY_OPERATOR_GENERAL)
+    err = ciarray.iarray_linalg_matmul(ctx_, a_, b_, &store_, &c)
     if err != 0:
         raise AttributeError
-
-    free(block_a_)
-    free(block_b_)
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     return ia.IArray(ctx, c_c)
