@@ -241,7 +241,7 @@ cdef class RandomContext:
     cdef ciarray.iarray_random_ctx_t *random_ctx
     cdef Context context
 
-    def __init__(self, ctx, seed=0, rng="MERSENNE_TWISTER"):
+    def __init__(self, ctx, seed, rng="MERSENNE_TWISTER"):
         self.context = ctx
         cdef ciarray.iarray_random_ctx_t* r_ctx
         if rng == "MERSENNE_TWISTER":

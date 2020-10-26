@@ -104,7 +104,7 @@ class Defaults(object):
     _nthreads: int = 0
     _fp_mantissa_bits: int = 0
     _eval_method: int = ia.Eval.AUTO
-    _seed: int = 0
+    _seed: int = None
     # Storage
     _storage = None
     _chunkshape: Sequence = None
@@ -272,7 +272,15 @@ class ConfigParams(ext.ConfigParams):
     seed: int = field(default_factory=defaults.seed)
 
     def __post_init__(self):
+        global RANDOM_SEED
         self.nthreads = get_ncores(self.nthreads)
+        # Increase the random seed each time so as to prevent re-using them
+        if self.seed is None:
+            if RANDOM_SEED >= 2 ** 32 - 1:
+                # In case we run out of values in uint32_t ints, reset to 0
+                RANDOM_SEED = 0
+            RANDOM_SEED += 1
+            self.seed = RANDOM_SEED
         if self.storage is None:
             self.storage = Storage()
 

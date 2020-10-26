@@ -24,12 +24,13 @@ def test_rand(shape, chunkshape, blockshape, dtype, seed):
     else:
         storage = ia.Storage(chunkshape, blockshape)
 
-    ia.random_set_seed(seed)
-    a = ia.random_rand(ia.DTShape(shape, dtype), storage=storage)
-    ia.random_set_seed(seed)
-    b = ia.random_rand(ia.DTShape(shape, dtype), storage=storage)
-
+    a = ia.random_rand(ia.DTShape(shape, dtype), storage=storage, seed=seed)
+    b = ia.random_rand(ia.DTShape(shape, dtype), storage=storage, seed=seed)
     np.testing.assert_array_equal(ia.iarray2numpy(a), ia.iarray2numpy(b))
+
+    # Check that the default seed is None
+    c = ia.random_rand(ia.DTShape(shape, dtype), storage=storage)
+    assert np.alltrue(ia.iarray2numpy(b) != ia.iarray2numpy(c))
 
 
 # Randn
@@ -48,11 +49,8 @@ def test_randn(shape, chunkshape, blockshape, dtype, seed):
     else:
         storage = ia.Storage(chunkshape, blockshape)
 
-    ia.random_set_seed(seed)
-    a = ia.random_randn(ia.DTShape(shape, dtype), storage=storage)
-    ia.random_set_seed(seed)
-    b = ia.random_randn(ia.DTShape(shape, dtype), storage=storage)
-
+    a = ia.random_randn(ia.DTShape(shape, dtype), storage=storage, seed=seed)
+    b = ia.random_randn(ia.DTShape(shape, dtype), storage=storage, seed=seed)
     np.testing.assert_array_equal(ia.iarray2numpy(a), ia.iarray2numpy(b))
 
 
@@ -72,11 +70,8 @@ def test_beta(alpha, beta, shape, chunkshape, blockshape, dtype, seed):
     else:
         storage = ia.Storage(chunkshape, blockshape)
 
-    ia.random_set_seed(seed)
-    a = ia.random_beta(ia.DTShape(shape, dtype), alpha, beta, storage=storage)
-    ia.random_set_seed(seed)
-    b = ia.random_beta(ia.DTShape(shape, dtype), alpha, beta, storage=storage)
-
+    a = ia.random_beta(ia.DTShape(shape, dtype), alpha, beta, storage=storage, seed=seed)
+    b = ia.random_beta(ia.DTShape(shape, dtype), alpha, beta, storage=storage, seed=seed)
     np.testing.assert_array_equal(ia.iarray2numpy(a), ia.iarray2numpy(b))
 
 
@@ -96,11 +91,8 @@ def test_lognormal(mu, sigma, shape, chunkshape, blockshape, dtype, seed):
     else:
         storage = ia.Storage(chunkshape, blockshape)
 
-    ia.random_set_seed(seed)
-    a = ia.random_lognormal(ia.DTShape(shape, dtype), mu, sigma, storage=storage)
-    ia.random_set_seed(seed)
-    b = ia.random_lognormal(ia.DTShape(shape, dtype), mu, sigma, storage=storage)
-
+    a = ia.random_lognormal(ia.DTShape(shape, dtype), mu, sigma, storage=storage, seed=seed)
+    b = ia.random_lognormal(ia.DTShape(shape, dtype), mu, sigma, storage=storage, seed=seed)
     np.testing.assert_array_equal(ia.iarray2numpy(a), ia.iarray2numpy(b))
 
 
@@ -120,11 +112,8 @@ def test_exponential(beta, shape, chunkshape, blockshape, dtype, seed):
     else:
         storage = ia.Storage(chunkshape, blockshape)
 
-    ia.random_set_seed(seed)
-    a = ia.random_exponential(ia.DTShape(shape, dtype), beta, storage=storage)
-    ia.random_set_seed(seed)
-    b = ia.random_exponential(ia.DTShape(shape, dtype), beta, storage=storage)
-
+    a = ia.random_exponential(ia.DTShape(shape, dtype), beta, storage=storage, seed=seed)
+    b = ia.random_exponential(ia.DTShape(shape, dtype), beta, storage=storage, seed=seed)
     np.testing.assert_array_equal(ia.iarray2numpy(a), ia.iarray2numpy(b))
 
 
@@ -144,11 +133,8 @@ def test_uniform(a_, b_, shape, chunkshape, blockshape, dtype, seed):
     else:
         storage = ia.Storage(chunkshape, blockshape)
 
-    ia.random_set_seed(seed)
-    a = ia.random_uniform(ia.DTShape(shape, dtype), a_, b_, storage=storage)
-    ia.random_set_seed(seed)
-    b = ia.random_uniform(ia.DTShape(shape, dtype), a_, b_, storage=storage)
-
+    a = ia.random_uniform(ia.DTShape(shape, dtype), a_, b_, storage=storage, seed=seed)
+    b = ia.random_uniform(ia.DTShape(shape, dtype), a_, b_, storage=storage, seed=seed)
     np.testing.assert_array_equal(ia.iarray2numpy(a), ia.iarray2numpy(b))
 
 
@@ -168,10 +154,8 @@ def test_normal(mu, sigma, shape, chunkshape, blockshape, dtype, seed):
     else:
         storage = ia.Storage(chunkshape, blockshape)
 
-    ia.random_set_seed(seed)
-    a = ia.random_normal(ia.DTShape(shape, dtype), mu, sigma, storage=storage)
-    ia.random_set_seed(seed)
-    b = ia.random_normal(ia.DTShape(shape, dtype), mu, sigma, storage=storage)
+    a = ia.random_normal(ia.DTShape(shape, dtype), mu, sigma, storage=storage, seed=seed)
+    b = ia.random_normal(ia.DTShape(shape, dtype), mu, sigma, storage=storage, seed=seed)
 
     np.testing.assert_array_equal(ia.iarray2numpy(a), ia.iarray2numpy(b))
 
@@ -192,11 +176,8 @@ def test_bernoulli(p, shape, chunkshape, blockshape, dtype, seed):
     else:
         storage = ia.Storage(chunkshape, blockshape)
 
-    ia.random_set_seed(seed)
-    a = ia.random_bernoulli(ia.DTShape(shape, dtype), p, storage=storage)
-    ia.random_set_seed(seed)
-    b = ia.random_bernoulli(ia.DTShape(shape, dtype), p, storage=storage)
-
+    a = ia.random_bernoulli(ia.DTShape(shape, dtype), p, storage=storage, seed=seed)
+    b = ia.random_bernoulli(ia.DTShape(shape, dtype), p, storage=storage, seed=seed)
     np.testing.assert_array_equal(ia.iarray2numpy(a), ia.iarray2numpy(b))
 
 
@@ -216,11 +197,8 @@ def test_binomial(n, p, shape, chunkshape, blockshape, dtype, seed):
     else:
         storage = ia.Storage(chunkshape, blockshape)
 
-    ia.random_set_seed(seed)
-    a = ia.random_binomial(ia.DTShape(shape, dtype), n, p, storage=storage)
-    ia.random_set_seed(seed)
-    b = ia.random_binomial(ia.DTShape(shape, dtype), n, p, storage=storage)
-
+    a = ia.random_binomial(ia.DTShape(shape, dtype), n, p, storage=storage, seed=seed)
+    b = ia.random_binomial(ia.DTShape(shape, dtype), n, p, storage=storage, seed=seed)
     np.testing.assert_array_equal(ia.iarray2numpy(a), ia.iarray2numpy(b))
 
 
@@ -240,9 +218,6 @@ def test_poisson(lamb, shape, chunkshape, blockshape, dtype, seed):
     else:
         storage = ia.Storage(chunkshape, blockshape)
 
-    ia.random_set_seed(seed)
-    a = ia.random_poisson(ia.DTShape(shape, dtype), lamb, storage=storage)
-    ia.random_set_seed(seed)
-    b = ia.random_poisson(ia.DTShape(shape, dtype), lamb, storage=storage)
-
+    a = ia.random_poisson(ia.DTShape(shape, dtype), lamb, storage=storage, seed=seed)
+    b = ia.random_poisson(ia.DTShape(shape, dtype), lamb, storage=storage, seed=seed)
     np.testing.assert_array_equal(ia.iarray2numpy(a), ia.iarray2numpy(b))

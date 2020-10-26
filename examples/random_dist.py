@@ -6,8 +6,6 @@ import numpy as np
 size = 10000
 shape = [size]
 
-ia.random_set_seed(1)
-
 dtshape = ia.DTShape(shape, dtype=np.float32)
 a1 = ia.random_uniform(dtshape, 0, 1)
 a2 = ia.iarray2numpy(a1)
