@@ -30,7 +30,7 @@ def test_cparams(clevel, codec, filters, chunkshape, blockshape, enforce_frame):
         codec=codec,
         filters=filters,
         chunkshape=chunkshape,
-        blockshape=chunkshape,
+        blockshape=blockshape,
         enforce_frame=False,
     )
     config = ia.get_config()
