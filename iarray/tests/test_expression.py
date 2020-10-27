@@ -137,7 +137,7 @@ def test_expression(method, shape, chunkshape, blockshape, dtype, expression):
     iout2 = expr.eval()
     npout2 = ia.iarray2numpy(iout2)
 
-    decimal = 5 if dtype is np.float32 else 10
+    decimal = 6 if dtype is np.float32 else 7
     np.testing.assert_almost_equal(npout, npout2, decimal=decimal)
 
     # Evaluate using a different engine (numpy)

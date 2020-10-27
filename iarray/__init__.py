@@ -24,7 +24,7 @@ if platform_system == "Linux":
         binding.load_library_permanently("libintlc.so.5")
         binding.load_library_permanently("libsvml.so")
     except RuntimeError:
-        # Runtime libraries are not in the path.  Probably we are runing from wheels,
+        # Runtime libraries are not in the path.  Probably we are running from wheels,
         # and wheels ensure than libraries are in the same directory than this file.
         binding.load_library_permanently(os.path.join(install_dir, "libintlc.so.5"))
         binding.load_library_permanently(os.path.join(install_dir, "libsvml.so"))

@@ -273,7 +273,14 @@ class ConfigParams(ext.ConfigParams):
 
     def __post_init__(self):
         global RANDOM_SEED
-        self.nthreads = get_ncores(self.nthreads)
+        if self.nthreads == 0:  # trigger automatic core detection
+            # As a general rule, it is useful to get half of the (logical) cores.
+            # The rational is that logical cores share the L1 and L2 caches, and
+            # usually it is better to let 1 single thread to use L1 and L2
+            # simultaneously.
+            self.nthreads = get_ncores(self.nthreads) // 2
+            if self.nthreads < 1:
+                self.nthreads = 1
         # Increase the random seed each time so as to prevent re-using them
         if self.seed is None:
             if RANDOM_SEED >= 2 ** 32 - 1:

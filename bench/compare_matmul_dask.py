@@ -139,13 +139,13 @@ bnp = ia.iarray2numpy(bia)
 
 
 @profile
-def ia_matmul(anp, bnp):
+def np_matmul(anp, bnp):
     mkl_set_num_threads(NTHREADS)
     return np.matmul(anp, bnp)
 
 
 t0 = time()
-cia = ia_matmul(anp, bnp)
+cia = np_matmul(anp, bnp)
 t1 = time()
 tnp = t1 - t0
 
