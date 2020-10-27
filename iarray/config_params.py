@@ -170,11 +170,11 @@ class Defaults(object):
         self._nthreads = value.nthreads
         self._fp_mantissa_bits = value.fp_mantissa_bits
         self._storage = value.storage
-        if self._storage is not None:
-            self.set_storage(self._storage)
         self._eval_method = value.eval_method
         self._seed = value.seed
         self._cparams = value
+        if self._storage is not None:
+            self.set_storage(self._storage)
 
     def chunkshape(self):
         return self._chunkshape
@@ -271,6 +271,13 @@ class ConfigParams(ext.ConfigParams):
     eval_method: int = field(default_factory=defaults.eval_method)
     seed: int = field(default_factory=defaults.seed)
 
+    # These belong to Storage, but we accept them in top level too
+    chunkshape: Union[Sequence, None] = field(default_factory=defaults.chunkshape)
+    blockshape: Union[Sequence, None] = field(default_factory=defaults.blockshape)
+    filename: str = field(default_factory=defaults.filename)
+    enforce_frame: bool = field(default_factory=defaults.enforce_frame)
+    plainbuffer: bool = field(default_factory=defaults.plainbuffer)
+
     def __post_init__(self):
         global RANDOM_SEED
         if self.nthreads == 0:  # trigger automatic core detection
@@ -294,8 +301,15 @@ class ConfigParams(ext.ConfigParams):
             RANDOM_SEED += 1
             self.seed = RANDOM_SEED
         if self.storage is None:
-            self.storage = Storage()
+            self.storage = Storage(
+                chunkshape=self.chunkshape,
+                blockshape=self.blockshape,
+                filename=self.filename,
+                enforce_frame=self.enforce_frame,
+                plainbuffer=self.plainbuffer,
+            )
 
+        # Initialize the Cython counterpart
         super().__init__(
             self.codec,
             self.clevel,
@@ -326,10 +340,17 @@ def config(dtshape=None, **kwargs):
 
 if __name__ == "__main__":
     cfg = get_config()
-    print(cfg)
+    print("Defaults:", cfg)
+    assert cfg.storage.enforce_frame == False
     set_config(storage=Storage(enforce_frame=True))
     cfg = get_config()
-    print(cfg)
+    print("1st form:", cfg)
+    assert cfg.storage.enforce_frame == True
+    set_config(enforce_frame=False)
+    cfg = get_config()
+    print("2nd form:", cfg)
+    assert cfg.storage.enforce_frame == False
 
-    with config(clevel=0, storage=Storage(plainbuffer=True)) as cfg:
-        print(cfg)
+    with config(clevel=0, enforce_frame=True) as cfg_new:
+        print(cfg_new)
+        assert cfg_new.storage.enforce_frame == True

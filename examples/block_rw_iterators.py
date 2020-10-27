@@ -13,7 +13,7 @@ shape = (10, 100)
 dtshape1 = ia.DTShape(shape=shape, dtype=np.float64)
 dtshape2 = ia.DTShape(shape=shape, dtype=np.float32)
 c1 = ia.arange(dtshape1)
-c2 = ia.empty(dtshape2, storage=ia.Storage(plainbuffer=True))
+c2 = ia.empty(dtshape2, plainbuffer=True)
 
 for i, ((_, p1), (_, p2)) in enumerate(zip_longest(c1.iter_read_block(), c2.iter_write_block())):
     p2[:] = p1
