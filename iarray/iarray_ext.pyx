@@ -169,6 +169,8 @@ cdef class ConfigParams:
         # At any rate, `filters` should be a list for displaying purposes in high level Config().
         for f in filters:
             filter_flags |= f.value
+        if fp_mantissa_bits > 0:
+            filter_flags |= ia.Filters.TRUNC_PREC.value
         self.cparams.filter_flags = filter_flags
 
         if eval_method == ia.Eval.AUTO:

@@ -5,9 +5,10 @@ import iarray as ia
 import numpy as np
 
 # Number of iterations per benchmark
-NITER = 10
+NITER = 5
 
-ia.set_config(clevel=1, nthreads=8)
+# Do lossy compression for improved compression ratio
+ia.set_config(clevel=9, fp_mantissa_bits=20)
 
 # Vector sizes and partitions
 shape = [100 * 1000 * 1000]
@@ -41,7 +42,7 @@ for i in range(NITER):
 print("Result cratio:", round(ya.cratio, 2))
 print("Block evaluate via iarray.eval:", round((time() - t0) / NITER, 4))
 y1 = ia.iarray2numpy(ya)
-np.testing.assert_almost_equal(y0, y1)
+np.testing.assert_almost_equal(y0, y1, decimal=3)
 
 t0 = time()
 x = xa
@@ -49,4 +50,4 @@ for i in range(NITER):
     ya = ((x - 1.35) * (x - 4.45) * (x - 8.5)).eval(dtshape)
 print("Block evaluate via iarray.LazyExpr.eval('iarray_eval')):", round((time() - t0) / NITER, 4))
 y1 = ia.iarray2numpy(ya)
-np.testing.assert_almost_equal(y0, y1)
+np.testing.assert_almost_equal(y0, y1, decimal=3)
