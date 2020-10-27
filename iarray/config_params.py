@@ -278,9 +278,14 @@ class ConfigParams(ext.ConfigParams):
             # The rational is that logical cores share the L1 and L2 caches, and
             # usually it is better to let 1 single thread to use L1 and L2
             # simultaneously.
-            self.nthreads = get_ncores(self.nthreads) // 2
-            if self.nthreads < 1:
-                self.nthreads = 1
+            self.nthreads = get_ncores(0) // 2
+        else:
+            # If number of threads is specified, make sure that we are not exceeding
+            # the number of logical cores in the system.
+            self.nthreads = get_ncores(self.nthreads)
+        if self.nthreads < 1:
+            self.nthreads = 1
+
         # Increase the random seed each time so as to prevent re-using them
         if self.seed is None:
             if RANDOM_SEED >= 2 ** 32 - 1:

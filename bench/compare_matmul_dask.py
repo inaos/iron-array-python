@@ -28,7 +28,7 @@ else:
 
 DTYPE = np.float32
 NTHREADS = 8
-CLEVEL = 5
+CLEVEL = 9
 CODEC = ia.Codecs.LZ4
 
 t_iarray = []
