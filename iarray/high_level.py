@@ -435,27 +435,27 @@ def arange(dtshape, start=None, stop=None, step=None, **kwargs):
             step = (stop - start) / np.prod(dtshape.shape)
     slice_ = slice(start, stop, step)
 
-    with ia.config(dtshape, **kwargs) as cfg:
+    with ia.config(dtshape=dtshape, **kwargs) as cfg:
         return ext.arange(cfg, slice_, dtshape)
 
 
 def linspace(dtshape, start, stop, **kwargs):
-    with ia.config(dtshape, **kwargs) as cfg:
+    with ia.config(dtshape=dtshape, **kwargs) as cfg:
         return ext.linspace(cfg, start, stop, dtshape)
 
 
 def zeros(dtshape, **kwargs):
-    with ia.config(dtshape, **kwargs) as cfg:
+    with ia.config(dtshape=dtshape, **kwargs) as cfg:
         return ext.zeros(cfg, dtshape)
 
 
 def ones(dtshape, **kwargs):
-    with ia.config(dtshape, **kwargs) as cfg:
+    with ia.config(dtshape=dtshape, **kwargs) as cfg:
         return ext.ones(cfg, dtshape)
 
 
 def full(dtshape, fill_value, **kwargs):
-    with ia.config(dtshape, **kwargs) as cfg:
+    with ia.config(dtshape=dtshape, **kwargs) as cfg:
         return ext.full(cfg, fill_value, dtshape)
 
 
@@ -483,57 +483,57 @@ def numpy2iarray(c, **kwargs):
         raise NotImplementedError("Only float32 and float64 types are supported for now")
 
     dtshape = ia.DTShape(c.shape, dtype)
-    with ia.config(dtshape, **kwargs) as cfg:
+    with ia.config(dtshape=dtshape, **kwargs) as cfg:
         return ext.numpy2iarray(cfg, c, dtshape)
 
 
 def random_rand(dtshape, **kwargs):
-    with ia.config(dtshape, **kwargs) as cfg:
+    with ia.config(dtshape=dtshape, **kwargs) as cfg:
         return ext.random_rand(cfg, dtshape)
 
 
 def random_randn(dtshape, **kwargs):
-    with ia.config(dtshape, **kwargs) as cfg:
+    with ia.config(dtshape=dtshape, **kwargs) as cfg:
         return ext.random_randn(cfg, dtshape)
 
 
 def random_beta(dtshape, alpha, beta, **kwargs):
-    with ia.config(dtshape, **kwargs) as cfg:
+    with ia.config(dtshape=dtshape, **kwargs) as cfg:
         return ext.random_beta(cfg, alpha, beta, dtshape)
 
 
 def random_lognormal(dtshape, mu, sigma, **kwargs):
-    with ia.config(dtshape, **kwargs) as cfg:
+    with ia.config(dtshape=dtshape, **kwargs) as cfg:
         return ext.random_lognormal(cfg, mu, sigma, dtshape)
 
 
 def random_exponential(dtshape, beta, **kwargs):
-    with ia.config(dtshape, **kwargs) as cfg:
+    with ia.config(dtshape=dtshape, **kwargs) as cfg:
         return ext.random_exponential(cfg, beta, dtshape)
 
 
 def random_uniform(dtshape, a, b, **kwargs):
-    with ia.config(dtshape, **kwargs) as cfg:
+    with ia.config(dtshape=dtshape, **kwargs) as cfg:
         return ext.random_uniform(cfg, a, b, dtshape)
 
 
 def random_normal(dtshape, mu, sigma, **kwargs):
-    with ia.config(dtshape, **kwargs) as cfg:
+    with ia.config(dtshape=dtshape, **kwargs) as cfg:
         return ext.random_normal(cfg, mu, sigma, dtshape)
 
 
 def random_bernoulli(dtshape, p, **kwargs):
-    with ia.config(dtshape, **kwargs) as cfg:
+    with ia.config(dtshape=dtshape, **kwargs) as cfg:
         return ext.random_bernoulli(cfg, p, dtshape)
 
 
 def random_binomial(dtshape, m, p, **kwargs):
-    with ia.config(dtshape, **kwargs) as cfg:
+    with ia.config(dtshape=dtshape, **kwargs) as cfg:
         return ext.random_binomial(cfg, m, p, dtshape)
 
 
 def random_poisson(dtshape, lamb, **kwargs):
-    with ia.config(dtshape, **kwargs) as cfg:
+    with ia.config(dtshape=dtshape, **kwargs) as cfg:
         return ext.random_poisson(cfg, lamb, dtshape)
 
 

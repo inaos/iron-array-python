@@ -42,6 +42,25 @@ def test_cparams(clevel, codec, filters, chunkshape, blockshape, enforce_frame):
     assert storage2.blockshape == blockshape
     assert storage2.enforce_frame == False
 
+    # Or, we can set defaults via ConfigParams (for better auto-completion)
+    cparams = ia.ConfigParams(
+        clevel=clevel,
+        codec=codec,
+        filters=filters,
+        chunkshape=chunkshape,
+        blockshape=blockshape,
+        enforce_frame=False,
+    )
+    ia.set_config(cparams)
+    config = ia.get_config()
+    assert config.clevel == clevel
+    assert config.codec == codec
+    assert config.filters == filters
+    storage2 = ia.Storage()
+    assert storage2.chunkshape == chunkshape
+    assert storage2.blockshape == blockshape
+    assert storage2.enforce_frame == False
+
 
 @pytest.mark.parametrize(
     "clevel, codec, filters, chunkshape, blockshape, plainbuffer",

@@ -215,15 +215,8 @@ class Defaults(object):
         self._storage = value
 
 
+# Global variable where the defaults for config params are stored
 defaults = Defaults()
-
-
-def set_config(**kwargs):
-    defaults.cparams = ConfigParams(**kwargs)
-
-
-def get_config():
-    return defaults.cparams
 
 
 @dataclass
@@ -321,20 +314,35 @@ class ConfigParams(ext.ConfigParams):
         )
 
 
+def set_config(cparams: Union[ConfigParams, None] = None, dtshape=None, **kwargs):
+    if cparams is None:
+        defaults.cparams = ConfigParams(**kwargs)
+    else:
+        defaults.cparams = cparams
+    if dtshape is not None:
+        defaults.cparams.storage.get_shape_advice(dtshape)
+
+
+def get_config():
+    return defaults.cparams
+
+
 # Initialize the configuration
 set_config()
 
 
 @contextmanager
-def config(dtshape=None, **kwargs):
+def config(cparams: Union[ConfigParams, None] = None, dtshape=None, **kwargs):
     """Execute a context with some defaults"""
     cparams_orig = defaults.cparams
-    defaults.cparams = ConfigParams(**kwargs)
+    if cparams is None:
+        defaults.cparams = ConfigParams(**kwargs)
+    else:
+        defaults.cparams = cparams
     if dtshape is not None:
         defaults.cparams.storage.get_shape_advice(dtshape)
 
     yield defaults.cparams
-
     defaults.cparams = cparams_orig
 
 
@@ -350,6 +358,11 @@ if __name__ == "__main__":
     cfg = get_config()
     print("2nd form:", cfg)
     assert cfg.storage.enforce_frame == False
+
+    set_config(ConfigParams(clevel=1))
+    cfg = get_config()
+    print("3rd form:", cfg)
+    assert cfg.clevel == 1
 
     with config(clevel=0, enforce_frame=True) as cfg_new:
         print(cfg_new)
