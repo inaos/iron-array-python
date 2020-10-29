@@ -232,14 +232,13 @@ class LazyExpr:
         return self.update_expr(new_op=(value, "/", self))
 
     def eval(self, dtshape, **kwargs):
-        with ia.config(**kwargs) as cparams:
+        with ia.config(dtshape=dtshape, **kwargs) as cfg:
             expr = Expr(**kwargs)
             for k, v in self.operands.items():
                 if isinstance(v, IArray):
                     expr.bind(k, v)
 
-            cparams.storage.get_shape_advice(dtshape)
-            expr.bind_out_properties(dtshape, cparams.storage)
+            expr.bind_out_properties(dtshape, cfg.storage)
             expr.compile(self.expression)
             out = expr.eval()
 
@@ -253,9 +252,8 @@ class LazyExpr:
 # The main IronArray container (not meant to be called from user space)
 class IArray(ext.Container):
     def copy(self, view=False, **kwargs):
-        with ia.config(**kwargs) as cfg:
-            cfg.storage.get_shape_advice(self.dtshape)
-        return ext.copy(cfg, self, view)
+        with ia.config(dtshape=self.dtshape, **kwargs) as cfg:
+            return ext.copy(cfg, self, view)
 
     def __getitem__(self, key):
         # Massage the key a bit so that it is compatible with self.shape
@@ -391,19 +389,15 @@ class IArray(ext.Container):
 
 # The main expression class
 class Expr(ext.Expression):
-    def __init__(self, **kwargs):
-        with ia.config(**kwargs) as cfg:
-            self.cparams = cfg
-            super().__init__(self.cparams)
+    def __init__(self, cfg=None, **kwargs):
+        with ia.config(cfg=cfg, **kwargs) as cfg:
+            self.cfg = cfg
+            super().__init__(self.cfg)
 
     def bind_out_properties(self, dtshape, storage=None):
-        if storage is None:
-            # Use the default storage in config
-            storage = self.cparams.storage
-            storage.get_shape_advice(dtshape)
-        if storage.chunkshape is None or storage.blockshape is None:
-            storage.get_shape_advice(dtshape)
-        super().bind_out_properties(dtshape, storage)
+        store_args = dict() if storage is None else storage.__dict__
+        with ia.config(dtshape=dtshape, cfg=self.cfg, **store_args) as cfg:
+            super().bind_out_properties(dtshape, cfg.storage)
 
 
 #
@@ -412,7 +406,7 @@ class Expr(ext.Expression):
 
 
 def empty(dtshape, cfg=None, **kwargs):
-    with ia.config(cfg=cfg, **kwargs) as cfg:
+    with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
         return ext.empty(cfg, dtshape)
 
 
@@ -542,7 +536,9 @@ def random_kstest(a, b, cfg=None, **kwargs):
 
 
 def matmul(a, b, cfg=None, **kwargs):
-    with ia.config(cfg=cfg, **kwargs) as cfg:
+    shape = (a.shape[0], b.shape[1]) if b.ndim == 2 else (a.shape[0],)
+    dtshape = DTShape(shape, a.dtype)
+    with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
         return ext.matmul(cfg, a, b)
 
 
