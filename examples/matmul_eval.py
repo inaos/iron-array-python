@@ -11,9 +11,9 @@ mkl_get_max_threads = mkl_rt.MKL_Get_Max_Threads
 
 nthreads = 4
 
-dtshape_a = ia.dtshape([2000, 2000], np.float64)
+dtshape_a = ia.DTShape([2000, 2000], np.float64)
 
-dtshape_b = ia.dtshape([2000, 2000], np.float64)
+dtshape_b = ia.DTShape([2000, 2000], np.float64)
 
 a = ia.arange(dtshape_a, clevel=0)
 an = ia.iarray2numpy(a)

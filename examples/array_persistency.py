@@ -10,7 +10,7 @@ size = int(np.prod(shape))
 a = np.arange(size, dtype=np.float64).reshape(shape)
 
 print(f"Creating {filename}")
-store = ia.StorageProperties(filename=filename)
+store = ia.Storage(filename=filename)
 b = ia.numpy2iarray(a, storage=store)
 
 print(f"Reading {filename}")

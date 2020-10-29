@@ -23,22 +23,25 @@ filters = [ia.TRUNC_PREC, ia.SHUFFLE]
 filters_meta = [10, 0]
 nthreads = 2
 
+
 def f(sl, x):
     new_pos = tuple(int(inner_sl.start / pshape[i]) for i, inner_sl in enumerate(sl))
     return (new_pos, np.average(x))
 
+
 def f1(sl, x):
     new_pos = tuple(int(inner_sl.start / pshape[i]) for i, inner_sl in enumerate(sl))
     return (new_pos, np.average(x))
+
 
 def f2(sl, x):
     new_pos = tuple(int(inner_sl / pshape_) for inner_sl, pshape_ in zip(sl, pshape))
     return (new_pos, np.average(x))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Create content for populating arrays
-    dtshape = ia.dtshape(shape=shape, pshape=pshape, dtype=np.float32)
+    dtshape = ia.DTShape(shape=shape, pshape=pshape, dtype=np.float32)
     carr = ia.linspace(dtshape, 0, 10, clevel=clevel, clib=clib, nthreads=nthreads)
     content = ia.iarray2numpy(carr)
 
@@ -48,13 +51,19 @@ if __name__ == '__main__':
         for i in range(0, shape[0], pshape[0]):
             for j in range(0, shape[1], pshape[1]):
                 for k in range(0, shape[2], pshape[2]):
-                    blockslice = (slice(i, i+pshape[0]), slice(j, j+pshape[0]), slice(k, k+pshape[0]))
+                    blockslice = (
+                        slice(i, i + pshape[0]),
+                        slice(j, j + pshape[0]),
+                        slice(k, k + pshape[0]),
+                    )
                     block = content[blockslice]
                     results.append(pool.apply_async(f, (blockslice, block)))
         rnp = [res.get(timeout=1) for res in results]
         print("rnp->", rnp)
     t1 = time()
-    print("Time for average (numpy): %.3f" % (t1 - t0),)
+    print(
+        "Time for average (numpy): %.3f" % (t1 - t0),
+    )
 
     t0 = time()
     with Pool(processes=NPROCS) as pool:
@@ -62,13 +71,19 @@ if __name__ == '__main__':
         for i in range(0, shape[0], pshape[0]):
             for j in range(0, shape[1], pshape[1]):
                 for k in range(0, shape[2], pshape[2]):
-                    blockslice = (slice(i, i+pshape[0]), slice(j, j+pshape[0]), slice(k, k+pshape[0]))
+                    blockslice = (
+                        slice(i, i + pshape[0]),
+                        slice(j, j + pshape[0]),
+                        slice(k, k + pshape[0]),
+                    )
                     block = carr[blockslice]
                     results.append(pool.apply_async(f1, (blockslice, block)))
         rnp = [res.get(timeout=1) for res in results]
         print("rnp->", rnp)
     t1 = time()
-    print("Time for average (iarray): %.3f" % (t1 - t0),)
+    print(
+        "Time for average (iarray): %.3f" % (t1 - t0),
+    )
 
     # t0 = time()
     # with Pool(processes=NPROCS) as pool:

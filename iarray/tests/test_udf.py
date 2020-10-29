@@ -31,10 +31,10 @@ def cmp_udf_np(f, start_stop, shape, partitions, dtype, cparams):
 
     if partitions is not None:
         chunkshape, blockshape = partitions
-        storage = ia.StorageProperties(chunkshape, blockshape)
+        storage = ia.Storage(chunkshape, blockshape)
     else:
-        storage = ia.StorageProperties(plainbuffer=True)
-    dtshape = ia.dtshape(shape, dtype)
+        storage = ia.Storage(plainbuffer=True)
+    dtshape = ia.DTShape(shape, dtype)
     inputs = [
         ia.linspace(dtshape, start, stop, storage=storage, **cparams) for start, stop in start_stop
     ]
@@ -63,9 +63,9 @@ def cmp_udf_np_strict(f, start, stop, shape, partitions, dtype, cparams):
     chunkshape, blockshape = partitions
     assert len(chunkshape) == 1
     assert len(blockshape) == 1
-    storage = ia.StorageProperties(chunkshape, blockshape)
+    storage = ia.Storage(chunkshape, blockshape)
 
-    dtshape = ia.dtshape(shape, dtype)
+    dtshape = ia.DTShape(shape, dtype)
     x = ia.linspace(dtshape, start, stop, storage=storage, **cparams)
     expr = f.create_expr([x], dtshape, storage=storage, **cparams)
     out = expr.eval()
@@ -102,7 +102,7 @@ def test_1dim(f):
     chunkshape = [3 * 1000]
     blockshape = [3 * 100]
     dtype = np.float64
-    cparams = dict(clib=ia.LZ4, clevel=5, nthreads=16)
+    cparams = dict(nthreads=16)
     start, stop = 0, 10
 
     cmp_udf_np(f, (start, stop), shape, (chunkshape, blockshape), dtype, cparams)
@@ -119,7 +119,7 @@ def test_1dim(f):
 def test_1dim_plain(f):
     shape = [10 * 1000]
     dtype = np.float64
-    cparams = dict(clib=ia.LZ4, clevel=5, nthreads=16)
+    cparams = dict(clevel=5, nthreads=16)
     start, stop = 0, 10
 
     cmp_udf_np(f, (start, stop), shape, None, dtype, cparams)
@@ -142,7 +142,7 @@ def test_2dim(f):
     chunkshape = [60, 200]
     blockshape = [11, 200]
     dtype = np.float64
-    cparams = dict(clib=ia.LZ4, clevel=5)
+    cparams = dict()
     start, stop = 0, 10
 
     cmp_udf_np(f, (start, stop), shape, (chunkshape, blockshape), dtype, cparams)
@@ -152,7 +152,7 @@ def test_2dim(f):
 def test_2dim_plain(f):
     shape = [400, 800]
     dtype = np.float64
-    cparams = dict(clib=ia.LZ4, clevel=5)
+    cparams = dict()
     start, stop = 0, 10
 
     cmp_udf_np(f, (start, stop), shape, None, dtype, cparams)
@@ -175,7 +175,7 @@ def test_while(f):
     chunkshape = [1000]
     blockshape = [300]
     dtype = np.float64
-    cparams = dict(clib=ia.LZ4, clevel=5)
+    cparams = dict()
     start, stop = 0, 10
 
     cmp_udf_np(f, (start, stop), shape, (chunkshape, blockshape), dtype, cparams)
@@ -199,7 +199,7 @@ def test_avg(f):
     chunkshape = [300]
     blockshape = [100]
     dtype = np.float64
-    cparams = dict(clib=ia.LZ4, clevel=5)
+    cparams = dict()
     start, stop = 0, 10
 
     cmp_udf_np_strict(f, start, stop, shape, (chunkshape, blockshape), dtype, cparams)
@@ -225,11 +225,11 @@ def test_error(f):
     chunkshape = [4 * 1000]
     blockshape = [1 * 1000]
     dtype = np.float64
-    cparams = dict(clib=ia.LZ4, clevel=5, nthreads=1)
+    cparams = dict(nthreads=1)
     start, stop = 0, 10
 
-    storage = ia.StorageProperties(chunkshape, blockshape)
-    dtshape = ia.dtshape(shape, dtype)
+    storage = ia.Storage(chunkshape, blockshape)
+    dtshape = ia.DTShape(shape, dtype)
     x = ia.linspace(dtshape, start, stop, storage=storage, **cparams)
     expr = f.create_expr([x], dtshape, storage=storage, **cparams)
 
@@ -284,7 +284,7 @@ def test_math(f):
     chunkshape = [3 * 1000]
     blockshape = [3 * 100]
     dtype = np.float64
-    cparams = dict(clib=ia.LZ4, clevel=5, nthreads=16)
+    cparams = dict(nthreads=16)
     start, stop = 0, 10
 
     cmp_udf_np(f, [(start, stop), (start, stop)], shape, (chunkshape, blockshape), dtype, cparams)

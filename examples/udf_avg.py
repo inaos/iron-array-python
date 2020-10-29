@@ -16,8 +16,9 @@ NITER = 1
 # Define array params
 shape = [1000]
 dtype = np.float64
-dtshape = ia.dtshape(shape, dtype)
-cparams = dict(clib=ia.LZ4, clevel=5, nthreads=16)
+dtshape = ia.DTShape(shape, dtype)
+# Most of modern computers can reach 8 threads
+ia.set_config(nthreads=8)
 
 
 @jit(verbose=0)
@@ -35,13 +36,13 @@ def f(out: Array(float64, 1), x: Array(float64, 1)) -> int64:
 
 
 # Create input arrays
-ia_in = ia.linspace(dtshape, 0, 10, **cparams)
+ia_in = ia.linspace(dtshape, 0, 10)
 np_in = np.linspace(0, 10, reduce(lambda x, y: x * y, shape), dtype=dtype).reshape(shape)
 ia.cmp_arrays(np_in, ia_in)
 # print(np_in)
 
 # iarray UDF evaluation
-expr = f.create_expr([ia_in], dtshape, **cparams)
+expr = f.create_expr([ia_in], dtshape)
 ia_out = None  # fix a warning
 t0 = time()
 for i in range(NITER):

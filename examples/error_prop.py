@@ -11,10 +11,10 @@ bbshape = [100, 100]
 
 dtype = np.float64
 
-a = ia.linspace(ia.dtshape(ashape, dtype), -1, 1)
+a = ia.linspace(ia.DTShape(ashape, dtype), -1, 1)
 an = ia.iarray2numpy(a)
 
-b = ia.linspace(ia.dtshape(bshape, dtype), -1, 1)
+b = ia.linspace(ia.DTShape(bshape, dtype), -1, 1)
 bn = ia.iarray2numpy(b)
 
 c = ia.matmul(a, b, abshape, bbshape)
