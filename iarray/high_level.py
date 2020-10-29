@@ -411,13 +411,12 @@ class Expr(ext.Expression):
 #
 
 
-def empty(dtshape, **kwargs):
-    with ia.config(**kwargs) as cfg:
-        cfg.storage.get_shape_advice(dtshape)
+def empty(dtshape, cfg=None, **kwargs):
+    with ia.config(cfg=cfg, **kwargs) as cfg:
         return ext.empty(cfg, dtshape)
 
 
-def arange(dtshape, start=None, stop=None, step=None, **kwargs):
+def arange(dtshape, start=None, stop=None, step=None, cfg=None, **kwargs):
     if (start, stop, step) == (None, None, None):
         stop = np.prod(dtshape.shape)
         start = 0
@@ -435,46 +434,46 @@ def arange(dtshape, start=None, stop=None, step=None, **kwargs):
             step = (stop - start) / np.prod(dtshape.shape)
     slice_ = slice(start, stop, step)
 
-    with ia.config(dtshape=dtshape, **kwargs) as cfg:
+    with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
         return ext.arange(cfg, slice_, dtshape)
 
 
-def linspace(dtshape, start, stop, **kwargs):
-    with ia.config(dtshape=dtshape, **kwargs) as cfg:
+def linspace(dtshape, start, stop, cfg=None, **kwargs):
+    with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
         return ext.linspace(cfg, start, stop, dtshape)
 
 
-def zeros(dtshape, **kwargs):
-    with ia.config(dtshape=dtshape, **kwargs) as cfg:
+def zeros(dtshape, cfg=None, **kwargs):
+    with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
         return ext.zeros(cfg, dtshape)
 
 
-def ones(dtshape, **kwargs):
-    with ia.config(dtshape=dtshape, **kwargs) as cfg:
+def ones(dtshape, cfg=None, **kwargs):
+    with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
         return ext.ones(cfg, dtshape)
 
 
-def full(dtshape, fill_value, **kwargs):
-    with ia.config(dtshape=dtshape, **kwargs) as cfg:
+def full(dtshape, fill_value, cfg=None, **kwargs):
+    with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
         return ext.full(cfg, fill_value, dtshape)
 
 
-def save(c, filename, **kwargs):
-    with ia.config(**kwargs) as cfg:
+def save(c, filename, cfg=None, **kwargs):
+    with ia.config(cfg=cfg, **kwargs) as cfg:
         return ext.save(cfg, c, filename)
 
 
-def load(filename, load_in_mem=False, **kwargs):
-    with ia.config(**kwargs) as cfg:
+def load(filename, load_in_mem=False, cfg=None, **kwargs):
+    with ia.config(cfg=cfg, **kwargs) as cfg:
         return ext.load(cfg, filename, load_in_mem)
 
 
-def iarray2numpy(iarr, **kwargs):
-    with ia.config(**kwargs) as cfg:
+def iarray2numpy(iarr, cfg=None, **kwargs):
+    with ia.config(cfg=cfg, **kwargs) as cfg:
         return ext.iarray2numpy(cfg, iarr)
 
 
-def numpy2iarray(c, **kwargs):
+def numpy2iarray(c, cfg=None, **kwargs):
     if c.dtype == np.float64:
         dtype = np.float64
     elif c.dtype == np.float32:
@@ -483,67 +482,67 @@ def numpy2iarray(c, **kwargs):
         raise NotImplementedError("Only float32 and float64 types are supported for now")
 
     dtshape = ia.DTShape(c.shape, dtype)
-    with ia.config(dtshape=dtshape, **kwargs) as cfg:
+    with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
         return ext.numpy2iarray(cfg, c, dtshape)
 
 
-def random_rand(dtshape, **kwargs):
-    with ia.config(dtshape=dtshape, **kwargs) as cfg:
+def random_rand(dtshape, cfg=None, **kwargs):
+    with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
         return ext.random_rand(cfg, dtshape)
 
 
-def random_randn(dtshape, **kwargs):
-    with ia.config(dtshape=dtshape, **kwargs) as cfg:
+def random_randn(dtshape, cfg=None, **kwargs):
+    with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
         return ext.random_randn(cfg, dtshape)
 
 
-def random_beta(dtshape, alpha, beta, **kwargs):
-    with ia.config(dtshape=dtshape, **kwargs) as cfg:
+def random_beta(dtshape, alpha, beta, cfg=None, **kwargs):
+    with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
         return ext.random_beta(cfg, alpha, beta, dtshape)
 
 
-def random_lognormal(dtshape, mu, sigma, **kwargs):
-    with ia.config(dtshape=dtshape, **kwargs) as cfg:
+def random_lognormal(dtshape, mu, sigma, cfg=None, **kwargs):
+    with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
         return ext.random_lognormal(cfg, mu, sigma, dtshape)
 
 
-def random_exponential(dtshape, beta, **kwargs):
-    with ia.config(dtshape=dtshape, **kwargs) as cfg:
+def random_exponential(dtshape, beta, cfg=None, **kwargs):
+    with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
         return ext.random_exponential(cfg, beta, dtshape)
 
 
-def random_uniform(dtshape, a, b, **kwargs):
-    with ia.config(dtshape=dtshape, **kwargs) as cfg:
+def random_uniform(dtshape, a, b, cfg=None, **kwargs):
+    with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
         return ext.random_uniform(cfg, a, b, dtshape)
 
 
-def random_normal(dtshape, mu, sigma, **kwargs):
-    with ia.config(dtshape=dtshape, **kwargs) as cfg:
+def random_normal(dtshape, mu, sigma, cfg=None, **kwargs):
+    with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
         return ext.random_normal(cfg, mu, sigma, dtshape)
 
 
-def random_bernoulli(dtshape, p, **kwargs):
-    with ia.config(dtshape=dtshape, **kwargs) as cfg:
+def random_bernoulli(dtshape, p, cfg=None, **kwargs):
+    with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
         return ext.random_bernoulli(cfg, p, dtshape)
 
 
-def random_binomial(dtshape, m, p, **kwargs):
-    with ia.config(dtshape=dtshape, **kwargs) as cfg:
+def random_binomial(dtshape, m, p, cfg=None, **kwargs):
+    with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
         return ext.random_binomial(cfg, m, p, dtshape)
 
 
-def random_poisson(dtshape, lamb, **kwargs):
-    with ia.config(dtshape=dtshape, **kwargs) as cfg:
+def random_poisson(dtshape, lamb, cfg=None, **kwargs):
+    with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
         return ext.random_poisson(cfg, lamb, dtshape)
 
 
-def random_kstest(a, b, **kwargs):
-    with ia.config(**kwargs) as cfg:
+def random_kstest(a, b, cfg=None, **kwargs):
+    with ia.config(cfg=cfg, **kwargs) as cfg:
         return ext.random_kstest(cfg, a, b)
 
 
-def matmul(a, b, **kwargs):
-    with ia.config(**kwargs) as cfg:
+def matmul(a, b, cfg=None, **kwargs):
+    with ia.config(cfg=cfg, **kwargs) as cfg:
         return ext.matmul(cfg, a, b)
 
 

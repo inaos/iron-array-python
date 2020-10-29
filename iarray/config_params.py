@@ -11,11 +11,10 @@
 
 import iarray as ia
 from iarray import iarray_ext as ext
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, fields, replace
 from typing import List, Sequence, Any, Union
 import warnings
 from contextlib import contextmanager
-
 
 # Global variable for random seed
 RANDOM_SEED = 0
@@ -313,12 +312,16 @@ class ConfigParams(ext.ConfigParams):
             self.eval_method,
         )
 
+    def update(self, **kwargs):
+        for name, value in kwargs.items():
+            setattr(self, name, value)
 
-def set_config(cparams: Union[ConfigParams, None] = None, dtshape=None, **kwargs):
-    if cparams is None:
+
+def set_config(cfg: Union[ConfigParams, None] = None, dtshape=None, **kwargs):
+    if cfg is None:
         defaults.cparams = ConfigParams(**kwargs)
     else:
-        defaults.cparams = cparams
+        defaults.cparams = cfg
     if dtshape is not None:
         defaults.cparams.storage.get_shape_advice(dtshape)
 
@@ -332,18 +335,19 @@ set_config()
 
 
 @contextmanager
-def config(cparams: Union[ConfigParams, None] = None, dtshape=None, **kwargs):
-    """Execute a context with some defaults"""
-    cparams_orig = defaults.cparams
-    if cparams is None:
-        defaults.cparams = ConfigParams(**kwargs)
-    else:
-        defaults.cparams = cparams
+def config(cfg: Union[ConfigParams, None] = None, dtshape=None, **kwargs):
+    """Execute a context under some configuration"""
+    if cfg is None:
+        cfg = ConfigParams(**kwargs)
+    cfg_ = replace(cfg, **kwargs)
+    store_args = dict(
+        (field.name, kwargs[field.name]) for field in fields(Storage) if field.name in kwargs
+    )
+    cfg_.storage = replace(cfg_.storage, **store_args)
     if dtshape is not None:
-        defaults.cparams.storage.get_shape_advice(dtshape)
+        cfg_.storage.get_shape_advice(dtshape)
 
-    yield defaults.cparams
-    defaults.cparams = cparams_orig
+    yield cfg_
 
 
 if __name__ == "__main__":
