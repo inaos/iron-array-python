@@ -17,15 +17,14 @@ str_expr = "sin(x) * arctan(x)"
 
 # Define array params
 shape = [10 * 1000 * 1000]
-dtshape = ia.dtshape(shape)
-size = int(np.prod(shape))
+dtshape = ia.DTShape(shape)
 nthreads = 8
 clevel = 9
 nrep = 5
+ia.set_config(nthreads=nthreads, clevel=clevel)
 
 # Create the iarray object
-kwargs = dict(nthreads=nthreads, clevel=clevel)
-a1 = ia.linspace(dtshape, 0, 10, **kwargs)
+a1 = ia.linspace(dtshape, 0, 10)
 np_a1 = np.linspace(0, 10, shape[0])
 
 
@@ -50,53 +49,53 @@ def func_numba(x, y):
         y[i] = s * a
 
 
-# iarray UDF
-t0 = time()
-expr = func_udf.create_expr([a1], dtshape, **kwargs)
-b1 = expr.eval()
-t1 = time()
-print("Time to evaluate expression with iarray.udf:", round(t1 - t0, 3))
-
-# iarray internal engine (low level API)
-t0 = time()
-expr = ia.Expr(**kwargs)
-expr.bind("x", a1)
-expr.bind_out_properties(dtshape)
-expr.compile(str_expr)
-b2 = expr.eval()
-t1 = time()
-print(
-    "Time to evaluate expression with iarray (low-level API, internal engine):", round(t1 - t0, 3)
-)
-
-# iarray internal engine (high level API)
-t0 = time()
-expr = ia.create_expr(str_expr, {"x": a1}, dtshape, **kwargs)
-b3 = expr.eval()
-t1 = time()
-print(
-    "Time to evaluate expression with iarray (high-level API, internal engine):", round(t1 - t0, 3)
-)
-
-# iarray internal engine (lazy expressions)
-t0 = time()
-x = a1
-(a1.sin() * a1.atan()).eval(dtshape, **kwargs)
-t1 = time()
-print("Time to evaluate expression with iarray (lazy eval, internal engine):", round(t1 - t0, 3))
-
+x = np_a1
 # numba
 nb.set_num_threads(nthreads)
 np0 = np.empty(x.shape, x.dtype)
 t0 = time()
 func_numba(np_a1, np0)
 t1 = time()
-print("Time to evaluate expression with numba:", round(t1 - t0, 3))
+print("Time for numba:", round(t1 - t0, 3))
 
+# iarray UDF
+t0 = time()
+expr = func_udf.create_expr([a1], dtshape)
+b1 = expr.eval()
+t1 = time()
+print("Time to evaluate expression with iarray.udf:", round(t1 - t0, 3))
 # Compare results
 np1 = ia.iarray2numpy(b1)
 np.testing.assert_almost_equal(np1, np0)
-np2 = ia.iarray2numpy(b2)
-np.testing.assert_almost_equal(np2, np0)
-np3 = ia.iarray2numpy(b3)
-np.testing.assert_almost_equal(np3, np0)
+
+# iarray internal engine (low level API)
+t0 = time()
+expr = ia.Expr()
+expr.bind("x", a1)
+expr.bind_out_properties(dtshape)
+expr.compile(str_expr)
+b1 = expr.eval()
+t1 = time()
+print("Time for iarray (low-level API, internal engine):", round(t1 - t0, 3))
+# Compare results
+np1 = ia.iarray2numpy(b1)
+np.testing.assert_almost_equal(np1, np0)
+
+# iarray internal engine (high level API)
+t0 = time()
+expr = ia.create_expr(str_expr, {"x": a1}, dtshape)
+b1 = expr.eval()
+t1 = time()
+print("Time for iarray (high-level API, internal engine):", round(t1 - t0, 3))
+# Compare results
+np1 = ia.iarray2numpy(b1)
+np.testing.assert_almost_equal(np1, np0)
+
+# iarray internal engine (lazy expressions)
+t0 = time()
+b1 = (a1.sin() * a1.atan()).eval(dtshape)
+t1 = time()
+print("Time for iarray (lazy eval, internal engine):", round(t1 - t0, 3))
+# Compare results
+np1 = ia.iarray2numpy(b1)
+np.testing.assert_almost_equal(np1, np0)

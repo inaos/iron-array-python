@@ -290,8 +290,6 @@ cdef extern from "libiarray/iarray.h":
 
     ina_rc_t iarray_linalg_transpose(iarray_context_t *ctx,
                                      iarray_container_t *a,
-                                     bool view,
-                                     iarray_storage_t *storage,
                                      iarray_container_t **b);
 
     # Iterators

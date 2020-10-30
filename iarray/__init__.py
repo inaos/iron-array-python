@@ -24,7 +24,7 @@ if platform_system == "Linux":
         binding.load_library_permanently("libintlc.so.5")
         binding.load_library_permanently("libsvml.so")
     except RuntimeError:
-        # Runtime libraries are not in the path.  Probably we are runing from wheels,
+        # Runtime libraries are not in the path.  Probably we are running from wheels,
         # and wheels ensure than libraries are in the same directory than this file.
         binding.load_library_permanently(os.path.join(install_dir, "libintlc.so.5"))
         binding.load_library_permanently(os.path.join(install_dir, "libsvml.so"))
@@ -36,20 +36,23 @@ else:
     binding.load_library_permanently(os.path.join(install_dir, "svml_dispmd.dll"))
     lib1 = cdll.LoadLibrary(os.path.join(install_dir, "iarray.dll"))
 
-# Codecs
-BLOSCLZ = 0
-LZ4 = 1
-LZ4HC = 2
-ZLIB = 4
-ZSTD = 5
-LIZARD = 6
+# Compression codecs
+class Codecs(Enum):
+    BLOSCLZ = 0
+    LZ4 = 1
+    LZ4HC = 2
+    ZLIB = 4
+    ZSTD = 5
+    LIZARD = 6
+
 
 # Filters
-NOFILTER = 0
-SHUFFLE = 1
-BITSHUFFLE = 2
-DELTA = 4
-TRUNC_PREC = 8
+class Filters(Enum):
+    NOFILTER = 0
+    SHUFFLE = 1
+    BITSHUFFLE = 2
+    DELTA = 4
+    TRUNC_PREC = 8
 
 
 # Eval method
@@ -58,8 +61,6 @@ class Eval(Enum):
     ITERBLOSC = auto()
     ITERCHUNK = auto()
 
-
-RANDOM_SEED = 0
 
 # List of all know universal functions
 UFUNC_LIST = (
@@ -84,12 +85,25 @@ UFUNC_LIST = (
     "tanh",
 )
 
+
 # That must come here so as to avoid circular import errors
+
+from .config_params import (
+    ConfigParams,
+    Storage,
+    get_ncores,
+    partition_advice,
+    RANDOM_SEED,
+    defaults,
+    set_config,
+    get_config,
+    config,
+)
+
+
 from .high_level import (
     IArray,
-    dtshape,
-    StorageProperties,
-    Config,
+    DTShape,
     RandomContext,
     create_expr,
     Expr,
@@ -108,7 +122,6 @@ from .high_level import (
     matmul,
     transpose,
     # random constructors
-    random_set_seed,
     random_rand,
     random_randn,
     random_beta,
@@ -140,11 +153,9 @@ from .high_level import (
     sqrt,
     tan,
     tanh,
-    # utils
-    get_ncores,
-    partition_advice,
 )
 
+# For some reason this needs to go to the end, else matmul function does not work.
 from . import iarray_ext as ext
 
 ext.IArrayInit()

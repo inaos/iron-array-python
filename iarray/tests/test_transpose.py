@@ -14,10 +14,10 @@ import numpy as np
 )
 def test_transpose(shape, chunkshape, blockshape, dtype):
     if chunkshape is None:
-        storage = ia.StorageProperties(plainbuffer=True)
+        storage = ia.Storage(plainbuffer=True)
     else:
-        storage = ia.StorageProperties(chunkshape, blockshape)
-    a = ia.linspace(ia.dtshape(shape, dtype), -10, 10, storage=storage)
+        storage = ia.Storage(chunkshape, blockshape)
+    a = ia.linspace(ia.DTShape(shape, dtype), -10, 10, storage=storage)
 
     b = ia.iarray2numpy(a)
     bn = b.T
@@ -28,10 +28,11 @@ def test_transpose(shape, chunkshape, blockshape, dtype):
     an = ia.iarray2numpy(at)
     np.testing.assert_allclose(an, bn, rtol=rtol)
 
-    at = a.transpose(view=False)
+    at = a.transpose()
     an = ia.iarray2numpy(at)
     np.testing.assert_allclose(an, bn, rtol=rtol)
 
-    at = ia.transpose(a, view=False, storage=ia.StorageProperties(plainbuffer=True))
+    at = ia.transpose(a)
+
     an = ia.iarray2numpy(at)
     np.testing.assert_allclose(an, bn, rtol=rtol)
