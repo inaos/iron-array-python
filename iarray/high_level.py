@@ -522,6 +522,13 @@ class IArray(ext.Container):
     # def __array_ufunc__(self, ufunc, method, *inputs, **kwargs):
     #     print("method:", method)
 
+    @property
+    def T(self):
+        return self.transpose()
+
+    def transpose(self, view=True, **kwargs):
+        return transpose(self, view, **kwargs)
+
     def abs(self):
         return LazyExpr(new_op=(self, "abs", None))
 
@@ -794,6 +801,16 @@ def matmul(a, b, **kwargs):
         dtshape = ia.dtshape((a.shape[0], b.shape[1]), a.dtype)
     cfg._storage.get_shape_advice(dtshape)
     return ext.matmul(cfg, a, b)
+
+
+def transpose(a: IArray, view: bool = True, **kwargs):
+    if a.ndim != 2:
+        raise AttributeError("Array dimension must be 2")
+    cfg = Config(**kwargs)
+    if cfg.storage is not None:
+        dtshape = ia.dtshape((a.shape[1], a.shape[0]), a.dtype)
+        cfg._storage.get_shape_advice(dtshape)
+    return ext.transpose(cfg, a, view)
 
 
 def abs(iarr):
