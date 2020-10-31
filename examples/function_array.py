@@ -11,8 +11,7 @@ dtype = np.float64
 shape = [10000, 8000]
 cshape = [1000, 800]
 bshape = [100, 100]
-cparams = ia.ConfigParams(chunkshape=cshape, blockshape=bshape)
-ia.set_config(cparams)
+ia.set_config(chunkshape=cshape, blockshape=bshape)
 dtshape = ia.DTShape(shape, dtype)
 
 # Create initial arrays

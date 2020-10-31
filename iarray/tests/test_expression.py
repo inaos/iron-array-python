@@ -123,22 +123,12 @@ def test_expression(method, shape, chunkshape, blockshape, dtype, expression):
     npx = ia.iarray2numpy(x)
     npy = ia.iarray2numpy(y)
 
-    # Low-level eval
-    expr = ia.Expr(eval_method=method)
-    expr.bind("x", x)
-    expr.bind("y", y)
-    expr.bind_out_properties(ia.DTShape(shape, dtype), storage=storage)
-    expr.compile(expression)
+    dtshape = ia.DTShape(shape, dtype)
+    expr = ia.create_expr(
+        expression, {"x": x, "y": y}, dtshape, storage=storage, eval_method=method
+    )
     iout = expr.eval()
     npout = ia.iarray2numpy(iout)
-
-    # High-level eval
-    expr = ia.create_expr(expression, {"x": x, "y": y}, ia.DTShape(shape, dtype), storage=storage)
-    iout2 = expr.eval()
-    npout2 = ia.iarray2numpy(iout2)
-
-    decimal = 6 if dtype is np.float32 else 7
-    np.testing.assert_almost_equal(npout, npout2, decimal=decimal)
 
     # Evaluate using a different engine (numpy)
     ufunc_repls = {
@@ -162,6 +152,7 @@ def test_expression(method, shape, chunkshape, blockshape, dtype, expression):
                 expression = expression.replace(ufunc + "(", "np." + ufunc + "(")
     npout2 = eval(expression, {"x": npx, "y": npy, "np": numpy})
 
+    decimal = 6 if dtype is np.float32 else 7
     np.testing.assert_almost_equal(npout, npout2, decimal=decimal)
 
 
@@ -205,22 +196,11 @@ def test_ufuncs(ufunc, ia_expr):
         npx = ia.iarray2numpy(x)
         npy = ia.iarray2numpy(y)
 
-        # Low-level eval
-        expr = ia.Expr()
-        expr.bind("x", x)
-        expr.bind("y", y)
-        expr.bind_out_properties(dtshape, storage=storage)
-        expr.compile(ia_expr)
+        expr = ia.create_expr(ia_expr, {"x": x, "y": y}, dtshape, storage=storage)
         iout = expr.eval()
         npout = ia.iarray2numpy(iout)
 
         decimal = 6 if dtype is np.float32 else 7
-
-        # High-level eval
-        expr = ia.create_expr(ia_expr, {"x": x, "y": y}, dtshape, storage=storage)
-        iout2 = expr.eval()
-        npout2 = ia.iarray2numpy(iout2)
-        np.testing.assert_almost_equal(npout, npout2, decimal=decimal)
 
         # Lazy expression eval
         lazy_expr = eval("ia." + ufunc, {"ia": ia, "x": x, "y": y})

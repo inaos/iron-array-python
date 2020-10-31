@@ -15,10 +15,9 @@ from iarray.udf import float64, int64
 # Number of iterations per benchmark
 NITER = 10
 
-# Vector and sizes and chunking
+# Vector sizes and chunking
 shape = [20 * 1000 * 1000]
 N = int(np.prod(shape))
-
 chunkshape, blockshape = None, None  # use automatic partition advice
 # chunkshape, blockshape = [400 * 1000], [16 * 1000]  # user-defined partitions
 
@@ -133,7 +132,7 @@ def do_block_evaluation(plainbuffer):
     else:
         storage = ia.Storage(chunkshape, blockshape, plainbuffer=False)
 
-    ia.set_config(clevel=clevel, nthreads=nthreads, storage=storage, fp_mantissa_bits=24)
+    ia.set_config(clevel=clevel, nthreads=nthreads, storage=storage)
     print(ia.get_config())
 
     x = np.linspace(0, 10, N).reshape(shape)
@@ -223,7 +222,8 @@ def do_block_evaluation(plainbuffer):
         if engine == "internal":
             expr = ia.create_expr(expression, {"x": xa}, dtshape)
         else:
-            expr = poly_llvm.create_expr([xa], dtshape)
+            # expr = poly_llvm.create_expr([xa], dtshape)
+            expr = ia.create_expr(poly_llvm, {"x": xa}, dtshape)
         for i in range(NITER):
             ya = expr.eval()
         avg = round((time() - t0) / NITER, 4)

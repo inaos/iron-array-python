@@ -14,7 +14,7 @@ from iarray.udf import jit, Array, float64, int64
 NITER = 1
 
 # Define array params
-shape = [1000]
+shape = [20_000_000]
 dtype = np.float64
 dtshape = ia.DTShape(shape, dtype)
 # Most of modern computers can reach 8 threads
@@ -42,7 +42,8 @@ ia.cmp_arrays(np_in, ia_in)
 # print(np_in)
 
 # iarray UDF evaluation
-expr = f.create_expr([ia_in], dtshape)
+# expr = f.create_expr([ia_in], dtshape)
+expr = ia.create_expr(f, [ia_in], dtshape)
 ia_out = None  # fix a warning
 t0 = time()
 for i in range(NITER):

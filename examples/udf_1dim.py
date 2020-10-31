@@ -14,7 +14,7 @@ from iarray.udf import jit, Array, float64, int64
 NITER = 10
 
 # Define array params
-shape = [20 * 1000 * 1000]
+shape = [20_000_000]
 dtshape = ia.DTShape(shape, np.float64)
 # Most of modern computers can reach 8 threads
 ia.set_config(nthreads=8)
@@ -42,7 +42,8 @@ print("Time for numpy eval:", round((time() - t0) / NITER, 3))
 print(bn)
 
 print("iarray evaluation ...")
-expr = f.create_expr([a1], dtshape)
+# expr = f.create_expr([a1], dtshape)
+expr = ia.create_expr(f, [a1], dtshape)
 b1 = None
 t0 = time()
 for i in range(NITER):

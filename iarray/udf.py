@@ -155,12 +155,9 @@ class Function(py2llvm.Function):
         ptr = self.get_field(builder, idx)
         return builder.load(ptr, name=name)
 
-    def create_expr(self, inputs, dtshape, **kwargs):
-        expr = ia.Expr(**kwargs)
-        for a in inputs:
-            expr.bind("", a)
-        expr.bind_out_properties(dtshape)
-        expr.compile_udf(self)
+    def create_expr(self, inputs, dtshape, cfg=None, **kwargs):
+        operands = {"o" + str(i): o for i, o in enumerate(inputs)}
+        expr = ia.create_expr(self, operands, dtshape, cfg=cfg, **kwargs)
         return expr
 
 

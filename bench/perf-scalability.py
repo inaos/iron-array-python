@@ -71,19 +71,21 @@ def evaluate(command):
 
     def ia_compiler_parallel(command):
         global iax, iay, iaz, shape, chunkshape, blockshape, dtype, cparams
-        cparams["nthreads"] = NTHREADS
-        cparams["storage"] = ia.Storage(chunkshape, blockshape)
         dtshape = ia.DTShape(shape, dtype)
-        expr = ia.create_expr(command, {"x": iax, "y": iay, "z": iaz}, dtshape, **cparams)
-        expr.eval()
+        with ia.config(
+            dtshape=dtshape, nthreads=NTHREADS, chunkshape=chunkshape, blockshape=blockshape
+        ) as cfg:
+            expr = ia.create_expr(command, {"x": iax, "y": iay, "z": iaz}, dtshape, cfg=cfg)
+            expr.eval()
 
     def ia_compiler_serial(command):
         global iax, iay, iaz, shape, chunkshape, blockshape, dtype, cparams
-        cparams["nthreads"] = 1
-        cparams["storage"] = ia.Storage(chunkshape, blockshape)
         dtshape = ia.DTShape(shape, dtype)
-        expr = ia.create_expr(command, {"x": iax, "y": iay, "z": iaz}, dtshape, **cparams)
-        expr.eval()
+        with ia.config(
+            dtshape=dtshape, nthreads=1, chunkshape=chunkshape, blockshape=blockshape
+        ) as cfg:
+            expr = ia.create_expr(command, {"x": iax, "y": iay, "z": iaz}, dtshape, cfg=cfg)
+            expr.eval()
 
     def dask_parallel(command):
         global zx, zy, zz, shape, chunkshape, dtype, zcompr
@@ -108,8 +110,8 @@ def evaluate(command):
     perfplot.show(
         setup=setup,
         # n_range=[int(k) for k in range(int(1e7), int(2e8), int(3e7))],
-        # n_range=[int(k) for k in range(int(1e7), int(2e8), int(5e7))],
-        n_range=[int(k) for k in range(int(1e7), int(2e8), int(1e7))],
+        n_range=[int(k) for k in range(int(1e7), int(2e8), int(5e7))],
+        # n_range=[int(k) for k in range(int(1e7), int(2e8), int(1e7))],
         kernels=[
             np_serial,
             # ne_parallel,

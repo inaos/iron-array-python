@@ -11,7 +11,7 @@ NITER = 5
 ia.set_config(clevel=9, fp_mantissa_bits=20)
 
 # Vector sizes and partitions
-shape = [100 * 1000 * 1000]
+shape = [10_000_000]
 N = int(np.prod(shape))
 dtype = np.float64
 
@@ -33,10 +33,7 @@ print("Operand cratio:", round(xa.cratio, 2))
 ya = None
 
 t0 = time()
-expr = ia.Expr()
-expr.bind("x", xa)
-expr.bind_out_properties(dtshape)
-expr.compile("(x - 1.35) * (x - 4.45) * (x - 8.5)")
+expr = ia.create_expr("(x - 1.35) * (x - 4.45) * (x - 8.5)", {"x": xa}, dtshape)
 for i in range(NITER):
     ya = expr.eval()
 print("Result cratio:", round(ya.cratio, 2))

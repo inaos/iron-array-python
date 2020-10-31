@@ -60,7 +60,8 @@ print("Time for numba:", round(t1 - t0, 3))
 
 # iarray UDF
 t0 = time()
-expr = func_udf.create_expr([a1], dtshape)
+# expr = func_udf.create_expr([a1], dtshape)
+expr = ia.create_expr(func_udf, [a1], dtshape)
 b1 = expr.eval()
 t1 = time()
 print("Time to evaluate expression with iarray.udf:", round(t1 - t0, 3))
@@ -68,20 +69,7 @@ print("Time to evaluate expression with iarray.udf:", round(t1 - t0, 3))
 np1 = ia.iarray2numpy(b1)
 np.testing.assert_almost_equal(np1, np0)
 
-# iarray internal engine (low level API)
-t0 = time()
-expr = ia.Expr()
-expr.bind("x", a1)
-expr.bind_out_properties(dtshape)
-expr.compile(str_expr)
-b1 = expr.eval()
-t1 = time()
-print("Time for iarray (low-level API, internal engine):", round(t1 - t0, 3))
-# Compare results
-np1 = ia.iarray2numpy(b1)
-np.testing.assert_almost_equal(np1, np0)
-
-# iarray internal engine (high level API)
+# iarray internal engine
 t0 = time()
 expr = ia.create_expr(str_expr, {"x": a1}, dtshape)
 b1 = expr.eval()

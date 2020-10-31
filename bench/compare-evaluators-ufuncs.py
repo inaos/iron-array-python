@@ -193,7 +193,8 @@ def do_block_evaluation(plainbuffer):
         if engine == "internal":
             expr = ia.create_expr(expression, {"x": xa}, dtshape)
         else:
-            expr = poly_llvm.create_expr([xa], dtshape)
+            # expr = poly_llvm.create_expr([xa], dtshape)
+            expr = ia.create_expr(poly_llvm, {"x": xa}, dtshape)
         for i in range(NITER):
             ya = expr.eval()
         avg = round((time() - t0) / NITER, 4)
