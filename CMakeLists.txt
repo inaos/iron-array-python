@@ -34,7 +34,7 @@ if(NOT EXISTS "${CMAKE_BINARY_DIR}/inac.cmake")
     endif()
 endif()
 include("${CMAKE_BINARY_DIR}/inac.cmake")
-inac_add_dependency(inac "1.0.7")
+inac_add_dependency(inac "1.0.10")
 
 # The Python wrapper is the iarray directory
 add_subdirectory(iarray)

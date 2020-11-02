@@ -13,6 +13,7 @@ import numpy as np
 
 import iarray as ia
 from iarray import iarray_ext as ext
+from iarray import py2llvm
 from itertools import zip_longest
 from dataclasses import dataclass
 from typing import Sequence
@@ -57,23 +58,36 @@ class DTShape:
 #
 
 
-def create_expr(str_expr, inputs, dtshape, **kwargs):
+def create_expr(expression, inputs, dtshape, cfg=None, **kwargs):
     """Create an `Expr` instance.
 
-    `str_expr` is the expression in string format.
+    `expression` is the expression in string format or a UDF function.
 
-    `inputs` is a dictionary that maps variables in `str_expr` to actual arrays.
+    `inputs` can be a dict or a list.
+     If `expression` is in string format, `inputs` is expected to be a dictionary
+     that maps variables in `expression` to actual arrays.
+     If `expression` is a UDF function, `inputs` should be a list (but a dict is supported too).
+     It represents the list of arrays whose values are passed as arguments to the UDF function.
+     If it is a dict, only the list of `inputs.values()` are honored.
 
-    `dtshape` is a `dtshape` instance with the shape and dtype of the resulting array.
+    `dtshape` is a `DTShape` instance with the shape and dtype of the resulting array.
+
+    `cfg` is a `ConfigParams` instance.  If None, global defaults are used.
 
     `**kwargs` can be any argument supported by the `ia.set_config()` constructor.  These will
     be used for both the evaluation process and the resulting array.
     """
-    expr = ia.Expr(**kwargs)
-    for i in inputs:
-        expr.bind(i, inputs[i])
-    expr.bind_out_properties(dtshape)
-    expr.compile(str_expr)
+    expr = Expr(dtshape=dtshape, cfg=cfg, **kwargs)
+    if isinstance(expression, py2llvm.Function):
+        if type(inputs) is dict:
+            inputs = inputs.values()
+        for i in inputs:
+            expr.bind("", i)
+        expr.compile_udf(expression)
+    else:
+        for i in inputs:
+            expr.bind(i, inputs[i])
+        expr.compile(expression)
     return expr
 
 
@@ -231,17 +245,10 @@ class LazyExpr:
     def __rtruediv__(self, value):
         return self.update_expr(new_op=(value, "/", self))
 
-    def eval(self, dtshape, **kwargs):
-        with ia.config(dtshape=dtshape, **kwargs) as cfg:
-            expr = Expr(**kwargs)
-            for k, v in self.operands.items():
-                if isinstance(v, IArray):
-                    expr.bind(k, v)
-
-            expr.bind_out_properties(dtshape, cfg.storage)
-            expr.compile(self.expression)
+    def eval(self, dtshape, cfg=None, **kwargs):
+        with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
+            expr = ia.create_expr(self.expression, self.operands, dtshape, cfg=cfg)
             out = expr.eval()
-
             return out
 
     def __str__(self):
@@ -251,8 +258,8 @@ class LazyExpr:
 
 # The main IronArray container (not meant to be called from user space)
 class IArray(ext.Container):
-    def copy(self, view=False, **kwargs):
-        with ia.config(dtshape=self.dtshape, **kwargs) as cfg:
+    def copy(self, view=False, cfg=None, **kwargs):
+        with ia.config(dtshape=self.dtshape, cfg=cfg, **kwargs) as cfg:
             return ext.copy(cfg, self, view)
 
     def __getitem__(self, key):
@@ -396,14 +403,11 @@ class IArray(ext.Container):
 
 # The main expression class
 class Expr(ext.Expression):
-    def __init__(self, cfg=None, **kwargs):
-        with ia.config(cfg=cfg, **kwargs) as cfg:
+    def __init__(self, dtshape=None, cfg=None, **kwargs):
+        with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
             self.cfg = cfg
+            self.dtshape = dtshape
             super().__init__(self.cfg)
-
-    def bind_out_properties(self, dtshape, storage=None):
-        store_args = dict() if storage is None else storage.__dict__
-        with ia.config(dtshape=dtshape, cfg=self.cfg, **store_args) as cfg:
             super().bind_out_properties(dtshape, cfg.storage)
 
 

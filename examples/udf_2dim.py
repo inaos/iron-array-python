@@ -15,7 +15,7 @@ from iarray.udf import jit, Array, float64, int64
 NITER = 10
 
 # Define array params
-shape = [1000, 10000]
+shape = [1000, 10_000]
 dtype = np.float64
 dtshape = ia.DTShape(shape, dtype)
 # Most of modern computers can reach 8 threads
@@ -38,16 +38,6 @@ ia_in = ia.arange(dtshape, 0, np.prod(shape), 1)
 np_in = np.arange(0, reduce(lambda x, y: x * y, shape), 1, dtype=dtype).reshape(shape)
 ia.cmp_arrays(np_in, ia_in)
 
-# iarray udf evaluation
-print("iarray evaluation ...")
-expr = f.create_expr([ia_in], dtshape)
-ia_out = None
-t0 = time()
-for i in range(NITER):
-    ia_out = expr.eval()
-print("Time for UDF eval:", round((time() - t0) / NITER, 3))
-ia_out = ia.iarray2numpy(ia_out)
-
 # numpy evaluation
 print("numpy evaluation...")
 np_out = None
@@ -55,6 +45,17 @@ t0 = time()
 for i in range(NITER):
     np_out = (np.sin(np_in) - 1.35) * (np_in - 4.45) * (np_in - 8.5)
 print("Time for numpy eval:", round((time() - t0) / NITER, 3))
+
+# iarray udf evaluation
+print("iarray evaluation ...")
+# expr = f.create_expr([ia_in], dtshape)
+expr = ia.create_expr(f, [ia_in], dtshape)
+ia_out = None
+t0 = time()
+for i in range(NITER):
+    ia_out = expr.eval()
+print("Time for UDF eval:", round((time() - t0) / NITER, 3))
+ia_out = ia.iarray2numpy(ia_out)
 
 # compare
 ia.cmp_arrays(np_out, ia_out, success="OK. Results are the same.")

@@ -273,11 +273,11 @@ class ConfigParams(ext.ConfigParams):
     def __post_init__(self):
         global RANDOM_SEED
         if self.nthreads == 0:  # trigger automatic core detection
-            # As a general rule, it is useful to get half of the (logical) cores.
+            # As a general rule, it is useful to get just the physical cores.
             # The rational is that logical cores share the L1 and L2 caches, and
             # usually it is better to let 1 single thread to use L1 and L2
             # simultaneously.
-            self.nthreads = get_ncores(0) // 2
+            self.nthreads = get_ncores(0)
         else:
             # If number of threads is specified, make sure that we are not exceeding
             # the number of logical cores in the system.

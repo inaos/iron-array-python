@@ -106,7 +106,7 @@ from .high_level import (
     DTShape,
     RandomContext,
     create_expr,
-    Expr,
+    # Expr,
     LazyExpr,
     empty,
     arange,

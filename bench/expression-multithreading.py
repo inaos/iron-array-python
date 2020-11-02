@@ -5,19 +5,19 @@ import ctypes
 import numexpr as ne
 from iarray import udf
 from iarray.py2llvm import float64
-from numba import njit, prange
+import numba as nb
 
 # omp = ctypes.CDLL('libiomp5.so')
 # omp_set_num_threads = omp.omp_set_num_threads
 
 max_num_threads = 4
-nrep = 5
+nrep = 3
 
 
-@njit(parallel=True)
+@nb.jit(nopython=True, cache=True, parallel=True)
 def poly_numba(x):
     y = np.empty(x.shape, x.dtype)
-    for i in prange(len(x)):
+    for i in nb.prange(len(x)):
         y[i] = (x[i] - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
     return y
 
@@ -43,104 +43,79 @@ size = int(np.prod(shape))
 bstorage = ia.Storage(chunkshape, blockshape)
 pstorage = ia.Storage(plainbuffer=True)
 
-res = []
 
+def time_expr(expr, result):
+    t = []
+    for _ in range(nrep):
+        t0 = time()
+        expr.eval()
+        t1 = time()
+        t.append(round(size / 8 / 2 ** 20 / (t1 - t0), 2))
+    t.remove(max(t))
+    result.append(np.mean(t))
+
+
+res = []
 for num_threads in range(1, max_num_threads + 1):
     print(f"Num. threads: {num_threads}")
     # omp_set_num_threads(num_threads)
     res_i = []
-    kwargs = dict(nthreads=num_threads)
 
     # Numpy
     a1 = np.linspace(0, 10, size).reshape(shape)
     t = []
     for _ in range(nrep):
         t0 = time()
-        b1 = eval("(x - 1.35) * (x - 4.45) * (x - 8.5)", {"x": a1})
+        eval("(x - 1.35) * (x - 4.45) * (x - 8.5)", {"x": a1})
         t1 = time()
-        t.append(round(size / 2 ** 20 * 8 / (t1 - t0), 2))
+        t.append(round(size / 8 / 2 ** 20 / (t1 - t0), 2))
     t.remove(max(t))
     res_i.append(np.mean(t))
 
     # numba
-    a1 = np.linspace(0, 10, size).reshape(shape)
     t = []
     for _ in range(nrep):
         t0 = time()
-        b1 = poly_numba(a1)
+        poly_numba(a1)
         t1 = time()
-        t.append(round(size / 2 ** 20 * 8 / (t1 - t0), 2))
+        t.append(round(size / 8 / 2 ** 20 / (t1 - t0), 2))
     t.remove(max(t))
     res_i.append(np.mean(t))
 
     # Numexpr
-    a1 = np.linspace(0, 10, size).reshape(shape)
     t = []
     ne.set_num_threads(num_threads)
     for _ in range(nrep):
         t0 = time()
-        b1 = ne.evaluate("(x - 1.35) * (x - 4.45) * (x - 8.5)", local_dict={"x": a1})
+        ne.evaluate("(x - 1.35) * (x - 4.45) * (x - 8.5)", local_dict={"x": a1})
         t1 = time()
-        t.append(round(size / 2 ** 20 * 8 / (t1 - t0), 2))
+        t.append(round(size / 8 / 2 ** 20 / (t1 - t0), 2))
     t.remove(max(t))
     res_i.append(np.mean(t))
 
     # Plainbuffer
-    a1 = ia.linspace(dtshape, 0, 10, storage=pstorage, nthreads=num_threads)
-    expr = ia.Expr(nthreads=num_threads)
-    expr.bind("x", a1)
-    expr.bind_out_properties(dtshape, storage=pstorage)
-    expr.compile("(x - 1.35) * (x - 4.45) * (x - 8.5)")
-    t = []
-    for _ in range(nrep):
-        t0 = time()
-        b1 = expr.eval()
-        t1 = time()
-        t.append(round(size / 2 ** 20 * 8 / (t1 - t0), 2))
-    t.remove(max(t))
-    res_i.append(np.mean(t))
+    with ia.config(dtshape=dtshape, storage=pstorage, nthreads=num_threads) as cfg:
+        a1 = ia.linspace(dtshape, 0, 10, cfg=cfg)
+        expr = ia.create_expr("(x - 1.35) * (x - 4.45) * (x - 8.5)", {"x": a1}, dtshape, cfg=cfg)
+        time_expr(expr, res_i)
 
     # Superchunk without compression
-    a1 = ia.linspace(dtshape, 0, 10, storage=bstorage, clevel=0, **kwargs)
-    expr = ia.Expr(clevel=0, **kwargs)
-    expr.bind("x", a1)
-    expr.bind_out_properties(dtshape, storage=bstorage)
-    expr.compile("(x - 1.35) * (x - 4.45) * (x - 8.5)")
-    t = []
-    for _ in range(nrep):
-        t0 = time()
-        b1 = expr.eval()
-        t1 = time()
-        t.append(round(size / 2 ** 20 * 8 / (t1 - t0), 2))
-    t.remove(max(t))
-    res_i.append(np.mean(t))
+    with ia.config(dtshape=dtshape, storage=bstorage, nthreads=num_threads, clevel=0) as cfg:
+        a1 = ia.linspace(dtshape, 0, 10, cfg=cfg)
+        expr = ia.create_expr("(x - 1.35) * (x - 4.45) * (x - 8.5)", {"x": a1}, dtshape, cfg=cfg)
+        time_expr(expr, res_i)
 
     # Superchunk with compression
-    a1 = ia.linspace(dtshape, 0, 10, storage=bstorage, clevel=9, **kwargs)
-    expr = ia.Expr(clevel=9, **kwargs)
-    expr.bind("x", a1)
-    expr.bind_out_properties(dtshape, storage=bstorage)
-    expr.compile("(x - 1.35) * (x - 4.45) * (x - 8.5)")
-    t = []
-    for _ in range(nrep):
-        t0 = time()
-        b1 = expr.eval()
-        t1 = time()
-        t.append(round(size / 2 ** 20 * 8 / (t1 - t0), 2))
-    t.remove(max(t))
-    res_i.append(np.mean(t))
+    with ia.config(dtshape=dtshape, storage=bstorage, nthreads=num_threads, clevel=9) as cfg:
+        a1 = ia.linspace(dtshape, 0, 10, cfg=cfg)
+        expr = ia.create_expr("(x - 1.35) * (x - 4.45) * (x - 8.5)", {"x": a1}, dtshape, cfg=cfg)
+        time_expr(expr, res_i)
 
     # Superchunk with compression and UDF
-    a1 = ia.linspace(dtshape, 0, 10, storage=bstorage, clevel=9, **kwargs)
-    expr = poly_udf.create_expr([a1], dtshape, storage=bstorage, clevel=9, **kwargs)
-    t = []
-    for _ in range(nrep):
-        t0 = time()
-        b1 = expr.eval()
-        t1 = time()
-        t.append(round(size / 2 ** 20 * 8 / (t1 - t0), 2))
-    t.remove(max(t))
-    res_i.append(np.mean(t))
+    with ia.config(dtshape=dtshape, storage=bstorage, nthreads=num_threads, clevel=9) as cfg:
+        a1 = ia.linspace(dtshape, 0, 10, cfg=cfg)
+        expr = ia.create_expr(poly_udf, {"x": a1}, dtshape, cfg=cfg)
+        time_expr(expr, res_i)
 
     res.append(res_i)
 
