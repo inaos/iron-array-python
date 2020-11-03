@@ -120,6 +120,7 @@ from .high_level import (
     iarray2numpy,
     numpy2iarray,
     matmul,
+    transpose,
     # random constructors
     random_rand,
     random_randn,

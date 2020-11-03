@@ -24,10 +24,9 @@ def test_copy(shape, chunkshape, blockshape, dtype):
     sl = tuple([slice(0, s - 1) for s in shape])
     a = a_[sl]
     b = a.copy()
-    c = a.copy(view=True)
+    an = ia.iarray2numpy(a)
     bn = ia.iarray2numpy(b)
-    cn = ia.iarray2numpy(c)
 
     rtol = 1e-6 if dtype == np.float32 else 1e-14
 
-    np.testing.assert_allclose(bn, cn, rtol=rtol)
+    np.testing.assert_allclose(an, bn, rtol=rtol)

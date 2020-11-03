@@ -981,6 +981,20 @@ def matmul(cfg, a, b):
     return ia.IArray(ctx, c_c)
 
 
+def transpose(cfg, a):
+    ctx = Context(cfg)
+    cdef ciarray.iarray_container_t *a_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(a.to_capsule(), "iarray_container_t*")
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
+    cdef ciarray.iarray_container_t *c
+
+    err = ciarray.iarray_linalg_transpose(ctx_, a_, &c)
+    if err != 0:
+        raise RuntimeError("Error transposing linalg")
+
+    c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
+    return ia.IArray(ctx, c_c)
+
+
 def get_ncores(max_ncores):
     cdef int ncores = 1
     err = ciarray.iarray_get_ncores(&ncores, max_ncores)
