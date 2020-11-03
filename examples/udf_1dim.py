@@ -43,7 +43,7 @@ print(bn)
 
 print("iarray evaluation ...")
 # expr = f.create_expr([a1], dtshape)
-expr = ia.create_expr(f, [a1], dtshape)
+expr = ia.expr_from_udf(f, [a1], dtshape)
 b1 = None
 t0 = time()
 for i in range(NITER):
@@ -54,7 +54,7 @@ print(b1_n)
 
 ia.cmp_arrays(bn, b1_n, success="OK. Results are the same.")
 
-expr = ia.create_expr("(sin(x) - 1.35) * (x - 4.45) * (x - 8.5)", {"x": a1}, dtshape)
+expr = ia.expr_from_string("(sin(x) - 1.35) * (x - 4.45) * (x - 8.5)", {"x": a1}, dtshape)
 b2 = None
 t0 = time()
 for i in range(NITER):

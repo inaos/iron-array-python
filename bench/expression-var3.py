@@ -120,9 +120,9 @@ b1_n = ia.iarray2numpy(b1)
 b2 = None  # avoid a warning
 t0 = time()
 if NVARS == 1:
-    expr = ia.create_expr(expr1, {"x": iax}, dtshape, **cparams2)
+    expr = ia.expr_from_string(expr1, {"x": iax}, dtshape, **cparams2)
 else:
-    expr = ia.create_expr(expr3, {"x": iax, "y": iay, "z": iaz}, dtshape, **cparams2)
+    expr = ia.expr_from_string(expr3, {"x": iax, "y": iay, "z": iaz}, dtshape, **cparams2)
 for i in range(NITER):
     b2 = expr.eval()
 print("Time for internal eval engine:", round((time() - t0) / NITER, 3))

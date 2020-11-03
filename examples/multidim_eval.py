@@ -44,7 +44,7 @@ except AssertionError:
     print("ERROR. Results are different.")
 
 t0 = time()
-expr = ia.create_expr(sexpr, {"x": ia0, "y": ia1}, dtshape)
+expr = ia.expr_from_string(sexpr, {"x": ia0, "y": ia1}, dtshape)
 
 ia2 = expr.eval()
 t1 = time()

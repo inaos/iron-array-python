@@ -75,7 +75,7 @@ def evaluate(command):
         with ia.config(
             dtshape=dtshape, nthreads=NTHREADS, chunkshape=chunkshape, blockshape=blockshape
         ) as cfg:
-            expr = ia.create_expr(command, {"x": iax, "y": iay, "z": iaz}, dtshape, cfg=cfg)
+            expr = ia.expr_from_string(command, {"x": iax, "y": iay, "z": iaz}, dtshape, cfg=cfg)
             expr.eval()
 
     def ia_compiler_serial(command):
@@ -84,7 +84,7 @@ def evaluate(command):
         with ia.config(
             dtshape=dtshape, nthreads=1, chunkshape=chunkshape, blockshape=blockshape
         ) as cfg:
-            expr = ia.create_expr(command, {"x": iax, "y": iay, "z": iaz}, dtshape, cfg=cfg)
+            expr = ia.expr_from_string(command, {"x": iax, "y": iay, "z": iaz}, dtshape, cfg=cfg)
             expr.eval()
 
     def dask_parallel(command):

@@ -16,7 +16,7 @@ str_expr = "sin(x) * arctan(x)"
 # str_expr = "sin(x) * pow(x, 0.5)"  # try this!
 
 # Define array params
-shape = [10 * 1000 * 1000]
+shape = [10_000_000]
 dtshape = ia.DTShape(shape)
 nthreads = 8
 clevel = 9
@@ -61,7 +61,7 @@ print("Time for numba:", round(t1 - t0, 3))
 # iarray UDF
 t0 = time()
 # expr = func_udf.create_expr([a1], dtshape)
-expr = ia.create_expr(func_udf, [a1], dtshape)
+expr = ia.expr_from_udf(func_udf, [a1], dtshape)
 b1 = expr.eval()
 t1 = time()
 print("Time to evaluate expression with iarray.udf:", round(t1 - t0, 3))
@@ -71,7 +71,7 @@ np.testing.assert_almost_equal(np1, np0)
 
 # iarray internal engine
 t0 = time()
-expr = ia.create_expr(str_expr, {"x": a1}, dtshape)
+expr = ia.expr_from_string(str_expr, {"x": a1}, dtshape)
 b1 = expr.eval()
 t1 = time()
 print("Time for iarray (high-level API, internal engine):", round(t1 - t0, 3))
