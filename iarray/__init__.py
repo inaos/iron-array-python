@@ -91,13 +91,11 @@ UFUNC_LIST = (
 from .config_params import (
     ConfigParams,
     Storage,
-    get_ncores,
-    partition_advice,
-    RANDOM_SEED,
-    defaults,
     set_config,
     get_config,
     config,
+    get_ncores,
+    partition_advice,
 )
 
 
