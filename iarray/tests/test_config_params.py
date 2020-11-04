@@ -12,14 +12,14 @@ import iarray as ia
         (0, ia.Codecs.ZSTD, [ia.Filters.SHUFFLE], None, None, False),
     ],
 )
-def test_cparams(clevel, codec, filters, chunkshape, blockshape, enforce_frame):
+def test_cparams_global(clevel, codec, filters, chunkshape, blockshape, enforce_frame):
     storage = ia.Storage(chunkshape, blockshape, enforce_frame=enforce_frame)
     ia.set_config(clevel=clevel, codec=codec, filters=filters, storage=storage)
     config = ia.get_config()
     assert config.clevel == clevel
     assert config.codec == codec
     assert config.filters == filters
-    storage2 = ia.Storage()
+    storage2 = config.storage
     assert storage2.chunkshape == chunkshape
     assert storage2.blockshape == blockshape
     assert storage2.enforce_frame == enforce_frame
@@ -37,7 +37,7 @@ def test_cparams(clevel, codec, filters, chunkshape, blockshape, enforce_frame):
     assert config.clevel == clevel
     assert config.codec == codec
     assert config.filters == filters
-    storage2 = ia.Storage()
+    storage2 = config.storage
     assert storage2.chunkshape == chunkshape
     assert storage2.blockshape == blockshape
     assert storage2.enforce_frame == False
@@ -56,10 +56,77 @@ def test_cparams(clevel, codec, filters, chunkshape, blockshape, enforce_frame):
     assert config.clevel == clevel
     assert config.codec == codec
     assert config.filters == filters
-    storage2 = ia.Storage()
+    storage2 = config.storage
     assert storage2.chunkshape == chunkshape
     assert storage2.blockshape == blockshape
     assert storage2.enforce_frame == False
+
+    # Or, we can use a mix of ConfigParams and keyword args
+    cparams = ia.ConfigParams(
+        clevel=clevel,
+        codec=codec,
+        blockshape=blockshape,
+        enforce_frame=False,
+    )
+    ia.set_config(cparams, filters=filters, chunkshape=chunkshape)
+    config = ia.get_config()
+    assert config.clevel == clevel
+    assert config.codec == codec
+    assert config.filters == filters
+    storage2 = config.storage
+    assert storage2.chunkshape == chunkshape
+    assert storage2.blockshape == blockshape
+    assert storage2.enforce_frame == False
+
+
+@pytest.mark.parametrize(
+    "chunkshape, blockshape, shape",
+    [
+        (None, None, (100, 100)),
+        ((50, 50), (20, 20), (100, 100)),
+        ((50, 50), (20, 20), [10, 100]),
+        ((100, 50), (50, 20), [100, 10]),
+        (None, None, ()),
+    ],
+)
+def test_cparams_global_dtype(chunkshape, blockshape, shape):
+    try:
+        storage = ia.Storage(chunkshape, blockshape)
+        dtshape = ia.DTShape(shape)
+        cfg = ia.set_config(dtshape=dtshape, storage=storage)
+        storage2 = cfg.storage
+        if chunkshape is not None:
+            assert storage2.chunkshape == chunkshape
+            assert storage2.blockshape == blockshape
+        else:
+            # automatic partitioning
+            assert storage2.chunkshape <= shape
+            assert storage2.blockshape <= storage2.chunkshape
+    except ValueError:
+        # chunkshape cannot be set when a plainbuffer is used
+        assert shape == ()
+
+    # One can pass storage parameters straight to config() dataclass too
+    try:
+        dtshape = ia.DTShape(shape)
+        cfg = ia.set_config(
+            dtshape=dtshape,
+            chunkshape=chunkshape,
+            blockshape=blockshape,
+            enforce_frame=True,
+        )
+        storage2 = cfg.storage
+        if chunkshape is not None:
+            assert storage2.chunkshape == chunkshape
+            assert storage2.blockshape == blockshape
+        else:
+            # automatic partitioning
+            assert storage2.chunkshape <= shape
+            assert storage2.blockshape <= storage2.chunkshape
+        assert storage2.enforce_frame == True
+    except ValueError:
+        # chunkshape cannot be set when a plainbuffer is used
+        assert shape == ()
 
 
 @pytest.mark.parametrize(

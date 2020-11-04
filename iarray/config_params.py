@@ -252,7 +252,7 @@ class Storage:
 @dataclass
 class ConfigParams(ext.ConfigParams):
     """
-    Dataclass for hosting all the ironArray parameters.
+    Dataclass for hosting the different ironArray parameters.
     """
 
     codec: ia.Codecs = field(default_factory=defaults._codec)
@@ -282,7 +282,7 @@ class ConfigParams(ext.ConfigParams):
             self.nthreads = get_ncores(0)
         else:
             # If number of threads is specified, make sure that we are not exceeding
-            # the number of logical cores in the system.
+            # the number of physical cores in the system.
             self.nthreads = get_ncores(self.nthreads)
         if self.nthreads < 1:
             self.nthreads = 1
@@ -314,28 +314,52 @@ class ConfigParams(ext.ConfigParams):
             self.eval_method,
         )
 
-    def update(self, **kwargs):
-        for name, value in kwargs.items():
-            setattr(self, name, value)
+    def replace(self, **kwargs):
+        cfg_ = replace(self, **kwargs)
+        store_args = dict(
+            (field.name, kwargs[field.name]) for field in fields(Storage) if field.name in kwargs
+        )
+        cfg_.storage = replace(cfg_.storage, **store_args)
+        return cfg_
 
 
-def set_config(cfg: Union[ConfigParams, None] = None, **kwargs):
+global_defaults = None
+
+
+def set_config(cfg: ConfigParams = None, dtshape=None, **kwargs):
     """Set the global defaults for iarray operations.
 
-    `cfg` is an instance of `ConfigParams`.  If None, sensible defaults will apply.
+    `cfg` is a `ConfigParams` instance.  If None, sensible defaults will apply.
     Use `get_config()` before anything so as to see which those defaults are.
 
-    `**kwargs` is a dictionary for setting some of `ConfigParams` dataclass different
-    than defaults.
+    `dtshape` is a `DTShape` instance.  This is not part of `ConfigParams` as such,
+    but if passed, it will be used so as to compute sensible defaults for `chunkshape`
+    and `blockshape`.
+
+    `**kwargs` is a dictionary for setting some of the fields in `ConfigParams`
+    dataclass different than defaults.
 
     Returns the new global configuration.
     """
+    global global_defaults
     if cfg is None:
-        defaults.cparams = ConfigParams(**kwargs)
-    else:
-        defaults.cparams = cfg
+        if global_defaults is None:
+            cfg = ConfigParams()
+        else:
+            cfg = global_defaults
 
-    return defaults.cparams
+    if kwargs != {}:
+        cfg = cfg.replace(**kwargs)
+    if dtshape is not None:
+        cfg.storage.get_shape_advice(dtshape)
+
+    global_defaults = cfg
+
+    return global_defaults
+
+
+# Initialize the configuration
+set_config()
 
 
 def get_config():
@@ -343,23 +367,19 @@ def get_config():
 
     Returns the existing global configuration.
     """
-    return defaults.cparams
-
-
-# Initialize the configuration
-set_config()
+    return global_defaults
 
 
 @contextmanager
-def config(cfg: Union[ConfigParams, None] = None, dtshape=None, **kwargs):
-    """Execute a context under some configuration"""
+def config(cfg: ConfigParams = None, dtshape=None, **kwargs):
+    """Execute a context with some configuration parameters.
+
+    All parameters are and work the same than in `ia.set_config`.
+    The only difference is that this does not set global defaults.
+    """
     if cfg is None:
-        cfg = ConfigParams(**kwargs)
-    cfg_ = replace(cfg, **kwargs)
-    store_args = dict(
-        (field.name, kwargs[field.name]) for field in fields(Storage) if field.name in kwargs
-    )
-    cfg_.storage = replace(cfg_.storage, **store_args)
+        cfg = ConfigParams()
+    cfg_ = cfg.replace(**kwargs)
     if dtshape is not None:
         cfg_.storage.get_shape_advice(dtshape)
 
@@ -367,13 +387,15 @@ def config(cfg: Union[ConfigParams, None] = None, dtshape=None, **kwargs):
 
 
 if __name__ == "__main__":
-    cfg = get_config()
-    print("Defaults:", cfg)
-    assert cfg.storage.enforce_frame == False
+    cfg_ = get_config()
+    print("Defaults:", cfg_)
+    assert cfg_.storage.enforce_frame == False
+
     set_config(storage=Storage(enforce_frame=True))
     cfg = get_config()
     print("1st form:", cfg)
     assert cfg.storage.enforce_frame == True
+
     set_config(enforce_frame=False)
     cfg = get_config()
     print("2nd form:", cfg)
@@ -385,5 +407,13 @@ if __name__ == "__main__":
     assert cfg.clevel == 1
 
     with config(clevel=0, enforce_frame=True) as cfg_new:
-        print(cfg_new)
+        print("Context form:", cfg_new)
         assert cfg_new.storage.enforce_frame == True
+
+    cfg = ia.ConfigParams(codec=ia.Codecs.BLOSCLZ)
+    cfg2 = ia.set_config(cfg=cfg, codec=ia.Codecs.LIZARD)
+    print("Standalone config:", cfg)
+    print("Global config", cfg2)
+
+    cfg = ia.set_config(cfg_)
+    print("Defaults config:", cfg)
