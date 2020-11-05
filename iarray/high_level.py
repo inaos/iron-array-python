@@ -67,7 +67,7 @@ def expr_from_string(sexpr: str, inputs: dict, dtshape: DTShape, cfg=None, **kwa
 
     `dtshape` is a `DTShape` instance with the shape and dtype of the resulting array.
 
-    `cfg` is a `ConfigParams` instance.  If None, global defaults are used.
+    `cfg` is a `Config` instance.  If None, global defaults are used.
 
     `**kwargs` can be any argument supported by the `ia.set_config()` constructor.  These will
     be used for both the evaluation process and the resulting array.
@@ -88,7 +88,7 @@ def expr_from_udf(udf: py2llvm.Function, inputs: list, dtshape: DTShape, cfg=Non
 
     `dtshape` is a `DTShape` instance with the shape and dtype of the resulting array.
 
-    `cfg` is a `ConfigParams` instance.  If None, global defaults are used.
+    `cfg` is a `Config` instance.  If None, global defaults are used.
 
     `**kwargs` can be any argument supported by the `ia.set_config()` constructor.  These will
     be used for both the evaluation process and the resulting array.

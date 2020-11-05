@@ -89,7 +89,7 @@ UFUNC_LIST = (
 # That must come here so as to avoid circular import errors
 
 from .config_params import (
-    ConfigParams,
+    Config,
     Storage,
     set_config,
     get_config,

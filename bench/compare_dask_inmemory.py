@@ -15,13 +15,13 @@ NTHREADS = 8
 CLEVEL = 5
 CODEC = ia.Codecs.LZ4
 
+ia.set_config(codec=CODEC, clevel=CLEVEL, nthreads=NTHREADS)
+compressor = Blosc(cname="lz4", clevel=CLEVEL, shuffle=Blosc.SHUFFLE)
+
+dtype = np.float64
 shapes = np.logspace(6, 8, 10, dtype=np.int64)
 # chunkshape, blockshape = (100_000,), (8_000,)
 chunkshape, blockshape = None, None
-
-dtype = np.float64
-compressor = Blosc(cname="lz4", clevel=CLEVEL, shuffle=Blosc.SHUFFLE)
-cparams = dict(codec=CODEC, clevel=CLEVEL, nthreads=NTHREADS)
 
 sexpr = "(x - 1.35) * (x - 4.45) * (x - 8.5)"
 
@@ -34,10 +34,10 @@ for i, shape in enumerate(shapes):
     print(shape)
     dtshape = ia.DTShape(shape, dtype)
     storage = ia.Storage(chunkshape, blockshape)
-    data = ia.linspace(dtshape, 0, 1, storage=storage, **cparams)
+    data = ia.linspace(dtshape, 0, 1, storage=storage)
 
     t0 = time()
-    expr = ia.expr_from_string(sexpr, {"x": data}, dtshape, **cparams)
+    expr = ia.expr_from_string(sexpr, {"x": data}, dtshape)
     res1 = expr.eval()
     t1 = time()
     t_iarray.append(t1 - t0)

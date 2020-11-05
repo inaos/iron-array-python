@@ -12,7 +12,7 @@ import iarray as ia
         (0, ia.Codecs.ZSTD, [ia.Filters.SHUFFLE], None, None, False),
     ],
 )
-def test_cparams_global(clevel, codec, filters, chunkshape, blockshape, enforce_frame):
+def test_global_config(clevel, codec, filters, chunkshape, blockshape, enforce_frame):
     storage = ia.Storage(chunkshape, blockshape, enforce_frame=enforce_frame)
     ia.set_config(clevel=clevel, codec=codec, filters=filters, storage=storage)
     config = ia.get_config()
@@ -42,8 +42,8 @@ def test_cparams_global(clevel, codec, filters, chunkshape, blockshape, enforce_
     assert storage2.blockshape == blockshape
     assert storage2.enforce_frame == False
 
-    # Or, we can set defaults via ConfigParams (for better auto-completion)
-    cparams = ia.ConfigParams(
+    # Or, we can set defaults via Config (for better auto-completion)
+    cfg = ia.Config(
         clevel=clevel,
         codec=codec,
         filters=filters,
@@ -51,7 +51,7 @@ def test_cparams_global(clevel, codec, filters, chunkshape, blockshape, enforce_
         blockshape=blockshape,
         enforce_frame=False,
     )
-    ia.set_config(cparams)
+    ia.set_config(cfg)
     config = ia.get_config()
     assert config.clevel == clevel
     assert config.codec == codec
@@ -61,14 +61,14 @@ def test_cparams_global(clevel, codec, filters, chunkshape, blockshape, enforce_
     assert storage2.blockshape == blockshape
     assert storage2.enforce_frame == False
 
-    # Or, we can use a mix of ConfigParams and keyword args
-    cparams = ia.ConfigParams(
+    # Or, we can use a mix of Config and keyword args
+    cfg = ia.Config(
         clevel=clevel,
         codec=codec,
         blockshape=blockshape,
         enforce_frame=False,
     )
-    ia.set_config(cparams, filters=filters, chunkshape=chunkshape)
+    ia.set_config(cfg, filters=filters, chunkshape=chunkshape)
     config = ia.get_config()
     assert config.clevel == clevel
     assert config.codec == codec
@@ -89,7 +89,7 @@ def test_cparams_global(clevel, codec, filters, chunkshape, blockshape, enforce_
         (None, None, ()),
     ],
 )
-def test_cparams_global_dtype(chunkshape, blockshape, shape):
+def test_global_config_dtype(chunkshape, blockshape, shape):
     try:
         storage = ia.Storage(chunkshape, blockshape)
         dtshape = ia.DTShape(shape)
@@ -139,7 +139,7 @@ def test_cparams_global_dtype(chunkshape, blockshape, shape):
         (0, ia.Codecs.ZSTD, [ia.Filters.SHUFFLE], None, None, False),
     ],
 )
-def test_cparams_ctx(clevel, codec, filters, chunkshape, blockshape, plainbuffer):
+def test_config_ctx(clevel, codec, filters, chunkshape, blockshape, plainbuffer):
     try:
         storage = ia.Storage(chunkshape, blockshape, plainbuffer=plainbuffer)
         with ia.config(clevel=clevel, codec=codec, filters=filters, storage=storage) as cfg:
@@ -184,7 +184,7 @@ def test_cparams_ctx(clevel, codec, filters, chunkshape, blockshape, plainbuffer
         (None, None, ()),
     ],
 )
-def test_cparams_ctx_dtype(chunkshape, blockshape, shape):
+def test_config_ctx_dtype(chunkshape, blockshape, shape):
     try:
         storage = ia.Storage(chunkshape, blockshape)
         dtshape = ia.DTShape(shape)

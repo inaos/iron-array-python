@@ -38,22 +38,22 @@ def get_ncores(max_ncores=0):
 
 
 def partition_advice(
-    dtshape, min_chunksize=0, max_chunksize=0, min_blocksize=0, max_blocksize=0, cparams=None
+    dtshape, min_chunksize=0, max_chunksize=0, min_blocksize=0, max_blocksize=0, cfg=None
 ):
     """Provide advice for the chunk and block shapes for a certain `dtshape`.
 
     `min_` and `max_` params contain minimum and maximum values for chunksize and blocksize.
     If `min_` or `max_` are 0, they default to sensible values (fractions of CPU caches).
 
-    `config` is a `ConfigParams` instance, and if not passed, a default configuration is used.
+    `cfg` is a `Config` instance.  If None, a default configuration is used.
 
     If success, the tuple (chunkshape, blockshape) containing the advice is returned.
     In case of error, a (None, None) tuple is returned and a warning is issued.
     """
-    if cparams is None:
-        cparams = ConfigParams()
+    if cfg is None:
+        cfg = Config()
     chunkshape, blockshape = ext.partition_advice(
-        dtshape, min_chunksize, max_chunksize, min_blocksize, max_blocksize, cparams
+        dtshape, min_chunksize, max_chunksize, min_blocksize, max_blocksize, cfg
     )
     if chunkshape is None:
         warnings.warn(
@@ -65,7 +65,7 @@ def partition_advice(
 
 
 @dataclass
-class DefaultConfigParams:
+class DefaultConfig:
     codec: Any
     clevel: Any
     use_dict: Any
@@ -93,7 +93,7 @@ def default_filters():
 @dataclass
 class Defaults(object):
     # Config params
-    _cparams = None
+    _config = None
     codec: ia.Codecs = ia.Codecs.LZ4
     clevel: int = 5
     use_dict: bool = False
@@ -111,8 +111,8 @@ class Defaults(object):
     plainbuffer: bool = False
 
     def __post_init__(self):
-        # Initialize cparams and storage with its getters and setters
-        self.cparams = self.cparams
+        # Initialize config and storage with its getters and setters
+        self.config = self.config
 
     # Accessors only meant to serve as default_factory
     def _codec(self):
@@ -140,10 +140,10 @@ class Defaults(object):
         return self.seed
 
     @property
-    def cparams(self):
-        if self._cparams is None:
+    def config(self):
+        if self._config is None:
             # Bootstrap the defaults
-            return DefaultConfigParams(
+            return DefaultConfig(
                 codec=self.codec,
                 clevel=self.clevel,
                 use_dict=self.use_dict,
@@ -154,12 +154,12 @@ class Defaults(object):
                 eval_method=self.eval_method,
                 seed=self.seed,
             )
-        return self._cparams
+        return self._config
 
-    @cparams.setter
-    def cparams(self, value):
+    @config.setter
+    def config(self, value):
         if not hasattr(value, "codec"):
-            raise ValueError(f"You need to use a `ConfigParams` instance")
+            raise ValueError(f"You need to use a `Config` instance")
         self.codec = value.codec
         self.clevel = value.clevel
         self.use_dict = value.use_dict
@@ -169,7 +169,7 @@ class Defaults(object):
         self.eval_method = value.eval_method
         self.seed = value.seed
         self._storage = value.storage
-        self._cparams = value
+        self._config = value
         if self._storage is not None:
             self.set_storage(self._storage)
 
@@ -221,7 +221,7 @@ global_config = None
 def reset_config_defaults():
     """Reset the defaults of the configuration parameters."""
     global global_config
-    defaults.cparams = Defaults()
+    defaults.config = Defaults()
     global_config = None
     set_config()
     return global_config
@@ -261,7 +261,7 @@ class Storage:
 
 
 @dataclass
-class ConfigParams(ext.ConfigParams):
+class Config(ext.Config):
     """
     Dataclass for hosting the different ironArray parameters.
     """
@@ -327,6 +327,10 @@ class ConfigParams(ext.ConfigParams):
 
     def replace(self, **kwargs):
         cfg_ = replace(self, **kwargs)
+        if "storage" in kwargs:
+            store = kwargs["storage"]
+            for field in fields(Storage):
+                setattr(cfg_, field.name, getattr(store, field.name))
         store_args = dict(
             (field.name, kwargs[field.name]) for field in fields(Storage) if field.name in kwargs
         )
@@ -334,17 +338,17 @@ class ConfigParams(ext.ConfigParams):
         return cfg_
 
 
-def set_config(cfg: ConfigParams = None, dtshape=None, **kwargs):
+def set_config(cfg: Config = None, dtshape=None, **kwargs):
     """Set the global defaults for iarray operations.
 
-    `cfg` is a `ConfigParams` instance.  If None, sensible defaults will apply.
+    `cfg` is a `Config` instance.  If None, sensible defaults will apply.
     Use `get_config()` before anything so as to see which those defaults are.
 
-    `dtshape` is a `DTShape` instance.  This is not part of `ConfigParams` as such,
+    `dtshape` is a `DTShape` instance.  This is not part of `Config` as such,
     but if passed, it will be used so as to compute sensible defaults for `chunkshape`
     and `blockshape`.  This is mainly meant for internal use.
 
-    `**kwargs` is a dictionary for setting some or all of the fields in `ConfigParams`
+    `**kwargs` is a dictionary for setting some or all of the fields in the `Config`
     dataclass that should be different than defaults.
 
     Returns the new global configuration.
@@ -352,7 +356,7 @@ def set_config(cfg: ConfigParams = None, dtshape=None, **kwargs):
     global global_config
     if cfg is None:
         if global_config is None:
-            cfg = ConfigParams()
+            cfg = Config()
         else:
             cfg = global_config
 
@@ -362,8 +366,8 @@ def set_config(cfg: ConfigParams = None, dtshape=None, **kwargs):
         cfg.storage.get_shape_advice(dtshape)
 
     global_config = cfg
-    # Set the defaults for ConfigParams() constructor and other nested confs (Storage...)
-    defaults.cparams = cfg
+    # Set the defaults for Config() constructor and other nested configs (Storage...)
+    defaults.config = cfg
 
     return global_config
 
@@ -381,14 +385,14 @@ def get_config():
 
 
 @contextmanager
-def config(cfg: ConfigParams = None, dtshape=None, **kwargs):
+def config(cfg: Config = None, dtshape=None, **kwargs):
     """Execute a context with some configuration parameters.
 
     All parameters are and work the same than in `ia.set_config()`.
     The only difference is that this does not set global defaults.
     """
     if cfg is None:
-        cfg = ConfigParams()
+        cfg = Config()
     cfg_ = cfg.replace(**kwargs)
     if dtshape is not None:
         cfg_.storage.get_shape_advice(dtshape)
@@ -411,7 +415,7 @@ if __name__ == "__main__":
     print("2nd form:", cfg)
     assert cfg.storage.enforce_frame == False
 
-    set_config(ConfigParams(clevel=1))
+    set_config(Config(clevel=1))
     cfg = get_config()
     print("3rd form:", cfg)
     assert cfg.clevel == 1
@@ -420,7 +424,7 @@ if __name__ == "__main__":
         print("Context form:", cfg_new)
         assert cfg_new.storage.enforce_frame == True
 
-    cfg = ia.ConfigParams(codec=ia.Codecs.BLOSCLZ)
+    cfg = ia.Config(codec=ia.Codecs.BLOSCLZ)
     cfg2 = ia.set_config(cfg=cfg, codec=ia.Codecs.LIZARD)
     print("Standalone config:", cfg)
     print("Global config", cfg2)

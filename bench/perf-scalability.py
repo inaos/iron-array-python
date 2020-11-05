@@ -21,7 +21,6 @@ def evaluate(command):
     x, y, z = (None,) * 3
     iax, iay, iaz = (None,) * 3
     shape, chunkshape, blockshape, dtype = (None,) * 4
-    cparams = {}
     zx, zy, zz = (None,) * 3
     zcompr = None
 
@@ -32,17 +31,17 @@ def evaluate(command):
         y = x.copy()
         z = y.copy()
         # iarray
-        global iax, iay, iaz, shape, chunkshape, blockshape, dtype, cparams
+        global iax, iay, iaz, shape, chunkshape, blockshape, dtype
         shape = [n]
         chunkshape = CHUNKSHAPE
         blockshape = BLOCKSHAPE
         dtype = np.float64
-        cparams = dict(clevel=CLEVEL, nthreads=NTHREADS)
-        storage = ia.Storage(chunkshape, blockshape)
         dtshape = ia.DTShape(shape, dtype)
-        iax = ia.linspace(dtshape, 0, 1, storage=storage, **cparams)
-        iay = ia.linspace(dtshape, 0, 1, storage=storage, **cparams)
-        iaz = ia.linspace(dtshape, 0, 1, storage=storage, **cparams)
+        storage = ia.Storage(chunkshape, blockshape)
+        ia.set_config(clevel=CLEVEL, nthreads=NTHREADS, storage=storage)
+        iax = ia.linspace(dtshape, 0, 1)
+        iay = ia.linspace(dtshape, 0, 1)
+        iaz = ia.linspace(dtshape, 0, 1)
 
         # dask/zarr
         global zx, zy, zz, zcompr
@@ -70,16 +69,15 @@ def evaluate(command):
         ne.evaluate(command)
 
     def ia_compiler_parallel(command):
-        global iax, iay, iaz, shape, chunkshape, blockshape, dtype, cparams
+        global iax, iay, iaz, shape, chunkshape, blockshape, dtype
         dtshape = ia.DTShape(shape, dtype)
-        with ia.config(nthreads=NTHREADS, chunkshape=chunkshape, blockshape=blockshape) as cfg:
-            expr = ia.expr_from_string(command, {"x": iax, "y": iay, "z": iaz}, dtshape, cfg=cfg)
-            expr.eval()
+        expr = ia.expr_from_string(command, {"x": iax, "y": iay, "z": iaz}, dtshape)
+        expr.eval()
 
     def ia_compiler_serial(command):
-        global iax, iay, iaz, shape, chunkshape, blockshape, dtype, cparams
+        global iax, iay, iaz, shape, chunkshape, blockshape, dtype
         dtshape = ia.DTShape(shape, dtype)
-        with ia.config(nthreads=1, chunkshape=chunkshape, blockshape=blockshape) as cfg:
+        with ia.config(nthreads=1) as cfg:
             expr = ia.expr_from_string(command, {"x": iax, "y": iay, "z": iaz}, dtshape, cfg=cfg)
             expr.eval()
 

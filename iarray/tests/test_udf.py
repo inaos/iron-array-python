@@ -20,7 +20,7 @@ def cmp_udf_np(f, start_stop, shape, partitions, dtype, cparams):
         partitions : A tuple with the chunk and block shapes for iarrays.
                      If None, a plainbuffer is used.
         dtype      : Data type.
-        cparams    : Parameters for ironArray.
+        cparams    : Configuration parameters for ironArray.
 
     Function results must not depend on chunkshape/blockshape, otherwise the
     comparison with numpy will fail.
