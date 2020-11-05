@@ -155,14 +155,14 @@ cdef class IArrayInit:
         ciarray.iarray_destroy()
 
 
-cdef class ConfigParams:
-    cdef ciarray.iarray_config_t cparams
+cdef class Config:
+    cdef ciarray.iarray_config_t config
 
     def __init__(self, compression_codec, compression_level, use_dict, filters,
                  max_num_threads, fp_mantissa_bits, eval_method):
-        self.cparams.compression_codec = compression_codec.value
-        self.cparams.compression_level = compression_level
-        self.cparams.use_dict = 1 if use_dict else 0
+        self.config.compression_codec = compression_codec.value
+        self.config.compression_level = compression_level
+        self.config.use_dict = 1 if use_dict else 0
         cdef int filter_flags = 0
         # TODO: filters are really a pipeline, and here we are just ORing them, which is tricky.
         # This should be fixed (probably at C iArray level and then propagating the change here).
@@ -171,7 +171,7 @@ cdef class ConfigParams:
             filter_flags |= f.value
         if fp_mantissa_bits > 0:
             filter_flags |= ia.Filters.TRUNC_PREC.value
-        self.cparams.filter_flags = filter_flags
+        self.config.filter_flags = filter_flags
 
         if eval_method == ia.Eval.AUTO:
             method = ciarray.IARRAY_EVAL_METHOD_AUTO
@@ -182,12 +182,12 @@ cdef class ConfigParams:
         else:
             raise ValueError("eval_method method not recognized:", eval_method)
 
-        self.cparams.eval_method = method
-        self.cparams.max_num_threads = max_num_threads
-        self.cparams.fp_mantissa_bits = fp_mantissa_bits
+        self.config.eval_method = method
+        self.config.max_num_threads = max_num_threads
+        self.config.fp_mantissa_bits = fp_mantissa_bits
 
     def to_dict(self):
-        return <object> self.cparams
+        return <object> self.config
 
 
 cdef class Context:

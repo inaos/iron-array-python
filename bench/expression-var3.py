@@ -26,12 +26,12 @@ chunkshape, blockshape = [4_000_000], [20_000]
 # chunkshape, blockshape = None, None   # uncomment for automatic partitioning
 dtype = np.float64
 nthreads = 8
-
 dtshape = ia.DTShape(shape=shape, dtype=dtype)
-cparams = dict(clevel=9, nthreads=nthreads)
-# Reduce the precision for the output
-cparams2 = cparams.copy()
-cparams2.update(dict(fp_mantissa_bits=20))
+
+# Set global defaults
+ia.set_config(clevel=9, nthreads=nthreads, chunkshape=chunkshape, blockshape=blockshape)
+# Output required precision (in significant bits for the mantissa)
+out_prec = 20
 
 
 @udf.jit(verbose=0)
@@ -61,18 +61,14 @@ if PROFILE:
     a1_fname = "a1.iarray"
     if not os.path.isfile(a1_fname):
         print(f"Creating {a1_fname}")
-        a1_storage = ia.Storage(chunkshape, blockshape, a1_fname)
-        a1 = ia.linspace(dtshape, 0, 10, storage=a1_storage, **cparams)
+        a1_storage = ia.Storage(filename=a1_fname)
+        a1 = ia.linspace(dtshape, 0, 10, storage=a1_storage)
     else:
         print(f"Reading {a1_fname}")
         a1 = ia.load(a1_fname, load_in_mem=True)
 else:
-    a1_storage = ia.Storage(chunkshape, blockshape)
-    a1 = ia.linspace(dtshape, 0, 10, storage=a1_storage, **cparams)
+    a1 = ia.linspace(dtshape, 0, 10)
 
-# New variables will always be created in-memory
-new_storage = ia.Storage(chunkshape, blockshape)
-cparams.update(storage=new_storage)
 
 a2 = np.linspace(0, 10, shape[0], dtype=dtype).reshape(shape)
 
@@ -106,9 +102,9 @@ iay = a1.copy()
 iaz = a1.copy()
 
 if NVARS == 1:
-    expr = f1.create_expr([iax], dtshape, **cparams2)
+    expr = f1.create_expr([iax], dtshape, fp_mantissa_bits=out_prec)
 else:
-    expr = f3.create_expr([iax, iay, iaz], dtshape, **cparams2)
+    expr = f3.create_expr([iax, iay, iaz], dtshape, fp_mantissa_bits=out_prec)
 b1 = None  # avoid a warning
 t0 = time()
 for i in range(NITER):
@@ -120,9 +116,11 @@ b1_n = ia.iarray2numpy(b1)
 b2 = None  # avoid a warning
 t0 = time()
 if NVARS == 1:
-    expr = ia.create_expr(expr1, {"x": iax}, dtshape, **cparams2)
+    expr = ia.expr_from_string(expr1, {"x": iax}, dtshape, fp_mantissa_bits=out_prec)
 else:
-    expr = ia.create_expr(expr3, {"x": iax, "y": iay, "z": iaz}, dtshape, **cparams2)
+    expr = ia.expr_from_string(
+        expr3, {"x": iax, "y": iay, "z": iaz}, dtshape, fp_mantissa_bits=out_prec
+    )
 for i in range(NITER):
     b2 = expr.eval()
 print("Time for internal eval engine:", round((time() - t0) / NITER, 3))

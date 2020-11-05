@@ -49,7 +49,7 @@ print("Time for numpy eval:", round((time() - t0) / NITER, 3))
 # iarray udf evaluation
 print("iarray evaluation ...")
 # expr = f.create_expr([ia_in], dtshape)
-expr = ia.create_expr(f, [ia_in], dtshape)
+expr = ia.expr_from_udf(f, [ia_in], dtshape)
 ia_out = None
 t0 = time()
 for i in range(NITER):

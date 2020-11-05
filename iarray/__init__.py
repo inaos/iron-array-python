@@ -89,15 +89,14 @@ UFUNC_LIST = (
 # That must come here so as to avoid circular import errors
 
 from .config_params import (
-    ConfigParams,
+    Config,
     Storage,
-    get_ncores,
-    partition_advice,
-    RANDOM_SEED,
-    defaults,
     set_config,
     get_config,
     config,
+    reset_config_defaults,
+    get_ncores,
+    partition_advice,
 )
 
 
@@ -105,9 +104,10 @@ from .high_level import (
     IArray,
     DTShape,
     RandomContext,
-    create_expr,
-    # Expr,
+    Expr,
     LazyExpr,
+    expr_from_string,
+    expr_from_udf,
     empty,
     arange,
     linspace,
