@@ -94,6 +94,7 @@ from .config_params import (
     set_config,
     get_config,
     config,
+    reset_config_defaults,
     get_ncores,
     partition_advice,
 )

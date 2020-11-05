@@ -214,6 +214,17 @@ class Defaults(object):
 
 # Global variable where the defaults for config params are stored
 defaults = Defaults()
+# Global config
+global_config = None
+
+
+def reset_config_defaults():
+    """Reset the defaults of the configuration parameters."""
+    global global_config
+    defaults.cparams = Defaults()
+    global_config = None
+    set_config()
+    return global_config
 
 
 @dataclass
@@ -323,9 +334,6 @@ class ConfigParams(ext.ConfigParams):
         return cfg_
 
 
-global_defaults = None
-
-
 def set_config(cfg: ConfigParams = None, dtshape=None, **kwargs):
     """Set the global defaults for iarray operations.
 
@@ -341,23 +349,23 @@ def set_config(cfg: ConfigParams = None, dtshape=None, **kwargs):
 
     Returns the new global configuration.
     """
-    global global_defaults
+    global global_config
     if cfg is None:
-        if global_defaults is None:
+        if global_config is None:
             cfg = ConfigParams()
         else:
-            cfg = global_defaults
+            cfg = global_config
 
     if kwargs != {}:
         cfg = cfg.replace(**kwargs)
     if dtshape is not None:
         cfg.storage.get_shape_advice(dtshape)
 
-    global_defaults = cfg
+    global_config = cfg
     # Set the defaults for ConfigParams() constructor and other nested confs (Storage...)
     defaults.cparams = cfg
 
-    return global_defaults
+    return global_config
 
 
 # Initialize the configuration
@@ -369,7 +377,7 @@ def get_config():
 
     Returns the existing global configuration.
     """
-    return global_defaults
+    return global_config
 
 
 @contextmanager
