@@ -37,7 +37,7 @@ def test_cparams_global(clevel, codec, filters, chunkshape, blockshape, enforce_
     assert config.clevel == clevel
     assert config.codec == codec
     assert config.filters == filters
-    storage2 = config.storage
+    storage2 = ia.Storage()
     assert storage2.chunkshape == chunkshape
     assert storage2.blockshape == blockshape
     assert storage2.enforce_frame == False
@@ -56,7 +56,7 @@ def test_cparams_global(clevel, codec, filters, chunkshape, blockshape, enforce_
     assert config.clevel == clevel
     assert config.codec == codec
     assert config.filters == filters
-    storage2 = config.storage
+    storage2 = ia.Storage()
     assert storage2.chunkshape == chunkshape
     assert storage2.blockshape == blockshape
     assert storage2.enforce_frame == False
@@ -73,7 +73,7 @@ def test_cparams_global(clevel, codec, filters, chunkshape, blockshape, enforce_
     assert config.clevel == clevel
     assert config.codec == codec
     assert config.filters == filters
-    storage2 = config.storage
+    storage2 = ia.Storage()
     assert storage2.chunkshape == chunkshape
     assert storage2.blockshape == blockshape
     assert storage2.enforce_frame == False

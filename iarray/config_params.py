@@ -354,6 +354,8 @@ def set_config(cfg: ConfigParams = None, dtshape=None, **kwargs):
         cfg.storage.get_shape_advice(dtshape)
 
     global_defaults = cfg
+    # Set the defaults for ConfigParams() constructor and other nested confs (Storage...)
+    defaults.cparams = cfg
 
     return global_defaults
 
