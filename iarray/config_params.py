@@ -342,10 +342,10 @@ def set_config(cfg: ConfigParams = None, dtshape=None, **kwargs):
 
     `dtshape` is a `DTShape` instance.  This is not part of `ConfigParams` as such,
     but if passed, it will be used so as to compute sensible defaults for `chunkshape`
-    and `blockshape`.
+    and `blockshape`.  This is mainly meant for internal use.
 
-    `**kwargs` is a dictionary for setting some of the fields in `ConfigParams`
-    dataclass different than defaults.
+    `**kwargs` is a dictionary for setting some or all of the fields in `ConfigParams`
+    dataclass that should be different than defaults.
 
     Returns the new global configuration.
     """
@@ -384,7 +384,7 @@ def get_config():
 def config(cfg: ConfigParams = None, dtshape=None, **kwargs):
     """Execute a context with some configuration parameters.
 
-    All parameters are and work the same than in `ia.set_config`.
+    All parameters are and work the same than in `ia.set_config()`.
     The only difference is that this does not set global defaults.
     """
     if cfg is None:

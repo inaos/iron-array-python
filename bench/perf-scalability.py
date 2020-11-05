@@ -72,18 +72,14 @@ def evaluate(command):
     def ia_compiler_parallel(command):
         global iax, iay, iaz, shape, chunkshape, blockshape, dtype, cparams
         dtshape = ia.DTShape(shape, dtype)
-        with ia.config(
-            dtshape=dtshape, nthreads=NTHREADS, chunkshape=chunkshape, blockshape=blockshape
-        ) as cfg:
+        with ia.config(nthreads=NTHREADS, chunkshape=chunkshape, blockshape=blockshape) as cfg:
             expr = ia.expr_from_string(command, {"x": iax, "y": iay, "z": iaz}, dtshape, cfg=cfg)
             expr.eval()
 
     def ia_compiler_serial(command):
         global iax, iay, iaz, shape, chunkshape, blockshape, dtype, cparams
         dtshape = ia.DTShape(shape, dtype)
-        with ia.config(
-            dtshape=dtshape, nthreads=1, chunkshape=chunkshape, blockshape=blockshape
-        ) as cfg:
+        with ia.config(nthreads=1, chunkshape=chunkshape, blockshape=blockshape) as cfg:
             expr = ia.expr_from_string(command, {"x": iax, "y": iay, "z": iaz}, dtshape, cfg=cfg)
             expr.eval()
 
