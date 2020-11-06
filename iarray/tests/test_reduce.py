@@ -26,7 +26,7 @@ def test_max(shape, chunkshape, blockshape, axis, dtype):
     np.testing.assert_allclose(ia.iarray2numpy(b1), b2, rtol=rtol)
 
 
-@pytest.mark.parametrize(param_names, params_data)
+@pytest.mark.parametrize(params_names, params_data)
 def test_min(shape, chunkshape, blockshape, axis, dtype):
 
     storage = ia.Storage(chunkshape, blockshape)
@@ -41,7 +41,7 @@ def test_min(shape, chunkshape, blockshape, axis, dtype):
     np.testing.assert_allclose(ia.iarray2numpy(b1), b2, rtol=rtol)
 
 
-@pytest.mark.parametrize(param_names, params_data)
+@pytest.mark.parametrize(params_names, params_data)
 def test_sum(shape, chunkshape, blockshape, axis, dtype):
     storage = ia.Storage(chunkshape, blockshape)
     a1 = ia.linspace(ia.DTShape(shape, dtype), -10, 10, storage=storage)
@@ -55,7 +55,7 @@ def test_sum(shape, chunkshape, blockshape, axis, dtype):
     np.testing.assert_allclose(ia.iarray2numpy(b1), b2, rtol=rtol)
 
 
-@pytest.mark.parametrize(param_names, params_data)
+@pytest.mark.parametrize(params_names, params_data)
 def test_prod(shape, chunkshape, blockshape, axis, dtype):
     storage = ia.Storage(chunkshape, blockshape)
     a1 = ia.linspace(ia.DTShape(shape, dtype), -10, 10, storage=storage)
@@ -69,7 +69,7 @@ def test_prod(shape, chunkshape, blockshape, axis, dtype):
     np.testing.assert_allclose(ia.iarray2numpy(b1), b2, rtol=rtol)
 
 
-@pytest.mark.parametrize(param_names, params_data)
+@pytest.mark.parametrize(params_names, params_data)
 def test_mean(shape, chunkshape, blockshape, axis, dtype):
     storage = ia.Storage(chunkshape, blockshape)
     a1 = ia.linspace(ia.DTShape(shape, dtype), -10, 10, storage=storage)
@@ -83,7 +83,7 @@ def test_mean(shape, chunkshape, blockshape, axis, dtype):
     np.testing.assert_allclose(ia.iarray2numpy(b1), b2, rtol=rtol)
 
 
-@pytest.mark.parametrize(param_names, params_data)
+@pytest.mark.parametrize(params_names, params_data)
 def test_std(shape, chunkshape, blockshape, axis, dtype):
     storage = ia.Storage(chunkshape, blockshape)
     a1 = ia.linspace(ia.DTShape(shape, dtype), -10, 10, storage=storage)
