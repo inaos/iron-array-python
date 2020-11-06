@@ -62,6 +62,15 @@ class Eval(Enum):
     ITERCHUNK = auto()
 
 
+class Reduce(Enum):
+    MAX = 0
+    MIN = 1
+    SUM = 2
+    PROD = 3
+    MEAN = 4
+    STD = 5
+
+
 # List of all know universal functions
 UFUNC_LIST = (
     "abs",
@@ -121,6 +130,13 @@ from .high_level import (
     numpy2iarray,
     matmul,
     transpose,
+    # reductions
+    max,
+    min,
+    sum,
+    prod,
+    mean,
+    std,
     # random constructors
     random_rand,
     random_randn,

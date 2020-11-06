@@ -292,9 +292,26 @@ cdef extern from "libiarray/iarray.h":
                                      iarray_container_t *a,
                                      iarray_container_t **b);
 
+    # Reductions
+
+    ctypedef enum iarray_reduce_func_t:
+        IARRAY_REDUCE_MAX,
+        IARRAY_REDUCE_MIN,
+        IARRAY_REDUCE_SUM,
+        IARRAY_REDUCE_PROD,
+        IARRAY_REDUCE_MEAN,
+        IARRAY_REDUCE_STD
+
+    ina_rc_t iarray_reduce(iarray_context_t *ctx,
+                           iarray_container_t *a,
+                           iarray_reduce_func_t func,
+                           int8_t axis,
+                           iarray_storage_t *storage,
+                           iarray_container_t **b);
+
     # Iterators
 
-    ctypedef struct  iarray_iter_write_block_t
+    ctypedef struct iarray_iter_write_block_t
 
     ctypedef struct iarray_iter_write_block_value_t:
         void *block_pointer
