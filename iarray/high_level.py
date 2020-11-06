@@ -58,36 +58,45 @@ class DTShape:
 #
 
 
-def create_expr(expression, inputs, dtshape, cfg=None, **kwargs):
-    """Create an `Expr` instance.
+def expr_from_string(sexpr: str, inputs: dict, dtshape: DTShape, cfg=None, **kwargs):
+    """Create an `Expr` instance from a expression in string form.
 
-    `expression` is the expression in string format or a UDF function.
+    `sexpr` is the expression in string format.
 
-    `inputs` can be a dict or a list.
-     If `expression` is in string format, `inputs` is expected to be a dictionary
-     that maps variables in `expression` to actual arrays.
-     If `expression` is a UDF function, `inputs` should be a list (but a dict is supported too).
-     It represents the list of arrays whose values are passed as arguments to the UDF function.
-     If it is a dict, only the list of `inputs.values()` are honored.
+    `inputs` is a dictionary that maps variables in `expression` to actual arrays.
 
     `dtshape` is a `DTShape` instance with the shape and dtype of the resulting array.
 
-    `cfg` is a `ConfigParams` instance.  If None, global defaults are used.
+    `cfg` is a `Config` instance.  If None, global defaults are used.
 
     `**kwargs` can be any argument supported by the `ia.set_config()` constructor.  These will
     be used for both the evaluation process and the resulting array.
     """
     expr = Expr(dtshape=dtshape, cfg=cfg, **kwargs)
-    if isinstance(expression, py2llvm.Function):
-        if type(inputs) is dict:
-            inputs = inputs.values()
-        for i in inputs:
-            expr.bind("", i)
-        expr.compile_udf(expression)
-    else:
-        for i in inputs:
-            expr.bind(i, inputs[i])
-        expr.compile(expression)
+    for i in inputs:
+        expr.bind(i, inputs[i])
+    expr.compile(sexpr)
+    return expr
+
+
+def expr_from_udf(udf: py2llvm.Function, inputs: list, dtshape: DTShape, cfg=None, **kwargs):
+    """Create an `Expr` instance from an UDF function.
+
+    `udf` is a UDF function.
+
+    `inputs` is the list of arrays whose values are passed as arguments to the UDF function.
+
+    `dtshape` is a `DTShape` instance with the shape and dtype of the resulting array.
+
+    `cfg` is a `Config` instance.  If None, global defaults are used.
+
+    `**kwargs` can be any argument supported by the `ia.set_config()` constructor.  These will
+    be used for both the evaluation process and the resulting array.
+    """
+    expr = Expr(dtshape=dtshape, cfg=cfg, **kwargs)
+    for i in inputs:
+        expr.bind("", i)
+    expr.compile_udf(udf)
     return expr
 
 
@@ -247,7 +256,7 @@ class LazyExpr:
 
     def eval(self, dtshape, cfg=None, **kwargs):
         with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
-            expr = ia.create_expr(self.expression, self.operands, dtshape, cfg=cfg)
+            expr = ia.expr_from_string(self.expression, self.operands, dtshape, cfg=cfg)
             out = expr.eval()
             return out
 

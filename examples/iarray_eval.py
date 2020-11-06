@@ -33,7 +33,7 @@ print("Operand cratio:", round(xa.cratio, 2))
 ya = None
 
 t0 = time()
-expr = ia.create_expr("(x - 1.35) * (x - 4.45) * (x - 8.5)", {"x": xa}, dtshape)
+expr = ia.expr_from_string("(x - 1.35) * (x - 4.45) * (x - 8.5)", {"x": xa}, dtshape)
 for i in range(NITER):
     ya = expr.eval()
 print("Result cratio:", round(ya.cratio, 2))

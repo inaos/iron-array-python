@@ -124,7 +124,7 @@ def test_expression(method, shape, chunkshape, blockshape, dtype, expression):
     npy = ia.iarray2numpy(y)
 
     dtshape = ia.DTShape(shape, dtype)
-    expr = ia.create_expr(
+    expr = ia.expr_from_string(
         expression, {"x": x, "y": y}, dtshape, storage=storage, eval_method=method
     )
     iout = expr.eval()
@@ -196,7 +196,7 @@ def test_ufuncs(ufunc, ia_expr):
         npx = ia.iarray2numpy(x)
         npy = ia.iarray2numpy(y)
 
-        expr = ia.create_expr(ia_expr, {"x": x, "y": y}, dtshape, storage=storage)
+        expr = ia.expr_from_string(ia_expr, {"x": x, "y": y}, dtshape, storage=storage)
         iout = expr.eval()
         npout = ia.iarray2numpy(iout)
 

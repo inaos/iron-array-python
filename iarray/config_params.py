@@ -38,22 +38,22 @@ def get_ncores(max_ncores=0):
 
 
 def partition_advice(
-    dtshape, min_chunksize=0, max_chunksize=0, min_blocksize=0, max_blocksize=0, cparams=None
+    dtshape, min_chunksize=0, max_chunksize=0, min_blocksize=0, max_blocksize=0, cfg=None
 ):
     """Provide advice for the chunk and block shapes for a certain `dtshape`.
 
     `min_` and `max_` params contain minimum and maximum values for chunksize and blocksize.
     If `min_` or `max_` are 0, they default to sensible values (fractions of CPU caches).
 
-    `config` is a `ConfigParams` instance, and if not passed, a default configuration is used.
+    `cfg` is a `Config` instance.  If None, a default configuration is used.
 
     If success, the tuple (chunkshape, blockshape) containing the advice is returned.
     In case of error, a (None, None) tuple is returned and a warning is issued.
     """
-    if cparams is None:
-        cparams = ConfigParams()
+    if cfg is None:
+        cfg = Config()
     chunkshape, blockshape = ext.partition_advice(
-        dtshape, min_chunksize, max_chunksize, min_blocksize, max_blocksize, cparams
+        dtshape, min_chunksize, max_chunksize, min_blocksize, max_blocksize, cfg
     )
     if chunkshape is None:
         warnings.warn(
@@ -65,7 +65,7 @@ def partition_advice(
 
 
 @dataclass
-class DefaultConfigParams:
+class DefaultConfig:
     codec: Any
     clevel: Any
     use_dict: Any
@@ -92,139 +92,148 @@ def default_filters():
 
 @dataclass
 class Defaults(object):
-    """Class to set and get global default values."""
-
     # Config params
-    _cparams = None
-    _codec: ia.Codecs = ia.Codecs.LZ4
-    _clevel: int = 5
-    _use_dict: bool = False
-    _filters: List[ia.Filters] = field(default_factory=default_filters)
-    _nthreads: int = 0
-    _fp_mantissa_bits: int = 0
-    _eval_method: int = ia.Eval.AUTO
-    _seed: int = None
+    _config = None
+    codec: ia.Codecs = ia.Codecs.LZ4
+    clevel: int = 5
+    use_dict: bool = False
+    filters: List[ia.Filters] = field(default_factory=default_filters)
+    nthreads: int = 0
+    fp_mantissa_bits: int = 0
+    eval_method: int = ia.Eval.AUTO
+    seed: int = None
     # Storage
     _storage = None
-    _chunkshape: Sequence = None
-    _blockshape: Sequence = None
-    _filename: str = None
-    _enforce_frame: bool = False
-    _plainbuffer: bool = False
+    chunkshape: Sequence = None
+    blockshape: Sequence = None
+    filename: str = None
+    enforce_frame: bool = False
+    plainbuffer: bool = False
 
     def __post_init__(self):
-        # Initialize cparams and storage with its getters and setters
-        self.cparams = self.cparams
+        # Initialize config and storage with its getters and setters
+        self.config = self.config
 
     # Accessors only meant to serve as default_factory
-    def codec(self):
-        return self._codec
+    def _codec(self):
+        return self.codec
 
-    def clevel(self):
-        return self._clevel
+    def _clevel(self):
+        return self.clevel
 
-    def use_dict(self):
-        return self._use_dict
+    def _use_dict(self):
+        return self.use_dict
 
-    def filters(self):
-        return self._filters
+    def _filters(self):
+        return self.filters
 
-    def nthreads(self):
-        return self._nthreads
+    def _nthreads(self):
+        return self.nthreads
 
-    def fp_mantissa_bits(self):
-        return self._fp_mantissa_bits
+    def _fp_mantissa_bits(self):
+        return self.fp_mantissa_bits
 
-    def eval_method(self):
-        return self._eval_method
+    def _eval_method(self):
+        return self.eval_method
 
-    def seed(self):
-        return self._seed
+    def _seed(self):
+        return self.seed
 
     @property
-    def cparams(self):
-        if self._cparams is None:
+    def config(self):
+        if self._config is None:
             # Bootstrap the defaults
-            return DefaultConfigParams(
-                codec=self._codec,
-                clevel=self._clevel,
-                use_dict=self._use_dict,
-                filters=self._filters,
-                nthreads=self._nthreads,
-                fp_mantissa_bits=self._fp_mantissa_bits,
-                storage=self._storage,
-                eval_method=self._eval_method,
-                seed=self._seed,
+            return DefaultConfig(
+                codec=self.codec,
+                clevel=self.clevel,
+                use_dict=self.use_dict,
+                filters=self.filters,
+                nthreads=self.nthreads,
+                fp_mantissa_bits=self.fp_mantissa_bits,
+                storage=self.storage,
+                eval_method=self.eval_method,
+                seed=self.seed,
             )
-        return self._cparams
+        return self._config
 
-    @cparams.setter
-    def cparams(self, value):
+    @config.setter
+    def config(self, value):
         if not hasattr(value, "codec"):
-            raise ValueError(f"You need to use a `ConfigParams` instance")
-        self._codec = value.codec
-        self._clevel = value.clevel
-        self._use_dict = value.use_dict
-        self._filters = value.filters
-        self._nthreads = value.nthreads
-        self._fp_mantissa_bits = value.fp_mantissa_bits
+            raise ValueError(f"You need to use a `Config` instance")
+        self.codec = value.codec
+        self.clevel = value.clevel
+        self.use_dict = value.use_dict
+        self.filters = value.filters
+        self.nthreads = value.nthreads
+        self.fp_mantissa_bits = value.fp_mantissa_bits
+        self.eval_method = value.eval_method
+        self.seed = value.seed
         self._storage = value.storage
-        self._eval_method = value.eval_method
-        self._seed = value.seed
-        self._cparams = value
+        self._config = value
         if self._storage is not None:
             self.set_storage(self._storage)
 
-    def chunkshape(self):
-        return self._chunkshape
+    def _chunkshape(self):
+        return self.chunkshape
 
-    def blockshape(self):
-        return self._blockshape
+    def _blockshape(self):
+        return self.blockshape
 
-    def filename(self):
-        return self._filename
+    def _filename(self):
+        return self.filename
 
-    def enforce_frame(self):
-        return self._enforce_frame
+    def _enforce_frame(self):
+        return self.enforce_frame
 
-    def plainbuffer(self):
-        return self._plainbuffer
+    def _plainbuffer(self):
+        return self.plainbuffer
 
     @property
     def storage(self):
         if self._storage is None:
             # Bootstrap the defaults
             return DefaultStorage(
-                chunkshape=self._chunkshape,
-                blockshape=self._blockshape,
-                filename=self._filename,
-                enforce_frame=self._enforce_frame,
-                plainbuffer=self._plainbuffer,
+                chunkshape=self.chunkshape,
+                blockshape=self.blockshape,
+                filename=self.filename,
+                enforce_frame=self.enforce_frame,
+                plainbuffer=self.plainbuffer,
             )
         return self._storage
 
     def set_storage(self, value):
         if not hasattr(value, "chunkshape"):
             raise ValueError(f"You need to use a `Storage` instance")
-        self._chunkshape = value.chunkshape
-        self._blockshape = value.blockshape
-        self._filename = value.filename
-        self._enforce_frame = value.enforce_frame
-        self._plainbuffer = value.plainbuffer
+        self.chunkshape = value.chunkshape
+        self.blockshape = value.blockshape
+        self.filename = value.filename
+        self.enforce_frame = value.enforce_frame
+        self.plainbuffer = value.plainbuffer
         self._storage = value
 
 
 # Global variable where the defaults for config params are stored
 defaults = Defaults()
+# Global config
+global_config = None
+
+
+def reset_config_defaults():
+    """Reset the defaults of the configuration parameters."""
+    global global_config
+    defaults.config = Defaults()
+    global_config = None
+    set_config()
+    return global_config
 
 
 @dataclass
 class Storage:
-    chunkshape: Union[Sequence, None] = field(default_factory=defaults.chunkshape)
-    blockshape: Union[Sequence, None] = field(default_factory=defaults.blockshape)
-    filename: str = field(default_factory=defaults.filename)
-    enforce_frame: bool = field(default_factory=defaults.enforce_frame)
-    plainbuffer: bool = field(default_factory=defaults.plainbuffer)
+    chunkshape: Union[Sequence, None] = field(default_factory=defaults._chunkshape)
+    blockshape: Union[Sequence, None] = field(default_factory=defaults._blockshape)
+    filename: str = field(default_factory=defaults._filename)
+    enforce_frame: bool = field(default_factory=defaults._enforce_frame)
+    plainbuffer: bool = field(default_factory=defaults._plainbuffer)
 
     def __post_init__(self):
         self.enforce_frame = True if self.filename else self.enforce_frame
@@ -252,23 +261,27 @@ class Storage:
 
 
 @dataclass
-class ConfigParams(ext.ConfigParams):
-    codec: ia.Codecs = field(default_factory=defaults.codec)
-    clevel: int = field(default_factory=defaults.clevel)
-    use_dict: bool = field(default_factory=defaults.use_dict)
-    filters: List[ia.Filters] = field(default_factory=defaults.filters)
-    nthreads: int = field(default_factory=defaults.nthreads)
-    fp_mantissa_bits: int = field(default_factory=defaults.fp_mantissa_bits)
+class Config(ext.Config):
+    """
+    Dataclass for hosting the different ironArray parameters.
+    """
+
+    codec: ia.Codecs = field(default_factory=defaults._codec)
+    clevel: int = field(default_factory=defaults._clevel)
+    use_dict: bool = field(default_factory=defaults._use_dict)
+    filters: List[ia.Filters] = field(default_factory=defaults._filters)
+    nthreads: int = field(default_factory=defaults._nthreads)
+    fp_mantissa_bits: int = field(default_factory=defaults._fp_mantissa_bits)
     storage: Storage = None  # delayed initialization
-    eval_method: int = field(default_factory=defaults.eval_method)
-    seed: int = field(default_factory=defaults.seed)
+    eval_method: int = field(default_factory=defaults._eval_method)
+    seed: int = field(default_factory=defaults._seed)
 
     # These belong to Storage, but we accept them in top level too
-    chunkshape: Union[Sequence, None] = field(default_factory=defaults.chunkshape)
-    blockshape: Union[Sequence, None] = field(default_factory=defaults.blockshape)
-    filename: str = field(default_factory=defaults.filename)
-    enforce_frame: bool = field(default_factory=defaults.enforce_frame)
-    plainbuffer: bool = field(default_factory=defaults.plainbuffer)
+    chunkshape: Union[Sequence, None] = field(default_factory=defaults._chunkshape)
+    blockshape: Union[Sequence, None] = field(default_factory=defaults._blockshape)
+    filename: str = field(default_factory=defaults._filename)
+    enforce_frame: bool = field(default_factory=defaults._enforce_frame)
+    plainbuffer: bool = field(default_factory=defaults._plainbuffer)
 
     def __post_init__(self):
         global RANDOM_SEED
@@ -280,7 +293,7 @@ class ConfigParams(ext.ConfigParams):
             self.nthreads = get_ncores(0)
         else:
             # If number of threads is specified, make sure that we are not exceeding
-            # the number of logical cores in the system.
+            # the number of physical cores in the system.
             self.nthreads = get_ncores(self.nthreads)
         if self.nthreads < 1:
             self.nthreads = 1
@@ -312,38 +325,75 @@ class ConfigParams(ext.ConfigParams):
             self.eval_method,
         )
 
-    def update(self, **kwargs):
-        for name, value in kwargs.items():
-            setattr(self, name, value)
+    def replace(self, **kwargs):
+        cfg_ = replace(self, **kwargs)
+        if "storage" in kwargs:
+            store = kwargs["storage"]
+            for field in fields(Storage):
+                setattr(cfg_, field.name, getattr(store, field.name))
+        store_args = dict(
+            (field.name, kwargs[field.name]) for field in fields(Storage) if field.name in kwargs
+        )
+        cfg_.storage = replace(cfg_.storage, **store_args)
+        return cfg_
 
 
-def set_config(cfg: Union[ConfigParams, None] = None, dtshape=None, **kwargs):
+def set_config(cfg: Config = None, dtshape=None, **kwargs):
+    """Set the global defaults for iarray operations.
+
+    `cfg` is a `Config` instance.  If None, sensible defaults will apply.
+    Use `get_config()` before anything so as to see which those defaults are.
+
+    `dtshape` is a `DTShape` instance.  This is not part of `Config` as such,
+    but if passed, it will be used so as to compute sensible defaults for `chunkshape`
+    and `blockshape`.  This is mainly meant for internal use.
+
+    `**kwargs` is a dictionary for setting some or all of the fields in the `Config`
+    dataclass that should be different than defaults.
+
+    Returns the new global configuration.
+    """
+    global global_config
     if cfg is None:
-        defaults.cparams = ConfigParams(**kwargs)
-    else:
-        defaults.cparams = cfg
+        if global_config is None:
+            cfg = Config()
+        else:
+            cfg = global_config
+
+    if kwargs != {}:
+        cfg = cfg.replace(**kwargs)
     if dtshape is not None:
-        defaults.cparams.storage.get_shape_advice(dtshape)
+        cfg.storage.get_shape_advice(dtshape)
 
+    global_config = cfg
+    # Set the defaults for Config() constructor and other nested configs (Storage...)
+    defaults.config = cfg
 
-def get_config():
-    return defaults.cparams
+    return global_config
 
 
 # Initialize the configuration
 set_config()
 
 
+def get_config():
+    """Get the global defaults for iarray operations.
+
+    Returns the existing global configuration.
+    """
+    return global_config
+
+
 @contextmanager
-def config(cfg: Union[ConfigParams, None] = None, dtshape=None, **kwargs):
-    """Execute a context under some configuration"""
+def config(cfg: Config = None, dtshape=None, **kwargs):
+    """Execute a context with some configuration parameters.
+
+    All parameters are and work the same than in `ia.set_config()`.
+    The only difference is that this does not set global defaults.
+    """
     if cfg is None:
-        cfg = ConfigParams(**kwargs)
-    cfg_ = replace(cfg, **kwargs)
-    store_args = dict(
-        (field.name, kwargs[field.name]) for field in fields(Storage) if field.name in kwargs
-    )
-    cfg_.storage = replace(cfg_.storage, **store_args)
+        cfg = Config()
+    cfg_ = cfg.replace(**kwargs)
     if dtshape is not None:
         cfg_.storage.get_shape_advice(dtshape)
 
@@ -351,23 +401,33 @@ def config(cfg: Union[ConfigParams, None] = None, dtshape=None, **kwargs):
 
 
 if __name__ == "__main__":
-    cfg = get_config()
-    print("Defaults:", cfg)
-    assert cfg.storage.enforce_frame == False
+    cfg_ = get_config()
+    print("Defaults:", cfg_)
+    assert cfg_.storage.enforce_frame == False
+
     set_config(storage=Storage(enforce_frame=True))
     cfg = get_config()
     print("1st form:", cfg)
     assert cfg.storage.enforce_frame == True
+
     set_config(enforce_frame=False)
     cfg = get_config()
     print("2nd form:", cfg)
     assert cfg.storage.enforce_frame == False
 
-    set_config(ConfigParams(clevel=1))
+    set_config(Config(clevel=1))
     cfg = get_config()
     print("3rd form:", cfg)
     assert cfg.clevel == 1
 
     with config(clevel=0, enforce_frame=True) as cfg_new:
-        print(cfg_new)
+        print("Context form:", cfg_new)
         assert cfg_new.storage.enforce_frame == True
+
+    cfg = ia.Config(codec=ia.Codecs.BLOSCLZ)
+    cfg2 = ia.set_config(cfg=cfg, codec=ia.Codecs.LIZARD)
+    print("Standalone config:", cfg)
+    print("Global config", cfg2)
+
+    cfg = ia.set_config(cfg_)
+    print("Defaults config:", cfg)

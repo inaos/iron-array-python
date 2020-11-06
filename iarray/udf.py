@@ -156,8 +156,7 @@ class Function(py2llvm.Function):
         return builder.load(ptr, name=name)
 
     def create_expr(self, inputs, dtshape, cfg=None, **kwargs):
-        operands = {"o" + str(i): o for i, o in enumerate(inputs)}
-        expr = ia.create_expr(self, operands, dtshape, cfg=cfg, **kwargs)
+        expr = ia.expr_from_udf(self, inputs, dtshape, cfg=cfg, **kwargs)
         return expr
 
 

@@ -13,11 +13,13 @@ NTHREADS = 8
 CLEVEL = 5
 CODEC = ia.Codecs.LZ4
 
+ia.set_config(codec=CODEC, clevel=CLEVEL, nthreads=NTHREADS)
 compressor = Blosc(cname="lz4", clevel=CLEVEL, shuffle=Blosc.SHUFFLE)
+
+dtype = np.float64
 shapes = np.logspace(6, 8, 10, dtype=np.int64)
 # chunkshape, blockshape = (100_000,), (8_000,)
 chunkshape, blockshape = None, None  # use automatic partitioning
-dtype = np.float64
 
 sexpr = "(x - 1.35) * (x - 4.45) * (x - 8.5)"
 
@@ -29,14 +31,13 @@ for i, shape in enumerate(shapes):
     shape = (shape,)
     dtshape = ia.DTShape(shape, dtype)
     print(shape, chunkshape)
-    cparams = dict(codec=CODEC, clevel=CLEVEL, nthreads=NTHREADS)
 
     storage_in = ia.Storage(chunkshape, blockshape, "iarray_infile.iarray")
-    ia.arange(dtshape, storage=storage_in, **cparams)
+    ia.arange(dtshape, storage=storage_in)
 
     t0 = time()
     data = ia.load("iarray_infile.iarray", load_in_mem=False)
-    expr = ia.create_expr(sexpr, {"x": data}, dtshape, **cparams)
+    expr = ia.expr_from_string(sexpr, {"x": data}, dtshape)
     res1 = expr.eval()
     t1 = time()
     t_iarray.append(t1 - t0)

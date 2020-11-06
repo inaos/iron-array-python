@@ -20,7 +20,7 @@ def cmp_udf_np(f, start_stop, shape, partitions, dtype, cparams):
         partitions : A tuple with the chunk and block shapes for iarrays.
                      If None, a plainbuffer is used.
         dtype      : Data type.
-        cparams    : Parameters for ironArray.
+        cparams    : Configuration parameters for ironArray.
 
     Function results must not depend on chunkshape/blockshape, otherwise the
     comparison with numpy will fail.
@@ -38,10 +38,9 @@ def cmp_udf_np(f, start_stop, shape, partitions, dtype, cparams):
     inputs = [
         ia.linspace(dtshape, start, stop, storage=storage, **cparams) for start, stop in start_stop
     ]
-    # Both functions should work, but we are encouraging the ia.create_expr one
+    # Both functions should work, but we are encouraging ia.expr_from_udf()
     # expr = f.create_expr(inputs, dtshape, storage=storage, **cparams)
-    operands = {"o" + str(i): o for i, o in enumerate(inputs)}
-    expr = ia.create_expr(f, operands, dtshape, storage=storage, **cparams)
+    expr = ia.expr_from_udf(f, inputs, dtshape, storage=storage, **cparams)
     out = expr.eval()
 
     num = functools.reduce(lambda x, y: x * y, shape)
@@ -70,9 +69,9 @@ def cmp_udf_np_strict(f, start, stop, shape, partitions, dtype, cparams):
 
     dtshape = ia.DTShape(shape, dtype)
     x = ia.linspace(dtshape, start, stop, storage=storage, **cparams)
-    # Both functions should work, but we are encouraging the ia.create_expr one
+    # Both functions should work, but we are encouraging ia.expr_from_udf()
     # expr = f.create_expr([x], dtshape, storage=storage, **cparams)
-    expr = ia.create_expr(f, [x], dtshape, storage=storage, **cparams)
+    expr = ia.expr_from_udf(f, [x], dtshape, storage=storage, **cparams)
 
     out = expr.eval()
 

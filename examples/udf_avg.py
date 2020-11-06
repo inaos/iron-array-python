@@ -26,7 +26,7 @@ def f(out: Array(float64, 1), x: Array(float64, 1)) -> int64:
     n = x.window_shape[0]
     # base = x.window_start[0]
     for i in range(n):
-        # i_abs = base + i # Absolute i(ndex) within the whole array
+        # i_abs = base + i  # Absolute i(ndex) within the whole array
         value = x[i]
         value += x[i - 1] if i > 0 else x[i]
         value += x[i + 1] if i < n - 1 else x[i]
@@ -43,7 +43,7 @@ ia.cmp_arrays(np_in, ia_in)
 
 # iarray UDF evaluation
 # expr = f.create_expr([ia_in], dtshape)
-expr = ia.create_expr(f, [ia_in], dtshape)
+expr = ia.expr_from_udf(f, [ia_in], dtshape)
 ia_out = None  # fix a warning
 t0 = time()
 for i in range(NITER):
