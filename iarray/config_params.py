@@ -23,8 +23,8 @@ RANDOM_SEED = 0
 def get_ncores(max_ncores=0):
     """Return the number of logical cores in the system.
 
-    This number is capped at `max_ncores`.  When `max_ncores` is 0,
-    there is no cap at all.
+    This number is capped at `max_ncores` or the number in the system, whatever is less.
+    When `max_ncores` is 0, the actual number in the system is returned.
     """
     ncores = ext.get_ncores(max_ncores)
     if ncores < 0:
@@ -93,6 +93,7 @@ def default_filters():
 @dataclass
 class Defaults(object):
     # Config params
+    # Keep in sync the defaults below with Config.__doc__ docstring.
     _config = None
     codec: ia.Codecs = ia.Codecs.LZ4
     clevel: int = 5
@@ -229,6 +230,34 @@ def reset_config_defaults():
 
 @dataclass
 class Storage:
+    """Dataclass for hosting the different storage properties.
+
+    All the parameters below are optional.  In case you don't specify one, a
+    sensible default (see below) is used.
+
+    Parameters
+    ----------
+    chunkshape: list, tuple
+        The chunkshape for the output array.  If None (the default), a sensible default
+        will be used based on the shape and the size of caches in the current processor.
+    blockshape: list, tuple
+        The blockshape for the output array.  If None (the default), a sensible default
+        will be used based on the shape and the size of caches in the current processor.
+    filename: str
+        The name of the file for storing the output array.  If None (the default), the
+        output array will be stored in-memory.
+    enforce_frame: bool
+        If True, the output array will be stored as a frame, even when in-memory.  The
+        default is False.  Currently persistent storage can only be in frame format, so
+        enforce_frame will be automatically set to True. When in-memory, the array can be
+        in super-chunk (sparse, the default) form or frame format (contiguous).
+    plainbuffer: bool
+        When True, the output array will be stored on a plain, contiguous buffer, without
+        any compression.  This makes faster data sharing among other data containers (i.e.
+        NumPy).  When False (the default), the output array will be stored on a Blosc
+        container, which can be compressed (the default).
+    """
+
     chunkshape: Union[Sequence, None] = field(default_factory=defaults._chunkshape)
     blockshape: Union[Sequence, None] = field(default_factory=defaults._blockshape)
     filename: str = field(default_factory=defaults._filename)
@@ -262,19 +291,54 @@ class Storage:
 
 @dataclass
 class Config(ext.Config):
-    """
-    Dataclass for hosting the different ironArray parameters.
+    """Dataclass for hosting the different ironArray parameters.
+
+    All the parameters below are optional.  In case you don't specify one, a
+    sensible default (see below) is used.
+
+    Parameters
+    ----------
+    codec: ia.Codecs
+        The codec to be used inside Blosc.  Default is ia.Codecs.LZ4.
+    clevel: int
+        The compression level.  It can have values between 0 (no compression) and
+        9 (max compression).  Default is 5.
+    filters: list
+        The list of filters for Blosc.  Default is [ia.Filters.SHUFFLE].
+    fp_mantissa_bits: int
+        The number of bits to be kept in the mantissa in output arrays.  If 0 (the default),
+        no precision is capped.  FYI, double precision have 52 bit in mantissa, whereas
+        single precision has 23 bit.  For example, if you set this to 23 for doubles,
+        you will be using a compressed storage very close as if you were using singles.
+    use_dict: bool
+        Whether Blosc should use a dictionary for enhanced compression (currently only
+        supported by `ia.Codecs.ZSTD`).  Default is False.
+    nthreads: int
+        The number of threads for internal ironArray operations.  This number can be
+        silently capped to be the number of *logical* cores in the system.  If 0
+        (the default), the number of logical cores in the system is used.
+    eval_method: ia.Eval
+        Method to evaluate expressions.  The default is `ia.Eval.AUTO`, where the
+        expression is analyzed and the more convenient method is used.
+    seed: int
+        The default seed for internal random generators.  If None (the default), a
+        seed will automatically be generated internally for you.
+    storage: ia.Storage
+        Storage instance where you can specify different properties of the output
+        storage.  See `ia.Storage` docs for details.  For convenience, you can also
+        pass all the `ia.Storage` parameters directly in this constructor too.
+
     """
 
     codec: ia.Codecs = field(default_factory=defaults._codec)
     clevel: int = field(default_factory=defaults._clevel)
-    use_dict: bool = field(default_factory=defaults._use_dict)
     filters: List[ia.Filters] = field(default_factory=defaults._filters)
-    nthreads: int = field(default_factory=defaults._nthreads)
     fp_mantissa_bits: int = field(default_factory=defaults._fp_mantissa_bits)
-    storage: Storage = None  # delayed initialization
+    use_dict: bool = field(default_factory=defaults._use_dict)
+    nthreads: int = field(default_factory=defaults._nthreads)
     eval_method: int = field(default_factory=defaults._eval_method)
     seed: int = field(default_factory=defaults._seed)
+    storage: Storage = None  # delayed initialization
 
     # These belong to Storage, but we accept them in top level too
     chunkshape: Union[Sequence, None] = field(default_factory=defaults._chunkshape)
@@ -285,19 +349,6 @@ class Config(ext.Config):
 
     def __post_init__(self):
         global RANDOM_SEED
-        if self.nthreads == 0:  # trigger automatic core detection
-            # As a general rule, it is useful to get just the physical cores.
-            # The rational is that logical cores share the L1 and L2 caches, and
-            # usually it is better to let 1 single thread to use L1 and L2
-            # simultaneously.
-            self.nthreads = get_ncores(0)
-        else:
-            # If number of threads is specified, make sure that we are not exceeding
-            # the number of physical cores in the system.
-            self.nthreads = get_ncores(self.nthreads)
-        if self.nthreads < 1:
-            self.nthreads = 1
-
         # Increase the random seed each time so as to prevent re-using them
         if self.seed is None:
             if RANDOM_SEED >= 2 ** 32 - 1:
@@ -313,6 +364,7 @@ class Config(ext.Config):
                 enforce_frame=self.enforce_frame,
                 plainbuffer=self.plainbuffer,
             )
+        self.nthreads = get_ncores(self.nthreads)
 
         # Initialize the Cython counterpart
         super().__init__(
