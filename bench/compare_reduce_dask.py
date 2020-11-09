@@ -26,9 +26,9 @@ t_iarray = []
 t_dask = []
 t_ratio = []
 
-ashape = (2000, 2000)
-achunkshape = (250, 250)
-ablockshape = (256, 256)
+ashape = (20000, 20000)
+achunkshape = (3000, 3000)
+ablockshape = (250, 250)
 
 
 cchunkshape = (250,)
