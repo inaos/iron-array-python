@@ -34,6 +34,9 @@ def get_ncores(max_ncores=0):
             UserWarning,
         )
         return 1
+    if ncores < max_ncores:
+        ncores = max_ncores
+    # print(ncores)
     return ncores
 
 
