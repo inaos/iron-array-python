@@ -51,7 +51,7 @@ nia = ia.random_normal(
     0.0000001,
     storage=astorage,
 )
-aia = (lia + nia).eval(dtshape, storage=astorage)
+aia = (lia + nia).eval(storage=astorage)
 
 cstorage = ia.Storage(cchunkshape, cblockshape)
 

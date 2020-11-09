@@ -42,8 +42,7 @@ ia.cmp_arrays(np_in, ia_in)
 # print(np_in)
 
 # iarray UDF evaluation
-# expr = f.create_expr([ia_in], dtshape)
-expr = ia.expr_from_udf(f, [ia_in], dtshape)
+expr = ia.expr_from_udf(f, [ia_in])
 ia_out = None  # fix a warning
 t0 = time()
 for i in range(NITER):

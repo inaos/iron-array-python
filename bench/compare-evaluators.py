@@ -220,9 +220,9 @@ def do_block_evaluation(plainbuffer):
     for engine in ("internal", "udf"):
         t0 = time()
         if engine == "internal":
-            expr = ia.expr_from_string(expression, {"x": xa}, dtshape)
+            expr = ia.expr_from_string(expression, {"x": xa})
         else:
-            expr = ia.expr_from_udf(poly_llvm, [xa], dtshape)
+            expr = ia.expr_from_udf(poly_llvm, [xa])
         for i in range(NITER):
             ya = expr.eval()
         avg = round((time() - t0) / NITER, 4)
@@ -234,7 +234,7 @@ def do_block_evaluation(plainbuffer):
     x = xa
     for i in range(NITER):
         ya = eval(expression, {"x": x})
-        ya = ya.eval(dtshape)
+        ya = ya.eval()
     avg = round((time() - t0) / NITER, 4)
     print(f"Block evaluate via iarray.LazyExpr.eval (engine: internal): {avg:.4f}")
     y1 = ia.iarray2numpy(ya)

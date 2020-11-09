@@ -37,7 +37,7 @@ for i, shape in enumerate(shapes):
 
     t0 = time()
     data = ia.load("iarray_infile.iarray", load_in_mem=False)
-    expr = ia.expr_from_string(sexpr, {"x": data}, dtshape)
+    expr = ia.expr_from_string(sexpr, {"x": data})
     res1 = expr.eval()
     t1 = time()
     t_iarray.append(t1 - t0)

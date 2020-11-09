@@ -124,9 +124,7 @@ def test_expression(method, shape, chunkshape, blockshape, dtype, expression):
     npy = ia.iarray2numpy(y)
 
     dtshape = ia.DTShape(shape, dtype)
-    expr = ia.expr_from_string(
-        expression, {"x": x, "y": y}, dtshape, storage=storage, eval_method=method
-    )
+    expr = ia.expr_from_string(expression, {"x": x, "y": y}, storage=storage, eval_method=method)
     iout = expr.eval()
     npout = ia.iarray2numpy(iout)
 
@@ -196,7 +194,7 @@ def test_ufuncs(ufunc, ia_expr):
         npx = ia.iarray2numpy(x)
         npy = ia.iarray2numpy(y)
 
-        expr = ia.expr_from_string(ia_expr, {"x": x, "y": y}, dtshape, storage=storage)
+        expr = ia.expr_from_string(ia_expr, {"x": x, "y": y}, storage=storage)
         iout = expr.eval()
         npout = ia.iarray2numpy(iout)
 
@@ -204,7 +202,7 @@ def test_ufuncs(ufunc, ia_expr):
 
         # Lazy expression eval
         lazy_expr = eval("ia." + ufunc, {"ia": ia, "x": x, "y": y})
-        iout2 = lazy_expr.eval(dtshape)
+        iout2 = lazy_expr.eval()
         npout2 = ia.iarray2numpy(iout2)
         np.testing.assert_almost_equal(npout, npout2, decimal=decimal)
 
@@ -217,7 +215,7 @@ def test_ufuncs(ufunc, ia_expr):
         # power(x,y) : TypeError: unsupported operand type(s) for ** or pow(): 'IArray' and 'IArray'
         if ufunc not in ("abs(x)", "ceil(x)", "floor(x)", "negative(x)", "power(x, y)"):
             lazy_expr = eval("np." + ufunc, {"np": np, "x": x, "y": y})
-            iout2 = lazy_expr.eval(dtshape)
+            iout2 = lazy_expr.eval()
             npout2 = ia.iarray2numpy(iout2)
             np.testing.assert_almost_equal(npout, npout2, decimal=decimal)
 
@@ -275,7 +273,7 @@ def test_expr_ufuncs(ufunc):
             lazy_expr = eval("1 + 2* x.%s(y)" % ufunc, {"x": x, "y": y})
         else:
             lazy_expr = eval("1 + 2 * x.%s()" % ufunc, {"x": x})
-        iout2 = lazy_expr.eval(dtshape)
+        iout2 = lazy_expr.eval()
         npout2 = ia.iarray2numpy(iout2)
 
         decimal = 6 if dtype is np.float32 else 7
@@ -319,7 +317,7 @@ def test_expr_fusion(expr):
 
         # High-level ironarray eval
         lazy_expr = eval(expr, {"x": x, "y": y, "z": z, "t": t})
-        iout2 = lazy_expr.eval(dtshape)
+        iout2 = lazy_expr.eval()
         npout2 = ia.iarray2numpy(iout2)
 
         decimal = 6 if dtype is np.float32 else 7
