@@ -9,7 +9,7 @@ import iarray as ia
 
 
 DTYPE = np.float64
-NTHREADS = 24
+NTHREADS = 8
 CLEVEL = 9
 CODEC = ia.Codecs.LZ4
 
@@ -17,13 +17,13 @@ t_iarray = []
 t_dask = []
 t_ratio = []
 
-ashape = (12547, 95630)
-achunkshape = (2000, 2000)
-ablockshape = (100, 100)
+ashape = (103, 100)
+achunkshape = (50, 50)
+ablockshape = (10, 10)
 
 
-cchunkshape = (2000,)
-cblockshape = (100,)
+cchunkshape = (50,)
+cblockshape = (10,)
 
 axis = 0
 
@@ -52,7 +52,7 @@ ccompressor = Blosc(
 cstorage = ia.Storage(None, None)
 
 
-@profile
+# @profile
 def ia_reduce(aia):
     return ia.sum(aia, axis=axis)
 
@@ -66,7 +66,7 @@ print(f"a cratio: {aia.cratio}")
 print(f"out cratio: {cia.cratio}")
 
 
-@profile
+# @profile
 def ia_reduce2(aia):
     return ia.sum2(aia, axis=axis, storage=cstorage)
 
@@ -89,7 +89,7 @@ for info, block in aia.iter_read_block(achunkshape):
 scheduler = "single-threaded" if NTHREADS == 1 else "threads"
 
 
-@profile
+# @profile
 def dask_reduce(azarr):
     with dask.config.set(scheduler=scheduler, num_workers=NTHREADS):
         ad = da.from_zarr(azarr)
@@ -121,7 +121,7 @@ np.testing.assert_allclose(np1, np2, atol=1e-14, rtol=1e-14)
 anp = ia.iarray2numpy(aia)
 
 
-@profile
+# @profile
 def np_reduce(anp):
     return np.sum(anp, axis=axis)
 

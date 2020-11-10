@@ -17,13 +17,14 @@ t_iarray = []
 t_dask = []
 t_ratio = []
 
-ashape = (12547, 95630)
-achunkshape = (2000, 2000)
-ablockshape = (100, 100)
+ashape = (103, 100)
+achunkshape = (50, 50)
+ablockshape = (10, 10)
 
 
-cchunkshape = (2000,)
-cblockshape = (100,)
+cchunkshape = (50,)
+cblockshape = (10,)
+
 
 axis = 0
 
@@ -38,12 +39,12 @@ acompressor = Blosc(
 
 ia.set_config(codec=CODEC, clevel=CLEVEL, nthreads=NTHREADS)
 
-if os.path.exists("iarray_reduce.iarray"):
+if os.path.exists("iarray_reduce.iarray-dev"):
     aia = ia.load("iarray_reduce.iarray", load_in_mem=False)
 else:
     astorage = ia.Storage(achunkshape, ablockshape, filename="iarray_reduce.iarray")
     dtshape = ia.DTShape(ashape, dtype=DTYPE)
-    lia = ia.linspace(dtshape, 0, 1, storage=astorage)
+    lia = ia.arange(dtshape, 0, np.prod(ashape), 1, storage=astorage)
     aia = lia
 
 ccompressor = Blosc(
@@ -54,7 +55,7 @@ ccompressor = Blosc(
 )
 
 
-@profile
+# @profile
 def ia_reduce(aia):
     return ia.sum(aia, axis=axis)
 
@@ -67,7 +68,7 @@ print("Time for computing reduction (via iarray): %.3f" % tia)
 print(f"a cratio: {aia.cratio}")
 print(f"out cratio: {cia.cratio}")
 
-if os.path.exists("zarr_reduce.zarr"):
+if not os.path.exists("zarr_reduce.zarr-dev"):
     azarr = zarr.open(
         "zarr_reduce.zarr",
         "w",
@@ -86,7 +87,7 @@ else:
 scheduler = "single-threaded" if NTHREADS == 1 else "threads"
 
 
-@profile
+# @profile
 def dask_reduce(azarr):
     with dask.config.set(scheduler=scheduler, num_workers=NTHREADS):
         ad = da.from_zarr(azarr)
@@ -112,13 +113,10 @@ print(f"out cratio: {czarr.nbytes / czarr.nbytes_stored}")
 np1 = ia.iarray2numpy(cia)
 np2 = np.asarray(czarr)
 
-np.testing.assert_allclose(np1, np2, atol=1e-14, rtol=1e-14)
-
-
 anp = ia.iarray2numpy(aia)
 
 
-@profile
+# @profile
 def np_reduce(anp):
     return np.sum(anp, axis=axis)
 
@@ -127,6 +125,9 @@ t0 = time()
 cia = np_reduce(anp)
 t1 = time()
 tnp = t1 - t0
+
+np.testing.assert_allclose(np1, cia, atol=1e-14, rtol=1e-14)
+
 
 print("Time for computing reduction (via numpy): %.3f" % tnp)
 print(f"Speed-up vs dask: {tzdask / tia}")
