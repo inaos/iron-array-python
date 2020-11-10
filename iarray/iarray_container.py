@@ -176,83 +176,101 @@ class IArray(ext.Container):
         return ia.LazyExpr(new_op=(self, "tanh", None))
 
 
-def abs(iarr):
+def abs(iarr: IArray):
     return iarr.abs()
 
 
-def arccos(iarr):
+def arccos(iarr: IArray):
     return iarr.arccos()
 
 
-def arcsin(iarr):
+def arcsin(iarr: IArray):
     return iarr.arcsin()
 
 
-def arctan(iarr):
+def arctan(iarr: IArray):
     return iarr.arctan()
 
 
-def arctan2(iarr1, iarr2):
+def arctan2(iarr1: IArray, iarr2: IArray):
     return iarr1.arctan2(iarr2)
 
 
-def ceil(iarr):
+def ceil(iarr: IArray):
     return iarr.ceil()
 
 
-def cos(iarr):
+def cos(iarr: IArray):
     return iarr.cos()
 
 
-def cosh(iarr):
+def cosh(iarr: IArray):
     return iarr.cosh()
 
 
-def exp(iarr):
+def exp(iarr: IArray):
     return iarr.exp()
 
 
-def floor(iarr):
+def floor(iarr: IArray):
     return iarr.floor()
 
 
-def log(iarr):
+def log(iarr: IArray):
     return iarr.log()
 
 
-def log10(iarr):
+def log10(iarr: IArray):
     return iarr.log10()
 
 
-def negative(iarr):
+def negative(iarr: IArray):
     return iarr.negative()
 
 
-def power(iarr1, iarr2):
+def power(iarr1: IArray, iarr2: IArray):
     return iarr1.power(iarr2)
 
 
-def sin(iarr):
+def sin(iarr: IArray):
     return iarr.sin()
 
 
-def sinh(iarr):
+def sinh(iarr: IArray):
     return iarr.sinh()
 
 
-def sqrt(iarr):
+def sqrt(iarr: IArray):
     return iarr.sqrt()
 
 
-def tan(iarr):
+def tan(iarr: IArray):
     return iarr.tan()
 
 
-def tanh(iarr):
+def tanh(iarr: IArray):
     return iarr.tanh()
 
 
 def matmul(a: IArray, b: IArray, cfg=None, **kwargs):
+    """Multiply two matrices.
+
+    Parameters
+    ----------
+    a : IArray
+    b : IArray
+    cfg : ia.Config
+        The configuration for running the expression.
+        If None (default), global defaults are used.
+    kwargs : dict
+        A dictionary for setting some or all of the fields in the ia.Config
+        dataclass that should override the current configuration.
+
+    Returns
+    -------
+    IArray
+        The resulting array.
+    """
     shape = (a.shape[0], b.shape[1]) if b.ndim == 2 else (a.shape[0],)
     dtshape = ia.DTShape(shape, a.dtype)
     with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
@@ -260,6 +278,23 @@ def matmul(a: IArray, b: IArray, cfg=None, **kwargs):
 
 
 def transpose(a: IArray, cfg=None, **kwargs):
+    """Transpose an array.
+
+    Parameters
+    ----------
+    a : IArray
+    cfg : ia.Config
+        The configuration for running the expression.
+        If None (default), global defaults are used.
+    kwargs : dict
+        A dictionary for setting some or all of the fields in the ia.Config
+        dataclass that should override the current configuration.
+
+    Returns
+    -------
+    IArray
+        The transposed array.
+    """
     if a.ndim != 2:
         raise AttributeError("Array dimension must be 2")
 
