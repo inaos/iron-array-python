@@ -105,7 +105,6 @@ from .high_level import (
     DTShape,
     RandomContext,
     Expr,
-    LazyExpr,
     expr_from_string,
     expr_from_udf,
     empty,
@@ -153,6 +152,10 @@ from .high_level import (
     sqrt,
     tan,
     tanh,
+)
+
+from .lazy_expr import (
+    LazyExpr,
 )
 
 # For some reason this needs to go to the end, else matmul function does not work.
