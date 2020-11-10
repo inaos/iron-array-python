@@ -99,6 +99,32 @@ from .config_params import (
     partition_advice,
 )
 
+from .iarray_container import (
+    IArray,
+    matmul,
+    transpose,
+    # ufuncs
+    abs,
+    arccos,
+    arcsin,
+    arctan,
+    arctan2,
+    ceil,
+    cos,
+    cosh,
+    exp,
+    floor,
+    log,
+    log10,
+    negative,
+    power,
+    sin,
+    sinh,
+    sqrt,
+    tan,
+    tanh,
+)
+
 from .high_level import (
     DTShape,
     RandomContext,
@@ -128,32 +154,6 @@ from .high_level import (
     random_binomial,
     random_poisson,
     random_kstest,
-)
-
-from .iarray_container import (
-    IArray,
-    matmul,
-    transpose,
-    # ufuncs
-    abs,
-    arccos,
-    arcsin,
-    arctan,
-    arctan2,
-    ceil,
-    cos,
-    cosh,
-    exp,
-    floor,
-    log,
-    log10,
-    negative,
-    power,
-    sin,
-    sinh,
-    sqrt,
-    tan,
-    tanh,
 )
 
 from .lazy_expr import (
