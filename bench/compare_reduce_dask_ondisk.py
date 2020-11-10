@@ -6,7 +6,7 @@ from numcodecs import Blosc, blosc
 import numpy as np
 import zarr
 import iarray as ia
-
+import os
 
 DTYPE = np.float64
 NTHREADS = 24
@@ -38,18 +38,13 @@ acompressor = Blosc(
 
 ia.set_config(codec=CODEC, clevel=CLEVEL, nthreads=NTHREADS)
 
-astorage = ia.Storage(achunkshape, ablockshape, filename="iarray_reduce.iarray")
-dtshape = ia.DTShape(ashape, dtype=DTYPE)
-lia = ia.linspace(dtshape, 0, 1, storage=astorage)
-
-# nia = ia.random_normal(
-#     dtshape,
-#     0,
-#     0.0000001,
-#     storage=astorage,
-# )
-# aia = (lia + nia).eval(dtshape, storage=astorage)
-aia = lia
+if os.path.exists("iarray_reduce.iarray"):
+    aia = ia.load("iarray_reduce.iarray", load_in_mem=False)
+else:
+    astorage = ia.Storage(achunkshape, ablockshape, filename="iarray_reduce.iarray")
+    dtshape = ia.DTShape(ashape, dtype=DTYPE)
+    lia = ia.linspace(dtshape, 0, 1, storage=astorage)
+    aia = lia
 
 ccompressor = Blosc(
     cname="lz4",
@@ -57,12 +52,11 @@ ccompressor = Blosc(
     shuffle=Blosc.SHUFFLE,
     blocksize=reduce(lambda x, y: x * y, cblockshape) * 8,
 )
-cstorage = ia.Storage(cchunkshape, cblockshape)
 
 
 @profile
 def ia_reduce(aia):
-    return ia.sum(aia, axis=axis, storage=cstorage)
+    return ia.sum(aia, axis=axis)
 
 
 t0 = time()
@@ -73,13 +67,20 @@ print("Time for computing reduction (via iarray): %.3f" % tia)
 print(f"a cratio: {aia.cratio}")
 print(f"out cratio: {cia.cratio}")
 
-
-azarr = zarr.open(
-    "zarr_reduce.zarr", "w", shape=ashape, chunks=achunkshape, dtype=DTYPE, compressor=acompressor
-)
-for info, block in aia.iter_read_block(achunkshape):
-    sl = tuple([slice(i, i + s) for i, s in zip(info.elemindex, info.shape)])
-    azarr[sl] = block[:]
+if os.path.exists("zarr_reduce.zarr"):
+    azarr = zarr.open(
+        "zarr_reduce.zarr",
+        "w",
+        shape=ashape,
+        chunks=achunkshape,
+        dtype=DTYPE,
+        compressor=acompressor,
+    )
+    for info, block in aia.iter_read_block(achunkshape):
+        sl = tuple([slice(i, i + s) for i, s in zip(info.elemindex, info.shape)])
+        azarr[sl] = block[:]
+else:
+    azarr = zarr.open("zarr_reduce.zarr", "r")
 
 
 scheduler = "single-threaded" if NTHREADS == 1 else "threads"
@@ -88,7 +89,7 @@ scheduler = "single-threaded" if NTHREADS == 1 else "threads"
 @profile
 def dask_reduce(azarr):
     with dask.config.set(scheduler=scheduler, num_workers=NTHREADS):
-        ad = da.from_zarr("zarr_reduce.zarr")
+        ad = da.from_zarr(azarr)
         cd = da.sum(ad, axis=axis)
         czarr = zarr.empty(
             tuple([s for i, s in enumerate(ashape) if i != axis]),

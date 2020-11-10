@@ -39,17 +39,8 @@ acompressor = Blosc(
 ia.set_config(codec=CODEC, clevel=CLEVEL, nthreads=NTHREADS)
 
 astorage = ia.Storage(achunkshape, ablockshape)
-# astorage = ia.Storage(None, None)
 dtshape = ia.DTShape(ashape, dtype=DTYPE)
 lia = ia.linspace(dtshape, 0, 1, storage=astorage)
-
-# nia = ia.random_normal(
-#     dtshape,
-#     0,
-#     0.0000001,
-#     storage=astorage,
-# )
-# aia = (lia + nia).eval(dtshape, storage=astorage)
 aia = lia
 
 ccompressor = Blosc(
@@ -63,7 +54,7 @@ cstorage = ia.Storage(None, None)
 
 @profile
 def ia_reduce(aia):
-    return ia.sum(aia, axis=axis, storage=cstorage)
+    return ia.sum(aia, axis=axis)
 
 
 t0 = time()
@@ -96,6 +87,7 @@ for info, block in aia.iter_read_block(achunkshape):
 
 
 scheduler = "single-threaded" if NTHREADS == 1 else "threads"
+
 
 @profile
 def dask_reduce(azarr):
