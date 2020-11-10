@@ -14,7 +14,6 @@ import numpy as np
 import iarray as ia
 from iarray import iarray_ext as ext
 from iarray import py2llvm
-from itertools import zip_longest
 from dataclasses import dataclass
 from typing import Sequence
 
@@ -27,10 +26,10 @@ def cmp_arrays(a, b, success=None):
 
     If success, and the string passed in `success` is not None, it is printed.
     """
-    if type(a) is ia.high_level.IArray:
+    if type(a) is ia.IArray:
         a = ia.iarray2numpy(a)
 
-    if type(b) is ia.high_level.IArray:
+    if type(b) is ia.IArray:
         b = ia.iarray2numpy(b)
 
     if a.dtype == np.float64 and b.dtype == np.float64:
@@ -70,10 +69,10 @@ class DTShape:
 
 def check_inputs(inputs: list):
     first_input = inputs[0]
-    for input in inputs[1:]:
-        if first_input.shape != input.shape:
+    for input_ in inputs[1:]:
+        if first_input.shape != input_.shape:
             raise ValueError("Inputs should have the same shape")
-        if first_input.dtype != input.dtype:
+        if first_input.dtype != input_.dtype:
             raise TypeError("Inputs should have the same dtype")
     return first_input.dtshape
 
@@ -141,168 +140,6 @@ class RandomContext(ext.RandomContext):
     def __init__(self, **kwargs):
         with ia.config(**kwargs) as cfg:
             super().__init__(cfg)
-
-
-class IArray(ext.Container):
-    """The ironArray data container.
-
-    This is not meant to be called from user space.
-    """
-
-    def copy(self, view=False, cfg=None, **kwargs):
-        """Return a copy of the array.
-
-        Parameters
-        ----------
-        view : bool
-            If True, return a view; else an actual copy.  Default is False.
-        cfg : ia.Config
-            The configuration for this operation.  If None (default), the current
-            configuration will be used.
-        kwargs : dict
-            A dictionary for setting some or all of the fields in the ia.Config
-            dataclass that should override the current configuration.
-        """
-        with ia.config(dtshape=self.dtshape, cfg=cfg, **kwargs) as cfg:
-            return ext.copy(cfg, self, view)
-
-    def __getitem__(self, key):
-        # Massage the key a bit so that it is compatible with self.shape
-        if self.ndim == 1:
-            key = [key]
-        start = [s.start if s.start is not None else 0 for s in key]
-        start = [st if st < sh else sh for st, sh in zip_longest(start, self.shape, fillvalue=0)]
-        stop = [
-            s.stop if s.stop is not None else sh
-            for s, sh in zip_longest(key, self.shape, fillvalue=slice(0))
-        ]
-        stop = [sh if st == 0 else st for st, sh in zip_longest(stop, self.shape)]
-        stop = [st if st < sh else sh for st, sh in zip_longest(stop, self.shape)]
-
-        # Check that the final size is not zero, as this is not supported yet in iArray
-        length = 1
-        for s0, s1 in zip_longest(start, stop):
-            length *= s1 - s0
-        if length < 1:
-            raise ValueError("Slices with 0 or negative dims are not supported yet")
-
-        return super().__getitem__([start, stop])
-
-    def __matmul__(self, value):
-        a = self
-        return matmul(a, value)
-
-    def __add__(self, value):
-        return ia.LazyExpr(new_op=(self, "+", value))
-
-    def __radd__(self, value):
-        return ia.LazyExpr(new_op=(value, "+", self))
-
-    def __sub__(self, value):
-        return ia.LazyExpr(new_op=(self, "-", value))
-
-    def __rsub__(self, value):
-        return ia.LazyExpr(new_op=(value, "-", self))
-
-    def __mul__(self, value):
-        return ia.LazyExpr(new_op=(self, "*", value))
-
-    def __rmul__(self, value):
-        return ia.LazyExpr(new_op=(value, "*", self))
-
-    def __truediv__(self, value):
-        return ia.LazyExpr(new_op=(self, "/", value))
-
-    def __rtruediv__(self, value):
-        return ia.LazyExpr(new_op=(value, "/", self))
-
-    # def __array_function__(self, func, types, args, kwargs):
-    #     if not all(issubclass(t, np.ndarray) for t in types):
-    #         # Defer to any non-subclasses that implement __array_function__
-    #         return NotImplemented
-    #
-    #     # Use NumPy's private implementation without __array_function__
-    #     # dispatching
-    #     return func._implementation(*args, **kwargs)
-
-    # def __array_ufunc__(self, ufunc, method, *inputs, **kwargs):
-    #     print("method:", method)
-
-    @property
-    def T(self):
-        return self.transpose()
-
-    def transpose(self, **kwargs):
-        return transpose(self, **kwargs)
-
-    def abs(self):
-        return ia.LazyExpr(new_op=(self, "abs", None))
-
-    def arccos(self):
-        return ia.LazyExpr(new_op=(self, "acos", None))
-
-    def arcsin(self):
-        return ia.LazyExpr(new_op=(self, "asin", None))
-
-    def arctan(self):
-        return ia.LazyExpr(new_op=(self, "atan", None))
-
-    def arctan2(self, op2):
-        return ia.LazyExpr(new_op=(self, "atan2", op2))
-
-    def acos(self):
-        return ia.LazyExpr(new_op=(self, "acos", None))
-
-    def asin(self):
-        return ia.LazyExpr(new_op=(self, "asin", None))
-
-    def atan(self):
-        return ia.LazyExpr(new_op=(self, "atan", None))
-
-    def atan2(self, op2):
-        return ia.LazyExpr(new_op=(self, "atan2", op2))
-
-    def ceil(self):
-        return ia.LazyExpr(new_op=(self, "ceil", None))
-
-    def cos(self):
-        return ia.LazyExpr(new_op=(self, "cos", None))
-
-    def cosh(self):
-        return ia.LazyExpr(new_op=(self, "cosh", None))
-
-    def exp(self):
-        return ia.LazyExpr(new_op=(self, "exp", None))
-
-    def floor(self):
-        return ia.LazyExpr(new_op=(self, "floor", None))
-
-    def log(self):
-        return ia.LazyExpr(new_op=(self, "log", None))
-
-    def log10(self):
-        return ia.LazyExpr(new_op=(self, "log10", None))
-
-    def negative(self):
-        return ia.LazyExpr(new_op=(self, "negate", None))
-
-    def power(self, op2):
-        return ia.LazyExpr(new_op=(self, "pow", op2))
-
-    def sin(self):
-        return ia.LazyExpr(new_op=(self, "sin", None))
-
-    def sinh(self):
-        return ia.LazyExpr(new_op=(self, "sinh", None))
-
-    def sqrt(self):
-        return ia.LazyExpr(new_op=(self, "sqrt", None))
-
-    def tan(self):
-        return ia.LazyExpr(new_op=(self, "tan", None))
-
-    def tanh(self):
-        return ia.LazyExpr(new_op=(self, "tanh", None))
 
 
 # The main expression class
@@ -467,94 +304,3 @@ def random_poisson(dtshape, lamb, cfg=None, **kwargs):
 def random_kstest(a, b, cfg=None, **kwargs):
     with ia.config(cfg=cfg, **kwargs) as cfg:
         return ext.random_kstest(cfg, a, b)
-
-
-def matmul(a, b, cfg=None, **kwargs):
-    shape = (a.shape[0], b.shape[1]) if b.ndim == 2 else (a.shape[0],)
-    dtshape = DTShape(shape, a.dtype)
-    with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
-        return ext.matmul(cfg, a, b)
-
-
-def transpose(a: IArray, cfg=None, **kwargs):
-    if a.ndim != 2:
-        raise AttributeError("Array dimension must be 2")
-
-    with ia.config(cfg=cfg, **kwargs) as cfg:
-        return ext.transpose(cfg, a)
-
-
-def abs(iarr):
-    return iarr.abs()
-
-
-def arccos(iarr):
-    return iarr.arccos()
-
-
-def arcsin(iarr):
-    return iarr.arcsin()
-
-
-def arctan(iarr):
-    return iarr.arctan()
-
-
-def arctan2(iarr1, iarr2):
-    return iarr1.arctan2(iarr2)
-
-
-def ceil(iarr):
-    return iarr.ceil()
-
-
-def cos(iarr):
-    return iarr.cos()
-
-
-def cosh(iarr):
-    return iarr.cosh()
-
-
-def exp(iarr):
-    return iarr.exp()
-
-
-def floor(iarr):
-    return iarr.floor()
-
-
-def log(iarr):
-    return iarr.log()
-
-
-def log10(iarr):
-    return iarr.log10()
-
-
-def negative(iarr):
-    return iarr.negative()
-
-
-def power(iarr1, iarr2):
-    return iarr1.power(iarr2)
-
-
-def sin(iarr):
-    return iarr.sin()
-
-
-def sinh(iarr):
-    return iarr.sinh()
-
-
-def sqrt(iarr):
-    return iarr.sqrt()
-
-
-def tan(iarr):
-    return iarr.tan()
-
-
-def tanh(iarr):
-    return iarr.tanh()

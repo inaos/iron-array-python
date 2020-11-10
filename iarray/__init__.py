@@ -99,9 +99,7 @@ from .config_params import (
     partition_advice,
 )
 
-
 from .high_level import (
-    IArray,
     DTShape,
     RandomContext,
     Expr,
@@ -118,8 +116,6 @@ from .high_level import (
     cmp_arrays,
     iarray2numpy,
     numpy2iarray,
-    matmul,
-    transpose,
     # random constructors
     random_rand,
     random_randn,
@@ -132,6 +128,12 @@ from .high_level import (
     random_binomial,
     random_poisson,
     random_kstest,
+)
+
+from .iarray_container import (
+    IArray,
+    matmul,
+    transpose,
     # ufuncs
     abs,
     arccos,
