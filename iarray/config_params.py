@@ -25,7 +25,7 @@ def get_ncores(max_ncores=0):
 
     Parameters
     ----------
-    max_ncores: int
+    max_ncores : int
         If > 0, the returned number is capped at this value.
         If == 0 (default), the actual number of logical cores in the system is returned.
 
@@ -53,17 +53,17 @@ def partition_advice(
 
     Parameters
     ----------
-    dtshape: ia.DTShape
+    dtshape : ia.DTShape
         The shape and dtype of the array.
-    min_chunksize: int
+    min_chunksize : int
         Minimum value for chunksize (in bytes).  If 0 (default), a sensible value is chosen.
-    max_chunksize: int
+    max_chunksize : int
         Maximum value for chunksize (in bytes).  If 0 (default), a sensible value is chosen.
-    min_bloksize: int
+    min_bloksize : int
         Minimum value for blocksize (in bytes).  If 0 (default), a sensible value is chosen.
-    max_bloksize: int
+    max_bloksize : int
         Maximum value for blocksize (in bytes).  If 0 (default), a sensible value is chosen.
-    cfg: ia.Config
+    cfg : ia.Config
         A configuration.  If None, the global configuration is used.
 
     Returns
@@ -259,23 +259,23 @@ class Storage:
 
     Parameters
     ----------
-    chunkshape: list, tuple
+    chunkshape : list, tuple
         The chunkshape for the output array.  If None (the default), a sensible default
         will be used based on the shape of the array and the size of caches in the current
         processor.
-    blockshape: list, tuple
+    blockshape : list, tuple
         The blockshape for the output array.  If None (the default), a sensible default
         will be used based on the shape of the array and the size of caches in the current
         processor.
-    filename: str
+    filename : str
         The name of the file for persistently storing the output array.  If None (the default),
         the output array will be stored in-memory.
-    enforce_frame: bool
+    enforce_frame : bool
         If True, the output array will be stored as a frame, even when in-memory.  If False
         (the default), the storage will be sparse.  Currently, persistent storage only supports
         the frame format. When in-memory, the array can be in sparse (the default)
         or contiguous form (frame), depending on this flag.
-    plainbuffer: bool
+    plainbuffer : bool
         When True, the output array will be stored on a plain, contiguous buffer, without
         any compression.  This can help faster data sharing among other data containers
         (e.g. NumPy).  When False (the default), the output array will be stored in a Blosc
@@ -322,32 +322,32 @@ class Config(ext.Config):
 
     Parameters
     ----------
-    codec: ia.Codecs
+    codec : ia.Codecs
         The codec to be used inside Blosc.  Default is ia.Codecs.LZ4.
-    clevel: int
+    clevel : int
         The compression level.  It can have values between 0 (no compression) and
         9 (max compression).  Default is 5.
-    filters: list
+    filters : list
         The list of filters for Blosc.  Default is [ia.Filters.SHUFFLE].
-    fp_mantissa_bits: int
+    fp_mantissa_bits : int
         The number of bits to be kept in the mantissa in output arrays.  If 0 (the default),
         no precision is capped.  FYI, double precision have 52 bit in mantissa, whereas
         single precision has 23 bit.  For example, if you set this to 23 for doubles,
         you will be using a compressed storage very close as if you were using singles.
-    use_dict: bool
+    use_dict : bool
         Whether Blosc should use a dictionary for enhanced compression (currently only
         supported by `ia.Codecs.ZSTD`).  Default is False.
-    nthreads: int
+    nthreads : int
         The number of threads for internal ironArray operations.  This number can be
         silently capped to be the number of *logical* cores in the system.  If 0
         (the default), the number of logical cores in the system is used.
-    eval_method: ia.Eval
+    eval_method : ia.Eval
         Method to evaluate expressions.  The default is `ia.Eval.AUTO`, where the
         expression is analyzed and the more convenient method is used.
-    seed: int
+    seed : int
         The default seed for internal random generators.  If None (the default), a
         seed will automatically be generated internally for you.
-    storage: ia.Storage
+    storage : ia.Storage
         Storage instance where you can specify different properties of the output
         storage.  See `ia.Storage` docs for details.  For convenience, you can also
         pass all the `ia.Storage` parameters directly in this constructor too.
@@ -423,18 +423,16 @@ def set_config(cfg: Config = None, dtshape=None, **kwargs):
 
     Parameters
     ----------
-    cfg: ia.Config
+    cfg : ia.Config
         The configuration that will become the default for iarray operations.
         If None, the defaults are not changed.
-
-    dtshape: ia.DTShape
+    dtshape : ia.DTShape
         This is not part of the global configuration as such, but if passed,
         it will be used so as to compute sensible defaults for storage properties
         like chunkshape and blockshape.  This is mainly meant for internal use.
-
-    **kwargs: dict
-        A dictionary for setting some or all of the fields in the Config
-        dataclass that should override the existing configuration.
+    kwargs : dict
+        A dictionary for setting some or all of the fields in the ia.Config
+        dataclass that should override the current configuration.
 
     Returns
     -------

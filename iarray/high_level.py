@@ -45,6 +45,16 @@ def cmp_arrays(a, b, success=None):
 
 @dataclass(frozen=True)
 class DTShape:
+    """Shape and data type dataclass.
+
+    Parameters
+    ----------
+    shape: list, tuple
+        The shape of the array.
+    dtype: np.float32, np.float64
+        The data type of the elements in the array.  The default is np.float64.
+    """
+
     shape: Sequence
     dtype: (np.float32, np.float64) = np.float64
 
@@ -71,14 +81,23 @@ def check_inputs(inputs: list):
 def expr_from_string(sexpr: str, inputs: dict, cfg: ia.Config = None, **kwargs):
     """Create an `Expr` instance from a expression in string form.
 
-    `sexpr` is the expression in string format.
+    Parameters
+    ----------
+    sexpr : str
+        An expression in string format.
+    inputs : dict
+        Map of variables in `sexpr` to actual arrays.
+    cfg : ia.Config
+        The configuration for running the expression.
+        If None (default), global defaults are used.
+    kwargs : dict
+        A dictionary for setting some or all of the fields in the ia.Config
+        dataclass that should override the current configuration.
 
-    `inputs` is a dictionary that maps variables in `expression` to actual arrays.
-
-    `cfg` is a `Config` instance.  If None, global defaults are used.
-
-    `**kwargs` can be any argument supported by the `ia.set_config()` constructor.  These will
-    be used for both the evaluation process and the resulting array.
+    Returns
+    -------
+    ia.Expr
+        An expression ready to be evaluated via `.eval()`.
     """
     dtshape = check_inputs(list(inputs.values()))
     expr = Expr(dtshape=dtshape, cfg=cfg, **kwargs)
@@ -91,14 +110,24 @@ def expr_from_string(sexpr: str, inputs: dict, cfg: ia.Config = None, **kwargs):
 def expr_from_udf(udf: py2llvm.Function, inputs: list, cfg=None, **kwargs):
     """Create an `Expr` instance from an UDF function.
 
-    `udf` is a UDF function.
+    Parameters
+    ----------
+    udf : py2llvm.Function
+        A User Defined Function.
+    inputs : list
+        List of arrays whose values are passed as arguments, after the output,
+        to the UDF function.
+    cfg : ia.Config
+        The configuration for running the expression.
+        If None (default), global defaults are used.
+    kwargs : dict
+        A dictionary for setting some or all of the fields in the ia.Config
+        dataclass that should override the current configuration.
 
-    `inputs` is the list of arrays whose values are passed as arguments to the UDF function.
-
-    `cfg` is a `Config` instance.  If None, global defaults are used.
-
-    `**kwargs` can be any argument supported by the `ia.set_config()` constructor.  These will
-    be used for both the evaluation process and the resulting array.
+    Returns
+    -------
+    ia.Expr
+        An expression ready to be evaluated via `.eval()`.
     """
     dtshape = check_inputs(inputs)
     expr = Expr(dtshape=dtshape, cfg=cfg, **kwargs)
@@ -160,6 +189,13 @@ class RandomContext(ext.RandomContext):
 
 
 class LazyExpr:
+    """Class for hosting lazy expressions.
+
+    This is not meant to be called directly from user space.
+
+    Once the lazy expression is created, it can be evaluated via `LazyExpr.eval()`.
+    """
+
     def __init__(self, new_op):
         value1, op, value2 = new_op
         if value2 is None:
@@ -263,6 +299,22 @@ class LazyExpr:
         return self.update_expr(new_op=(value, "/", self))
 
     def eval(self, cfg=None, **kwargs):
+        """Evaluate the lazy expression in self.
+
+        Parameters
+        ----------
+        cfg : ia.Config
+            The configuration for this operation.  If None (default), the current
+            configuration will be used.
+        kwargs : dict
+            A dictionary for setting some or all of the fields in the ia.Config
+            dataclass that should override the current configuration.
+
+        Returns
+        -------
+        ia.IArray
+            The output array.
+        """
         with ia.config(cfg=cfg, **kwargs) as cfg:
             expr = ia.expr_from_string(self.expression, self.operands, cfg=cfg)
             out = expr.eval()
@@ -273,9 +325,26 @@ class LazyExpr:
         return expression
 
 
-# The main IronArray container (not meant to be called from user space)
 class IArray(ext.Container):
+    """The ironArray data container.
+
+    This is not meant to be called from user space.
+    """
+
     def copy(self, view=False, cfg=None, **kwargs):
+        """Return a copy of the array.
+
+        Parameters
+        ----------
+        view : bool
+            If True, return a view; else an actual copy.  Default is False.
+        cfg : ia.Config
+            The configuration for this operation.  If None (default), the current
+            configuration will be used.
+        kwargs : dict
+            A dictionary for setting some or all of the fields in the ia.Config
+            dataclass that should override the current configuration.
+        """
         with ia.config(dtshape=self.dtshape, cfg=cfg, **kwargs) as cfg:
             return ext.copy(cfg, self, view)
 
@@ -420,11 +489,31 @@ class IArray(ext.Container):
 
 # The main expression class
 class Expr(ext.Expression):
+    """An class that is meant to hold an expression.
+
+    This is not meant to be called directly from user space.
+
+    See Also
+    --------
+    ia.expr_from_string
+    ia.expr_from_udf
+    """
+
     def __init__(self, dtshape, cfg=None, **kwargs):
         with ia.config(cfg=cfg, dtshape=dtshape, **kwargs) as cfg:
             self.cfg = cfg
             super().__init__(self.cfg)
             super().bind_out_properties(dtshape, cfg.storage)
+
+    def eval(self):
+        """Evaluate the expression in self.
+
+        Returns
+        -------
+        ia.IArray
+            The output array.
+        """
+        return super().eval()
 
 
 #
