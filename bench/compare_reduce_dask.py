@@ -9,7 +9,7 @@ import iarray as ia
 
 
 DTYPE = np.float64
-NTHREADS = 8
+NTHREADS = 24
 CLEVEL = 9
 CODEC = ia.Codecs.LZ4
 
@@ -17,12 +17,12 @@ t_iarray = []
 t_dask = []
 t_ratio = []
 
-ashape = (10000, 10000)
-achunkshape = (500, 500)
+ashape = (12547, 95630)
+achunkshape = (2000, 2000)
 ablockshape = (100, 100)
 
 
-cchunkshape = (500,)
+cchunkshape = (2000,)
 cblockshape = (100,)
 
 axis = 0
@@ -39,16 +39,18 @@ acompressor = Blosc(
 ia.set_config(codec=CODEC, clevel=CLEVEL, nthreads=NTHREADS)
 
 astorage = ia.Storage(achunkshape, ablockshape)
+# astorage = ia.Storage(None, None)
 dtshape = ia.DTShape(ashape, dtype=DTYPE)
-lia = ia.arange(dtshape, 0, np.prod(ashape), 1, storage=astorage)
+lia = ia.linspace(dtshape, 0, 1, storage=astorage)
 
-nia = ia.random_normal(
-    dtshape,
-    0,
-    0.0000001,
-    storage=astorage,
-)
-aia = (lia + nia).eval(dtshape, storage=astorage)
+# nia = ia.random_normal(
+#     dtshape,
+#     0,
+#     0.0000001,
+#     storage=astorage,
+# )
+# aia = (lia + nia).eval(dtshape, storage=astorage)
+aia = lia
 
 ccompressor = Blosc(
     cname="lz4",
@@ -56,7 +58,7 @@ ccompressor = Blosc(
     shuffle=Blosc.SHUFFLE,
     blocksize=reduce(lambda x, y: x * y, cblockshape) * 8,
 )
-cstorage = ia.Storage(cchunkshape, cblockshape)
+cstorage = ia.Storage(None, None)
 
 
 @profile
@@ -94,7 +96,6 @@ for info, block in aia.iter_read_block(achunkshape):
 
 
 scheduler = "single-threaded" if NTHREADS == 1 else "threads"
-
 
 @profile
 def dask_reduce(azarr):

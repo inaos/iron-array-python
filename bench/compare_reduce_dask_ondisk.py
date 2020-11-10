@@ -17,12 +17,12 @@ t_iarray = []
 t_dask = []
 t_ratio = []
 
-ashape = (10000, 10000)
-achunkshape = (500, 500)
+ashape = (12547, 95630)
+achunkshape = (2000, 2000)
 ablockshape = (100, 100)
 
 
-cchunkshape = (500,)
+cchunkshape = (2000,)
 cblockshape = (100,)
 
 axis = 0
@@ -88,7 +88,7 @@ scheduler = "single-threaded" if NTHREADS == 1 else "threads"
 @profile
 def dask_reduce(azarr):
     with dask.config.set(scheduler=scheduler, num_workers=NTHREADS):
-        ad = da.from_zarr(azarr)
+        ad = da.from_zarr("zarr_reduce.zarr")
         cd = da.sum(ad, axis=axis)
         czarr = zarr.empty(
             tuple([s for i, s in enumerate(ashape) if i != axis]),
