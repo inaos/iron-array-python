@@ -9,7 +9,7 @@ import iarray as ia
 
 
 DTYPE = np.float64
-NTHREADS = 8
+NTHREADS = 24
 CLEVEL = 9
 CODEC = ia.Codecs.LZ4
 
@@ -38,17 +38,18 @@ acompressor = Blosc(
 
 ia.set_config(codec=CODEC, clevel=CLEVEL, nthreads=NTHREADS)
 
-astorage = ia.Storage(achunkshape, ablockshape)
+astorage = ia.Storage(achunkshape, ablockshape, filename="iarray_reduce.iarray")
 dtshape = ia.DTShape(ashape, dtype=DTYPE)
-lia = ia.arange(dtshape, 0, np.prod(ashape), 1, storage=astorage)
+lia = ia.linspace(dtshape, 0, 1, storage=astorage)
 
-nia = ia.random_normal(
-    dtshape,
-    0,
-    0.0000001,
-    storage=astorage,
-)
-aia = (lia + nia).eval(dtshape, storage=astorage)
+# nia = ia.random_normal(
+#     dtshape,
+#     0,
+#     0.0000001,
+#     storage=astorage,
+# )
+# aia = (lia + nia).eval(dtshape, storage=astorage)
+aia = lia
 
 ccompressor = Blosc(
     cname="lz4",
@@ -73,21 +74,9 @@ print(f"a cratio: {aia.cratio}")
 print(f"out cratio: {cia.cratio}")
 
 
-@profile
-def ia_reduce2(aia):
-    return ia.sum2(aia, axis=axis, storage=cstorage)
-
-
-t0 = time()
-cia2 = ia_reduce2(aia)
-t1 = time()
-tia2 = t1 - t0
-print("Time for computing reduction2 (via iarray): %.3f" % tia2)
-print(f"a cratio: {aia.cratio}")
-print(f"out cratio: {cia2.cratio}")
-
-
-azarr = zarr.empty(shape=ashape, chunks=achunkshape, dtype=DTYPE, compressor=acompressor)
+azarr = zarr.open(
+    "zarr_reduce.zarr", "w", shape=ashape, chunks=achunkshape, dtype=DTYPE, compressor=acompressor
+)
 for info, block in aia.iter_read_block(achunkshape):
     sl = tuple([slice(i, i + s) for i, s in zip(info.elemindex, info.shape)])
     azarr[sl] = block[:]
@@ -120,7 +109,7 @@ print(f"a cratio: {azarr.nbytes / azarr.nbytes_stored}")
 print(f"out cratio: {czarr.nbytes / czarr.nbytes_stored}")
 
 np1 = ia.iarray2numpy(cia)
-np2 = ia.iarray2numpy(cia2)
+np2 = np.asarray(czarr)
 
 np.testing.assert_allclose(np1, np2, atol=1e-14, rtol=1e-14)
 

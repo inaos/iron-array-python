@@ -580,6 +580,13 @@ def reduce(a, method, axis=0, cfg=None, **kwargs):
         return ext.reduce(cfg, a, method, axis)
 
 
+def reduce2(a, method, axis=0, cfg=None, **kwargs):
+    shape = tuple([s for i, s in enumerate(a.shape) if i != axis])
+    dtshape = DTShape(shape, a.dtype)
+    with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
+        return ext.reduce2(cfg, a, method, axis)
+
+
 def max(a, axis=0, cfg=None, **kwargs):
     return reduce(a, ia.Reduce.MAX, axis, cfg, **kwargs)
 
@@ -590,6 +597,10 @@ def min(a, axis=0, cfg=None, **kwargs):
 
 def sum(a, axis=0, cfg=None, **kwargs):
     return reduce(a, ia.Reduce.SUM, axis, cfg, **kwargs)
+
+
+def sum2(a, axis=0, cfg=None, **kwargs):
+    return reduce2(a, ia.Reduce.SUM, axis, cfg, **kwargs)
 
 
 def prod(a, axis=0, cfg=None, **kwargs):
