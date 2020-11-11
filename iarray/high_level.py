@@ -136,12 +136,6 @@ def expr_from_udf(udf: py2llvm.Function, inputs: list, cfg=None, **kwargs):
     return expr
 
 
-class RandomContext(ext.RandomContext):
-    def __init__(self, **kwargs):
-        with ia.config(**kwargs) as cfg:
-            super().__init__(cfg)
-
-
 # The main expression class
 class Expr(ext.Expression):
     """An class that is meant to hold an expression.
@@ -419,58 +413,3 @@ def numpy2iarray(arr: np.ndarray, cfg: ia.Config = None, **kwargs):
     dtshape = ia.DTShape(arr.shape, dtype)
     with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
         return ext.numpy2iarray(cfg, arr, dtshape)
-
-
-def random_rand(dtshape, cfg=None, **kwargs):
-    with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
-        return ext.random_rand(cfg, dtshape)
-
-
-def random_randn(dtshape, cfg=None, **kwargs):
-    with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
-        return ext.random_randn(cfg, dtshape)
-
-
-def random_beta(dtshape, alpha, beta, cfg=None, **kwargs):
-    with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
-        return ext.random_beta(cfg, alpha, beta, dtshape)
-
-
-def random_lognormal(dtshape, mu, sigma, cfg=None, **kwargs):
-    with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
-        return ext.random_lognormal(cfg, mu, sigma, dtshape)
-
-
-def random_exponential(dtshape, beta, cfg=None, **kwargs):
-    with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
-        return ext.random_exponential(cfg, beta, dtshape)
-
-
-def random_uniform(dtshape, a, b, cfg=None, **kwargs):
-    with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
-        return ext.random_uniform(cfg, a, b, dtshape)
-
-
-def random_normal(dtshape, mu, sigma, cfg=None, **kwargs):
-    with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
-        return ext.random_normal(cfg, mu, sigma, dtshape)
-
-
-def random_bernoulli(dtshape, p, cfg=None, **kwargs):
-    with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
-        return ext.random_bernoulli(cfg, p, dtshape)
-
-
-def random_binomial(dtshape, m, p, cfg=None, **kwargs):
-    with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
-        return ext.random_binomial(cfg, m, p, dtshape)
-
-
-def random_poisson(dtshape, lamb, cfg=None, **kwargs):
-    with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
-        return ext.random_poisson(cfg, lamb, dtshape)
-
-
-def random_kstest(a, b, cfg=None, **kwargs):
-    with ia.config(cfg=cfg, **kwargs) as cfg:
-        return ext.random_kstest(cfg, a, b)

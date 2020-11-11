@@ -127,7 +127,6 @@ from .iarray_container import (
 
 from .high_level import (
     DTShape,
-    RandomContext,
     Expr,
     expr_from_string,
     expr_from_udf,
@@ -142,19 +141,10 @@ from .high_level import (
     cmp_arrays,
     iarray2numpy,
     numpy2iarray,
-    # random constructors
-    random_rand,
-    random_randn,
-    random_beta,
-    random_lognormal,
-    random_exponential,
-    random_uniform,
-    random_normal,
-    random_bernoulli,
-    random_binomial,
-    random_poisson,
-    random_kstest,
 )
+
+# random constructors (follow NumPy convention)
+from . import random
 
 from .lazy_expr import (
     LazyExpr,
