@@ -1014,10 +1014,7 @@ def reduce(cfg, a, method, axis):
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
     cdef ciarray.iarray_container_t *c
 
-    cdef ciarray.iarray_storage_t store_
-    set_storage(cfg.storage, &store_)
-
-    err = ciarray.iarray_reduce(ctx_, a_, func, axis, &store_, &c)
+    err = ciarray.iarray_reduce(ctx_, a_, func, axis, &c)
     if err != 0:
         raise AttributeError
 

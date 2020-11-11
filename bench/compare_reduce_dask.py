@@ -17,13 +17,14 @@ t_iarray = []
 t_dask = []
 t_ratio = []
 
-ashape = (103, 100)
-achunkshape = (50, 50)
-ablockshape = (10, 10)
+ashape = (34399, 42536)
+achunkshape = (2000, 2000)
+ablockshape = (100, 100)
 
 
-cchunkshape = (50,)
-cblockshape = (10,)
+cchunkshape = (2000,)
+cblockshape = (100,)
+
 
 axis = 0
 
@@ -36,12 +37,11 @@ acompressor = Blosc(
 )
 
 
-ia.set_config(codec=CODEC, clevel=CLEVEL, nthreads=NTHREADS)
+ia.set_config(codec=CODEC, clevel=CLEVEL, nthreads=NTHREADS, fp_mantissa_bits=4)
 
 astorage = ia.Storage(achunkshape, ablockshape)
 dtshape = ia.DTShape(ashape, dtype=DTYPE)
-lia = ia.linspace(dtshape, 0, 1, storage=astorage)
-aia = lia
+aia = ia.random_normal(dtshape, 0, 1, storage=astorage)
 
 ccompressor = Blosc(
     cname="lz4",
@@ -68,7 +68,7 @@ print(f"out cratio: {cia.cratio}")
 
 # @profile
 def ia_reduce2(aia):
-    return ia.sum2(aia, axis=axis, storage=cstorage)
+    return ia.sum2(aia, axis=axis)
 
 
 t0 = time()
@@ -78,7 +78,6 @@ tia2 = t1 - t0
 print("Time for computing reduction2 (via iarray): %.3f" % tia2)
 print(f"a cratio: {aia.cratio}")
 print(f"out cratio: {cia2.cratio}")
-
 
 azarr = zarr.empty(shape=ashape, chunks=achunkshape, dtype=DTYPE, compressor=acompressor)
 for info, block in aia.iter_read_block(achunkshape):
@@ -113,9 +112,9 @@ print(f"a cratio: {azarr.nbytes / azarr.nbytes_stored}")
 print(f"out cratio: {czarr.nbytes / czarr.nbytes_stored}")
 
 np1 = ia.iarray2numpy(cia)
-np2 = ia.iarray2numpy(cia2)
+np2 = np.asarray(czarr)
 
-np.testing.assert_allclose(np1, np2, atol=1e-14, rtol=1e-14)
+# np.testing.assert_allclose(np1, np2, atol=1e-14, rtol=1e-14)
 
 
 anp = ia.iarray2numpy(aia)
@@ -130,7 +129,9 @@ t0 = time()
 cia = np_reduce(anp)
 t1 = time()
 tnp = t1 - t0
-
 print("Time for computing reduction (via numpy): %.3f" % tnp)
-print(f"Speed-up vs dask: {tzdask / tia}")
-print(f"Speed-up vs numpy: {tnp / tia}")
+
+
+best_tia = tia if tia < tia2 else tia2
+print(f"Speed-up vs dask: {tzdask / best_tia}")
+print(f"Speed-up vs numpy: {tnp / best_tia}")
