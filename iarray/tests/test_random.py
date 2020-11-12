@@ -24,7 +24,7 @@ def test_rand(shape, chunkshape, blockshape, dtype, plainbuffer):
     storage = ia.Storage(chunkshape, blockshape, plainbuffer=plainbuffer)
 
     size = int(np.prod(shape))
-    a = ia.random.rand(ia.DTShape(shape, dtype), storage=storage)
+    a = ia.random.random_sample(ia.DTShape(shape, dtype), storage=storage)
     b = np.random.rand(size).reshape(shape).astype(dtype)
     c = ia.numpy2iarray(b, storage=storage)
 
@@ -47,7 +47,7 @@ def test_randn(shape, chunkshape, blockshape, dtype, plainbuffer):
     storage = ia.Storage(chunkshape, blockshape, plainbuffer=plainbuffer)
 
     size = int(np.prod(shape))
-    a = ia.random.randn(ia.DTShape(shape, dtype), storage=storage)
+    a = ia.random.standard_normal(ia.DTShape(shape, dtype), storage=storage)
     b = np.random.randn(size).reshape(shape).astype(dtype)
     c = ia.numpy2iarray(b, storage=storage)
 

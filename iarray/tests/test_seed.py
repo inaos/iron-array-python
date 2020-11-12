@@ -24,12 +24,12 @@ def test_rand(shape, chunkshape, blockshape, dtype, seed):
     else:
         storage = ia.Storage(chunkshape, blockshape)
 
-    a = ia.random.rand(ia.DTShape(shape, dtype), storage=storage, seed=seed)
-    b = ia.random.rand(ia.DTShape(shape, dtype), storage=storage, seed=seed)
+    a = ia.random.random_sample(ia.DTShape(shape, dtype), storage=storage, seed=seed)
+    b = ia.random.random_sample(ia.DTShape(shape, dtype), storage=storage, seed=seed)
     np.testing.assert_array_equal(ia.iarray2numpy(a), ia.iarray2numpy(b))
 
     # Check that the default seed is None
-    c = ia.random.rand(ia.DTShape(shape, dtype), storage=storage)
+    c = ia.random.random_sample(ia.DTShape(shape, dtype), storage=storage)
     assert np.alltrue(ia.iarray2numpy(b) != ia.iarray2numpy(c))
 
 
@@ -49,8 +49,8 @@ def test_randn(shape, chunkshape, blockshape, dtype, seed):
     else:
         storage = ia.Storage(chunkshape, blockshape)
 
-    a = ia.random.randn(ia.DTShape(shape, dtype), storage=storage, seed=seed)
-    b = ia.random.randn(ia.DTShape(shape, dtype), storage=storage, seed=seed)
+    a = ia.random.standard_normal(ia.DTShape(shape, dtype), storage=storage, seed=seed)
+    b = ia.random.standard_normal(ia.DTShape(shape, dtype), storage=storage, seed=seed)
     np.testing.assert_array_equal(ia.iarray2numpy(a), ia.iarray2numpy(b))
 
 
