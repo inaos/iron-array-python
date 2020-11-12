@@ -141,10 +141,7 @@ from .constructors import (
     full,
 )
 
-from .high_level import (
-    Expr,
-    expr_from_string,
-    expr_from_udf,
+from .utils import (
     load,
     save,
     cmp_arrays,
@@ -154,6 +151,12 @@ from .high_level import (
 
 # random constructors (follow NumPy convention)
 from . import random
+
+from .expression import (
+    Expr,
+    expr_from_string,
+    expr_from_udf,
+)
 
 from .lazy_expr import (
     LazyExpr,
