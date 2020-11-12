@@ -243,13 +243,15 @@ cdef class RandomContext:
     cdef ciarray.iarray_random_ctx_t *random_ctx
     cdef Context context
 
-    def __init__(self, ctx, seed, rng="MERSENNE_TWISTER"):
+    def __init__(self, ctx, seed, rng):
         self.context = ctx
         cdef ciarray.iarray_random_ctx_t* r_ctx
-        if rng == "MERSENNE_TWISTER":
+        if rng == ia.RandomGen.MERSENNE_TWISTER:
             ciarray.iarray_random_ctx_new(self.context.ia_ctx, seed, ciarray.IARRAY_RANDOM_RNG_MERSENNE_TWISTER, &r_ctx)
-        else:
+        elif rng == ia.RandomGen.SOBOL:
             ciarray.iarray_random_ctx_new(self.context.ia_ctx, seed, ciarray.IARRAY_RANDOM_RNG_SOBOL, &r_ctx)
+        else:
+            raise ValueError("Random generator unknown")
         self.random_ctx = r_ctx
 
     def __dealloc__(self):
@@ -695,7 +697,7 @@ def iarray2numpy(cfg, c):
 
 def random_rand(cfg, dtshape):
     ctx = Context(cfg)
-    r_ctx = RandomContext(ctx, cfg.seed)
+    r_ctx = RandomContext(ctx, cfg.seed, cfg.random_gen)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
     cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(), "iarray_random_ctx_t*")
 
@@ -716,7 +718,7 @@ def random_rand(cfg, dtshape):
 
 def random_randn(cfg, dtshape):
     ctx = Context(cfg)
-    r_ctx = RandomContext(ctx, cfg.seed)
+    r_ctx = RandomContext(ctx, cfg.seed, cfg.random_gen)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
     cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(), "iarray_random_ctx_t*")
 
@@ -737,7 +739,7 @@ def random_randn(cfg, dtshape):
 
 def random_beta(cfg, alpha, beta, dtshape):
     ctx = Context(cfg)
-    r_ctx = RandomContext(ctx, cfg.seed)
+    r_ctx = RandomContext(ctx, cfg.seed, cfg.random_gen)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
     cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(), "iarray_random_ctx_t*")
 
@@ -765,7 +767,7 @@ def random_beta(cfg, alpha, beta, dtshape):
 
 def random_lognormal(cfg, mu, sigma, dtshape):
     ctx = Context(cfg)
-    r_ctx = RandomContext(ctx, cfg.seed)
+    r_ctx = RandomContext(ctx, cfg.seed, cfg.random_gen)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
     cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(), "iarray_random_ctx_t*")
 
@@ -793,7 +795,7 @@ def random_lognormal(cfg, mu, sigma, dtshape):
 
 def random_exponential(cfg, beta, dtshape):
     ctx = Context(cfg)
-    r_ctx = RandomContext(ctx, cfg.seed)
+    r_ctx = RandomContext(ctx, cfg.seed, cfg.random_gen)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
     cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(), "iarray_random_ctx_t*")
 
@@ -819,7 +821,7 @@ def random_exponential(cfg, beta, dtshape):
 
 def random_uniform(cfg, a, b, dtshape):
     ctx = Context(cfg)
-    r_ctx = RandomContext(ctx, cfg.seed)
+    r_ctx = RandomContext(ctx, cfg.seed, cfg.random_gen)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
     cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(), "iarray_random_ctx_t*")
 
@@ -847,7 +849,7 @@ def random_uniform(cfg, a, b, dtshape):
 
 def random_normal(cfg, mu, sigma, dtshape):
     ctx = Context(cfg)
-    r_ctx = RandomContext(ctx, cfg.seed)
+    r_ctx = RandomContext(ctx, cfg.seed, cfg.random_gen)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
     cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(), "iarray_random_ctx_t*")
 
@@ -875,7 +877,7 @@ def random_normal(cfg, mu, sigma, dtshape):
 
 def random_bernoulli(cfg, p, dtshape):
     ctx = Context(cfg)
-    r_ctx = RandomContext(ctx, cfg.seed)
+    r_ctx = RandomContext(ctx, cfg.seed, cfg.random_gen)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
     cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(), "iarray_random_ctx_t*")
 
@@ -901,7 +903,7 @@ def random_bernoulli(cfg, p, dtshape):
 
 def random_binomial(cfg, m, p, dtshape):
     ctx = Context(cfg)
-    r_ctx = RandomContext(ctx, cfg.seed)
+    r_ctx = RandomContext(ctx, cfg.seed, cfg.random_gen)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
     cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(), "iarray_random_ctx_t*")
 
@@ -929,7 +931,7 @@ def random_binomial(cfg, m, p, dtshape):
 
 def random_poisson(cfg, l, dtshape):
     ctx = Context(cfg)
-    r_ctx = RandomContext(ctx, cfg.seed)
+    r_ctx = RandomContext(ctx, cfg.seed, cfg.random_gen)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
     cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(), "iarray_random_ctx_t*")
 

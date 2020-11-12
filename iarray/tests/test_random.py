@@ -208,7 +208,9 @@ def test_binomial(n, p, shape, chunkshape, blockshape, dtype, plainbuffer):
     storage = ia.Storage(chunkshape, blockshape, plainbuffer=plainbuffer)
 
     size = int(np.prod(shape))
-    a = ia.random.binomial(ia.DTShape(shape, dtype), n, p, storage=storage)
+    a = ia.random.binomial(
+        ia.DTShape(shape, dtype), n, p, storage=storage, random_gen=ia.RandomGen.MERSENNE_TWISTER
+    )
     b = np.random.binomial(n, p, size).reshape(shape).astype(dtype)
     c = ia.numpy2iarray(b, storage=storage)
 
@@ -231,7 +233,9 @@ def test_poisson(lamb, shape, chunkshape, blockshape, dtype, plainbuffer):
     storage = ia.Storage(chunkshape, blockshape, plainbuffer=plainbuffer)
 
     size = int(np.prod(shape))
-    a = ia.random.poisson(ia.DTShape(shape, dtype), lamb, storage=storage)
+    a = ia.random.poisson(
+        ia.DTShape(shape, dtype), lamb, storage=storage, random_gen=ia.RandomGen.SOBOL
+    )
     b = np.random.poisson(lamb, size).reshape(shape).astype(dtype)
     c = ia.numpy2iarray(b, storage=storage)
 

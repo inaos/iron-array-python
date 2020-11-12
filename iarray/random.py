@@ -13,12 +13,6 @@ import iarray as ia
 from iarray import iarray_ext as ext
 
 
-class RandomContext(ext.RandomContext):
-    def __init__(self, **kwargs):
-        with ia.config(**kwargs) as cfg:
-            super().__init__(cfg)
-
-
 def rand(dtshape, cfg=None, **kwargs):
     with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
         return ext.random_rand(cfg, dtshape)

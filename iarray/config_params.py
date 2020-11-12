@@ -97,6 +97,7 @@ class DefaultConfig:
     storage: Any
     eval_method: Any
     seed: Any
+    random_gen: Any
 
 
 @dataclass
@@ -125,6 +126,7 @@ class Defaults(object):
     fp_mantissa_bits: int = 0
     eval_method: int = ia.Eval.AUTO
     seed: int = None
+    random_gen: ia.RandomGen = ia.RandomGen.MERSENNE_TWISTER
     # Storage
     _storage = None
     chunkshape: Sequence = None
@@ -162,6 +164,9 @@ class Defaults(object):
     def _seed(self):
         return self.seed
 
+    def _random_gen(self):
+        return self.random_gen
+
     @property
     def config(self):
         if self._config is None:
@@ -176,6 +181,7 @@ class Defaults(object):
                 storage=self.storage,
                 eval_method=self.eval_method,
                 seed=self.seed,
+                random_gen=self.random_gen,
             )
         return self._config
 
@@ -191,6 +197,7 @@ class Defaults(object):
         self.fp_mantissa_bits = value.fp_mantissa_bits
         self.eval_method = value.eval_method
         self.seed = value.seed
+        self.random_gen = value.random_gen
         self._storage = value.storage
         self._config = value
         if self._storage is not None:
@@ -347,6 +354,8 @@ class Config(ext.Config):
     seed : int
         The default seed for internal random generators.  If None (the default), a
         seed will automatically be generated internally for you.
+    random_gen : ia.RandomGen
+        The random generator to be used.  The default is ia.RandomGen.MERSENNE_TWISTER.
     storage : ia.Storage
         Storage instance where you can specify different properties of the output
         storage.  See `ia.Storage` docs for details.  For convenience, you can also
@@ -366,6 +375,7 @@ class Config(ext.Config):
     nthreads: int = field(default_factory=defaults._nthreads)
     eval_method: int = field(default_factory=defaults._eval_method)
     seed: int = field(default_factory=defaults._seed)
+    random_gen: ia.RandomGen = field(default_factory=defaults._random_gen)
     storage: Storage = None  # delayed initialization
 
     # These belong to Storage, but we accept them in top level too

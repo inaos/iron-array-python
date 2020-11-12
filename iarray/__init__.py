@@ -55,6 +55,12 @@ class Filters(Enum):
     TRUNC_PREC = 8
 
 
+# Random generators
+class RandomGen(Enum):
+    MERSENNE_TWISTER = 0
+    SOBOL = 1
+
+
 # Eval method
 class Eval(Enum):
     AUTO = auto()
