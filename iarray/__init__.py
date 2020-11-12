@@ -131,17 +131,20 @@ from .iarray_container import (
     tanh,
 )
 
-from .high_level import (
+from .constructors import (
     DTShape,
-    Expr,
-    expr_from_string,
-    expr_from_udf,
     empty,
     arange,
     linspace,
     zeros,
     ones,
     full,
+)
+
+from .high_level import (
+    Expr,
+    expr_from_string,
+    expr_from_udf,
     load,
     save,
     cmp_arrays,
