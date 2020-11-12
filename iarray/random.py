@@ -23,15 +23,12 @@ def random_sample(dtshape: ia.DTShape, cfg: ia.Config = None, **kwargs):
     dtshape : ia.DTShape
         The shape and data type of the array to be created.
     cfg : ia.Config
-        The configuration for running the expression.
-        If None (default), global defaults are used.
-        In particular, `cfg.seed` and `cfg.random_gen` are honored
-        in this context.
+        The configuration for running the expression. If None (default), global defaults are used.
+        In particular, `cfg.seed` and `cfg.random_gen` are honored in this context.
     kwargs : dict
-        A dictionary for setting some or all of the fields in the ia.Config
-        dataclass that should override the current configuration.
-        In particular, `seed=` and `random_gen=` arguments are honored
-        in this context.
+        A dictionary for setting some or all of the fields in the ia.Config dataclass that should
+        override the current configuration.
+        In particular, `seed=` and `random_gen=` arguments are honored in this context.
 
     Returns
     -------
@@ -49,7 +46,12 @@ def random_sample(dtshape: ia.DTShape, cfg: ia.Config = None, **kwargs):
 def standard_normal(dtshape: ia.DTShape, cfg: ia.Config = None, **kwargs):
     """Draw samples from a standard Normal distribution (mean=0, stdev=1).
 
-    The `dtshape`, `cfg` and `kwargs` parameters are the same than in ia.random.random_sample.
+    The `cfg` and `kwargs` parameters are the same than in ia.random.random_sample.
+
+    Parameters
+    ----------
+    dtshape : ia.DTShape
+        The shape and data type of the array to be created.
 
     Returns
     -------
@@ -68,10 +70,12 @@ def standard_normal(dtshape: ia.DTShape, cfg: ia.Config = None, **kwargs):
 def beta(dtshape: ia.DTShape, alpha: float, beta: float, cfg: ia.Config = None, **kwargs):
     """Draw samples from a Beta distribution.
 
-    The `dtshape`, `cfg` and `kwargs` parameters are the same than in ia.random.random_sample.
+    The `cfg` and `kwargs` parameters are the same than in ia.random.random_sample.
 
     Parameters
     ----------
+    dtshape : ia.DTShape
+        The shape and data type of the array to be created.
     alpha : float
         Alpha, positive (>0).
     beta : float
@@ -96,10 +100,12 @@ def lognormal(
 ):
     """Draw samples from a log-normal distribution.
 
-    The `dtshape`, `cfg` and `kwargs` parameters are the same than in ia.random.random_sample.
+    The `cfg` and `kwargs` parameters are the same than in ia.random.random_sample.
 
     Parameters
     ----------
+    dtshape : ia.DTShape
+        The shape and data type of the array to be created.
     mean : float or array_like of floats, optional
         Mean value of the underlying normal distribution. Default is 0.
     sigma : float or array_like of floats, optional
@@ -123,10 +129,12 @@ def lognormal(
 def exponential(dtshape: ia.DTShape, scale: float = 1.0, cfg: ia.Config = None, **kwargs):
     """Draw samples from an exponential distribution.
 
-    The `dtshape`, `cfg` and `kwargs` parameters are the same than in ia.random.random_sample.
+    The `cfg` and `kwargs` parameters are the same than in ia.random.random_sample.
 
     Parameters
     ----------
+    dtshape : ia.DTShape
+        The shape and data type of the array to be created.
     scale : float
         The scale parameter, :math:`\\beta = 1/\\lambda`. Must be
         non-negative.
@@ -150,10 +158,12 @@ def uniform(
 ):
     """Draw samples from a uniform distribution.
 
-    The `dtshape`, `cfg` and `kwargs` parameters are the same than in ia.random.random_sample.
+    The `cfg` and `kwargs` parameters are the same than in ia.random.random_sample.
 
     Parameters
     ----------
+    dtshape : ia.DTShape
+        The shape and data type of the array to be created.
     low : float
         Lower boundary of the output interval.  All values generated will be
         greater than or equal to low.  The default value is 0.
@@ -178,10 +188,12 @@ def uniform(
 def normal(dtshape: ia.DTShape, loc: float, scale: float, cfg: ia.Config = None, **kwargs):
     """Draw random samples from a normal (Gaussian) distribution.
 
-    The `dtshape`, `cfg` and `kwargs` parameters are the same than in ia.random.random_sample.
+    The `cfg` and `kwargs` parameters are the same than in ia.random.random_sample.
 
     Parameters
     ----------
+    dtshape : ia.DTShape
+        The shape and data type of the array to be created.
     loc : float
         Mean ("centre") of the distribution.
     scale : float
@@ -208,10 +220,12 @@ def bernoulli(dtshape: ia.DTShape, p: float, cfg: ia.Config = None, **kwargs):
     The Bernoulli distribution is a special case of the binomial distribution where a
     single trial is conducted (so n would be 1 for such a binomial distribution).
 
-    The `dtshape`, `cfg` and `kwargs` parameters are the same than in ia.random.random_sample.
+    The `cfg` and `kwargs` parameters are the same than in ia.random.random_sample.
 
     Parameters
     ----------
+    dtshape : ia.DTShape
+        The shape and data type of the array to be created.
     p : float
         Parameter of the distribution, >= 0 and <=1.
 
@@ -232,10 +246,12 @@ def bernoulli(dtshape: ia.DTShape, p: float, cfg: ia.Config = None, **kwargs):
 def binomial(dtshape: ia.DTShape, n: float, p: float, cfg: ia.Config = None, **kwargs):
     """Draw samples from a binomial distribution.
 
-    The `dtshape`, `cfg` and `kwargs` parameters are the same than in ia.random.random_sample.
+    The `cfg` and `kwargs` parameters are the same than in ia.random.random_sample.
 
     Parameters
     ----------
+    dtshape : ia.DTShape
+        The shape and data type of the array to be created.
     n : int or array_like of ints
         Parameter of the distribution, >= 0. Floats are also accepted,
         but they will be truncated to integers.
@@ -259,10 +275,12 @@ def binomial(dtshape: ia.DTShape, n: float, p: float, cfg: ia.Config = None, **k
 def poisson(dtshape: ia.DTShape, lam: float, cfg: ia.Config = None, **kwargs):
     """Draw samples from a Poisson distribution.
 
-    The `dtshape`, `cfg` and `kwargs` parameters are the same than in ia.random.random_sample.
+    The `cfg` and `kwargs` parameters are the same than in ia.random.random_sample.
 
     Parameters
     ----------
+    dtshape : ia.DTShape
+        The shape and data type of the array to be created.
     lam : float
         Expectation of interval, must be >= 0.
 
@@ -285,7 +303,7 @@ def kstest(a: ia.IArray, b: ia.IArray, cfg: ia.Config = None, **kwargs):
 
     This is mainly used for testing purposes.
 
-    The `dtshape`, `cfg` and `kwargs` parameters are the same than in ia.random.random_sample.
+    The `cfg` and `kwargs` parameters are the same than in ia.random.random_sample.
 
     Parameters
     ----------
