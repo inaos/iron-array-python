@@ -15,7 +15,7 @@ params_data = [
 def test_max(shape, chunkshape, blockshape, axis, dtype):
 
     storage = ia.Storage(chunkshape, blockshape)
-    a1 = ia.linspace(ia.DTShape(shape, dtype), -10, 10, storage=storage)
+    a1 = ia.arange(ia.DTShape(shape, dtype), storage=storage)
     a2 = ia.iarray2numpy(a1)
 
     b1 = ia.max(a1, axis=axis)
@@ -77,20 +77,6 @@ def test_mean(shape, chunkshape, blockshape, axis, dtype):
 
     b1 = ia.mean(a1, axis=axis)
     b2 = np.mean(a2, axis=axis)
-
-    rtol = 1e-6 if dtype == np.float32 else 1e-14
-
-    np.testing.assert_allclose(ia.iarray2numpy(b1), b2, rtol=rtol)
-
-
-@pytest.mark.parametrize(params_names, params_data)
-def test_std(shape, chunkshape, blockshape, axis, dtype):
-    storage = ia.Storage(chunkshape, blockshape)
-    a1 = ia.linspace(ia.DTShape(shape, dtype), -10, 10, storage=storage)
-    a2 = ia.iarray2numpy(a1)
-
-    b1 = ia.std(a1, axis=axis)
-    b2 = np.std(a2, axis=axis)
 
     rtol = 1e-6 if dtype == np.float32 else 1e-14
 

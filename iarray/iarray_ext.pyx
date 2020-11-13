@@ -1003,7 +1003,6 @@ reduce_to_c = {
     ia.Reduce.SUM: ciarray.IARRAY_REDUCE_SUM,
     ia.Reduce.PROD: ciarray.IARRAY_REDUCE_PROD,
     ia.Reduce.MEAN: ciarray.IARRAY_REDUCE_MEAN,
-    ia.Reduce.STD: ciarray.IARRAY_REDUCE_STD,
           }
 
 def reduce(cfg, a, method, axis):
@@ -1021,21 +1020,6 @@ def reduce(cfg, a, method, axis):
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     return ia.IArray(ctx, c_c)
 
-
-def reduce2(cfg, a, method, axis):
-    ctx = Context(cfg)
-
-    cdef ciarray.iarray_reduce_func_t func = reduce_to_c[method]
-    cdef ciarray.iarray_container_t *a_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(a.to_capsule(), "iarray_container_t*")
-    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
-    cdef ciarray.iarray_container_t *c
-
-    err = ciarray.iarray_reduce2(ctx_, a_, func, axis, &c)
-    if err != 0:
-        raise AttributeError
-
-    c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
-    return ia.IArray(ctx, c_c)
 
 
 def get_ncores(max_ncores):

@@ -68,7 +68,6 @@ class Reduce(Enum):
     SUM = 2
     PROD = 3
     MEAN = 4
-    STD = 5
 
 
 # List of all know universal functions
@@ -136,8 +135,6 @@ from .high_level import (
     sum,
     prod,
     mean,
-    std,
-    sum2,
     # random constructors
     random_rand,
     random_randn,

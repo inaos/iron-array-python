@@ -299,8 +299,7 @@ cdef extern from "libiarray/iarray.h":
         IARRAY_REDUCE_MIN,
         IARRAY_REDUCE_SUM,
         IARRAY_REDUCE_PROD,
-        IARRAY_REDUCE_MEAN,
-        IARRAY_REDUCE_STD
+        IARRAY_REDUCE_MEAN
 
     ina_rc_t iarray_reduce(iarray_context_t *ctx,
                            iarray_container_t *a,
@@ -308,11 +307,6 @@ cdef extern from "libiarray/iarray.h":
                            int8_t axis,
                            iarray_container_t **b);
 
-    ina_rc_t iarray_reduce2(iarray_context_t *ctx,
-                           iarray_container_t *a,
-                           iarray_reduce_func_t func,
-                           int8_t axis,
-                           iarray_container_t **b);
 
     # Iterators
 
