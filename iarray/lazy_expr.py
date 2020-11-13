@@ -62,7 +62,7 @@ class LazyExpr:
 
     This is not meant to be called directly from user space.
 
-    Once the lazy expression is created, it can be evaluated via `LazyExpr.eval()`.
+    Once the lazy expression is created, it can be evaluated via :func:`LazyExpr.eval`.
     """
 
     def __init__(self, new_op):
@@ -167,7 +167,7 @@ class LazyExpr:
     def __rtruediv__(self, value):
         return self.update_expr(new_op=(value, "/", self))
 
-    def eval(self, cfg=None, **kwargs):
+    def eval(self, cfg: ia.Config = None, **kwargs) -> ia.IArray:
         """Evaluate the lazy expression in self.
 
         Parameters
@@ -181,7 +181,7 @@ class LazyExpr:
 
         Returns
         -------
-        ia.IArray
+        IArray
             The output array.
         """
         with ia.config(cfg=cfg, **kwargs) as cfg:

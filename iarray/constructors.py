@@ -36,7 +36,7 @@ class DTShape:
             raise ValueError("shape must be non-empty")
 
 
-def empty(dtshape: DTShape, cfg: ia.Config = None, **kwargs):
+def empty(dtshape: DTShape, cfg: ia.Config = None, **kwargs) -> ia.IArray:
     """Return an empty array.
 
     An empty array has no data and needs to be filled via a write iterator.
@@ -45,41 +45,43 @@ def empty(dtshape: DTShape, cfg: ia.Config = None, **kwargs):
     ----------
     dtshape : DTShape
         The shape and data type of the array to be created.
-    cfg : ia.Config
+    cfg : Config
         The configuration for running the expression.
         If None (default), global defaults are used.
     kwargs : dict
-        A dictionary for setting some or all of the fields in the ia.Config
+        A dictionary for setting some or all of the fields in the Config
         dataclass that should override the current configuration.
 
     Returns
     -------
-    ia.IArray
+    IArray
         The new array.
 
     See Also
     --------
-    ia.IArray.iter_write_block : Iterator for filling an empty array.
+    IArray.iter_write_block : Iterator for filling an empty array.
     """
     with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
         return ext.empty(cfg, dtshape)
 
 
-def arange(dtshape: DTShape, start=None, stop=None, step=None, cfg: ia.Config = None, **kwargs):
+def arange(
+    dtshape: DTShape, start=None, stop=None, step=None, cfg: ia.Config = None, **kwargs
+) -> ia.IArray:
     """Return evenly spaced values within a given interval.
 
-    `dtshape`, `cfg` and `kwargs` are the same than for ia.empty.
+    `dtshape`, `cfg` and `kwargs` are the same than for :func:`empty`.
 
     `start`, `stop`, `step` are the same as in np.arange.
 
     Returns
     -------
-    ia.IArray
+    IArray
         The new array.
 
     See Also
     --------
-    ia.empty : Create an empty array.
+    empty : Create an empty array.
     """
     if (start, stop, step) == (None, None, None):
         stop = np.prod(dtshape.shape)
@@ -102,78 +104,80 @@ def arange(dtshape: DTShape, start=None, stop=None, step=None, cfg: ia.Config = 
         return ext.arange(cfg, slice_, dtshape)
 
 
-def linspace(dtshape: DTShape, start: float, stop: float, cfg: ia.Config = None, **kwargs):
+def linspace(
+    dtshape: DTShape, start: float, stop: float, cfg: ia.Config = None, **kwargs
+) -> ia.IArray:
     """Return evenly spaced numbers over a specified interval.
 
-    `dtshape`, `cfg` and `kwargs` are the same than for ia.empty.
+    `dtshape`, `cfg` and `kwargs` are the same than for :func:`empty`.
 
     `start`, `stop` are the same as in np.linspace.
 
     Returns
     -------
-    ia.IArray
+    IArray
         The new array.
 
     See Also
     --------
-    ia.empty : Create an empty array.
+    empty : Create an empty array.
     """
     with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
         return ext.linspace(cfg, start, stop, dtshape)
 
 
-def zeros(dtshape: DTShape, cfg: ia.Config = None, **kwargs):
+def zeros(dtshape: DTShape, cfg: ia.Config = None, **kwargs) -> ia.IArray:
     """Return a new array of given shape and type, filled with zeros.
 
-    `dtshape`, `cfg` and `kwargs` are the same than for ia.empty.
+    `dtshape`, `cfg` and `kwargs` are the same than for :func:`empty`.
 
     Returns
     -------
-    ia.IArray
+    IArray
         The new array.
 
     See Also
     --------
-    ia.empty : Create an empty array.
-    ia.ones : Create an array filled with ones.
+    empty : Create an empty array.
+    ones : Create an array filled with ones.
     """
     with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
         return ext.zeros(cfg, dtshape)
 
 
-def ones(dtshape: DTShape, cfg: ia.Config = None, **kwargs):
+def ones(dtshape: DTShape, cfg: ia.Config = None, **kwargs) -> ia.IArray:
     """Return a new array of given shape and type, filled with ones.
 
-    `dtshape`, `cfg` and `kwargs` are the same than for ia.empty.
+    `dtshape`, `cfg` and `kwargs` are the same than for :func:`empty`.
 
     Returns
     -------
-    ia.IArray
+    IArray
         The new array.
 
     See Also
     --------
-    ia.empty : Create an empty array.
-    ia.zeros : Create an array filled with zeros.
+    empty : Create an empty array.
+    zeros : Create an array filled with zeros.
     """
     with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
         return ext.ones(cfg, dtshape)
 
 
-def full(dtshape: DTShape, fill_value: float, cfg: ia.Config = None, **kwargs):
+def full(dtshape: DTShape, fill_value: float, cfg: ia.Config = None, **kwargs) -> ia.IArray:
     """Return a new array of given shape and type, filled with `fill_value`.
 
-    `dtshape`, `cfg` and `kwargs` are the same than for ia.empty.
+    `dtshape`, `cfg` and `kwargs` are the same than for :func:`empty`.
 
     Returns
     -------
-    ia.IArray
+    IArray
         The new array.
 
     See Also
     --------
-    ia.empty : Create an empty array.
-    ia.zeros : Create an array filled with zeros.
+    empty : Create an empty array.
+    zeros : Create an array filled with zeros.
     """
     with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
         return ext.full(cfg, fill_value, dtshape)

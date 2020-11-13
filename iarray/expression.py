@@ -22,8 +22,8 @@ class Expr(ext.Expression):
 
     See Also
     --------
-    ia.expr_from_string
-    ia.expr_from_udf
+    expr_from_string
+    expr_from_udf
     """
 
     def __init__(self, dtshape, cfg=None, **kwargs):
@@ -32,12 +32,12 @@ class Expr(ext.Expression):
             super().__init__(self.cfg)
             super().bind_out_properties(dtshape, cfg.storage)
 
-    def eval(self):
+    def eval(self) -> ia.IArray:
         """Evaluate the expression in self.
 
         Returns
         -------
-        ia.IArray
+        IArray
             The output array.
         """
         return super().eval()
@@ -53,7 +53,7 @@ def check_inputs(inputs: list):
     return first_input.dtshape
 
 
-def expr_from_string(sexpr: str, inputs: dict, cfg: ia.Config = None, **kwargs):
+def expr_from_string(sexpr: str, inputs: dict, cfg: ia.Config = None, **kwargs) -> Expr:
     """Create an `Expr` instance from a expression in string form.
 
     Parameters
@@ -62,17 +62,17 @@ def expr_from_string(sexpr: str, inputs: dict, cfg: ia.Config = None, **kwargs):
         An expression in string format.
     inputs : dict
         Map of variables in `sexpr` to actual arrays.
-    cfg : ia.Config
+    cfg : Config
         The configuration for running the expression.
         If None (default), global defaults are used.
     kwargs : dict
-        A dictionary for setting some or all of the fields in the ia.Config
+        A dictionary for setting some or all of the fields in the Config
         dataclass that should override the current configuration.
 
     Returns
     -------
-    ia.Expr
-        An expression ready to be evaluated via `.eval()`.
+    Expr
+        An expression ready to be evaluated via :func:`Expr.eval`.
     """
     dtshape = check_inputs(list(inputs.values()))
     expr = Expr(dtshape=dtshape, cfg=cfg, **kwargs)
@@ -82,7 +82,7 @@ def expr_from_string(sexpr: str, inputs: dict, cfg: ia.Config = None, **kwargs):
     return expr
 
 
-def expr_from_udf(udf: py2llvm.Function, inputs: list, cfg=None, **kwargs):
+def expr_from_udf(udf: py2llvm.Function, inputs: list, cfg=None, **kwargs) -> Expr:
     """Create an `Expr` instance from an UDF function.
 
     Parameters
@@ -92,17 +92,17 @@ def expr_from_udf(udf: py2llvm.Function, inputs: list, cfg=None, **kwargs):
     inputs : list
         List of arrays whose values are passed as arguments, after the output,
         to the UDF function.
-    cfg : ia.Config
+    cfg : Config
         The configuration for running the expression.
         If None (default), global defaults are used.
     kwargs : dict
-        A dictionary for setting some or all of the fields in the ia.Config
+        A dictionary for setting some or all of the fields in the Config
         dataclass that should override the current configuration.
 
     Returns
     -------
-    ia.Expr
-        An expression ready to be evaluated via `.eval()`.
+    Expr
+        An expression ready to be evaluated via :func:`Expr.eval`.
     """
     dtshape = check_inputs(inputs)
     expr = Expr(dtshape=dtshape, cfg=cfg, **kwargs)

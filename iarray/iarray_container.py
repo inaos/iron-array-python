@@ -27,11 +27,11 @@ class IArray(ext.Container):
         ----------
         view : bool
             If True, return a view; else an actual copy.  Default is False.
-        cfg : ia.Config
+        cfg : Config
             The configuration for this operation.  If None (default), the current
             configuration will be used.
         kwargs : dict
-            A dictionary for setting some or all of the fields in the ia.Config
+            A dictionary for setting some or all of the fields in the Config
             dataclass that should override the current configuration.
         """
         with ia.config(dtshape=self.dtshape, cfg=cfg, **kwargs) as cfg:
@@ -258,18 +258,21 @@ def matmul(a: IArray, b: IArray, cfg=None, **kwargs):
     Parameters
     ----------
     a : IArray
+        First array.
     b : IArray
-    cfg : ia.Config
+        Second array.
+    cfg : Config
         The configuration for running the expression.
         If None (default), global defaults are used.
     kwargs : dict
-        A dictionary for setting some or all of the fields in the ia.Config
+        A dictionary for setting some or all of the fields in the Config
         dataclass that should override the current configuration.
 
     Returns
     -------
     IArray
         The resulting array.
+
     """
     shape = (a.shape[0], b.shape[1]) if b.ndim == 2 else (a.shape[0],)
     dtshape = ia.DTShape(shape, a.dtype)
@@ -283,17 +286,19 @@ def transpose(a: IArray, cfg=None, **kwargs):
     Parameters
     ----------
     a : IArray
-    cfg : ia.Config
+        The array to transpose.
+    cfg : Config
         The configuration for running the expression.
         If None (default), global defaults are used.
     kwargs : dict
-        A dictionary for setting some or all of the fields in the ia.Config
+        A dictionary for setting some or all of the fields in the Config
         dataclass that should override the current configuration.
 
     Returns
     -------
     IArray
         The transposed array.
+
     """
     if a.ndim != 2:
         raise AttributeError("Array dimension must be 2")
