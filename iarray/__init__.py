@@ -135,6 +135,8 @@ from .high_level import (
     sum,
     prod,
     mean,
+    reduce,
+    reduce2,
     # random constructors
     random_rand,
     random_randn,

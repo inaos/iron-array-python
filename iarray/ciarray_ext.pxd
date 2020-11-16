@@ -307,6 +307,12 @@ cdef extern from "libiarray/iarray.h":
                            int8_t axis,
                            iarray_container_t **b);
 
+    ina_rc_t iarray_reduce2(iarray_context_t *ctx,
+                           iarray_container_t *a,
+                           iarray_reduce_func_t func,
+                           int8_t axis,
+                           iarray_container_t **b);
+
 
     # Iterators
 

@@ -6,6 +6,7 @@ from numcodecs import Blosc, blosc
 import numpy as np
 import zarr
 import iarray as ia
+import gc
 import os
 
 DTYPE = np.float64
@@ -13,20 +14,18 @@ NTHREADS = 8
 CLEVEL = 9
 CODEC = ia.Codecs.LZ4
 
-t_iarray = []
-t_dask = []
-t_ratio = []
+FUNCS = ["max"]
 
-ashape = (30000, 30000)
+ashape = (17918, 15560)
 achunkshape = (2000, 2000)
 ablockshape = (100, 100)
 
-
-cchunkshape = (2000,)
-cblockshape = (100,)
-
-
 axis = 0
+
+cshape = tuple([s for i, s in enumerate(ashape) if i != axis])
+cchunkshape = tuple([s for i, s in enumerate(achunkshape) if i != axis])
+cblockshape = tuple([s for i, s in enumerate(ablockshape) if i != axis])
+
 
 blosc.use_threads = False
 acompressor = Blosc(
@@ -36,14 +35,17 @@ acompressor = Blosc(
     blocksize=reduce(lambda x, y: x * y, ablockshape) * 8,
 )
 
-
 ia.set_config(codec=CODEC, clevel=CLEVEL, nthreads=NTHREADS, fp_mantissa_bits=4)
-if os.path.exists("iarray_reduce.iarray-dev"):
+
+if os.path.exists("iarray_reduce.iarray"):
     aia = ia.load("iarray_reduce.iarray", load_in_mem=False)
 else:
     astorage = ia.Storage(achunkshape, ablockshape, filename="iarray_reduce.iarray")
     dtshape = ia.DTShape(ashape, dtype=DTYPE)
     aia = ia.random_normal(dtshape, 0, 1, storage=astorage)
+
+print(f"iarray cratio: {aia.cratio}")
+
 
 ccompressor = Blosc(
     cname="lz4",
@@ -52,36 +54,7 @@ ccompressor = Blosc(
     blocksize=reduce(lambda x, y: x * y, cblockshape) * 8,
 )
 
-
-# @profile
-def ia_reduce(aia):
-    return ia.sum(aia, axis=axis)
-
-
-t0 = time()
-cia = ia_reduce(aia)
-t1 = time()
-tia = t1 - t0
-print("Time for computing reduction (via iarray): %.3f" % tia)
-print(f"a cratio: {aia.cratio}")
-print(f"out cratio: {cia.cratio}")
-
-
-# @profile
-def ia_reduce2(aia):
-    return ia.sum2(aia, axis=axis)
-
-
-t0 = time()
-cia2 = ia_reduce2(aia)
-t1 = time()
-tia2 = t1 - t0
-print("Time for computing reduction2 (via iarray): %.3f" % tia2)
-print(f"a cratio: {aia.cratio}")
-print(f"out cratio: {cia2.cratio}")
-
-
-if not os.path.exists("zarr_reduce.zarr-dev"):
+if not os.path.exists("zarr_reduce.zarr"):
     azarr = zarr.open(
         "zarr_reduce.zarr",
         "w",
@@ -97,16 +70,34 @@ else:
     azarr = zarr.open("zarr_reduce.zarr", "r")
 
 
+np.testing.assert_equal(ashape, azarr.shape)
+print(f"zarr cratio: {azarr.nbytes / azarr.nbytes_stored}")
+
+anp = ia.iarray2numpy(aia)
+print(f"numpy cratio: 1")
+
+
+ia.set_config(fp_mantissa_bits=0)
 scheduler = "single-threaded" if NTHREADS == 1 else "threads"
 
 
-# @profile
-def dask_reduce(azarr):
+@profile
+def ia_reduce(aia, func):
+    return func(aia, axis=axis)
+
+
+@profile
+def ia_reduce2(aia, method):
+    return ia.reduce2(aia, method=method, axis=axis)
+
+
+@profile
+def dask_reduce(azarr, func):
     with dask.config.set(scheduler=scheduler, num_workers=NTHREADS):
         ad = da.from_zarr(azarr)
-        cd = da.sum(ad, axis=axis)
+        cd = func(ad, axis=axis)
         czarr = zarr.empty(
-            tuple([s for i, s in enumerate(ashape) if i != axis]),
+            cshape,
             dtype=DTYPE,
             compressor=ccompressor,
             chunks=cchunkshape,
@@ -115,34 +106,38 @@ def dask_reduce(azarr):
         return czarr
 
 
-t0 = time()
-czarr = dask_reduce(azarr)
-t1 = time()
-tzdask = t1 - t0
-print("Time for computing reduction (via dask): %.3f" % (tzdask))
-print(f"a cratio: {azarr.nbytes / azarr.nbytes_stored}")
-print(f"out cratio: {czarr.nbytes / czarr.nbytes_stored}")
-
-np1 = ia.iarray2numpy(cia)
-np2 = np.asarray(czarr)
-
-anp = ia.iarray2numpy(aia)
+@profile
+def np_reduce(anp, func):
+    return func(anp, axis=axis)
 
 
-# @profile
-def np_reduce(anp):
-    return np.sum(anp, axis=axis)
+for func in FUNCS:
 
+    print(f"{func}")
 
-t0 = time()
-cia = np_reduce(anp)
-t1 = time()
-tnp = t1 - t0
+    gc.collect()
+    t0 = time()
+    cia2 = ia_reduce2(aia, getattr(ia.Reduce, func.upper()))
+    t1 = time()
+    tia2 = t1 - t0
+    print(f"- Time for computing iarray2 {func}: {tia2:.3f} s")
 
-# np.testing.assert_allclose(np1, cia, atol=1e-12, rtol=1e-12)
+    gc.collect()
+    t0 = time()
+    cda = dask_reduce(azarr, getattr(da, func))
+    t1 = time()
+    tda = t1 - t0
+    print(f"- Time for computing dask {func}: {tda:.3f} s")
 
-print("Time for computing reduction (via numpy): %.3f" % tnp)
+    gc.collect()
+    t0 = time()
+    cnp = np_reduce(anp, getattr(np, func))
+    t1 = time()
+    tnp = t1 - t0
+    print(f"- Time for computing numpy {func}: {tnp:.3f} s")
 
-best_tia = tia if tia < tia2 else tia2
-print(f"Speed-up vs dask: {tzdask / best_tia}")
-print(f"Speed-up vs numpy: {tnp / best_tia}")
+    np2 = ia.iarray2numpy(cia2)
+    np3 = np.asarray(cda)
+
+    np.testing.assert_allclose(np2, np3)
+    np.testing.assert_allclose(np3, cnp)

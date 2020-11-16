@@ -600,6 +600,13 @@ def mean(a, axis=0, cfg=None, **kwargs):
     return reduce(a, ia.Reduce.MEAN, axis, cfg, **kwargs)
 
 
+def reduce2(a, method, axis=0, cfg=None, **kwargs):
+    shape = tuple([s for i, s in enumerate(a.shape) if i != axis])
+    dtshape = DTShape(shape, a.dtype)
+    with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
+        return ext.reduce2(cfg, a, method, axis)
+
+
 def abs(iarr):
     return iarr.abs()
 
