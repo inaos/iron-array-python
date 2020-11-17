@@ -580,30 +580,36 @@ def reduce(a, method, axis=0, cfg=None, **kwargs):
         return ext.reduce(cfg, a, method, axis)
 
 
-def max(a, axis=0, cfg=None, **kwargs):
+def max(a, axis=None, cfg=None, **kwargs):
     return reduce(a, ia.Reduce.MAX, axis, cfg, **kwargs)
 
 
-def min(a, axis=0, cfg=None, **kwargs):
+def min(a, axis=None, cfg=None, **kwargs):
     return reduce(a, ia.Reduce.MIN, axis, cfg, **kwargs)
 
 
-def sum(a, axis=0, cfg=None, **kwargs):
+def sum(a, axis=None, cfg=None, **kwargs):
     return reduce(a, ia.Reduce.SUM, axis, cfg, **kwargs)
 
 
-def prod(a, axis=0, cfg=None, **kwargs):
+def prod(a, axis=None, cfg=None, **kwargs):
     return reduce(a, ia.Reduce.PROD, axis, cfg, **kwargs)
 
 
-def mean(a, axis=0, cfg=None, **kwargs):
+def mean(a, axis=None, cfg=None, **kwargs):
     return reduce(a, ia.Reduce.MEAN, axis, cfg, **kwargs)
 
 
-def reduce2(a, method, axis=0, cfg=None, **kwargs):
+def reduce2(a, method, axis=None, cfg=None, **kwargs):
     shape = tuple([s for i, s in enumerate(a.shape) if i != axis])
     dtshape = DTShape(shape, a.dtype)
     with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
+        if axis is None:
+            a = ext.reduce2(cfg, a, method, 0)
+            while a.ndim != 1:
+                a = ext.reduce2(cfg, a, method, 0)
+            return getattr(np, method.__str__().lower()[7:])(ia.iarray2numpy(a))
+
         return ext.reduce2(cfg, a, method, axis)
 
 
