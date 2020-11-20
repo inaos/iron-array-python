@@ -73,9 +73,6 @@ else:
 np.testing.assert_equal(ashape, azarr.shape)
 print(f"zarr cratio: {azarr.nbytes / azarr.nbytes_stored}")
 
-anp = ia.iarray2numpy(aia)
-print(f"numpy cratio: 1")
-
 
 ia.set_config(fp_mantissa_bits=0)
 scheduler = "single-threaded" if NTHREADS == 1 else "threads"
@@ -106,21 +103,17 @@ def dask_reduce(azarr, func):
         return czarr
 
 
-@profile
-def np_reduce(anp, func):
-    return func(anp, axis=axis)
-
-
 for func in FUNCS:
 
     print(f"{func}")
 
     gc.collect()
     t0 = time()
-    cia2 = ia_reduce2(aia, getattr(ia.Reduce, func.upper()))
+    cia2 = ia_reduce(aia, getattr(ia, func))
+    # cia2 = ia_reduce2(aia, getattr(ia.Reduce, func.upper()))
     t1 = time()
     tia2 = t1 - t0
-    print(f"- Time for computing iarray2 {func}: {tia2:.3f} s")
+    print(f"- Time for computing iarray {func}: {tia2:.3f} s")
 
     gc.collect()
     t0 = time()
@@ -129,15 +122,7 @@ for func in FUNCS:
     tda = t1 - t0
     print(f"- Time for computing dask {func}: {tda:.3f} s")
 
-    gc.collect()
-    t0 = time()
-    cnp = np_reduce(anp, getattr(np, func))
-    t1 = time()
-    tnp = t1 - t0
-    print(f"- Time for computing numpy {func}: {tnp:.3f} s")
-
     np2 = ia.iarray2numpy(cia2)
     np3 = np.asarray(cda)
 
     np.testing.assert_allclose(np2, np3)
-    np.testing.assert_allclose(np3, cnp)
