@@ -102,9 +102,9 @@ iay = a1.copy()
 iaz = a1.copy()
 
 if NVARS == 1:
-    expr = f1.create_expr([iax], dtshape, fp_mantissa_bits=out_prec)
+    expr = f1.create_expr([iax], fp_mantissa_bits=out_prec)
 else:
-    expr = f3.create_expr([iax, iay, iaz], dtshape, fp_mantissa_bits=out_prec)
+    expr = f3.create_expr([iax, iay, iaz], fp_mantissa_bits=out_prec)
 b1 = None  # avoid a warning
 t0 = time()
 for i in range(NITER):
@@ -116,11 +116,9 @@ b1_n = ia.iarray2numpy(b1)
 b2 = None  # avoid a warning
 t0 = time()
 if NVARS == 1:
-    expr = ia.expr_from_string(expr1, {"x": iax}, dtshape, fp_mantissa_bits=out_prec)
+    expr = ia.expr_from_string(expr1, {"x": iax}, fp_mantissa_bits=out_prec)
 else:
-    expr = ia.expr_from_string(
-        expr3, {"x": iax, "y": iay, "z": iaz}, dtshape, fp_mantissa_bits=out_prec
-    )
+    expr = ia.expr_from_string(expr3, {"x": iax, "y": iay, "z": iaz}, fp_mantissa_bits=out_prec)
 for i in range(NITER):
     b2 = expr.eval()
 print("Time for internal eval engine:", round((time() - t0) / NITER, 3))

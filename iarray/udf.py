@@ -155,8 +155,8 @@ class Function(py2llvm.Function):
         ptr = self.get_field(builder, idx)
         return builder.load(ptr, name=name)
 
-    def create_expr(self, inputs, dtshape, cfg=None, **kwargs):
-        expr = ia.expr_from_udf(self, inputs, dtshape, cfg=cfg, **kwargs)
+    def create_expr(self, inputs, cfg=None, **kwargs):
+        expr = ia.expr_from_udf(self, inputs, cfg=cfg, **kwargs)
         return expr
 
 

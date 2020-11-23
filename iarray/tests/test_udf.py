@@ -40,7 +40,7 @@ def cmp_udf_np(f, start_stop, shape, partitions, dtype, cparams):
     ]
     # Both functions should work, but we are encouraging ia.expr_from_udf()
     # expr = f.create_expr(inputs, dtshape, storage=storage, **cparams)
-    expr = ia.expr_from_udf(f, inputs, dtshape, storage=storage, **cparams)
+    expr = ia.expr_from_udf(f, inputs, storage=storage, **cparams)
     out = expr.eval()
 
     num = functools.reduce(lambda x, y: x * y, shape)
@@ -71,7 +71,7 @@ def cmp_udf_np_strict(f, start, stop, shape, partitions, dtype, cparams):
     x = ia.linspace(dtshape, start, stop, storage=storage, **cparams)
     # Both functions should work, but we are encouraging ia.expr_from_udf()
     # expr = f.create_expr([x], dtshape, storage=storage, **cparams)
-    expr = ia.expr_from_udf(f, [x], dtshape, storage=storage, **cparams)
+    expr = ia.expr_from_udf(f, [x], storage=storage, **cparams)
 
     out = expr.eval()
 
@@ -236,7 +236,7 @@ def test_error(f):
     storage = ia.Storage(chunkshape, blockshape)
     dtshape = ia.DTShape(shape, dtype)
     x = ia.linspace(dtshape, start, stop, storage=storage, **cparams)
-    expr = f.create_expr([x], dtshape, storage=storage, **cparams)
+    expr = f.create_expr([x], storage=storage, **cparams)
 
     with pytest.raises(RuntimeError) as excinfo:
         expr.eval()

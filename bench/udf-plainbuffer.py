@@ -37,7 +37,7 @@ print(f"plainbuffer: {storage.plainbuffer}, engine: {engine}")
 xa = ia.linspace(ia.DTShape(shape=shape), 0.0, 10.0)
 
 if engine == "udf":
-    expr = poly_llvm.create_expr([xa], ia.DTShape(shape))
+    expr = poly_llvm.create_expr([xa])
     ya = expr.eval()
 else:
     x = xa

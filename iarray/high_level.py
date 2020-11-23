@@ -58,20 +58,29 @@ class DTShape:
 #
 
 
-def expr_from_string(sexpr: str, inputs: dict, dtshape: DTShape, cfg=None, **kwargs):
+def check_inputs(inputs: list):
+    first_input = inputs[0]
+    for input in inputs[1:]:
+        if first_input.shape != input.shape:
+            raise ValueError("Inputs should have the same shape")
+        if first_input.dtype != input.dtype:
+            raise TypeError("Inputs should have the same dtype")
+    return first_input.dtshape
+
+
+def expr_from_string(sexpr: str, inputs: dict, cfg: ia.Config = None, **kwargs):
     """Create an `Expr` instance from a expression in string form.
 
     `sexpr` is the expression in string format.
 
     `inputs` is a dictionary that maps variables in `expression` to actual arrays.
 
-    `dtshape` is a `DTShape` instance with the shape and dtype of the resulting array.
-
     `cfg` is a `Config` instance.  If None, global defaults are used.
 
     `**kwargs` can be any argument supported by the `ia.set_config()` constructor.  These will
     be used for both the evaluation process and the resulting array.
     """
+    dtshape = check_inputs(list(inputs.values()))
     expr = Expr(dtshape=dtshape, cfg=cfg, **kwargs)
     for i in inputs:
         expr.bind(i, inputs[i])
@@ -79,20 +88,19 @@ def expr_from_string(sexpr: str, inputs: dict, dtshape: DTShape, cfg=None, **kwa
     return expr
 
 
-def expr_from_udf(udf: py2llvm.Function, inputs: list, dtshape: DTShape, cfg=None, **kwargs):
+def expr_from_udf(udf: py2llvm.Function, inputs: list, cfg=None, **kwargs):
     """Create an `Expr` instance from an UDF function.
 
     `udf` is a UDF function.
 
     `inputs` is the list of arrays whose values are passed as arguments to the UDF function.
 
-    `dtshape` is a `DTShape` instance with the shape and dtype of the resulting array.
-
     `cfg` is a `Config` instance.  If None, global defaults are used.
 
     `**kwargs` can be any argument supported by the `ia.set_config()` constructor.  These will
     be used for both the evaluation process and the resulting array.
     """
+    dtshape = check_inputs(inputs)
     expr = Expr(dtshape=dtshape, cfg=cfg, **kwargs)
     for i in inputs:
         expr.bind("", i)
@@ -254,9 +262,9 @@ class LazyExpr:
     def __rtruediv__(self, value):
         return self.update_expr(new_op=(value, "/", self))
 
-    def eval(self, dtshape, cfg=None, **kwargs):
-        with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
-            expr = ia.expr_from_string(self.expression, self.operands, dtshape, cfg=cfg)
+    def eval(self, cfg=None, **kwargs):
+        with ia.config(cfg=cfg, **kwargs) as cfg:
+            expr = ia.expr_from_string(self.expression, self.operands, cfg=cfg)
             out = expr.eval()
             return out
 
@@ -412,10 +420,9 @@ class IArray(ext.Container):
 
 # The main expression class
 class Expr(ext.Expression):
-    def __init__(self, dtshape=None, cfg=None, **kwargs):
-        with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
+    def __init__(self, dtshape, cfg=None, **kwargs):
+        with ia.config(cfg=cfg, dtshape=dtshape, **kwargs) as cfg:
             self.cfg = cfg
-            self.dtshape = dtshape
             super().__init__(self.cfg)
             super().bind_out_properties(dtshape, cfg.storage)
 

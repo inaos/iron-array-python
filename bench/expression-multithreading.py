@@ -96,31 +96,25 @@ for num_threads in range(1, max_num_threads + 1):
     # Plainbuffer
     with ia.config(storage=pstorage, nthreads=num_threads) as cfg:
         a1 = ia.linspace(dtshape, 0, 10, cfg=cfg)
-        expr = ia.expr_from_string(
-            "(x - 1.35) * (x - 4.45) * (x - 8.5)", {"x": a1}, dtshape, cfg=cfg
-        )
+        expr = ia.expr_from_string("(x - 1.35) * (x - 4.45) * (x - 8.5)", {"x": a1}, cfg=cfg)
         time_expr(expr, res_i)
 
     # Superchunk without compression
     with ia.config(storage=bstorage, nthreads=num_threads, clevel=0) as cfg:
         a1 = ia.linspace(dtshape, 0, 10, cfg=cfg)
-        expr = ia.expr_from_string(
-            "(x - 1.35) * (x - 4.45) * (x - 8.5)", {"x": a1}, dtshape, cfg=cfg
-        )
+        expr = ia.expr_from_string("(x - 1.35) * (x - 4.45) * (x - 8.5)", {"x": a1}, cfg=cfg)
         time_expr(expr, res_i)
 
     # Superchunk with compression
     with ia.config(storage=bstorage, nthreads=num_threads, clevel=9) as cfg:
         a1 = ia.linspace(dtshape, 0, 10, cfg=cfg)
-        expr = ia.expr_from_string(
-            "(x - 1.35) * (x - 4.45) * (x - 8.5)", {"x": a1}, dtshape, cfg=cfg
-        )
+        expr = ia.expr_from_string("(x - 1.35) * (x - 4.45) * (x - 8.5)", {"x": a1}, cfg=cfg)
         time_expr(expr, res_i)
 
     # Superchunk with compression and UDF
     with ia.config(storage=bstorage, nthreads=num_threads, clevel=9) as cfg:
         a1 = ia.linspace(dtshape, 0, 10, cfg=cfg)
-        expr = ia.expr_from_udf(poly_udf, [a1], dtshape, cfg=cfg)
+        expr = ia.expr_from_udf(poly_udf, [a1], cfg=cfg)
         time_expr(expr, res_i)
 
     res.append(res_i)

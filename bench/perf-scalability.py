@@ -70,15 +70,13 @@ def evaluate(command):
 
     def ia_compiler_parallel(command):
         global iax, iay, iaz, shape, chunkshape, blockshape, dtype
-        dtshape = ia.DTShape(shape, dtype)
-        expr = ia.expr_from_string(command, {"x": iax, "y": iay, "z": iaz}, dtshape)
+        expr = ia.expr_from_string(command, {"x": iax, "y": iay, "z": iaz})
         expr.eval()
 
     def ia_compiler_serial(command):
         global iax, iay, iaz, shape, chunkshape, blockshape, dtype
-        dtshape = ia.DTShape(shape, dtype)
         with ia.config(nthreads=1) as cfg:
-            expr = ia.expr_from_string(command, {"x": iax, "y": iay, "z": iaz}, dtshape, cfg=cfg)
+            expr = ia.expr_from_string(command, {"x": iax, "y": iay, "z": iaz}, cfg=cfg)
             expr.eval()
 
     def dask_parallel(command):
