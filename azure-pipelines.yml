@@ -10,15 +10,15 @@ strategy:
       imageName: 'ubuntu-20.04'
       python.version: '3.8'
       DISABLE_LLVM_CONFIG: True
-#    mac:
-#      imageName: 'macos-10.14'
-#      python.version: '3.7'
-#      DISABLE_LLVM_CONFIG: True
-#    windows:
-#      imageName: 'windows-2019'
-#      VSINSTALL: "Microsoft Visual Studio\\2019\\Enterprise\\VC\\Auxiliary\\Build"
-#      MSVC_PLATFORM: amd64
-#      python.version: '3.7'
+    mac:
+      imageName: 'macos-10.14'
+      python.version: '3.7'
+      DISABLE_LLVM_CONFIG: True
+    windows:
+      imageName: 'windows-2019'
+      VSINSTALL: "Microsoft Visual Studio\\2019\\Enterprise\\VC\\Auxiliary\\Build"
+      MSVC_PLATFORM: amd64
+      python.version: '3.7'
 
 pool:
   vmImage: $(imageName)
