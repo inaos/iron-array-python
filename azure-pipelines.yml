@@ -108,7 +108,7 @@ steps:
       cp iarray/iarray-c-develop/build/libsvml.so iarray/
       ls -l /usr/share/miniconda/envs/iArrayEnv/lib
       ls -l iarray/
-      LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/share/miniconda/envs/iArrayEnv/lib pytest -vv -s --test-run-title="Linux test suite" --cov-config=.coveragerc --cov=iarray --cov-report=xml --cov-report=html
+      LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA/envs/iArrayEnv/lib pytest -vv -s --test-run-title="Linux test suite" --cov-config=.coveragerc --cov=iarray --cov-report=xml --cov-report=html
   displayName: 'Run Tests'
   condition:
     eq( variables['Agent.OS'], 'Linux' )
