@@ -68,11 +68,6 @@ def ia_reduce(aia, func):
 
 
 @profile
-def ia_reduce2(aia, method):
-    return ia.reduce2(aia, method=method, axis=axis)
-
-
-@profile
 def dask_reduce(azarr, func):
     with dask.config.set(scheduler=scheduler, num_workers=NTHREADS):
         ad = da.from_zarr(azarr)
@@ -105,13 +100,6 @@ for func in FUNCS:
 
     gc.collect()
     t0 = time()
-    cia2 = ia_reduce2(aia, getattr(ia.Reduce, func.upper()))
-    t1 = time()
-    tia2 = t1 - t0
-    print(f"- Time for computing iarray2 {func}: {tia2:.3f} s")
-
-    gc.collect()
-    t0 = time()
     cda = dask_reduce(azarr, getattr(da, func))
     t1 = time()
     tda = t1 - t0
@@ -125,9 +113,7 @@ for func in FUNCS:
     print(f"- Time for computing numpy {func}: {tnp:.3f} s")
 
     np1 = ia.iarray2numpy(cia)
-    np2 = ia.iarray2numpy(cia2)
-    np3 = np.asarray(cda)
+    np2 = np.asarray(cda)
 
     np.testing.assert_allclose(np1, np2)
-    np.testing.assert_allclose(np2, np3)
-    np.testing.assert_allclose(np3, cnp)
+    np.testing.assert_allclose(np2, cnp)

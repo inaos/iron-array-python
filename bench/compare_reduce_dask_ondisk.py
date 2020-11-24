@@ -84,11 +84,6 @@ def ia_reduce(aia, func):
 
 
 @profile
-def ia_reduce2(aia, method):
-    return ia.reduce2(aia, method=method, axis=axis)
-
-
-@profile
 def dask_reduce(azarr, func):
     with dask.config.set(scheduler=scheduler, num_workers=NTHREADS):
         ad = da.from_zarr(azarr)
@@ -110,7 +105,6 @@ for func in FUNCS:
     gc.collect()
     t0 = time()
     cia2 = ia_reduce(aia, getattr(ia, func))
-    # cia2 = ia_reduce2(aia, getattr(ia.Reduce, func.upper()))
     t1 = time()
     tia2 = t1 - t0
     print(f"- Time for computing iarray {func}: {tia2:.3f} s")
