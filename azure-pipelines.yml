@@ -10,15 +10,15 @@ strategy:
       imageName: 'ubuntu-18.04'
       python.version: '3.7'
       DISABLE_LLVM_CONFIG: True
-    mac:
-      imageName: 'macos-10.14'
-      python.version: '3.7'
-      DISABLE_LLVM_CONFIG: True
-    windows:
-      imageName: 'windows-2019'
-      VSINSTALL: "Microsoft Visual Studio\\2019\\Enterprise\\VC\\Auxiliary\\Build"
-      MSVC_PLATFORM: amd64
-      python.version: '3.7'
+#    mac:
+#      imageName: 'macos-10.14'
+#      python.version: '3.7'
+#      DISABLE_LLVM_CONFIG: True
+#    windows:
+#      imageName: 'windows-2019'
+#      VSINSTALL: "Microsoft Visual Studio\\2019\\Enterprise\\VC\\Auxiliary\\Build"
+#      MSVC_PLATFORM: amd64
+#      python.version: '3.7'
 
 pool:
   vmImage: $(imageName)
@@ -103,8 +103,11 @@ steps:
 
 - script: |
       pip install pytest pytest-azurepipelines pytest-cov
+      ls -l iarray/iarray-c-develop/build/
       cp iarray/iarray-c-develop/build/libintlc.so.5 iarray/
       cp iarray/iarray-c-develop/build/libsvml.so iarray/
+      ls -l /usr/share/miniconda/envs/iArrayEnv/lib
+      ls -l iarray/
       LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/share/miniconda/envs/iArrayEnv/lib pytest -vv -s --test-run-title="Linux test suite" --cov-config=.coveragerc --cov=iarray --cov-report=xml --cov-report=html
   displayName: 'Run Tests'
   condition:
