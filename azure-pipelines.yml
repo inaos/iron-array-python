@@ -72,7 +72,7 @@ steps:
     source activate iArrayEnv
     conda install -y --name iArrayEnv -c intel mkl-include
     conda install -y --name iArrayEnv -c intel mkl-static
-    conda install -y --name iArrayEnv -c intel icc_rt
+    conda install -y --name iArrayEnv -c numba icc_rt
     conda install -y --name iArrayEnv -c numba llvmdev
   displayName: Download dependencies
   condition: ne(variables.CACHE_RESTORED, 'true')
