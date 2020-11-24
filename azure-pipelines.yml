@@ -102,7 +102,7 @@ steps:
 
 
 - script: |
-      pip install pytest pytest-azurepipelines pytest-cov
+      python -m pip install pytest pytest-azurepipelines pytest-cov
       ls -l iarray/iarray-c-develop/build/
       cp iarray/iarray-c-develop/build/libintlc.so.5 iarray/
       cp iarray/iarray-c-develop/build/libsvml.so iarray/
