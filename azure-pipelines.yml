@@ -8,7 +8,7 @@ strategy:
   matrix:
     linux:
       imageName: 'ubuntu-18.04'
-      python.version: '3.7'
+      python.version: '3.8'
       DISABLE_LLVM_CONFIG: True
 #    mac:
 #      imageName: 'macos-10.14'
@@ -68,7 +68,7 @@ steps:
   #displayName: 'Cache CONDA'
 
 - bash: |
-    conda create --yes --quiet --name iArrayEnv
+    conda create --yes --quiet --name iArrayEnv python=$(python.version)
     source activate iArrayEnv
     conda install -y --name iArrayEnv -c intel mkl-include
     conda install -y --name iArrayEnv -c intel mkl-static
