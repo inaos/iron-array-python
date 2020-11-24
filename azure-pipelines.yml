@@ -7,7 +7,7 @@ variables:
 strategy:
   matrix:
     linux:
-      imageName: 'ubuntu-18.04'
+      imageName: 'ubuntu-20.04'
       python.version: '3.8'
       DISABLE_LLVM_CONFIG: True
 #    mac:
