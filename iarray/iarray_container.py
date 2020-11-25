@@ -251,6 +251,35 @@ def tan(iarr: IArray):
 def tanh(iarr: IArray):
     return iarr.tanh()
 
+# Reductions
+
+def reduce(a, method, axis=0, cfg=None, **kwargs):
+    shape = tuple([s for i, s in enumerate(a.shape) if i != axis])
+    dtshape = ia.DTShape(shape, a.dtype)
+    with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
+        return ext.reduce(cfg, a, method, axis)
+
+
+def max(a, axis=None, cfg=None, **kwargs):
+    return reduce(a, ia.Reduce.MAX, axis, cfg, **kwargs)
+
+
+def min(a, axis=None, cfg=None, **kwargs):
+    return reduce(a, ia.Reduce.MIN, axis, cfg, **kwargs)
+
+
+def sum(a, axis=None, cfg=None, **kwargs):
+    return reduce(a, ia.Reduce.SUM, axis, cfg, **kwargs)
+
+
+def prod(a, axis=None, cfg=None, **kwargs):
+    return reduce(a, ia.Reduce.PROD, axis, cfg, **kwargs)
+
+
+def mean(a, axis=None, cfg=None, **kwargs):
+    return reduce(a, ia.Reduce.MEAN, axis, cfg, **kwargs)
+
+
 
 def matmul(a: IArray, b: IArray, cfg=None, **kwargs):
     """Multiply two matrices.

@@ -68,6 +68,14 @@ class Eval(Enum):
     ITERCHUNK = auto()
 
 
+class Reduce(Enum):
+    MAX = 0
+    MIN = 1
+    SUM = 2
+    PROD = 3
+    MEAN = 4
+
+
 # List of all know universal functions
 UFUNC_LIST = (
     "abs",
@@ -109,6 +117,13 @@ from .iarray_container import (
     IArray,
     matmul,
     transpose,
+    # reductions
+    max,
+    min,
+    sum,
+    prod,
+    mean,
+    reduce,
     # ufuncs
     abs,
     arccos,

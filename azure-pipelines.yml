@@ -7,8 +7,8 @@ variables:
 strategy:
   matrix:
     linux:
-      imageName: 'ubuntu-18.04'
-      python.version: '3.7'
+      imageName: 'ubuntu-20.04'
+      python.version: '3.8'
       DISABLE_LLVM_CONFIG: True
     mac:
       imageName: 'macos-10.14'
@@ -68,11 +68,11 @@ steps:
   #displayName: 'Cache CONDA'
 
 - bash: |
-    conda create --yes --quiet --name iArrayEnv
+    conda create --yes --quiet --name iArrayEnv python=$(python.version)
     source activate iArrayEnv
     conda install -y --name iArrayEnv -c intel mkl-include
     conda install -y --name iArrayEnv -c intel mkl-static
-    conda install -y --name iArrayEnv -c intel icc_rt
+    conda install -y --name iArrayEnv -c numba icc_rt
     conda install -y --name iArrayEnv -c numba llvmdev
   displayName: Download dependencies
   condition: ne(variables.CACHE_RESTORED, 'true')
@@ -102,8 +102,8 @@ steps:
 
 
 - script: |
-      pip install pytest pytest-azurepipelines pytest-cov
-      LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/share/miniconda/envs/iArrayEnv/lib pytest -vv -s --test-run-title="Linux test suite" --cov-config=.coveragerc --cov=iarray --cov-report=xml --cov-report=html
+      python -m pip install pytest pytest-azurepipelines pytest-cov
+      LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA/envs/iArrayEnv/lib pytest -vv -s --test-run-title="Linux test suite" --cov-config=.coveragerc --cov=iarray --cov-report=xml --cov-report=html
   displayName: 'Run Tests'
   condition:
     eq( variables['Agent.OS'], 'Linux' )
