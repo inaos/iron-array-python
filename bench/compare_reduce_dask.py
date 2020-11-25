@@ -11,13 +11,17 @@ import gc
 DTYPE = np.float64
 FUNCS = ["max", "min", "sum", "prod", "mean"]
 NTHREADS = 12
-# Using a codec like BLOSCLZ and medium clevel is better here
-CODEC = ia.Codecs.BLOSCLZ
+# Using a codec like BLOSCLZ and medium clevel is better here,
+# but let's use LZ4 for uniformity
+CODEC = ia.Codecs.LZ4
 CLEVEL = 6
 
 ashape = (27918, 25560)
+# These chunkshape/blockshape has been chosen as a balance performance
+# between iarray and dask.  In general reducing these values improves
+# performance when in memory, but degrades performance when on-disk.
 achunkshape = (2000, 2000)
-ablockshape = (100, 100)
+ablockshape = (200, 200)
 
 axis = 0
 
