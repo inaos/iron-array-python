@@ -10,7 +10,9 @@ import gc
 import os
 
 DTYPE = np.float64
-NTHREADS = 12
+# Strangely enough, when NTHREADS < 10 there is a significant drop in
+# performance (1.1s vs 1.7s) for the OoC situation (at least on a Mac Mini)
+NTHREADS = 10
 # Using a codec like BLOSCLZ and medium clevel is better here,
 # but let's use LZ4 for uniformity
 CODEC = ia.Codecs.LZ4

@@ -10,7 +10,7 @@ import gc
 
 DTYPE = np.float64
 FUNCS = ["max", "min", "sum", "prod", "mean"]
-NTHREADS = 12
+NTHREADS = 10
 # Using a codec like BLOSCLZ and medium clevel is better here,
 # but let's use LZ4 for uniformity
 CODEC = ia.Codecs.LZ4
@@ -46,7 +46,7 @@ aia = ia.random_normal(dtshape, 0, 1, storage=astorage)
 print(f"iarray cratio: {aia.cratio}")
 
 ccompressor = Blosc(
-    cname="blosclz",
+    cname="lz4",
     clevel=CLEVEL,
     shuffle=Blosc.SHUFFLE,
     blocksize=reduce(lambda x, y: x * y, cblockshape) * 8,
