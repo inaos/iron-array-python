@@ -16,7 +16,7 @@ params_data = [
 def test_reduce(shape, chunkshape, blockshape, axis, dtype, rfunc):
 
     storage = ia.Storage(chunkshape, blockshape)
-    a1 = ia.arange(ia.DTShape(shape, dtype), storage=storage)
+    a1 = ia.linspace(ia.DTShape(shape, dtype), -1, 1, storage=storage)
     a2 = ia.iarray2numpy(a1)
 
     b2 = getattr(np, rfunc)(a2, axis=axis)
