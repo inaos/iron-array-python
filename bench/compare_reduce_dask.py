@@ -9,13 +9,13 @@ import iarray as ia
 import gc
 
 DTYPE = np.float64
-NTHREADS = 4
+NTHREADS = 8
 CLEVEL = 9
 CODEC = ia.Codecs.LZ4
 
-FUNCS = ["max"]
+FUNCS = ["max", "min", "sum", "prod", "mean"]
 
-ashape = (27918, 25560)
+ashape = (17918, 15560)
 achunkshape = (2000, 2000)
 ablockshape = (100, 100)
 
