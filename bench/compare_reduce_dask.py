@@ -9,13 +9,13 @@ import iarray as ia
 import gc
 
 DTYPE = np.float64
-NTHREADS = 8
-CLEVEL = 9
-CODEC = ia.Codecs.LZ4
-
 FUNCS = ["max", "min", "sum", "prod", "mean"]
+NTHREADS = 12
+# Using a codec like BLOSCLZ and medium clevel is better here
+CODEC = ia.Codecs.BLOSCLZ
+CLEVEL = 6
 
-ashape = (17918, 15560)
+ashape = (27918, 25560)
 achunkshape = (2000, 2000)
 ablockshape = (100, 100)
 
@@ -34,7 +34,7 @@ acompressor = Blosc(
     blocksize=reduce(lambda x, y: x * y, ablockshape) * 8,
 )
 
-ia.set_config(codec=CODEC, clevel=CLEVEL, nthreads=NTHREADS, fp_mantissa_bits=4)
+ia.set_config(codec=CODEC, clevel=CLEVEL, nthreads=NTHREADS, fp_mantissa_bits=20)
 
 astorage = ia.Storage(achunkshape, ablockshape)
 dtshape = ia.DTShape(ashape, dtype=DTYPE)
@@ -42,7 +42,7 @@ aia = ia.random_normal(dtshape, 0, 1, storage=astorage)
 print(f"iarray cratio: {aia.cratio}")
 
 ccompressor = Blosc(
-    cname="lz4",
+    cname="blosclz",
     clevel=CLEVEL,
     shuffle=Blosc.SHUFFLE,
     blocksize=reduce(lambda x, y: x * y, cblockshape) * 8,
@@ -97,6 +97,7 @@ for func in FUNCS:
     t1 = time()
     tia = t1 - t0
     print(f"- Time for computing iarray {func}: {tia:.3f} s")
+    print(f"  iarray cratio {cia.cratio:.3f}")
 
     gc.collect()
     t0 = time()
@@ -104,6 +105,8 @@ for func in FUNCS:
     t1 = time()
     tda = t1 - t0
     print(f"- Time for computing dask {func}: {tda:.3f} s")
+    cratio = cda.nbytes / cda.nbytes_stored
+    print(f"  zarr cratio {cratio:.3f}")
 
     gc.collect()
     t0 = time()
