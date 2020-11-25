@@ -995,6 +995,32 @@ def transpose(cfg, a):
     return ia.IArray(ctx, c_c)
 
 
+# Reductions
+
+reduce_to_c = {
+    ia.Reduce.MAX: ciarray.IARRAY_REDUCE_MAX,
+    ia.Reduce.MIN: ciarray.IARRAY_REDUCE_MIN,
+    ia.Reduce.SUM: ciarray.IARRAY_REDUCE_SUM,
+    ia.Reduce.PROD: ciarray.IARRAY_REDUCE_PROD,
+    ia.Reduce.MEAN: ciarray.IARRAY_REDUCE_MEAN,
+          }
+
+def reduce(cfg, a, method, axis):
+    ctx = Context(cfg)
+
+    cdef ciarray.iarray_reduce_func_t func = reduce_to_c[method]
+    cdef ciarray.iarray_container_t *a_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(a.to_capsule(), "iarray_container_t*")
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
+    cdef ciarray.iarray_container_t *c
+
+    err = ciarray.iarray_reduce(ctx_, a_, func, axis, &c)
+    if err != 0:
+        raise AttributeError
+
+    c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
+    return ia.IArray(ctx, c_c)
+
+
 def get_ncores(max_ncores):
     cdef int ncores = 1
     err = ciarray.iarray_get_ncores(&ncores, max_ncores)
