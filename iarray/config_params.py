@@ -34,9 +34,6 @@ def get_ncores(max_ncores=0):
             UserWarning,
         )
         return 1
-    if ncores < max_ncores:  # TODO: Remove this before merging
-        ncores = max_ncores
-    # print(ncores)
     return ncores
 
 
