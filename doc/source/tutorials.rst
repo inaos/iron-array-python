@@ -1,9 +1,11 @@
----------
+------------
 Tutorials
----------
+------------
 
-This section should point to some Jupyter notebook repository (JupyterLab, but for commercial purposes).
-This would allow the users to experiment with the features without the need to install the package, and
-should save us from having to provide an evaluation version.
+.. toctree::
+   :caption: Tutorials
+   :maxdepth: 1
 
-.. _tutorials: URL with the index to all tutorials...
+   tutorials/creation
+   tutorials/random
+   tutorials/matmul
