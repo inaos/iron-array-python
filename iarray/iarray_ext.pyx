@@ -1023,6 +1023,26 @@ def reduce(cfg, a, method, axis):
     return ia.IArray(ctx, c_c)
 
 
+def reduce_multi(cfg, a, method, axis):
+    ctx = Context(cfg)
+
+    cdef ciarray.iarray_reduce_func_t func = reduce_to_c[method]
+    cdef ciarray.iarray_container_t *a_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(a.to_capsule(), "iarray_container_t*")
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
+    cdef ciarray.iarray_container_t *c
+
+    cdef ciarray.int8_t axis_[ciarray.IARRAY_DIMENSION_MAX]
+    for i, ax in enumerate(axis):
+        axis_[i] = ax
+
+    err = ciarray.iarray_reduce_multi(ctx_, a_, func, len(axis), axis_, &c)
+    if err != 0:
+        raise AttributeError
+
+    c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
+    return ia.IArray(ctx, c_c)
+
+
 def get_ncores(max_ncores):
     cdef int ncores = 1
     err = ciarray.iarray_get_ncores(&ncores, max_ncores)

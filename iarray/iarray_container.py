@@ -12,6 +12,7 @@
 import iarray as ia
 from iarray import iarray_ext as ext
 from itertools import zip_longest
+from typing import Union
 
 
 class IArray(ext.Container):
@@ -251,13 +252,23 @@ def tan(iarr: IArray):
 def tanh(iarr: IArray):
     return iarr.tanh()
 
+
 # Reductions
 
-def reduce(a, method, axis=0, cfg=None, **kwargs):
+
+def reduce(a: IArray, method, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
+    if axis is None:
+        axis = range(a.ndim)
+    if isinstance(axis, int):
+        axis = (axis,)
+
     shape = tuple([s for i, s in enumerate(a.shape) if i != axis])
     dtshape = ia.DTShape(shape, a.dtype)
     with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
-        return ext.reduce(cfg, a, method, axis)
+        c = ext.reduce_multi(cfg, a, method, axis)
+        if c.ndim == 0:
+            c = float(ia.iarray2numpy(c))
+        return c
 
 
 def max(a, axis=None, cfg=None, **kwargs):
@@ -278,7 +289,6 @@ def prod(a, axis=None, cfg=None, **kwargs):
 
 def mean(a, axis=None, cfg=None, **kwargs):
     return reduce(a, ia.Reduce.MEAN, axis, cfg, **kwargs)
-
 
 
 def matmul(a: IArray, b: IArray, cfg=None, **kwargs):

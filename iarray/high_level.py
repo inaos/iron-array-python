@@ -16,7 +16,7 @@ from iarray import iarray_ext as ext
 from iarray import py2llvm
 from itertools import zip_longest
 from dataclasses import dataclass
-from typing import Sequence
+from typing import Sequence, Union
 
 
 def cmp_arrays(a, b, success=None):
