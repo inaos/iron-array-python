@@ -21,10 +21,19 @@ RANDOM_SEED = 0
 
 
 def get_ncores(max_ncores=0):
-    """Return the number of logical cores in the system.
+    """Get the number of logical cores in the system.
 
-    This number is capped at `max_ncores` or the number in the system, whatever is less.
-    When `max_ncores` is 0, the actual number in the system is returned.
+    Parameters
+    ----------
+    max_ncores : int
+        If > 0, the returned number is capped at this value.
+        If == 0 (default), the actual number of logical cores in the system is returned.
+
+    Returns
+    -------
+    int
+        The (capped) number of logical cores.
+        In case of error, a 1 is returned and a warning is issued.
     """
     ncores = ext.get_ncores(max_ncores)
     if ncores < 0:
@@ -42,16 +51,29 @@ def partition_advice(
 ):
     """Provide advice for the chunk and block shapes for a certain `dtshape`.
 
-    `min_` and `max_` params contain minimum and maximum values for chunksize and blocksize.
-    If `min_` or `max_` are 0, they default to sensible values (fractions of CPU caches).
+    Parameters
+    ----------
+    dtshape : ia.DTShape
+        The shape and dtype of the array.
+    min_chunksize : int
+        Minimum value for chunksize (in bytes).  If 0 (default), a sensible value is chosen.
+    max_chunksize : int
+        Maximum value for chunksize (in bytes).  If 0 (default), a sensible value is chosen.
+    min_bloksize : int
+        Minimum value for blocksize (in bytes).  If 0 (default), a sensible value is chosen.
+    max_bloksize : int
+        Maximum value for blocksize (in bytes).  If 0 (default), a sensible value is chosen.
+    cfg : ia.Config
+        A configuration.  If None, the global configuration is used.
 
-    `cfg` is a `Config` instance.  If None, a default configuration is used.
-
-    If success, the tuple (chunkshape, blockshape) containing the advice is returned.
-    In case of error, a (None, None) tuple is returned and a warning is issued.
+    Returns
+    -------
+    tuple
+        If success, a (chunkshape, blockshape) containing the advice is returned.
+        In case of error, a (None, None) is returned and a warning is issued.
     """
     if cfg is None:
-        cfg = Config()
+        cfg = get_config()
     chunkshape, blockshape = ext.partition_advice(
         dtshape, min_chunksize, max_chunksize, min_blocksize, max_blocksize, cfg
     )
@@ -75,6 +97,7 @@ class DefaultConfig:
     storage: Any
     eval_method: Any
     seed: Any
+    random_gen: Any
 
 
 @dataclass
@@ -103,6 +126,7 @@ class Defaults(object):
     fp_mantissa_bits: int = 0
     eval_method: int = ia.Eval.AUTO
     seed: int = None
+    random_gen: ia.RandomGen = ia.RandomGen.MERSENNE_TWISTER
     # Storage
     _storage = None
     chunkshape: Sequence = None
@@ -140,6 +164,9 @@ class Defaults(object):
     def _seed(self):
         return self.seed
 
+    def _random_gen(self):
+        return self.random_gen
+
     @property
     def config(self):
         if self._config is None:
@@ -154,6 +181,7 @@ class Defaults(object):
                 storage=self.storage,
                 eval_method=self.eval_method,
                 seed=self.seed,
+                random_gen=self.random_gen,
             )
         return self._config
 
@@ -169,6 +197,7 @@ class Defaults(object):
         self.fp_mantissa_bits = value.fp_mantissa_bits
         self.eval_method = value.eval_method
         self.seed = value.seed
+        self.random_gen = value.random_gen
         self._storage = value.storage
         self._config = value
         if self._storage is not None:
@@ -230,31 +259,33 @@ def reset_config_defaults():
 
 @dataclass
 class Storage:
-    """Dataclass for hosting the different storage properties.
+    """Dataclass for hosting different storage properties.
 
     All the parameters below are optional.  In case you don't specify one, a
     sensible default (see below) is used.
 
     Parameters
     ----------
-    chunkshape: list, tuple
+    chunkshape : list, tuple
         The chunkshape for the output array.  If None (the default), a sensible default
-        will be used based on the shape and the size of caches in the current processor.
-    blockshape: list, tuple
+        will be used based on the shape of the array and the size of caches in the current
+        processor.
+    blockshape : list, tuple
         The blockshape for the output array.  If None (the default), a sensible default
-        will be used based on the shape and the size of caches in the current processor.
-    filename: str
-        The name of the file for storing the output array.  If None (the default), the
-        output array will be stored in-memory.
-    enforce_frame: bool
-        If True, the output array will be stored as a frame, even when in-memory.  The
-        default is False.  Currently persistent storage can only be in frame format, so
-        enforce_frame will be automatically set to True. When in-memory, the array can be
-        in super-chunk (sparse, the default) form or frame format (contiguous).
-    plainbuffer: bool
+        will be used based on the shape of the array and the size of caches in the current
+        processor.
+    filename : str
+        The name of the file for persistently storing the output array.  If None (the default),
+        the output array will be stored in-memory.
+    enforce_frame : bool
+        If True, the output array will be stored as a frame, even when in-memory.  If False
+        (the default), the storage will be sparse.  Currently, persistent storage only supports
+        the frame format. When in-memory, the array can be in sparse (the default)
+        or contiguous form (frame), depending on this flag.
+    plainbuffer : bool
         When True, the output array will be stored on a plain, contiguous buffer, without
-        any compression.  This makes faster data sharing among other data containers (i.e.
-        NumPy).  When False (the default), the output array will be stored on a Blosc
+        any compression.  This can help faster data sharing among other data containers
+        (e.g. NumPy).  When False (the default), the output array will be stored in a Blosc
         container, which can be compressed (the default).
     """
 
@@ -298,36 +329,42 @@ class Config(ext.Config):
 
     Parameters
     ----------
-    codec: ia.Codecs
+    codec : ia.Codecs
         The codec to be used inside Blosc.  Default is ia.Codecs.LZ4.
-    clevel: int
+    clevel : int
         The compression level.  It can have values between 0 (no compression) and
         9 (max compression).  Default is 5.
-    filters: list
+    filters : list
         The list of filters for Blosc.  Default is [ia.Filters.SHUFFLE].
-    fp_mantissa_bits: int
+    fp_mantissa_bits : int
         The number of bits to be kept in the mantissa in output arrays.  If 0 (the default),
         no precision is capped.  FYI, double precision have 52 bit in mantissa, whereas
         single precision has 23 bit.  For example, if you set this to 23 for doubles,
         you will be using a compressed storage very close as if you were using singles.
-    use_dict: bool
+    use_dict : bool
         Whether Blosc should use a dictionary for enhanced compression (currently only
         supported by `ia.Codecs.ZSTD`).  Default is False.
-    nthreads: int
+    nthreads : int
         The number of threads for internal ironArray operations.  This number can be
         silently capped to be the number of *logical* cores in the system.  If 0
         (the default), the number of logical cores in the system is used.
-    eval_method: ia.Eval
+    eval_method : ia.Eval
         Method to evaluate expressions.  The default is `ia.Eval.AUTO`, where the
         expression is analyzed and the more convenient method is used.
-    seed: int
+    seed : int
         The default seed for internal random generators.  If None (the default), a
         seed will automatically be generated internally for you.
-    storage: ia.Storage
+    random_gen : ia.RandomGen
+        The random generator to be used.  The default is ia.RandomGen.MERSENNE_TWISTER.
+    storage : ia.Storage
         Storage instance where you can specify different properties of the output
         storage.  See `ia.Storage` docs for details.  For convenience, you can also
         pass all the `ia.Storage` parameters directly in this constructor too.
 
+    See Also
+    --------
+    ia.set_config
+    ia.config
     """
 
     codec: ia.Codecs = field(default_factory=defaults._codec)
@@ -338,6 +375,7 @@ class Config(ext.Config):
     nthreads: int = field(default_factory=defaults._nthreads)
     eval_method: int = field(default_factory=defaults._eval_method)
     seed: int = field(default_factory=defaults._seed)
+    random_gen: ia.RandomGen = field(default_factory=defaults._random_gen)
     storage: Storage = None  # delayed initialization
 
     # These belong to Storage, but we accept them in top level too
@@ -393,17 +431,28 @@ class Config(ext.Config):
 def set_config(cfg: Config = None, dtshape=None, **kwargs):
     """Set the global defaults for iarray operations.
 
-    `cfg` is a `Config` instance.  If None, sensible defaults will apply.
-    Use `get_config()` before anything so as to see which those defaults are.
+    Parameters
+    ----------
+    cfg : ia.Config
+        The configuration that will become the default for iarray operations.
+        If None, the defaults are not changed.
+    dtshape : ia.DTShape
+        This is not part of the global configuration as such, but if passed,
+        it will be used so as to compute sensible defaults for storage properties
+        like chunkshape and blockshape.  This is mainly meant for internal use.
+    kwargs : dict
+        A dictionary for setting some or all of the fields in the ia.Config
+        dataclass that should override the current configuration.
 
-    `dtshape` is a `DTShape` instance.  This is not part of `Config` as such,
-    but if passed, it will be used so as to compute sensible defaults for `chunkshape`
-    and `blockshape`.  This is mainly meant for internal use.
+    Returns
+    -------
+    ia.Config
+        The new global configuration.
 
-    `**kwargs` is a dictionary for setting some or all of the fields in the `Config`
-    dataclass that should be different than defaults.
-
-    Returns the new global configuration.
+    See Also
+    --------
+    ia.Config
+    ia.get_config
     """
     global global_config
     if cfg is None:
@@ -431,17 +480,29 @@ set_config()
 def get_config():
     """Get the global defaults for iarray operations.
 
-    Returns the existing global configuration.
+    Returns
+    -------
+    ia.Config
+        The existing global configuration.
+
+    See Also
+    --------
+    ia.set_config
     """
     return global_config
 
 
 @contextmanager
 def config(cfg: Config = None, dtshape=None, **kwargs):
-    """Execute a context with some configuration parameters.
+    """Create a context with some specific configuration parameters.
 
-    All parameters are and work the same than in `ia.set_config()`.
+    All parameters are the same than in `ia.set_config()`.
     The only difference is that this does not set global defaults.
+
+    See Also
+    --------
+    ia.set_config
+    ia.Config
     """
     if cfg is None:
         cfg = Config()

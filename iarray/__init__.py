@@ -55,6 +55,12 @@ class Filters(Enum):
     TRUNC_PREC = 8
 
 
+# Random generators
+class RandomGen(Enum):
+    MERSENNE_TWISTER = 0
+    SOBOL = 1
+
+
 # Eval method
 class Eval(Enum):
     AUTO = auto()
@@ -107,26 +113,8 @@ from .config_params import (
     partition_advice,
 )
 
-
-from .high_level import (
+from .iarray_container import (
     IArray,
-    DTShape,
-    RandomContext,
-    Expr,
-    LazyExpr,
-    expr_from_string,
-    expr_from_udf,
-    empty,
-    arange,
-    linspace,
-    zeros,
-    ones,
-    full,
-    load,
-    save,
-    cmp_arrays,
-    iarray2numpy,
-    numpy2iarray,
     matmul,
     transpose,
     # reductions
@@ -136,18 +124,6 @@ from .high_level import (
     prod,
     mean,
     reduce,
-    # random constructors
-    random_rand,
-    random_randn,
-    random_beta,
-    random_lognormal,
-    random_exponential,
-    random_uniform,
-    random_normal,
-    random_bernoulli,
-    random_binomial,
-    random_poisson,
-    random_kstest,
     # ufuncs
     abs,
     arccos,
@@ -168,6 +144,37 @@ from .high_level import (
     sqrt,
     tan,
     tanh,
+)
+
+from .constructors import (
+    DTShape,
+    empty,
+    arange,
+    linspace,
+    zeros,
+    ones,
+    full,
+)
+
+from .utils import (
+    load,
+    save,
+    cmp_arrays,
+    iarray2numpy,
+    numpy2iarray,
+)
+
+# random constructors (follow NumPy convention)
+from . import random
+
+from .expression import (
+    Expr,
+    expr_from_string,
+    expr_from_udf,
+)
+
+from .lazy_expr import (
+    LazyExpr,
 )
 
 # For some reason this needs to go to the end, else matmul function does not work.

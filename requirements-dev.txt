@@ -1,0 +1,5 @@
+sphynx
+git+https://github.com/pandas-dev/pydata-sphinx-theme.git@master
+zarr
+dask
+numexpr

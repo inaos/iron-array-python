@@ -7,11 +7,11 @@ size = 10000
 shape = [size]
 
 dtshape = ia.DTShape(shape, dtype=np.float32)
-a1 = ia.random_uniform(dtshape, 0, 1)
+a1 = ia.random.uniform(dtshape, 0, 1)
 a2 = ia.iarray2numpy(a1)
 print(a2[:10])
 
-a1 = ia.random_uniform(dtshape, 0, 1)
+a1 = ia.random.uniform(dtshape, 0, 1)
 a2 = ia.iarray2numpy(a1)
 print(a2[:10])
 
@@ -21,4 +21,4 @@ storage = ia.Storage(filename="random_dist.iarray")
 b2 = ia.numpy2iarray(b1, storage=storage)
 
 # Check that distributions are equal
-print(ia.random_kstest(a1, b2))
+print(ia.random.kstest(a1, b2))
