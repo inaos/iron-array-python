@@ -626,6 +626,9 @@ def get_slice(ctx, data, start, stop, view, storage):
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     b =  ia.IArray(ctx, c_c)
+    if b.ndim == 0:
+        return float(ia.iarray2numpy(b))
+
     return b
 
 
