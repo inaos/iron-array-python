@@ -13,6 +13,7 @@ import iarray as ia
 from iarray import iarray_ext as ext
 from itertools import zip_longest
 import numpy as np
+from typing import Union
 
 
 class IArray(ext.Container):
@@ -37,6 +38,22 @@ class IArray(ext.Container):
         """
         with ia.config(dtshape=self.dtshape, cfg=cfg, **kwargs) as cfg:
             return ext.copy(cfg, self, view)
+
+    def iter_read_block(self, iterblock: tuple = None):
+        if iterblock is None:
+            if self.chunkshape is not None:
+                iterblock = self.chunkshape
+            else:
+                iterblock, _ = ia.partition_advice(self.dtshape)
+        return ext.ReadBlockIter(self, iterblock)
+
+    def iter_write_block(self, iterblock=None):
+        if iterblock is None:
+            if self.chunkshape:
+                iterblock = self.chunkshape
+            else:
+                iterblock, _ = ia.partition_advice(self.dtshape)
+        return ext.WriteBlockIter(self, iterblock)
 
     def __getitem__(self, key):
         # Massage the key a bit so that it is compatible with self.shape
@@ -258,34 +275,169 @@ def tan(iarr: IArray):
 def tanh(iarr: IArray):
     return iarr.tanh()
 
+
 # Reductions
 
-def reduce(a, method, axis=0, cfg=None, **kwargs):
+
+def reduce(
+    a: IArray, method: ia.Reduce, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs
+):
+    if axis is None:
+        axis = range(a.ndim)
+    if isinstance(axis, int):
+        axis = (axis,)
+
     shape = tuple([s for i, s in enumerate(a.shape) if i != axis])
     dtshape = ia.DTShape(shape, a.dtype)
     with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
-        return ext.reduce(cfg, a, method, axis)
+        c = ext.reduce_multi(cfg, a, method, axis)
+        if c.ndim == 0:
+            c = float(ia.iarray2numpy(c))
+        return c
 
 
-def max(a, axis=None, cfg=None, **kwargs):
+def max(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
+    """
+    Return the maximum of an array or maximum along an axis.
+
+    Parameters
+    ----------
+    a : IArray
+        Input data.
+    axis : None, int, tuple of ints, optional
+        Axis or axes along which the reduction is performed. The default (axis = None) is perform
+        the reduction over all dimensions of the input array.
+        If this is a tuple of ints, a reduction is performed on multiple axes, instead of a single
+        axis or all the axes as default.
+    cfg : Config or None
+        The configuration for this operation. If None (default), the current configuration will be
+        used.
+    kwargs : dict
+        A dictionary for setting some or all of the fields in the Config dataclass that should
+        override the current configuration.
+    Returns
+    -------
+    max : IArray or float
+        Maximum of a. If axis is None, the result is a float value. If axis is given, the result is
+        an array of dimension a.ndim - len(axis).
+    """
+
     return reduce(a, ia.Reduce.MAX, axis, cfg, **kwargs)
 
 
-def min(a, axis=None, cfg=None, **kwargs):
+def min(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
+    """
+    Return the minimum of an array or minimum along an axis.
+
+    Parameters
+    ----------
+    a : IArray
+        Input data.
+    axis : None, int, tuple of ints, optional
+        Axis or axes along which the reduction is performed. The default (axis = None) is perform
+        the reduction over all dimensions of the input array.
+        If this is a tuple of ints, a reduction is performed on multiple axes, instead of a single
+        axis or all the axes as default.
+    cfg : Config or None
+        The configuration for this operation. If None (default), the current configuration will be
+        used.
+    kwargs : dict
+        A dictionary for setting some or all of the fields in the Config dataclass that should
+        override the current configuration.
+    Returns
+    -------
+    min : IArray or float
+        Minimum of a. If axis is None, the result is a float value. If axis is given, the result is
+        an array of dimension a.ndim - len(axis).
+    """
     return reduce(a, ia.Reduce.MIN, axis, cfg, **kwargs)
 
 
-def sum(a, axis=None, cfg=None, **kwargs):
+def sum(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
+    """
+    Return the sum of array elements over a given axis.
+
+    Parameters
+    ----------
+    a : IArray
+        Input data.
+    axis : None, int, tuple of ints, optional
+        Axis or axes along which the reduction is performed. The default (axis = None) is perform
+        the reduction over all dimensions of the input array.
+        If this is a tuple of ints, a reduction is performed on multiple axes, instead of a single
+        axis or all the axes as default.
+    cfg : Config or None
+        The configuration for this operation. If None (default), the current configuration will be
+        used.
+    kwargs : dict
+        A dictionary for setting some or all of the fields in the Config dataclass that should
+        override the current configuration.
+    Returns
+    -------
+    sum : IArray or float
+        Sum of a. If axis is None, the result is a float value. If axis is given, the result is
+        an array of dimension a.ndim - len(axis).
+    """
     return reduce(a, ia.Reduce.SUM, axis, cfg, **kwargs)
 
 
-def prod(a, axis=None, cfg=None, **kwargs):
+def prod(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
+    """
+    Return the product of array elements over a given axis.
+
+    Parameters
+    ----------
+    a : IArray
+        Input data.
+    axis : None, int, tuple of ints, optional
+        Axis or axes along which the reduction is performed. The default (axis = None) is perform
+        the reduction over all dimensions of the input array.
+        If this is a tuple of ints, a reduction is performed on multiple axes, instead of a single
+        axis or all the axes as default.
+    cfg : Config or None
+        The configuration for this operation. If None (default), the current configuration will be
+        used.
+    kwargs : dict
+        A dictionary for setting some or all of the fields in the Config dataclass that should
+        override the current configuration.
+    Returns
+    -------
+    prod : IArray or float
+        Product of a. If axis is None, the result is a float value. If axis is given, the result is
+        an array of dimension a.ndim - len(axis).
+    """
     return reduce(a, ia.Reduce.PROD, axis, cfg, **kwargs)
 
 
-def mean(a, axis=None, cfg=None, **kwargs):
+def mean(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
+    """
+    Compute the arithmetic mean along the specified axis. Returns the average of the array elements.
+
+    Parameters
+    ----------
+    a : IArray
+        Input data.
+    axis : None, int, tuple of ints, optional
+        Axis or axes along which the reduction is performed. The default (axis = None) is perform
+        the reduction over all dimensions of the input array.
+        If this is a tuple of ints, a reduction is performed on multiple axes, instead of a single
+        axis or all the axes as default.
+    cfg : Config or None
+        The configuration for this operation. If None (default), the current configuration will be
+        used.
+    kwargs : dict
+        A dictionary for setting some or all of the fields in the Config dataclass that should
+        override the current configuration.
+    Returns
+    -------
+    mean : IArray or float
+        Mean of a. If axis is None, the result is a float value. If axis is given, the result is
+        an array of dimension a.ndim - len(axis).
+    """
     return reduce(a, ia.Reduce.MEAN, axis, cfg, **kwargs)
 
+
+# Linear Algebra
 
 
 def matmul(a: IArray, b: IArray, cfg=None, **kwargs):

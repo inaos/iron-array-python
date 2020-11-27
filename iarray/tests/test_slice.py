@@ -1,6 +1,7 @@
 import pytest
 import iarray as ia
 import numpy as np
+from math import isclose
 
 
 # Slice
@@ -11,6 +12,7 @@ import numpy as np
         ([100, 100], [20, 20], [10, 13], [5, 10], [30, 40], np.float32),
         ([100, 100], None, None, [5, 10], [30, 40], np.float64),
         ([100, 100, 100], None, None, [5, 46, 10], [30, 77, 40], np.float32),
+        ([100, 100], None, None, [5, 46], [6, 47], np.float32),
     ],
 )
 def test_slice(shape, chunkshape, blockshape, start, stop, dtype):
@@ -27,6 +29,9 @@ def test_slice(shape, chunkshape, blockshape, start, stop, dtype):
     an = ia.iarray2numpy(a)
 
     b = a[slices]
-    bn = ia.iarray2numpy(b)
 
-    np.testing.assert_almost_equal(an[slices], bn)
+    if b.ndim == 0:
+        isclose(an[slices], b)
+    else:
+        bn = ia.iarray2numpy(b)
+        np.testing.assert_almost_equal(an[slices], bn)

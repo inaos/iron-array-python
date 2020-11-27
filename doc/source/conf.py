@@ -13,10 +13,11 @@
 import os
 import sys
 
-if 'READ_THE_DOCS' in os.environ:
+if "READ_THE_DOCS" in os.environ:
     import subprocess
+
     # It is necessary for the readthedocs for finding cython docstrings
-    subprocess.call('cd .. && python setup.py build_ext -i && cd ../doc', shell=True)
+    subprocess.call("cd .. && python setup.py build_ext -i && cd ../doc", shell=True)
 sys.path.insert(0, os.path.abspath(".."))
 import iarray
 
@@ -52,7 +53,7 @@ templates_path = ["_templates"]
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ['_build', '**.ipynb_checkpoints', 'Thumbs.db', '.DS_Store']
+exclude_patterns = ["_build", "**.ipynb_checkpoints", "Thumbs.db", ".DS_Store"]
 
 # -- Options for HTML output -------------------------------------------------
 
@@ -70,14 +71,10 @@ html_show_sourcelink = False
 #
 # html_theme = 'sphinx_rtd_theme'
 html_theme = "pydata_sphinx_theme"
-#html_theme = "furo"
-
-html_theme_options = {
-    "logo_only": True,
-}
+# html_theme = "furo"
 
 html_css_files = [
-    'custom.css',
+    "custom.css",
 ]
 
-autodoc_member_order = 'groupwise'
+autodoc_member_order = "groupwise"

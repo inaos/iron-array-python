@@ -7,9 +7,11 @@
     --third-color: rgb(83, 107, 115);
 }
 
+/*
 body {
     font-family: 'Raleway';
 }
+*/
 
 .rst-content .toctree-wrapper > p.caption, h1, h2, h3, h4, h5, h6, legend {
     font-family: 'Raleway';

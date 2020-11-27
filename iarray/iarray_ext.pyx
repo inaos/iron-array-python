@@ -282,22 +282,6 @@ cdef class Container:
             ciarray.iarray_container_free(self.context.ia_ctx, &self.ia_container)
             self.context = None
 
-    def iter_read_block(self, iterblock=None):
-        if iterblock is None:
-            if self.chunkshape is not None:
-                iterblock = self.chunkshape
-            else:
-                iterblock, _ = ia.partition_advice(self.dtshape)
-        return ReadBlockIter(self, iterblock)
-
-    def iter_write_block(self, iterblock=None):
-        if iterblock is None:
-            if self.chunkshape:
-                iterblock = self.chunkshape
-            else:
-                iterblock, _ = ia.partition_advice(self.dtshape)
-        return WriteBlockIter(self, iterblock)
-
     def to_capsule(self):
         return PyCapsule_New(self.ia_container, "iarray_container_t*", NULL)
 
@@ -642,6 +626,9 @@ def get_slice(ctx, data, start, stop, view, storage):
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     b =  ia.IArray(ctx, c_c)
+    if b.ndim == 0:
+        return float(ia.iarray2numpy(b))
+
     return b
 
 
@@ -1016,6 +1003,26 @@ def reduce(cfg, a, method, axis):
     cdef ciarray.iarray_container_t *c
 
     err = ciarray.iarray_reduce(ctx_, a_, func, axis, &c)
+    if err != 0:
+        raise AttributeError
+
+    c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
+    return ia.IArray(ctx, c_c)
+
+
+def reduce_multi(cfg, a, method, axis):
+    ctx = Context(cfg)
+
+    cdef ciarray.iarray_reduce_func_t func = reduce_to_c[method]
+    cdef ciarray.iarray_container_t *a_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(a.to_capsule(), "iarray_container_t*")
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
+    cdef ciarray.iarray_container_t *c
+
+    cdef ciarray.int8_t axis_[ciarray.IARRAY_DIMENSION_MAX]
+    for i, ax in enumerate(axis):
+        axis_[i] = ax
+
+    err = ciarray.iarray_reduce_multi(ctx_, a_, func, len(axis), axis_, &c)
     if err != 0:
         raise AttributeError
 

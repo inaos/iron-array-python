@@ -92,7 +92,6 @@ def np_reduce(anp, func):
 
 
 for func in FUNCS:
-
     print(f"{func}")
 
     gc.collect()
