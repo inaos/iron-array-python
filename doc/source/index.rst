@@ -8,7 +8,7 @@ Welcome to ironArray for Python's documentation!
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: User's Guide:
 
    intro
    install
