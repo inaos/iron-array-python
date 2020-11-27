@@ -12,8 +12,8 @@
 import iarray as ia
 from iarray import iarray_ext as ext
 from itertools import zip_longest
+import numpy as np
 from typing import Union
-from enum import Enum
 
 
 class IArray(ext.Container):
@@ -76,6 +76,12 @@ class IArray(ext.Container):
             raise ValueError("Slices with 0 or negative dims are not supported yet")
 
         return super().__getitem__([start, stop])
+
+    def __str__(self):
+        return f"<IArray {self.shape} np.{str(np.dtype(self.dtype))}>"
+
+    def __repr__(self):
+        return str(self)
 
     def __matmul__(self, value):
         a = self

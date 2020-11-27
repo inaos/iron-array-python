@@ -8,4 +8,5 @@ Tutorials
 
    tutorials/creation
    tutorials/random
+   tutorials/views
    tutorials/matmul
