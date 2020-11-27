@@ -60,6 +60,10 @@ class IArray(ext.Container):
 
         return super().__getitem__([start, stop])
 
+    @property
+    def data(self):
+        return ia.iarray2numpy(self)
+
     def __str__(self):
         return f"<IArray {self.shape} np.{str(np.dtype(self.dtype))}>"
 
