@@ -39,6 +39,22 @@ class IArray(ext.Container):
         with ia.config(dtshape=self.dtshape, cfg=cfg, **kwargs) as cfg:
             return ext.copy(cfg, self, view)
 
+    def iter_read_block(self, iterblock: tuple = None):
+        if iterblock is None:
+            if self.chunkshape is not None:
+                iterblock = self.chunkshape
+            else:
+                iterblock, _ = ia.partition_advice(self.dtshape)
+        return ext.ReadBlockIter(self, iterblock)
+
+    def iter_write_block(self, iterblock=None):
+        if iterblock is None:
+            if self.chunkshape:
+                iterblock = self.chunkshape
+            else:
+                iterblock, _ = ia.partition_advice(self.dtshape)
+        return ext.WriteBlockIter(self, iterblock)
+
     def __getitem__(self, key):
         # Massage the key a bit so that it is compatible with self.shape
         if self.ndim == 1:

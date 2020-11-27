@@ -282,22 +282,6 @@ cdef class Container:
             ciarray.iarray_container_free(self.context.ia_ctx, &self.ia_container)
             self.context = None
 
-    def iter_read_block(self, iterblock=None):
-        if iterblock is None:
-            if self.chunkshape is not None:
-                iterblock = self.chunkshape
-            else:
-                iterblock, _ = ia.partition_advice(self.dtshape)
-        return ReadBlockIter(self, iterblock)
-
-    def iter_write_block(self, iterblock=None):
-        if iterblock is None:
-            if self.chunkshape:
-                iterblock = self.chunkshape
-            else:
-                iterblock, _ = ia.partition_advice(self.dtshape)
-        return WriteBlockIter(self, iterblock)
-
     def to_capsule(self):
         return PyCapsule_New(self.ia_container, "iarray_container_t*", NULL)
 
