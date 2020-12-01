@@ -49,7 +49,7 @@ if os.path.exists("iarray_reduce.iarray"):
 else:
     astorage = ia.Storage(achunkshape, ablockshape, filename="iarray_reduce.iarray")
     dtshape = ia.DTShape(ashape, dtype=DTYPE)
-    aia = ia.random_normal(dtshape, 0, 1, storage=astorage)
+    aia = ia.random.normal(dtshape, 0, 1, storage=astorage)
 
 print(f"iarray cratio: {aia.cratio}")
 
@@ -70,9 +70,8 @@ if not os.path.exists("zarr_reduce.zarr"):
         dtype=DTYPE,
         compressor=acompressor,
     )
-    for info, block in aia.iter_read_block(achunkshape):
-        sl = tuple([slice(i, i + s) for i, s in zip(info.elemindex, info.shape)])
-        azarr[sl] = block[:]
+    for info, block in aia:
+        azarr[info.slice] = block[:]
 else:
     azarr = zarr.open("zarr_reduce.zarr", "r")
 

@@ -42,7 +42,7 @@ ia.set_config(codec=CODEC, clevel=CLEVEL, nthreads=NTHREADS, fp_mantissa_bits=20
 
 astorage = ia.Storage(achunkshape, ablockshape)
 dtshape = ia.DTShape(ashape, dtype=DTYPE)
-aia = ia.random_normal(dtshape, 0, 1, storage=astorage)
+aia = ia.random.normal(dtshape, 0, 1, storage=astorage)
 print(f"iarray cratio: {aia.cratio}")
 
 ccompressor = Blosc(
@@ -53,9 +53,8 @@ ccompressor = Blosc(
 )
 
 azarr = zarr.empty(shape=ashape, chunks=achunkshape, dtype=DTYPE, compressor=acompressor)
-for info, block in aia.iter_read_block(achunkshape):
-    sl = tuple([slice(i, i + s) for i, s in zip(info.elemindex, info.shape)])
-    azarr[sl] = block[:]
+for info, block in aia:
+    azarr[info.slice] = block[:]
 
 print(f"zarr cratio: {azarr.nbytes / azarr.nbytes_stored}")
 

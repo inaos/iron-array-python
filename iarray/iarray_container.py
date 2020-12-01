@@ -15,13 +15,20 @@ from itertools import zip_longest
 import numpy as np
 
 
+# For avoiding a warning in PyCharm in method signatures
+IArray = None
+
 class IArray(ext.Container):
     """The ironArray data container.
 
     This is not meant to be called from user space.
     """
 
-    def copy(self, view=False, cfg=None, **kwargs):
+    @property
+    def data(self):
+        return ia.iarray2numpy(self)
+
+    def copy(self, view=False, cfg=None, **kwargs) -> IArray:
         """Return a copy of the array.
 
         Parameters
@@ -34,9 +41,29 @@ class IArray(ext.Container):
         kwargs : dict
             A dictionary for setting some or all of the fields in the Config
             dataclass that should override the current configuration.
+
+        Returns
+        -------
+        IArray
+            The copy.
         """
         with ia.config(dtshape=self.dtshape, cfg=cfg, **kwargs) as cfg:
             return ext.copy(cfg, self, view)
+
+    def copyto(self, dest):
+        """Copy array contents to `dest`.
+
+        Parameters
+        ----------
+        dest : Any
+            The destination container.  It can be any object that supports
+            multidimensional assignment (NumPy, Zarr, HDF5...).  It should have the same
+            shape than `self`.
+        """
+        if tuple(dest.shape) != self.shape:
+            raise IndexError("Incompatible destination shape")
+        for info, block in self.iter_read_block():
+            dest[info.slice] = block[:]
 
     def __getitem__(self, key):
         # Massage the key a bit so that it is compatible with self.shape
@@ -60,9 +87,8 @@ class IArray(ext.Container):
 
         return super().__getitem__([start, stop])
 
-    @property
-    def data(self):
-        return ia.iarray2numpy(self)
+    def __iter__(self):
+        return self.iter_read_block()
 
     def __str__(self):
         return f"<IArray {self.shape} np.{str(np.dtype(self.dtype))}>"
@@ -262,6 +288,7 @@ def tan(iarr: IArray):
 def tanh(iarr: IArray):
     return iarr.tanh()
 
+
 # Reductions
 
 def reduce(a, method, axis=0, cfg=None, **kwargs):
@@ -291,6 +318,7 @@ def mean(a, axis=None, cfg=None, **kwargs):
     return reduce(a, ia.Reduce.MEAN, axis, cfg, **kwargs)
 
 
+# Linear algebra
 
 def matmul(a: IArray, b: IArray, cfg=None, **kwargs):
     """Multiply two matrices.

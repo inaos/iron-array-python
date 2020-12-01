@@ -419,8 +419,9 @@ class Config(ext.Config):
         cfg_ = replace(self, **kwargs)
         if "storage" in kwargs:
             store = kwargs["storage"]
-            for field in fields(Storage):
-                setattr(cfg_, field.name, getattr(store, field.name))
+            if store is not None:
+                for field in fields(Storage):
+                    setattr(cfg_, field.name, getattr(store, field.name))
         store_args = dict(
             (field.name, kwargs[field.name]) for field in fields(Storage) if field.name in kwargs
         )

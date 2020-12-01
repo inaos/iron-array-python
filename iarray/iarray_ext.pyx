@@ -66,7 +66,7 @@ cdef class ReadBlockIter:
             self.dtype = 0
         else:
             self.dtype = 1
-        self.Info = namedtuple('Info', 'index elemindex nblock shape size')
+        self.Info = namedtuple('Info', 'index elemindex nblock shape size slice')
 
     def __dealloc__(self):
         ciarray.iarray_iter_read_block_free(&self.ia_read_iter)
@@ -91,7 +91,9 @@ cdef class ReadBlockIter:
         index = tuple(self.ia_block_val.block_index[i] for i in range(self.container.ndim))
         nblock = self.ia_block_val.nblock
 
-        info = self.Info(index=index, elemindex=elem_index, nblock=nblock, shape=shape, size=size)
+        slice_ = tuple([slice(i, i + s) for i, s in zip(elem_index, shape)])
+        info = self.Info(index=index, elemindex=elem_index, nblock=nblock, shape=shape,
+                         size=size, slice=slice_)
         return info, a.reshape(shape)
 
 
