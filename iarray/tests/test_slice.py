@@ -5,25 +5,33 @@ from math import isclose
 
 
 # Slice
+
+
 @pytest.mark.parametrize(
-    "shape, chunkshape, blockshape, start, stop, dtype",
+    "slices",
     [
-        ([200], [70], [30], [20], [30], np.float64),
-        ([100, 100], [20, 20], [10, 13], [5, 10], [30, 40], np.float32),
-        ([100, 100], None, None, [5, 10], [30, 40], np.float64),
-        ([100, 100, 100], None, None, [5, 46, 10], [30, 77, 40], np.float32),
-        ([100, 100], None, None, [5, 46], [6, 47], np.float32),
+        slice(10, 20),
+        60,
+        (slice(5, 30), slice(10, 40)),
+        (slice(5, 30), 47, ...),
+        (..., slice(5, 6)),
     ],
 )
-def test_slice(shape, chunkshape, blockshape, start, stop, dtype):
+@pytest.mark.parametrize(
+    "shape, chunkshape, blockshape, dtype",
+    [
+        # ([200], [70], [30], np.float64),
+        ([100, 100], [20, 20], [10, 13], np.float32),
+        ([100, 130], None, None, np.float64),
+        ([98, 78, 55, 21], None, None, np.float32),
+        ([100, 100], None, None, np.float32),
+    ],
+)
+def test_slice(slices, shape, chunkshape, blockshape, dtype):
     if chunkshape is None:
         storage = ia.Storage(plainbuffer=True)
     else:
         storage = ia.Storage(chunkshape, blockshape, enforce_frame=True)
-
-    slices = tuple(slice(start[i], stop[i]) for i in range(len(start)))
-    if len(start) == 1:
-        slices = slices[0]
 
     a = ia.linspace(ia.DTShape(shape, dtype), -10, 10, storage=storage)
     an = ia.iarray2numpy(a)

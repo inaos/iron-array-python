@@ -14,6 +14,7 @@ from iarray import iarray_ext as ext
 from itertools import zip_longest
 import numpy as np
 from typing import Union
+import ndindex
 
 
 class IArray(ext.Container):
@@ -57,25 +58,23 @@ class IArray(ext.Container):
 
     def __getitem__(self, key):
         # Massage the key a bit so that it is compatible with self.shape
-        if self.ndim == 1:
-            key = [key]
-        start = [s.start if s.start is not None else 0 for s in key]
-        start = [st if st < sh else sh for st, sh in zip_longest(start, self.shape, fillvalue=0)]
-        stop = [
-            s.stop if s.stop is not None else sh
-            for s, sh in zip_longest(key, self.shape, fillvalue=slice(0))
-        ]
-        stop = [sh if st == 0 else st for st, sh in zip_longest(stop, self.shape)]
-        stop = [st if st < sh else sh for st, sh in zip_longest(stop, self.shape)]
+        key = list(ndindex.ndindex(key).expand(self.shape).raw)
+        squeeze_mask = tuple(True if isinstance(k, int) else False for k in key)
 
-        # Check that the final size is not zero, as this is not supported yet in iArray
-        length = 1
-        for s0, s1 in zip_longest(start, stop):
-            length *= s1 - s0
-        if length < 1:
-            raise ValueError("Slices with 0 or negative dims are not supported yet")
+        for i, k in enumerate(key):
+            if isinstance(k, np.ndarray):
+                raise AttributeError("Advance indexing is not supported yet")
+            elif isinstance(k, int):
+                key[i] = slice(k, k + 1, None)
+            elif isinstance(k, slice):
+                if k.step is not None and k.step != 1:
+                    raise AttributeError("Step indexing is not supported yet")
+            else:
+                raise AttributeError(f"Type {type(k)} is not supported")
 
-        return super().__getitem__([start, stop])
+        start = [sl.start for sl in key]
+        stop = [sl.stop for sl in key]
+        return super().__getitem__([start, stop, squeeze_mask])
 
     def __str__(self):
         return f"<IArray {self.shape} np.{str(np.dtype(self.dtype))}>"
