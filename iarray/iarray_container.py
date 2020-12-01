@@ -58,12 +58,23 @@ class IArray(ext.Container):
 
     def __getitem__(self, key):
         # Massage the key a bit so that it is compatible with self.shape
-        key = ndindex.ndindex(key).expand(self.shape).raw
-        mask = tuple(True if isinstance(k, int) else False for k in key)
-        key = tuple(k if isinstance(k, slice) else slice(k, k + 1, None) for k in key)
+        key = list(ndindex.ndindex(key).expand(self.shape).raw)
+        squeeze_mask = tuple(True if isinstance(k, int) else False for k in key)
+
+        for i, k in enumerate(key):
+            if isinstance(k, np.ndarray):
+                raise AttributeError("Advance indexing is not supported yet")
+            elif isinstance(k, int):
+                key[i] = slice(k, k + 1, None)
+            elif isinstance(k, slice):
+                if k.step is not None and k.step != 1:
+                    raise AttributeError("Step indexing is not supported yet")
+            else:
+                raise AttributeError(f"Type {type(k)} is not supported")
+
         start = [sl.start for sl in key]
         stop = [sl.stop for sl in key]
-        return super().__getitem__([start, stop, mask])
+        return super().__getitem__([start, stop, squeeze_mask])
 
     def __str__(self):
         return f"<IArray {self.shape} np.{str(np.dtype(self.dtype))}>"
