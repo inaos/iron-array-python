@@ -211,6 +211,13 @@ cdef extern from "libiarray/iarray.h":
                                    void *buffer,
                                    int64_t buflen)
 
+    ina_rc_t iarray_squeeze_index(iarray_context_t *ctx,
+                                  iarray_container_t *container,
+                                  bool *index)
+
+    ina_rc_t iarray_squeeze(iarray_context_t *ctx,
+                            iarray_container_t *container)
+
     ina_rc_t iarray_get_dtshape(iarray_context_t *ctx,
                                 iarray_container_t *c,
                                 iarray_dtshape_t *dtshape)

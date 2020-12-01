@@ -344,8 +344,8 @@ cdef class Container:
 
     def __getitem__(self, key):
         # key has been massaged already
-        start, stop = key
-        return get_slice(self.context, self, start, stop, True, None)
+        start, stop, mask = key
+        return get_slice(self.context, self, start, stop, mask, True, None)
 
     def is_view(self):
         cdef ciarray.bool view
@@ -598,7 +598,7 @@ def load(cfg, filename, load_in_mem=False):
     return ia.IArray(ctx, c_c)
 
 
-def get_slice(ctx, data, start, stop, view, storage):
+def get_slice(ctx, data, start, stop, index, view, storage):
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
         ctx.to_capsule(), "iarray_context_t*")
     cdef ciarray.iarray_container_t *data_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(
@@ -624,7 +624,14 @@ def get_slice(ctx, data, start, stop, view, storage):
         set_storage(storage, &store_)
         ciarray.iarray_get_slice(ctx_, data_, start_, stop_, view, &store_, flags, &c)
 
+    cdef ciarray.bool index_[ciarray.IARRAY_DIMENSION_MAX]
+    for i in range(data.ndim):
+        index_[i] = index[i]
+
+    ciarray.iarray_squeeze_index(ctx_, c, index_)
+
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
+
     b =  ia.IArray(ctx, c_c)
     if b.ndim == 0:
         return float(ia.iarray2numpy(b))
