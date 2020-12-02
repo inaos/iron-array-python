@@ -23,6 +23,14 @@ import iarray as ia
 from collections import namedtuple
 
 
+class IArrayError(Exception):
+    pass
+
+def iarray_check(error):
+    if error != 0:
+        raise IArrayError(str(ciarray.ina_err_strerror(error)))
+
+
 IARRAY_ERR_EVAL_ENGINE_FAILED = ciarray.IARRAY_ERR_EVAL_ENGINE_FAILED
 IARRAY_ERR_EVAL_ENGINE_NOT_COMPILED = ciarray.IARRAY_ERR_EVAL_ENGINE_NOT_COMPILED
 IARRAY_ERR_EVAL_ENGINE_OUT_OF_RANGE  = ciarray.IARRAY_ERR_EVAL_ENGINE_OUT_OF_RANGE
@@ -61,7 +69,7 @@ cdef class ReadBlockIter:
         for i in range(len(block)):
             block_[i] = block[i]
 
-        ciarray.iarray_iter_read_block_new(self.container.context.ia_ctx, &self.ia_read_iter, self.container.ia_container, block_, &self.ia_block_val, False)
+        iarray_check(ciarray.iarray_iter_read_block_new(self.container.context.ia_ctx, &self.ia_read_iter, self.container.ia_container, block_, &self.ia_block_val, False))
         if self.container.dtype == np.float64:
             self.dtype = 0
         else:
@@ -78,7 +86,7 @@ cdef class ReadBlockIter:
         if ciarray.iarray_iter_read_block_has_next(self.ia_read_iter) != 0:
             raise StopIteration
 
-        ciarray.iarray_iter_read_block_next(self.ia_read_iter, NULL, 0)
+        iarray_check(ciarray.iarray_iter_read_block_next(self.ia_read_iter, NULL, 0))
         shape = tuple(self.ia_block_val.block_shape[i] for i in range(self.container.ndim))
         size = np.prod(shape)
         if self.dtype == 0:
@@ -113,9 +121,13 @@ cdef class WriteBlockIter:
             block = c.chunkshape
         for i in range(len(block)):
             block_[i] = block[i]
-        retcode = ciarray.iarray_iter_write_block_new(self.container.context.ia_ctx, &self.ia_write_iter, self.container.ia_container, block_, &self.ia_block_val,
-                                                      False)
-        assert(retcode == 0)
+        iarray_check(ciarray.iarray_iter_write_block_new(self.container.context.ia_ctx,
+                                                         &self.ia_write_iter,
+                                                         self.container.ia_container,
+                                                         block_,
+                                                         &self.ia_block_val,
+                                                         False))
+
         if self.container.dtype == np.float64:
             self.dtype = 0
         else:
@@ -132,7 +144,7 @@ cdef class WriteBlockIter:
         if ciarray.iarray_iter_write_block_has_next(self.ia_write_iter) != 0:
             raise StopIteration
 
-        ciarray.iarray_iter_write_block_next(self.ia_write_iter, NULL, 0)
+        iarray_check(ciarray.iarray_iter_write_block_next(self.ia_write_iter, NULL, 0))
         shape = tuple(self.ia_block_val.block_shape[i] for i in range(self.container.ndim))
         size = np.prod(shape)
         if self.dtype == 0:
@@ -151,7 +163,7 @@ cdef class WriteBlockIter:
 
 cdef class IArrayInit:
     def __cinit__(self):
-        ciarray.iarray_init()
+        iarray_check(ciarray.iarray_init())
 
     def __dealloc__(self):
         ciarray.iarray_destroy()
@@ -197,7 +209,7 @@ cdef class Context:
 
     def __init__(self, cfg):
         cdef ciarray.iarray_config_t cfg_ = cfg.to_dict()
-        ciarray.iarray_context_new(&cfg_, &self.ia_ctx)
+        iarray_check(ciarray.iarray_context_new(&cfg_, &self.ia_ctx))
 
     def __dealloc__(self):
         ciarray.iarray_context_free(&self.ia_ctx)
@@ -249,9 +261,9 @@ cdef class RandomContext:
         self.context = ctx
         cdef ciarray.iarray_random_ctx_t* r_ctx
         if rng == ia.RandomGen.MERSENNE_TWISTER:
-            ciarray.iarray_random_ctx_new(self.context.ia_ctx, seed, ciarray.IARRAY_RANDOM_RNG_MERSENNE_TWISTER, &r_ctx)
+            iarray_check(ciarray.iarray_random_ctx_new(self.context.ia_ctx, seed, ciarray.IARRAY_RANDOM_RNG_MERSENNE_TWISTER, &r_ctx))
         elif rng == ia.RandomGen.SOBOL:
-            ciarray.iarray_random_ctx_new(self.context.ia_ctx, seed, ciarray.IARRAY_RANDOM_RNG_SOBOL, &r_ctx)
+            iarray_check(ciarray.iarray_random_ctx_new(self.context.ia_ctx, seed, ciarray.IARRAY_RANDOM_RNG_SOBOL, &r_ctx))
         else:
             raise ValueError("Random generator unknown")
         self.random_ctx = r_ctx
@@ -290,20 +302,20 @@ cdef class Container:
     @property
     def ndim(self):
         cdef ciarray.iarray_dtshape_t dtshape
-        ciarray.iarray_get_dtshape(self.context.ia_ctx, self.ia_container, &dtshape)
+        iarray_check(ciarray.iarray_get_dtshape(self.context.ia_ctx, self.ia_container, &dtshape))
         return dtshape.ndim
 
     @property
     def shape(self):
         cdef ciarray.iarray_dtshape_t dtshape
-        ciarray.iarray_get_dtshape(self.context.ia_ctx, self.ia_container, &dtshape)
+        iarray_check(ciarray.iarray_get_dtshape(self.context.ia_ctx, self.ia_container, &dtshape))
         shape = [dtshape.shape[i] for i in range(self.ndim)]
         return tuple(shape)
 
     @property
     def is_plainbuffer(self):
         cdef ciarray.iarray_storage_t storage
-        ciarray.iarray_get_storage(self.context.ia_ctx, self.ia_container, &storage)
+        iarray_check(ciarray.iarray_get_storage(self.context.ia_ctx, self.ia_container, &storage))
         if storage.backend == ciarray.IARRAY_STORAGE_PLAINBUFFER:
             return True
         else:
@@ -312,7 +324,7 @@ cdef class Container:
     @property
     def chunkshape(self):
         cdef ciarray.iarray_storage_t storage
-        ciarray.iarray_get_storage(self.context.ia_ctx, self.ia_container, &storage)
+        iarray_check(ciarray.iarray_get_storage(self.context.ia_ctx, self.ia_container, &storage))
         if storage.backend == ciarray.IARRAY_STORAGE_PLAINBUFFER or self.is_view():
             return None
         chunkshape = [storage.chunkshape[i] for i in range(self.ndim)]
@@ -321,7 +333,7 @@ cdef class Container:
     @property
     def blockshape(self):
         cdef ciarray.iarray_storage_t storage
-        ciarray.iarray_get_storage(self.context.ia_ctx, self.ia_container, &storage)
+        iarray_check(ciarray.iarray_get_storage(self.context.ia_ctx, self.ia_container, &storage))
         if storage.backend == ciarray.IARRAY_STORAGE_PLAINBUFFER or self.is_view():
             return None
         blockshape = [storage.blockshape[i] for i in range(self.ndim)]
@@ -331,7 +343,7 @@ cdef class Container:
     def dtype(self):
         dtype = [np.float64, np.float32]
         cdef ciarray.iarray_dtshape_t dtshape
-        ciarray.iarray_get_dtshape(self.context.ia_ctx, self.ia_container, &dtshape)
+        iarray_check(ciarray.iarray_get_dtshape(self.context.ia_ctx, self.ia_container, &dtshape))
         return dtype[dtshape.dtype]
 
     @property
@@ -341,7 +353,7 @@ cdef class Container:
     @property
     def cratio(self):
         cdef ciarray.int64_t nbytes, cbytes
-        ciarray.iarray_container_info(self.ia_container, &nbytes, &cbytes)
+        iarray_check(ciarray.iarray_container_info(self.ia_container, &nbytes, &cbytes))
         return <double>nbytes / <double>cbytes
 
     def __getitem__(self, key):
@@ -351,7 +363,7 @@ cdef class Container:
 
     def is_view(self):
         cdef ciarray.bool view
-        ciarray.iarray_is_view(self.context.ia_ctx, self.ia_container, &view)
+        iarray_check(ciarray.iarray_is_view(self.context.ia_ctx, self.ia_container, &view))
         return view
 
 cdef class Expression:
@@ -362,7 +374,7 @@ cdef class Expression:
     def __init__(self, cfg):
         self.context = Context(cfg)
         cdef ciarray.iarray_expression_t* e
-        ciarray.iarray_expr_new(self.context.ia_ctx, &e)
+        iarray_check(ciarray.iarray_expr_new(self.context.ia_ctx, &e))
         self.ia_expr = e
         self.expression = None
         self.storage = None
@@ -377,7 +389,7 @@ cdef class Expression:
         var2 = var.encode("utf-8") if isinstance(var, str) else var
         cdef ciarray.iarray_container_t *c_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(
             c.to_capsule(), "iarray_container_t*")
-        ciarray.iarray_expr_bind(self.ia_expr, var2, c_)
+        iarray_check(ciarray.iarray_expr_bind(self.ia_expr, var2, c_))
 
     def bind_out_properties(self, dtshape, storage):
         dtshape = IaDTShape(dtshape).to_dict()
@@ -386,7 +398,7 @@ cdef class Expression:
         cdef ciarray.iarray_storage_t store_
         set_storage(storage, &store_)
 
-        ciarray.iarray_expr_bind_out_properties(self.ia_expr, &dtshape_, &store_)
+        iarray_check(ciarray.iarray_expr_bind_out_properties(self.ia_expr, &dtshape_, &store_))
         self.dtshape = dtshape
         self.storage = storage
 
@@ -403,14 +415,12 @@ cdef class Expression:
             if ufunc in expr:
                 expr = expr.replace(ufunc, ufunc_repls[ufunc])
         expr = expr.encode("utf-8") if isinstance(expr, str) else expr
-        if ciarray.iarray_expr_compile(self.ia_expr, expr) != 0:
-            raise ValueError(f"Error in compiling expr: {expr}")
+        iarray_check(ciarray.iarray_expr_compile(self.ia_expr, expr))
         self.expression = expr
 
     def compile_bc(self, bc, name):
         name = name.encode()
-        if ciarray.iarray_expr_compile_udf(self.ia_expr, len(bc), bc, name) != 0:
-            raise ValueError(f"Error in compiling udf...")
+        iarray_check(ciarray.iarray_expr_compile_udf(self.ia_expr, len(bc), bc, name))
         self.expression = "user_defined_function"
 
     def compile_udf(self, func):
@@ -418,8 +428,7 @@ cdef class Expression:
 
     def eval(self):
         cdef ciarray.iarray_container_t *c;
-        if ciarray.iarray_eval(self.ia_expr, &c) != 0:
-            raise RuntimeError(f"Error in evaluating expr: {self.expression}")
+        iarray_check(ciarray.iarray_eval(self.ia_expr, &c))
         c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
         return ia.IArray(self.context, c_c)
 
@@ -669,6 +678,7 @@ def iarray2numpy(cfg, c):
         ctx.to_capsule(), "iarray_context_t*")
     cdef ciarray.iarray_container_t *c_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(
         c.to_capsule(), "iarray_container_t*")
+
 
     cdef ciarray.iarray_dtshape_t dtshape
     ciarray.iarray_get_dtshape(ctx_, c_, &dtshape)

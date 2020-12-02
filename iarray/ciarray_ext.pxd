@@ -15,6 +15,8 @@ cdef extern from "libiarray/iarray.h":
     ctypedef uint64_t ina_rc_t
 
     # Stuff from "libinac/ina.h"
+    const char* ina_err_strerror(ina_rc_t rc)
+
     cdef enum:
         INA_ES_USER_DEFINED = 1024UL
 

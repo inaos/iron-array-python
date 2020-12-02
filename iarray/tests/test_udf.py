@@ -238,9 +238,12 @@ def test_error(f):
     x = ia.linspace(dtshape, start, stop, storage=storage, **cparams)
     expr = f.create_expr([x], storage=storage, **cparams)
 
-    with pytest.raises(RuntimeError) as excinfo:
+    try:
         expr.eval()
-    assert "Error in evaluating expr: user_defined_function" in str(excinfo.value)
+    except ia.ext.IArrayError:
+        pass
+    else:
+        assert False
 
 
 def f_unsupported_function(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):

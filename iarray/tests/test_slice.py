@@ -17,14 +17,15 @@ from math import isclose
         (..., slice(5, 6)),
     ],
 )
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
 @pytest.mark.parametrize(
-    "shape, chunkshape, blockshape, dtype",
+    "shape, chunkshape, blockshape",
     [
         # ([200], [70], [30], np.float64),
-        ([100, 100], [20, 20], [10, 13], np.float32),
-        ([100, 130], None, None, np.float64),
-        ([98, 78, 55, 21], None, None, np.float32),
-        ([100, 100], None, None, np.float32),
+        ([100, 100], [20, 20], [10, 13]),
+        ([100, 130], None, None),
+        ([98, 78, 55, 21], None, None),
+        ([100, 100], None, None),
     ],
 )
 def test_slice(slices, shape, chunkshape, blockshape, dtype):
