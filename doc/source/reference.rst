@@ -65,12 +65,20 @@ Universal Functions
 .. autofunction:: iarray.tanh
 
 
-Matrix Operations
-=================
+Linear Algebra Operations
+=========================
 
 .. autofunction:: iarray.matmul
 .. autofunction:: iarray.transpose
 
+Reductions
+==========
+
+.. autofunction:: iarray.max
+.. autofunction:: iarray.min
+.. autofunction:: iarray.sum
+.. autofunction:: iarray.prod
+.. autofunction:: iarray.mean
 
 Expressions
 ===========

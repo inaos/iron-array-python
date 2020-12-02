@@ -83,7 +83,7 @@ steps:
   displayName: 'Use Python $(python.version)'
 
 - script: |
-      python -m pip install --retries 3 -U pip setuptools setuptools-scm scikit-build numpy llvmlite cython numexpr
+      python -m pip install --retries 3 -U pip setuptools setuptools-scm scikit-build numpy llvmlite cython numexpr ndindex
   displayName: 'Install dependencies'
 
 - script: |

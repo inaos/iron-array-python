@@ -123,7 +123,6 @@ from .iarray_container import (
     sum,
     prod,
     mean,
-    reduce,
     # ufuncs
     abs,
     arccos,
