@@ -26,6 +26,7 @@ from collections import namedtuple
 class IArrayError(Exception):
     pass
 
+
 def iarray_check(error):
     if error != 0:
         raise IArrayError(str(ciarray.ina_err_strerror(error)))
