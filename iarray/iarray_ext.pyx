@@ -29,7 +29,7 @@ class IArrayError(Exception):
 
 def iarray_check(error):
     if error != 0:
-        raise IArrayError(str(ciarray.ina_err_strerror(error)))
+        raise IArrayError(str(ciarray.iarray_err_strerror(error)))
 
 
 IARRAY_ERR_EVAL_ENGINE_FAILED = ciarray.IARRAY_ERR_EVAL_ENGINE_FAILED
