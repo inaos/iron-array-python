@@ -38,6 +38,7 @@ release = iarray.__version__
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    "sphinx.ext.autosummary",
     "sphinx.ext.autodoc",
     "sphinx.ext.coverage",
     "sphinx.ext.ifconfig",
@@ -69,6 +70,8 @@ html_show_sourcelink = False
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
+autosummary_generate = True
+
 # html_theme = 'sphinx_rtd_theme'
 html_theme = "pydata_sphinx_theme"
 # html_theme = "furo"

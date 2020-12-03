@@ -20,7 +20,8 @@ import ndindex
 # For avoiding a warning in PyCharm in method signatures
 IArray = None
 
-class IArray(ext.Container):
+
+class IArray:
     """The ironArray data container.
 
     This is not meant to be called from user space.
@@ -467,6 +468,7 @@ def mean(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwa
 
 
 # Linear Algebra
+
 
 def matmul(a: IArray, b: IArray, cfg=None, **kwargs):
     """Multiply two matrices.

@@ -8,121 +8,157 @@ Library Reference
 Main classes
 =============
 
-.. autoclass:: iarray.IArray
+.. autosummary::
+   :toctree: reference/
+   :nosignatures:
 
-.. autoclass:: iarray.DTShape
-   :members: shape, dtype
 
+   IArray
+   DTShape
 
 Constructors
 ============
 
-.. autofunction:: iarray.empty
-.. autofunction:: iarray.arange
-.. autofunction:: iarray.linspace
-.. autofunction:: iarray.zeros
-.. autofunction:: iarray.ones
-.. autofunction:: iarray.full
+.. autosummary::
+   :toctree: reference/
+   :nosignatures:
+
+
+   empty
+   arange
+   linspace
+   zeros
+   ones
+   full
 
 
 Random Constructors
 ===================
+.. autosummary::
+   :toctree: reference/
+   :nosignatures:
 
-.. autofunction:: iarray.random.random_sample
-.. autofunction:: iarray.random.standard_normal
-.. autofunction:: iarray.random.beta
-.. autofunction:: iarray.random.lognormal
-.. autofunction:: iarray.random.exponential
-.. autofunction:: iarray.random.uniform
-.. autofunction:: iarray.random.normal
-.. autofunction:: iarray.random.bernoulli
-.. autofunction:: iarray.random.binomial
-.. autofunction:: iarray.random.poisson
-.. autofunction:: iarray.random.kstest
+
+   random.random_sample
+   random.standard_normal
+   random.beta
+   random.lognormal
+   random.exponential
+   random.uniform
+   random.normal
+   random.bernoulli
+   random.binomial
+   random.poisson
+   random.kstest
 
 
 Universal Functions
 ===================
+.. autosummary::
+   :toctree: reference/
+   :nosignatures:
 
-.. autofunction:: iarray.abs
-.. autofunction:: iarray.arccos
-.. autofunction:: iarray.arcsin
-.. autofunction:: iarray.arctan
-.. autofunction:: iarray.arctan2
-.. autofunction:: iarray.ceil
-.. autofunction:: iarray.cos
-.. autofunction:: iarray.cosh
-.. autofunction:: iarray.exp
-.. autofunction:: iarray.floor
-.. autofunction:: iarray.log
-.. autofunction:: iarray.log10
-.. autofunction:: iarray.negative
-.. autofunction:: iarray.power
-.. autofunction:: iarray.sin
-.. autofunction:: iarray.sinh
-.. autofunction:: iarray.sqrt
-.. autofunction:: iarray.tan
-.. autofunction:: iarray.tanh
+
+   abs
+   arccos
+   arcsin
+   arctan
+   arctan2
+   ceil
+   cos
+   cosh
+   exp
+   floor
+   log
+   log10
+   negative
+   power
+   sin
+   sinh
+   sqrt
+   tan
+   tanh
 
 
 Linear Algebra Operations
 =========================
 
-.. autofunction:: iarray.matmul
-.. autofunction:: iarray.transpose
+.. autosummary::
+   :toctree: reference/
+   :nosignatures:
+
+
+   matmul
+   transpose
 
 Reductions
 ==========
 
-.. autofunction:: iarray.max
-.. autofunction:: iarray.min
-.. autofunction:: iarray.sum
-.. autofunction:: iarray.prod
-.. autofunction:: iarray.mean
+.. autosummary::
+   :toctree: reference/
+   :nosignatures:
+
+   max
+   min
+   sum
+   prod
+   mean
 
 Expressions
 ===========
 
-.. autoclass:: iarray.Expr
-    :members: eval
-.. autoclass:: iarray.LazyExpr
-    :members: eval
+.. autosummary::
+   :toctree: reference/
+   :nosignatures:
 
-.. autofunction:: iarray.expr_from_string
-.. autofunction:: iarray.expr_from_udf
+   Expr
+   LazyExpr
+   expr_from_string
+   expr_from_udf
 
 
 Set/get Configuration Parameters
 ================================
 
-.. autoclass:: iarray.Config
-.. autoclass:: iarray.Storage
+.. autosummary::
+   :toctree: reference/
+   :nosignatures:
 
-.. autofunction:: iarray.set_config
-.. autofunction:: iarray.get_config
-.. autofunction:: iarray.config
-.. autofunction:: iarray.reset_config_defaults
+   Config
+   Storage
+   set_config
+   get_config
+   config
+   reset_config_defaults
 
 
 Utilities
 =========
 
-.. autofunction:: iarray.load
-.. autofunction:: iarray.save
-.. autofunction:: iarray.cmp_arrays
-.. autofunction:: iarray.iarray2numpy
-.. autofunction:: iarray.numpy2iarray
-.. autofunction:: iarray.get_ncores
-.. autofunction:: iarray.partition_advice
+.. autosummary::
+   :toctree: reference/
+   :nosignatures:
+
+   load
+   save
+   cmp_arrays
+   iarray2numpy
+   numpy2iarray
+   get_ncores
+   partition_advice
 
 
 Enumerated Classes
 ==================
 
-.. autoclass:: iarray.Codecs
-.. autoclass:: iarray.Filters
-.. autoclass:: iarray.Eval
-.. autoclass:: iarray.RandomGen
+.. autosummary::
+   :toctree: reference/
+   :nosignatures:
+
+   Codecs
+   Filters
+   Eval
+   RandomGen
 
 
 Global Variables

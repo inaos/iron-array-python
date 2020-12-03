@@ -17,10 +17,8 @@ from dataclasses import dataclass
 from typing import Sequence
 
 
-@dataclass(frozen=True)
+@dataclass
 class DTShape:
-    shape: Sequence
-    dtype: (np.float32, np.float64) = np.float64
     """Shape and data type dataclass.
 
     Parameters
@@ -30,6 +28,9 @@ class DTShape:
     dtype: np.float32, np.float64
         The data type of the elements in the array.  The default is np.float64.
     """
+
+    shape: Sequence
+    dtype: (np.float32, np.float64) = np.float64
 
     def __post_init__(self):
         if not self.shape:
