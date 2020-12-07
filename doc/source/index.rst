@@ -16,11 +16,3 @@ Welcome to ironArray for Python's documentation!
    reference
    opt-tips
    config
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`

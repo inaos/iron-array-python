@@ -201,7 +201,7 @@ cdef class Config:
         self.config.max_num_threads = max_num_threads
         self.config.fp_mantissa_bits = fp_mantissa_bits
 
-    def to_dict(self):
+    def _to_dict(self):
         return <object> self.config
 
 
@@ -209,7 +209,7 @@ cdef class Context:
     cdef ciarray.iarray_context_t *ia_ctx
 
     def __init__(self, cfg):
-        cdef ciarray.iarray_config_t cfg_ = cfg.to_dict()
+        cdef ciarray.iarray_config_t cfg_ = cfg._to_dict()
         iarray_check(ciarray.iarray_context_new(&cfg_, &self.ia_ctx))
 
     def __dealloc__(self):
@@ -302,12 +302,14 @@ cdef class Container:
 
     @property
     def ndim(self):
+        """Number of array dimensions."""
         cdef ciarray.iarray_dtshape_t dtshape
         iarray_check(ciarray.iarray_get_dtshape(self.context.ia_ctx, self.ia_container, &dtshape))
         return dtshape.ndim
 
     @property
     def shape(self):
+        """Tuple of array dimensions."""
         cdef ciarray.iarray_dtshape_t dtshape
         iarray_check(ciarray.iarray_get_dtshape(self.context.ia_ctx, self.ia_container, &dtshape))
         shape = [dtshape.shape[i] for i in range(self.ndim)]
@@ -315,6 +317,7 @@ cdef class Container:
 
     @property
     def is_plainbuffer(self):
+        """bool indicating if the container is based on a plainbuffer or not"""
         cdef ciarray.iarray_storage_t storage
         iarray_check(ciarray.iarray_get_storage(self.context.ia_ctx, self.ia_container, &storage))
         if storage.backend == ciarray.IARRAY_STORAGE_PLAINBUFFER:
@@ -324,6 +327,7 @@ cdef class Container:
 
     @property
     def chunkshape(self):
+        """Tuple of chunk dimensions."""
         cdef ciarray.iarray_storage_t storage
         iarray_check(ciarray.iarray_get_storage(self.context.ia_ctx, self.ia_container, &storage))
         if storage.backend == ciarray.IARRAY_STORAGE_PLAINBUFFER or self.is_view():
@@ -333,6 +337,7 @@ cdef class Container:
 
     @property
     def blockshape(self):
+        """Tuple of block dimensions."""
         cdef ciarray.iarray_storage_t storage
         iarray_check(ciarray.iarray_get_storage(self.context.ia_ctx, self.ia_container, &storage))
         if storage.backend == ciarray.IARRAY_STORAGE_PLAINBUFFER or self.is_view():
@@ -342,6 +347,7 @@ cdef class Container:
 
     @property
     def dtype(self):
+        """Data-type of the array’s elements."""
         dtype = [np.float64, np.float32]
         cdef ciarray.iarray_dtshape_t dtshape
         iarray_check(ciarray.iarray_get_dtshape(self.context.ia_ctx, self.ia_container, &dtshape))
@@ -349,10 +355,12 @@ cdef class Container:
 
     @property
     def dtshape(self):
+        """The :py:obj:`DTShape` of the array."""
         return ia.DTShape(self.shape, self.dtype)
 
     @property
     def cratio(self):
+        """Array compression ratio"""
         cdef ciarray.int64_t nbytes, cbytes
         iarray_check(ciarray.iarray_container_info(self.ia_container, &nbytes, &cbytes))
         return <double>nbytes / <double>cbytes
@@ -414,7 +422,7 @@ cdef class Expression:
             }
         for ufunc in ufunc_repls.keys():
             if ufunc in expr:
-                expr = expr.replace(ufunc, ufunc_repls[ufunc])
+                expr = expr._replace(ufunc, ufunc_repls[ufunc])
         expr = expr.encode("utf-8") if isinstance(expr, str) else expr
         iarray_check(ciarray.iarray_expr_compile(self.ia_expr, expr))
         self.expression = expr

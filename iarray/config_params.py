@@ -303,7 +303,7 @@ class Storage:
                     "plainbuffer array does not support neither a chunkshape nor blockshape"
                 )
 
-    def get_shape_advice(self, dtshape):
+    def _get_shape_advice(self, dtshape):
         if self.plainbuffer:
             return
         chunkshape, blockshape = self.chunkshape, self.blockshape
@@ -329,13 +329,13 @@ class Config(ext.Config):
 
     Parameters
     ----------
-    codec : ia.Codecs
-        The codec to be used inside Blosc.  Default is ia.Codecs.LZ4.
+    codec : Codecs
+        The codec to be used inside Blosc.  Default is :py:obj:`Codecs.LZ4 <Codecs>`.
     clevel : int
         The compression level.  It can have values between 0 (no compression) and
         9 (max compression).  Default is 5.
     filters : list
-        The list of filters for Blosc.  Default is [ia.Filters.SHUFFLE].
+        The list of filters for Blosc.  Default is [:py:obj:`Filters.SHUFFLE <Filters>`].
     fp_mantissa_bits : int
         The number of bits to be kept in the mantissa in output arrays.  If 0 (the default),
         no precision is capped.  FYI, double precision have 52 bit in mantissa, whereas
@@ -343,28 +343,29 @@ class Config(ext.Config):
         you will be using a compressed storage very close as if you were using singles.
     use_dict : bool
         Whether Blosc should use a dictionary for enhanced compression (currently only
-        supported by `ia.Codecs.ZSTD`).  Default is False.
+        supported by :py:obj:`Codecs.ZSTD <Codecs>`).  Default is False.
     nthreads : int
         The number of threads for internal ironArray operations.  This number can be
         silently capped to be the number of *logical* cores in the system.  If 0
         (the default), the number of logical cores in the system is used.
-    eval_method : ia.Eval
-        Method to evaluate expressions.  The default is `ia.Eval.AUTO`, where the
+    eval_method : Eval
+        Method to evaluate expressions.  The default is :py:obj:`Eval.AUTO <Eval>`, where the
         expression is analyzed and the more convenient method is used.
     seed : int
         The default seed for internal random generators.  If None (the default), a
         seed will automatically be generated internally for you.
-    random_gen : ia.RandomGen
-        The random generator to be used.  The default is ia.RandomGen.MERSENNE_TWISTER.
-    storage : ia.Storage
+    random_gen : RandomGen
+        The random generator to be used.  The default is
+        :py:obj:`RandomGen.MERSENNE_TWISTER <RandomGen>`.
+    storage : Storage
         Storage instance where you can specify different properties of the output
-        storage.  See `ia.Storage` docs for details.  For convenience, you can also
-        pass all the `ia.Storage` parameters directly in this constructor too.
+        storage.  See :py:obj:`Storage` docs for details.  For convenience, you can also
+        pass all the Storage parameters directly in this constructor too.
 
     See Also
     --------
-    ia.set_config
-    ia.config
+    set_config
+    config
     """
 
     codec: ia.Codecs = field(default_factory=defaults._codec)
@@ -415,7 +416,7 @@ class Config(ext.Config):
             self.eval_method,
         )
 
-    def replace(self, **kwargs):
+    def _replace(self, **kwargs):
         cfg_ = replace(self, **kwargs)
         if "storage" in kwargs:
             store = kwargs["storage"]
@@ -463,9 +464,9 @@ def set_config(cfg: Config = None, dtshape=None, **kwargs):
             cfg = global_config
 
     if kwargs != {}:
-        cfg = cfg.replace(**kwargs)
+        cfg = cfg._replace(**kwargs)
     if dtshape is not None:
-        cfg.storage.get_shape_advice(dtshape)
+        cfg.storage._get_shape_advice(dtshape)
 
     global_config = cfg
     # Set the defaults for Config() constructor and other nested configs (Storage...)
@@ -507,9 +508,9 @@ def config(cfg: Config = None, dtshape=None, **kwargs):
     """
     if cfg is None:
         cfg = Config()
-    cfg_ = cfg.replace(**kwargs)
+    cfg_ = cfg._replace(**kwargs)
     if dtshape is not None:
-        cfg_.storage.get_shape_advice(dtshape)
+        cfg_.storage._get_shape_advice(dtshape)
 
     yield cfg_
 

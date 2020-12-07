@@ -63,9 +63,13 @@ class RandomGen(Enum):
 
 # Eval method
 class Eval(Enum):
+    """
+    Available eval methods
+    """
+
     AUTO = auto()
-    ITERBLOSC = auto()
-    ITERCHUNK = auto()
+    ITERBLOSC = auto()  # Iterblosc method
+    ITERCHUNK = auto()  # Iterchunk method
 
 
 class Reduce(Enum):

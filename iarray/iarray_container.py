@@ -15,13 +15,22 @@ from itertools import zip_longest
 import numpy as np
 from typing import Union
 import ndindex
+import sys
+
+
+def is_documented_by(original):
+    def wrapper(target):
+        target.__doc__ = original.__doc__
+        return target
+
+    return wrapper
 
 
 # For avoiding a warning in PyCharm in method signatures
 IArray = None
 
 
-class IArray:
+class IArray(ext.Container):
     """The ironArray data container.
 
     This is not meant to be called from user space.
@@ -29,6 +38,9 @@ class IArray:
 
     @property
     def data(self):
+        """
+        ndarray with array data.
+        """
         return ia.iarray2numpy(self)
 
     def copy(self, view=False, cfg=None, **kwargs) -> IArray:
@@ -161,148 +173,537 @@ class IArray:
         return ia.transpose(self, **kwargs)
 
     def abs(self):
+        """See :py:obj:`iarray.abs`."""
         return ia.LazyExpr(new_op=(self, "abs", None))
 
     def arccos(self):
+        """See :py:obj:`iarray.arcos`."""
         return ia.LazyExpr(new_op=(self, "acos", None))
 
     def arcsin(self):
+        """See :py:obj:`iarray.arcsin`."""
         return ia.LazyExpr(new_op=(self, "asin", None))
 
     def arctan(self):
+        """See :py:obj:`iarray.arctan`."""
         return ia.LazyExpr(new_op=(self, "atan", None))
 
     def arctan2(self, op2):
+        """See :py:obj:`iarray.arctan2`."""
         return ia.LazyExpr(new_op=(self, "atan2", op2))
 
     def acos(self):
+        """See :py:obj:`iarray.acos`."""
         return ia.LazyExpr(new_op=(self, "acos", None))
 
     def asin(self):
+        """See :py:obj:`iarray.asin`."""
         return ia.LazyExpr(new_op=(self, "asin", None))
 
     def atan(self):
+        """See :py:obj:`iarray.atan`."""
         return ia.LazyExpr(new_op=(self, "atan", None))
 
     def atan2(self, op2):
+        """See :py:obj:`iarray.atan2`."""
         return ia.LazyExpr(new_op=(self, "atan2", op2))
 
     def ceil(self):
+        """See :py:obj:`iarray.ceil`."""
         return ia.LazyExpr(new_op=(self, "ceil", None))
 
     def cos(self):
+        """See :py:obj:`iarray.cos`."""
         return ia.LazyExpr(new_op=(self, "cos", None))
 
     def cosh(self):
+        """See :py:obj:`iarray.cosh`."""
         return ia.LazyExpr(new_op=(self, "cosh", None))
 
     def exp(self):
+        """See :py:obj:`iarray.exp`."""
         return ia.LazyExpr(new_op=(self, "exp", None))
 
     def floor(self):
+        """See :py:obj:`iarray.floor`."""
         return ia.LazyExpr(new_op=(self, "floor", None))
 
     def log(self):
+        """See :py:obj:`iarray.log`."""
         return ia.LazyExpr(new_op=(self, "log", None))
 
     def log10(self):
+        """See :py:obj:`iarray.log10`."""
         return ia.LazyExpr(new_op=(self, "log10", None))
 
     def negative(self):
+        """See :py:obj:`iarray.negative`."""
         return ia.LazyExpr(new_op=(self, "negate", None))
 
     def power(self, op2):
+        """See :py:obj:`iarray.power`."""
         return ia.LazyExpr(new_op=(self, "pow", op2))
 
     def sin(self):
+        """See :py:obj:`iarray.sin`."""
         return ia.LazyExpr(new_op=(self, "sin", None))
 
     def sinh(self):
+        """See :py:obj:`iarray.sinh`."""
         return ia.LazyExpr(new_op=(self, "sinh", None))
 
     def sqrt(self):
+        """See :py:obj:`iarray.sqrt`."""
         return ia.LazyExpr(new_op=(self, "sqrt", None))
 
     def tan(self):
+        """See :py:obj:`iarray.tan`."""
         return ia.LazyExpr(new_op=(self, "tan", None))
 
     def tanh(self):
+        """See :py:obj:`iarray.tanh`."""
         return ia.LazyExpr(new_op=(self, "tanh", None))
 
 
 def abs(iarr: IArray):
+    """
+    Absolute value, element-wise.
+
+    Parameters
+    ----------
+    iarr: IArray
+        Input array.
+
+    Returns
+    -------
+    abs: IArray
+        An array containing the absolute value of each element in x.
+
+    References
+    ----------
+    https://numpy.org/doc/stable/reference/generated/numpy.abs.html
+    """
     return iarr.abs()
 
 
 def arccos(iarr: IArray):
+    """
+    Trigonometric inverse cosine, element-wise.
+
+    The inverse of :py:obj:`cos` so that, if $y = \\\\cos(x)$, then $x = \\\\arccos(y)$.
+
+    Parameters
+    ----------
+    iarr: IArray
+        x-coordinate on the unit circle. For real arguments, the domain is $[-1, 1]$.
+
+    Returns
+    -------
+    angle: IArray
+        The angle of the ray intersecting the unit circle at the given x-coordinate in radians
+        $[0, \\\\pi]$.
+
+    Notes
+    -----
+    :py:obj:`arccos` is a multivalued function: for each x there are infinitely many numbers z
+    such that $\\\\cos(z) = x$. The convention is to return the angle z whose real part lies in
+    &[0, \\\\pi]$.
+
+    References
+    ----------
+    https://numpy.org/doc/stable/reference/generated/numpy.arccos.html
+    """
     return iarr.arccos()
 
 
 def arcsin(iarr: IArray):
+    """
+    Trigonometric inverse sine, element-wise.
+
+    The inverse of :py:obj:`sin` so that, if $y = \\\\sin(x)$, then $x = \\\\arcsin(y)$.
+
+    Parameters
+    ----------
+    iarr: IArray
+        y-coordinate on the unit circle.
+
+    Returns
+    -------
+    angle: IArray
+        The inverse sine of each element in x, in radians and in the closed interval
+        $\\\\left[-\\\\frac{\\\\pi}{2}, \\\\frac{\\\\pi}{2}\\\\right]$.
+
+    Notes
+    -----
+    :py:obj:`arcsin` is a multivalued function: for each x there are infinitely many numbers z
+    such that $\\\\sin(z) = x$. The convention is to return the angle z whose real part lies in
+    $\\\\left[-\\\\frac{\\\\pi}{2}, \\\\frac{\\\\pi}{2}\\\\right]$.
+
+    References
+    ----------
+    https://numpy.org/doc/stable/reference/generated/numpy.arcsin.html
+    """
     return iarr.arcsin()
 
 
 def arctan(iarr: IArray):
+    """
+    Trigonometric inverse tangent, element-wise.
+
+    The inverse of :py:obj:`tan` so that, if $y = \\\\tan(x)$, then $x = \\\\arctan(y)$.
+
+    Parameters
+    ----------
+    iarr: IArray
+        Input array.
+
+    Returns
+    -------
+    angle: IArray
+        Array of angles in radians, in the range
+        $\\\\left[-\\\\frac{\\\\pi}{2}, \\\\frac{\\\\pi}{2}\\\\right]$.
+
+    Notes
+    -----
+    :py:obj:`arctan` is a multi-valued function: for each x there are infinitely many numbers z
+    such that $\\\\tan(z) = x$. The convention is to return the angle z whose real part lies in
+    $\\\\left[-\\\\frac{\\\\pi}{2}, \\\\frac{\\\\pi}{2}\\\\right]$.
+
+    References
+    ----------
+    https://numpy.org/doc/stable/reference/generated/numpy.arctan.html
+    """
+
     return iarr.arctan()
 
 
 def arctan2(iarr1: IArray, iarr2: IArray):
+    """
+    Element-wise arc tangent of $\\\\frac{iarr_1}{iarr_2}$ choosing the quadrant correctly.
+
+
+    Parameters
+    ----------
+    iarr1: IArray
+        y-coordinates.
+    iarr2: IArray
+        x-coordinates.
+
+    Returns
+    -------
+    angle: IArray
+        Array of angles in radians, in the range $[-\\\\pi, \\\\pi]$.
+
+    References
+    ----------
+    https://numpy.org/doc/stable/reference/generated/numpy.arctan2.html
+    """
     return iarr1.arctan2(iarr2)
 
 
 def ceil(iarr: IArray):
+    """
+    Return the ceiling of the input, element-wise.  It is often denoted as $\\\\lceil x \\\\rceil$.
+
+    Parameters
+    ----------
+    iarr: IArray
+        Input array.
+
+    Returns
+    -------
+    out: IArray
+        The ceiling of each element in x.
+
+    References
+    ----------
+    https://numpy.org/doc/stable/reference/generated/numpy.ceil.html
+    """
     return iarr.ceil()
 
 
 def cos(iarr: IArray):
+    """
+    Trigonometric cosine, element-wise.
+
+    Parameters
+    ----------
+    iarr: IArray
+        Angle, in radians.
+
+    Returns
+    -------
+    out: IArray
+        The corresponding cosine values.
+
+    References
+    ----------
+    https://numpy.org/doc/stable/reference/generated/numpy.cos.html
+    """
     return iarr.cos()
 
 
 def cosh(iarr: IArray):
+    """
+    Hyperbolic cosine, element-wise.
+
+    Equivalent to ``1/2 * (ia.exp(x) + ia.exp(-x))``.
+
+    Parameters
+    ----------
+    iarr: IArray
+        Input data.
+
+    Returns
+    -------
+    out: IArray
+        The corresponding hyperbolic cosine values.
+
+    References
+    ----------
+    https://numpy.org/doc/stable/reference/generated/numpy.cosh.html
+    """
     return iarr.cosh()
 
 
 def exp(iarr: IArray):
+    """
+    Calculate the exponential of all elements in the input array.
+
+    Parameters
+    ----------
+    iarr: IArray
+        Input array.
+
+    Returns
+    -------
+    out: IArray
+        Element-wise exponential of input data.
+
+    References
+    ----------
+    See https://numpy.org/doc/stable/reference/generated/numpy.exp.html
+    """
     return iarr.exp()
 
 
 def floor(iarr: IArray):
+    """
+    Return the floor of the input, element-wise. It is often denoted as $\\\\lfloor x \\\\rfloor$.
+
+    Parameters
+    ----------
+    iarr: IArray
+        Input array.
+
+    Returns
+    -------
+    out: IArray
+        The floor of each element in input data.
+
+    References
+    ----------
+    https://numpy.org/doc/stable/reference/generated/numpy.floor.html
+    """
     return iarr.floor()
 
 
 def log(iarr: IArray):
+    """
+    Natural logarithm, element-wise.
+
+    The natural logarithm log is the inverse of the exponential function, so that
+    $\\\\log(\\\\exp(x)) = x$. The natural logarithm is logarithm in base $e$.
+
+    Parameters
+    ----------
+    iarr: IArray
+        Input array.
+
+    Returns
+    -------
+    out: IArray
+        The natural logarithm of input data, element-wise.
+
+    References
+    ----------
+    https://numpy.org/doc/stable/reference/generated/numpy.log.html
+    """
     return iarr.log()
 
 
 def log10(iarr: IArray):
+    """
+    Return the base 10 logarithm of the input array, element-wise.
+
+    Parameters
+    ----------
+    iarr: IArray
+        Input array.
+
+    Returns
+    -------
+    out: IArray
+        The logarithm to the base 10 of input data, element-wise.
+
+    References
+    ----------
+    https://numpy.org/doc/stable/reference/generated/numpy.log10.html
+    """
     return iarr.log10()
 
 
 def negative(iarr: IArray):
+    """
+    Numerical negative, element-wise.
+
+    Parameters
+    ----------
+    iarr: IArray
+        Input array.
+
+    Returns
+    -------
+    out: IArray
+        Returned array $out = -iarr$.
+
+    References
+    ----------
+    https://numpy.org/doc/stable/reference/generated/numpy.log10.html
+    """
     return iarr.negative()
 
 
 def power(iarr1: IArray, iarr2: IArray):
+    """
+    First array elements raised to powers from second array, element-wise.
+
+    Parameters
+    ----------
+    iarr1: IArray
+        The bases.
+    iarr1: IArray
+        The exponents.
+
+    Returns
+    -------
+    out: IArray
+        The bases raised to the exponents.
+
+    References
+    ----------
+    https://numpy.org/doc/stable/reference/generated/numpy.log10.html"""
     return iarr1.power(iarr2)
 
 
 def sin(iarr: IArray):
+    """
+    Trigonometric sine, element-wise.
+
+    Parameters
+    ----------
+    iarr: IArray
+        Angle, in radians.
+
+    Returns
+    -------
+    out: IArray
+        The corresponding sine values.
+
+    References
+    ----------
+    https://numpy.org/doc/stable/reference/generated/numpy.sin.html
+    """
     return iarr.sin()
 
 
 def sinh(iarr: IArray):
+    """
+    Hyperbolic sine, element-wise.
+
+    Equivalent to ``1/2 * (ia.exp(x) - ia.exp(-x))``.
+
+    Parameters
+    ----------
+    iarr: IArray
+        Input data.
+
+    Returns
+    -------
+    out: IArray
+        The corresponding hyperbolic sine values.
+
+    References
+    ----------
+    https://numpy.org/doc/stable/reference/generated/numpy.sinh.html
+    """
     return iarr.sinh()
 
 
 def sqrt(iarr: IArray):
+    """
+    Return the non-negative square-root of an array, element-wise.
+
+    Parameters
+    ----------
+    iarr: IArray
+        The values whose square-roots are required.
+
+    Returns
+    -------
+    out: IArray
+        An array containing the positive square-root of each element in input data.
+
+    References
+    ----------
+    https://numpy.org/doc/stable/reference/generated/numpy.sqrt.html
+    """
     return iarr.sqrt()
 
 
 def tan(iarr: IArray):
+    """
+    Compute tangent element-wise.
+
+    Equivalent to ``ia.sin(x)/ia.cos(x)`` element-wise.
+
+    Parameters
+    ----------
+    iarr: IArray
+        Input data.
+
+    Returns
+    -------
+    out: IArray
+        The corresponding tangent values.
+
+    References
+    ----------
+    https://numpy.org/doc/stable/reference/generated/numpy.tan.html
+    """
     return iarr.tan()
 
 
 def tanh(iarr: IArray):
+    """
+    Compute hyperbolic tangent element-wise.
+
+    Equivalent to ``ia.sinh(x)/ia.cosh(x)``.
+
+    Parameters
+    ----------
+    iarr: IArray
+        Input data.
+
+    Returns
+    -------
+    out: IArray
+        The corresponding hyperbolic tangent values.
+
+    References
+    ----------
+    https://numpy.org/doc/stable/reference/generated/numpy.tanh.html
+    """
     return iarr.tanh()
 
 

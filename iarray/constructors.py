@@ -13,7 +13,7 @@ import numpy as np
 
 import iarray as ia
 from iarray import iarray_ext as ext
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Sequence
 
 
