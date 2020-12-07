@@ -10,3 +10,4 @@ Tutorials
    tutorials/random
    tutorials/views
    tutorials/matmul
+   tutorials/reductions
