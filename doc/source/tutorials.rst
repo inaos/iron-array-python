@@ -11,3 +11,4 @@ Tutorials
    tutorials/views
    tutorials/matmul
    tutorials/reductions
+   tutorials/error-handling

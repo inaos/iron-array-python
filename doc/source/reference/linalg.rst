@@ -9,7 +9,7 @@ Basic algebra operations
 ========================
 
 .. autosummary::
-   :toctree: linalg/
+   :toctree: autofiles/linalg/
    :nosignatures:
 
 
