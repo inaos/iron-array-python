@@ -23,9 +23,5 @@ Methods
    :toctree: autofiles/expressions/
    :nosignatures:
 
-   Expr.bind
-   Expr.bind_out_properties
-   Expr.compile
-   Expr.compile_bc
-   Expr.compile_udf
+   Expr.eval
 

@@ -14,5 +14,4 @@ Welcome to ironArray for Python's documentation!
    install
    tutorials
    reference
-   opt-tips
    config
