@@ -8,7 +8,7 @@ Basic constructors
 ==================
 
 .. autosummary::
-   :toctree: constructors/
+   :toctree: autofiles/constructors/
    :nosignatures:
 
    empty
@@ -22,7 +22,7 @@ Basic constructors
 Random distributions
 ====================
 .. autosummary::
-   :toctree: constructors/
+   :toctree: autofiles/constructors/
    :nosignatures:
 
 

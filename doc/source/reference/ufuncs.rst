@@ -5,12 +5,11 @@ Mathematical functions
 .. currentmodule:: iarray
 
 
-======================
-
 Trigonometric functions
 =======================
 .. autosummary::
-   :toctree: ufuncs/
+   :toctree: autofiles/ufuncs/
+   :nosignatures:
 
    sin
    cos
@@ -23,7 +22,8 @@ Trigonometric functions
 Hyperbolic functions
 ====================
 .. autosummary::
-   :toctree: ufuncs/
+   :toctree: autofiles/ufuncs/
+   :nosignatures:
 
    sinh
    cosh
@@ -32,7 +32,8 @@ Hyperbolic functions
 Rounding
 ========
 .. autosummary::
-   :toctree: ufuncs/
+   :toctree: autofiles/ufuncs/
+   :nosignatures:
 
    floor
    ceil
@@ -41,7 +42,8 @@ Rounding
 Exponents and logarithms
 ========================
 .. autosummary::
-   :toctree: ufuncs/
+   :toctree: autofiles/ufuncs/
+   :nosignatures:
 
    exp
    log
@@ -52,7 +54,8 @@ Reductions
 ==========
 
 .. autosummary::
-   :toctree: ufuncs/
+   :toctree: autofiles/ufuncs/
+   :nosignatures:
 
    max
    min
@@ -64,7 +67,8 @@ Reductions
 Miscellaneous
 =============
 .. autosummary::
-   :toctree: ufuncs/
+   :toctree: autofiles/ufuncs/
+   :nosignatures:
 
    sqrt
    power

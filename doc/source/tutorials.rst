@@ -12,3 +12,4 @@ Tutorials
    tutorials/matmul
    tutorials/reductions
    tutorials/expressions
+   tutorials/error-handling

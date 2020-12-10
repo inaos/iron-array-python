@@ -9,9 +9,8 @@ Constructors
 ============
 
 .. autosummary::
-   :toctree: expressions/
+   :toctree: autofiles/expressions/
    :nosignatures:
-   :recursive:
 
    expr_from_string
    expr_from_udf
@@ -21,7 +20,8 @@ Methods
 =======
 
 .. autosummary::
-   :toctree: expressions/
+   :toctree: autofiles/expressions/
+   :nosignatures:
 
    Expr.bind
    Expr.bind_out_properties
