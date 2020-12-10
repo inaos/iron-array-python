@@ -9,7 +9,8 @@ Storage properties
 ==================
 
 .. autosummary::
-   :toctree: config/
+   :toctree: autofiles/config/
+   :nosignatures:
 
    Storage
 
@@ -17,7 +18,8 @@ Configuration object
 ====================
 
 .. autosummary::
-   :toctree: config-class/
+   :toctree: autofiles/config-class/
+   :nosignatures:
 
    Config
 
@@ -25,7 +27,8 @@ Set / Get configuration params
 ------------------------------
 
 .. autosummary::
-   :toctree: config/
+   :toctree: autofiles/config/
+   :nosignatures:
 
    set_config
    get_config
@@ -37,7 +40,8 @@ Enumerated classes
 ==================
 
 .. autosummary::
-   :toctree: config/
+   :toctree: autofiles/config/
+   :nosignatures:
 
    Codecs
    Filters

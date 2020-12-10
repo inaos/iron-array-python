@@ -71,6 +71,7 @@ html_show_sourcelink = False
 # a list of builtin themes.
 #
 autosummary_generate = True
+autosummary_generate_overwrite = False
 
 # html_theme = 'sphinx_rtd_theme'
 html_theme = "pydata_sphinx_theme"
