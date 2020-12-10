@@ -422,7 +422,7 @@ cdef class Expression:
             }
         for ufunc in ufunc_repls.keys():
             if ufunc in expr:
-                expr = expr._replace(ufunc, ufunc_repls[ufunc])
+                expr = expr.replace(ufunc, ufunc_repls[ufunc])
         expr = expr.encode("utf-8") if isinstance(expr, str) else expr
         iarray_check(ciarray.iarray_expr_compile(self.ia_expr, expr))
         self.expression = expr
