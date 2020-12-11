@@ -26,13 +26,13 @@ Random distributions
    :nosignatures:
 
 
-   random.random_sample
-   random.standard_normal
-   random.beta
-   random.lognormal
-   random.exponential
-   random.uniform
-   random.normal
-   random.bernoulli
-   random.binomial
-   random.poisson
+   irandom.random_sample
+   irandom.standard_normal
+   irandom.beta
+   irandom.lognormal
+   irandom.exponential
+   irandom.uniform
+   irandom.normal
+   irandom.bernoulli
+   irandom.binomial
+   irandom.poisson
