@@ -282,19 +282,29 @@ def test_expr_ufuncs(ufunc):
 
 # Different operand fusions inside expressions
 @pytest.mark.parametrize(
-    "expr",
+    "expr, np_expr",
     [
-        "x + y",
-        "(x + y) + z",
-        "(x + y) * (x + z)",
-        "(x + y + z) * (x + z)",
-        "(x + y - z) * (x + y + t)",
-        "(x - z + t) * (x + y - z)",
-        "(x - z + t) * (z + t - x)",
-        "(x - z + t + y) * (t - y + z - x)",
+        ("x + y", "x + y"),
+        ("(x + y) + z", "(x + y) + z"),
+        ("(x + y) * (x + z)", "(x + y) * (x + z)"),
+        ("(x + y + z) * (x + z)", "(x + y + z) * (x + z)"),
+        ("(x + y - z) * (x + y + t)", "(x + y - z) * (x + y + t)"),
+        ("(x - z + t) * (x + y - z)", "(x - z + t) * (x + y - z)"),
+        ("(x - z + t) * (z + t - x)", "(x - z + t) * (z + t - x)"),
+        ("(x - z + t + y) * (t - y + z - x)", "(x - z + t + y) * (t - y + z - x)"),
+        ("(x - z + t + y) * (t - y + z - x)", "(x - z + t + y) * (t - y + z - x)"),
+        # transcendental functions
+        ("x.cos() + y", "np.cos(x) + y"),
+        ("ia.cos(x) + y", "np.cos(x) + y"),
+        ("x.sin() * x.sin() + y.cos()", "np.sin(x) * np.sin(x) + np.cos(y)"),
+        ("x.tan() * (y.sin() * y.sin() + z.cos()) + (t.sqrt() * 2)",
+         "np.tan(x) * (np.sin(y) * np.sin(y) + np.cos(z)) + (np.sqrt(t) * 2)"),
+        # Use another order than before (precision needs to be relaxed a bit)
+        ("t.tan() * (x.sin() * x.sin() + y.cos()) + (z.sqrt() * 2)",
+         "np.tan(t) * (np.sin(x) * np.sin(x) + np.cos(y)) + (np.sqrt(z) * 2)"),
     ],
 )
-def test_expr_fusion(expr):
+def test_expr_fusion(expr, np_expr):
     shape = [200, 300]
     chunkshape = [40, 50]
     bshape = [20, 20]
@@ -313,12 +323,12 @@ def test_expr_fusion(expr):
         npy = ia.iarray2numpy(y)
         npz = ia.iarray2numpy(z)
         npt = ia.iarray2numpy(t)
-        npout = eval("%s" % expr, {"np": np, "x": npx, "y": npy, "z": npz, "t": npt})
+        npout = eval("%s" % np_expr, {"np": np, "x": npx, "y": npy, "z": npz, "t": npt})
 
         # High-level ironarray eval
-        lazy_expr = eval(expr, {"x": x, "y": y, "z": z, "t": t})
+        lazy_expr = eval(expr, {"ia": ia, "x": x, "y": y, "z": z, "t": t})
         iout2 = lazy_expr.eval()
         npout2 = ia.iarray2numpy(iout2)
 
-        decimal = 6 if dtype is np.float32 else 7
+        decimal = 3 if dtype is np.float32 else 7
         np.testing.assert_almost_equal(npout, npout2, decimal=decimal)

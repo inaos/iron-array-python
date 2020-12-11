@@ -33,22 +33,37 @@ def fuse_expressions(expr, new_base, dup_op):
     new_expr = ""
     skip_to_char = 0
     old_base = 0
+    prev_pos = {}
     for i in range(len(expr)):
         if i < skip_to_char:
             continue
         if expr[i] == "o":
-            try:
-                j = expr[i + 1 :].index(" ")
-            except ValueError:
-                j = expr[i + 1 :].index(")")
+            if i > 0 and (expr[i - 1] != " " and expr[i - 1] != "("):
+                # Not a variable
+                new_expr += expr[i]
+                continue
+            # This is a variable.  Find the end of it.
+            j = i + 1
+            for k in range(len(expr[j :])):
+                  if expr[j + k] == " ":
+                      j = k
+                      break
+                  if expr[j + k] == ")":
+                      j = k
+                      break
             if expr[i + j] == ")":
                 j -= 1
             old_pos = int(expr[i + 1 : i + j + 1])
             old_op = f"o{old_pos}"
             if old_op not in dup_op:
-                new_pos = old_base + new_base
+                if old_pos in prev_pos:
+                    # Keep track of duplicated old positions inside expr
+                    new_pos = prev_pos[old_pos]
+                else:
+                    new_pos = old_base + new_base
+                    old_base += 1
                 new_expr += f"o{new_pos}"
-                old_base += 1
+                prev_pos[old_pos] = new_pos
             else:
                 new_expr += dup_op[old_op]
             skip_to_char = i + j + 1
@@ -194,29 +209,6 @@ class LazyExpr:
         return expression
 
 
-# if __name__ == "__main__":
-#     # Check representations of default config
-#     import numpy as np
-#
-#     print(ia.get_config())
-#
-#     print()
-#     # Create initial containers
-#     dtshape_ = ia.DTShape([40, 20])
-#     a1 = ia.linspace(dtshape_, 0, 10)
-#
-#     # Evaluate with different methods
-#     a3 = a1.sin() + 2 * a1 + 1
-#     print(a3)
-#     a3 += 2
-#     # print(a3)
-#     a3_np = np.sin(ia.iarray2numpy(a1)) + 2 * ia.iarray2numpy(a1) + 1 + 2
-#     a4 = a3.eval()
-#     a4_np = ia.iarray2numpy(a4)
-#     # print(a4_np)
-#     np.testing.assert_allclose(a3_np, a4_np)
-#     print("Everything is working fine")
-
 if __name__ == "__main__":
     # Check representations of default config
     import numpy as np
@@ -229,15 +221,15 @@ if __name__ == "__main__":
     a1 = ia.linspace(dtshape_, 0, 10)
     a2 = ia.linspace(dtshape_, 0, 10)
     a3 = ia.linspace(dtshape_, 0, 10)
+    a4 = ia.linspace(dtshape_, 0, 10)
 
     # Evaluate with different methods
-    a3 = a1.tan() * (a1.sin() * a2.sin() + a2.cos()) + (a3.sqrt() * 2)
-    print(a3)
-    a3 += 2
-    # print(a3)
-    # a3_np = np.sin(ia.iarray2numpy(a1)) + 2 * ia.iarray2numpy(a1) + 1 + 2
-    # a4 = a3.eval()
-    # a4_np = ia.iarray2numpy(a4)
-    # # print(a4_np)
-    # np.testing.assert_allclose(a3_np, a4_np)
+    #a3 = a1.tan() * (a2.sin() * a2.sin() + a3.cos()) + (a4.sqrt() * 2)
+    ia_expr = a1.sin() + 2 * a1 + 1
+    ia_expr += 2
+    print(ia_expr)
+    ia_res = ia_expr.eval().data
+    np_res = np.sin(ia.iarray2numpy(a1)) + 2 * ia.iarray2numpy(a1) + 1 + 2
+    # print(np_res)
+    np.testing.assert_allclose(ia_res, np_res)
     print("Everything is working fine")
