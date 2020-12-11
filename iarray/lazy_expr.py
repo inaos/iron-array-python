@@ -194,6 +194,29 @@ class LazyExpr:
         return expression
 
 
+# if __name__ == "__main__":
+#     # Check representations of default config
+#     import numpy as np
+#
+#     print(ia.get_config())
+#
+#     print()
+#     # Create initial containers
+#     dtshape_ = ia.DTShape([40, 20])
+#     a1 = ia.linspace(dtshape_, 0, 10)
+#
+#     # Evaluate with different methods
+#     a3 = a1.sin() + 2 * a1 + 1
+#     print(a3)
+#     a3 += 2
+#     # print(a3)
+#     a3_np = np.sin(ia.iarray2numpy(a1)) + 2 * ia.iarray2numpy(a1) + 1 + 2
+#     a4 = a3.eval()
+#     a4_np = ia.iarray2numpy(a4)
+#     # print(a4_np)
+#     np.testing.assert_allclose(a3_np, a4_np)
+#     print("Everything is working fine")
+
 if __name__ == "__main__":
     # Check representations of default config
     import numpy as np
@@ -204,15 +227,17 @@ if __name__ == "__main__":
     # Create initial containers
     dtshape_ = ia.DTShape([40, 20])
     a1 = ia.linspace(dtshape_, 0, 10)
+    a2 = ia.linspace(dtshape_, 0, 10)
+    a3 = ia.linspace(dtshape_, 0, 10)
 
     # Evaluate with different methods
-    a3 = a1.sin() + 2 * a1 + 1
+    a3 = a1.tan() * (a1.sin() * a2.sin() + a2.cos()) + (a3.sqrt() * 2)
     print(a3)
     a3 += 2
     # print(a3)
-    a3_np = np.sin(ia.iarray2numpy(a1)) + 2 * ia.iarray2numpy(a1) + 1 + 2
-    a4 = a3.eval()
-    a4_np = ia.iarray2numpy(a4)
-    # print(a4_np)
-    np.testing.assert_allclose(a3_np, a4_np)
+    # a3_np = np.sin(ia.iarray2numpy(a1)) + 2 * ia.iarray2numpy(a1) + 1 + 2
+    # a4 = a3.eval()
+    # a4_np = ia.iarray2numpy(a4)
+    # # print(a4_np)
+    # np.testing.assert_allclose(a3_np, a4_np)
     print("Everything is working fine")

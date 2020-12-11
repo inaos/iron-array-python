@@ -58,7 +58,7 @@ ia.set_config(codec=CODEC, clevel=CLEVEL, nthreads=NTHREADS)
 astorage = ia.Storage(achunkshape, ablockshape)
 dtshape = ia.DTShape(ashape, dtype=DTYPE)
 lia = ia.linspace(dtshape, 0, 1, storage=astorage)
-nia = ia.random.normal(
+nia = ia.irandom.normal(
     dtshape,
     0,
     0.0000001,
@@ -69,7 +69,7 @@ aia = (lia + nia).eval(storage=astorage)
 bstorage = ia.Storage(bchunkshape, bblockshape)
 dtshape = ia.DTShape(bshape, dtype=DTYPE)
 lia = ia.linspace(dtshape, 0, 1, storage=bstorage)
-nia = ia.random.normal(dtshape, 0, 0.0000001, storage=bstorage)
+nia = ia.irandom.normal(dtshape, 0, 0.0000001, storage=bstorage)
 bia = (lia + nia).eval(storage=bstorage)
 
 cstorage = ia.Storage(cchunkshape, cblockshape)

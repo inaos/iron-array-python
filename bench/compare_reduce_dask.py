@@ -42,7 +42,7 @@ ia.set_config(codec=CODEC, clevel=CLEVEL, nthreads=NTHREADS, fp_mantissa_bits=20
 
 astorage = ia.Storage(achunkshape, ablockshape)
 dtshape = ia.DTShape(ashape, dtype=DTYPE)
-aia = ia.random.normal(dtshape, 0, 1, storage=astorage)
+aia = ia.irandom.normal(dtshape, 0, 1, storage=astorage)
 print(f"iarray cratio: {aia.cratio}")
 
 ccompressor = Blosc(
