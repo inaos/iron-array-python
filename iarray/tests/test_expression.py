@@ -150,8 +150,8 @@ def test_expression(method, shape, chunkshape, blockshape, dtype, expression):
                 expression = expression.replace(ufunc + "(", "np." + ufunc + "(")
     npout2 = eval(expression, {"x": npx, "y": npy, "np": numpy})
 
-    decimal = 6 if dtype is np.float32 else 7
-    np.testing.assert_almost_equal(npout, npout2, decimal=decimal)
+    tol = 1e-6 if dtype is np.float32 else 1e-14
+    np.testing.assert_allclose(npout, npout2, rtol=tol, atol=tol)
 
 
 # ufuncs
@@ -297,11 +297,15 @@ def test_expr_ufuncs(ufunc):
         ("x.cos() + y", "np.cos(x) + y"),
         ("ia.cos(x) + y", "np.cos(x) + y"),
         ("x.sin() * x.sin() + y.cos()", "np.sin(x) * np.sin(x) + np.cos(y)"),
-        ("x.tan() * (y.sin() * y.sin() + z.cos()) + (t.sqrt() * 2)",
-         "np.tan(x) * (np.sin(y) * np.sin(y) + np.cos(z)) + (np.sqrt(t) * 2)"),
+        (
+            "x.tan() * (y.sin() * y.sin() + z.cos()) + (t.sqrt() * 2)",
+            "np.tan(x) * (np.sin(y) * np.sin(y) + np.cos(z)) + (np.sqrt(t) * 2)",
+        ),
         # Use another order than before (precision needs to be relaxed a bit)
-        ("t.tan() * (x.sin() * x.sin() + y.cos()) + (z.sqrt() * 2)",
-         "np.tan(t) * (np.sin(x) * np.sin(x) + np.cos(y)) + (np.sqrt(z) * 2)"),
+        (
+            "t.tan() * (x.sin() * x.sin() + y.cos()) + (z.sqrt() * 2)",
+            "np.tan(t) * (np.sin(x) * np.sin(x) + np.cos(y)) + (np.sqrt(z) * 2)",
+        ),
     ],
 )
 def test_expr_fusion(expr, np_expr):
@@ -330,5 +334,5 @@ def test_expr_fusion(expr, np_expr):
         iout2 = lazy_expr.eval()
         npout2 = ia.iarray2numpy(iout2)
 
-        decimal = 3 if dtype is np.float32 else 7
-        np.testing.assert_almost_equal(npout, npout2, decimal=decimal)
+        tol = 1e-6 if dtype is np.float32 else 1e-14
+        np.testing.assert_allclose(npout, npout2, rtol=tol, atol=tol)
