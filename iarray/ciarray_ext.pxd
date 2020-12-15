@@ -160,7 +160,6 @@ cdef extern from "libiarray/iarray.h":
 
     ina_rc_t iarray_linspace(iarray_context_t *ctx,
                              iarray_dtshape_t *dtshape,
-                             int64_t nelem,
                              double start,
                              double stop,
                              iarray_storage_t *storage,
