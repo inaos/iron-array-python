@@ -14,6 +14,7 @@ from math import isclose
         60,
         (slice(5, 30), slice(10, 40)),
         (slice(5, 5), slice(5, 23)),
+        (slice(5, 5), slice(33, 12)),
         (slice(5, 30), 47, ...),
         (..., slice(5, 6)),
     ],
