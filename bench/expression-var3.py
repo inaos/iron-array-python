@@ -65,7 +65,7 @@ if PROFILE:
         a1 = ia.linspace(dtshape, 0, 10, storage=a1_storage)
     else:
         print(f"Reading {a1_fname}")
-        a1 = ia.load(a1_fname, load_in_mem=True)
+        a1 = ia.load(a1_fname)
 else:
     a1 = ia.linspace(dtshape, 0, 10)
 

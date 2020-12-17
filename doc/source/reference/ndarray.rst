@@ -89,6 +89,7 @@ Utilities
    :nosignatures:
 
    load
+   open
    save
    cmp_arrays
    iarray2numpy

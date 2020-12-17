@@ -45,7 +45,7 @@ acompressor = Blosc(
 ia.set_config(codec=CODEC, clevel=CLEVEL, nthreads=NTHREADS, fp_mantissa_bits=20)
 
 if os.path.exists("iarray_reduce.iarray"):
-    aia = ia.load("iarray_reduce.iarray", load_in_mem=False)
+    aia = ia.open("iarray_reduce.iarray")
 else:
     astorage = ia.Storage(achunkshape, ablockshape, filename="iarray_reduce.iarray")
     dtshape = ia.DTShape(ashape, dtype=DTYPE)
