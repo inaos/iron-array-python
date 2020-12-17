@@ -17,12 +17,11 @@ d = da.from_zarr(precip)
 precip1 = d[0]
 precip2 = d[1]
 precip3 = d[2]
-mean_expr = (precip1 + precip2 + precip3) / 3
 
 @profile
-def dask_eval_disk(mean_expr):
+def dask_mean_disk(expr):
     with dask.config.set(scheduler="threads"):
-        zarr_precip_mean_disk = zarr.open(
+        expr_val = zarr.open(
             "mean-3m.zarr",
             "w",
             shape=shape,
@@ -30,7 +29,25 @@ def dask_eval_disk(mean_expr):
             dtype=dtype,
             compressor=zarr.Blosc(clevel=clevel, cname="lz4", blocksize=blocksize),
         )
-        da.to_zarr(mean_expr, zarr_precip_mean_disk)
-    return zarr_precip_mean_disk
+        da.to_zarr(expr, expr_val)
+    return expr_val
 
-mean_disk = dask_eval_disk(mean_expr)
+mean_expr = (precip1 + precip2 + precip3) / 3
+mean_disk = dask_mean_disk(mean_expr)
+
+@profile
+def dask_trans_disk(expr):
+    with dask.config.set(scheduler="threads"):
+        expr_val = zarr.open(
+            "trans-3m.zarr",
+            "w",
+            shape=shape,
+            chunks=chunks,
+            dtype=dtype,
+            compressor=zarr.Blosc(clevel=clevel, cname="lz4", blocksize=blocksize),
+        )
+        da.to_zarr(expr, expr_val)
+    return expr_val
+
+trans_expr = np.tan(precip1) * (np.sin(precip1) * np.sin(precip2) + np.cos(precip2)) + np.sqrt(precip3) * 2
+trans_disk = dask_trans_disk(trans_expr)

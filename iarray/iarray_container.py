@@ -37,9 +37,23 @@ class IArray(ext.Container):
     """
 
     @property
+    def info(self):
+        """
+        Print information about this array.
+        """
+        print(f"{'type':20}: {self.__class__.__name__}")
+        print(f"{'shape':20}: {self.shape}")
+        print(f"{'chunkshape':20}: {self.chunkshape}")
+        print(f"{'blockshape':20}: {self.blockshape}")
+
+    @property
     def data(self):
         """
-        ndarray with array data.
+        Get a ndarray with array data.
+
+        Returns
+        -------
+        np.ndarray
         """
         return ia.iarray2numpy(self)
 
