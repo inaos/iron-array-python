@@ -14,7 +14,7 @@ store = ia.Storage(filename=filename)
 b = ia.numpy2iarray(a, storage=store)
 
 print(f"Reading {filename}")
-c = ia.load(filename)
+c = ia.open(filename)
 d = ia.iarray2numpy(c)
 
 np.testing.assert_array_equal(a, d)

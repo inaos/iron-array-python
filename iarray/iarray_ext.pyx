@@ -512,9 +512,6 @@ def linspace(cfg, start, stop, dtshape):
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
         ctx.to_capsule(), "iarray_context_t*")
 
-    cdef nelem = 1
-    for i in dtshape.shape:
-        nelem *= i
     dtshape = IaDTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
@@ -524,7 +521,7 @@ def linspace(cfg, start, stop, dtshape):
     flags = 0 if cfg.storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     cdef ciarray.iarray_container_t *c
-    iarray_check(ciarray.iarray_linspace(ctx_, &dtshape_, nelem, start, stop, &store_, flags, &c))
+    iarray_check(ciarray.iarray_linspace(ctx_, &dtshape_, start, stop, &store_, flags, &c))
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     return ia.IArray(ctx, c_c)
@@ -604,7 +601,7 @@ def save(cfg, c, filename):
     iarray_check(ciarray.iarray_container_save(ctx_, c_, filename))
 
 
-def load(cfg, filename, load_in_mem=False):
+def load(cfg, filename):
     ctx = Context(cfg)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
         ctx.to_capsule(), "iarray_context_t*")
@@ -612,7 +609,21 @@ def load(cfg, filename, load_in_mem=False):
     filename = filename.encode("utf-8") if isinstance(filename, str) else filename
 
     cdef ciarray.iarray_container_t *c
-    iarray_check(ciarray.iarray_container_load(ctx_, filename, load_in_mem, &c))
+    iarray_check(ciarray.iarray_container_load(ctx_, filename, &c))
+
+    c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
+    return ia.IArray(ctx, c_c)
+
+
+def open(cfg, filename):
+    ctx = Context(cfg)
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
+        ctx.to_capsule(), "iarray_context_t*")
+
+    filename = filename.encode("utf-8") if isinstance(filename, str) else filename
+
+    cdef ciarray.iarray_container_t *c
+    iarray_check(ciarray.iarray_container_open(ctx_, filename, &c))
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     return ia.IArray(ctx, c_c)

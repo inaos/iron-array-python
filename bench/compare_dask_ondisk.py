@@ -36,7 +36,7 @@ for i, shape in enumerate(shapes):
     ia.arange(dtshape, storage=storage_in)
 
     t0 = time()
-    data = ia.load("iarray_infile.iarray", load_in_mem=False)
+    data = ia.open("iarray_infile.iarray")
     expr = ia.expr_from_string(sexpr, {"x": data})
     res1 = expr.eval()
     t1 = time()

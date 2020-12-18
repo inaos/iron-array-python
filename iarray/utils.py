@@ -56,13 +56,14 @@ def save(iarr: ia.IArray, filename: str, cfg: ia.Config = None, **kwargs) -> Non
     See Also
     --------
     load : Load an array from disk.
+    open : Open an array from disk.
     """
     with ia.config(cfg=cfg, **kwargs) as cfg:
         ext.save(cfg, iarr, filename)
 
 
-def load(filename: str, load_in_mem: bool = False, cfg: ia.Config = None, **kwargs) -> ia.IArray:
-    """Load an array from a binary file in ironArray ``.iarray`` format.
+def load(filename: str, cfg: ia.Config = None, **kwargs) -> ia.IArray:
+    """Open an array from a binary file in ironArray ``.iarray`` format and load data into memory.
 
     `cfg` and `kwargs` are the same than for :func:`empty`.
 
@@ -70,9 +71,6 @@ def load(filename: str, load_in_mem: bool = False, cfg: ia.Config = None, **kwar
     ----------
     filename : str
         The file name to read.
-    load_in_mem : bool
-        If True, the array is completely loaded in-memory.  If False (default),
-        the array will lazily be read when necessary.
 
     Returns
     -------
@@ -83,8 +81,33 @@ def load(filename: str, load_in_mem: bool = False, cfg: ia.Config = None, **kwar
     --------
     save : Save an array to disk.
     """
+
     with ia.config(cfg=cfg, **kwargs) as cfg:
-        return ext.load(cfg, filename, load_in_mem)
+        return ext.load(cfg, filename)
+
+
+def open(filename: str, cfg: ia.Config = None, **kwargs) -> ia.IArray:
+    """Open an array from a binary file in ironArray ``.iarray`` format. The array data will lazily
+    be read when necessary.
+
+    `cfg` and `kwargs` are the same than for :func:`empty`.
+
+    Parameters
+    ----------
+    filename : str
+        The file name to read.
+
+    Returns
+    -------
+    IArray
+        The new opened array.
+
+    See Also
+    --------
+    save : Save an array to disk.
+    """
+    with ia.config(cfg=cfg, **kwargs) as cfg:
+        return ext.open(cfg, filename)
 
 
 # TODO: are cfg and kwargs needed here?

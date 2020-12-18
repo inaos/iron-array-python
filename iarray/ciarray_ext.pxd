@@ -160,7 +160,6 @@ cdef extern from "libiarray/iarray.h":
 
     ina_rc_t iarray_linspace(iarray_context_t *ctx,
                              iarray_dtshape_t *dtshape,
-                             int64_t nelem,
                              double start,
                              double stop,
                              iarray_storage_t *storage,
@@ -247,7 +246,10 @@ cdef extern from "libiarray/iarray.h":
 
     ina_rc_t iarray_container_load(iarray_context_t *ctx,
                                         char *filename,
-                                        bool enforce_frame,
+                                        iarray_container_t **container)
+
+    ina_rc_t iarray_container_open(iarray_context_t *ctx,
+                                        char *filename,
                                         iarray_container_t **container)
 
     ina_rc_t iarray_container_save(iarray_context_t *ctx,
