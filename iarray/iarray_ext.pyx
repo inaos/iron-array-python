@@ -453,13 +453,16 @@ def copy(cfg, src, view=False):
     cdef ciarray.iarray_storage_t store_
     set_storage(cfg.storage, &store_)
 
-    flags = 0 if cfg.storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+    cdef int flags = 0 if cfg.storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     cdef ciarray.iarray_container_t *c
     cdef ciarray.iarray_container_t *src_ = <ciarray.iarray_container_t *> PyCapsule_GetPointer(
         src.to_capsule(), "iarray_container_t*")
 
-    iarray_check(ciarray.iarray_copy(ctx_, src_, view, &store_, flags, &c))
+    cdef int view_ = view
+    with nogil:
+        error = ciarray.iarray_copy(ctx_, src_, view_, &store_, flags, &c)
+    iarray_check(error)
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     return ia.IArray(ctx, c_c)
