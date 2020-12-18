@@ -1,6 +1,6 @@
 import iarray as ia
 
-precip_opt = ia.load("precip-3m-optimal.iarr")
+precip_opt = ia.open("precip-3m-optimal.iarr")
 
 @profile
 def iarray_reduc_memory(array):

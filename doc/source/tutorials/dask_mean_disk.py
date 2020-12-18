@@ -5,7 +5,7 @@ import dask
 import dask.array as da
 import zarr
 
-precip_mean_disk = ia.load("mean-3m.iarr")
+precip_mean_disk = ia.open("mean-3m.iarr")
 blocksize = reduce(lambda x, y: x * y, precip_mean_disk.blockshape) * np.dtype(np.float32).itemsize
 shape = precip_mean_disk.shape
 chunks = precip_mean_disk.chunkshape

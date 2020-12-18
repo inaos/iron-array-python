@@ -2,9 +2,9 @@ import iarray as ia
 
 ia_precip = ia.load("precip-3m.iarr")
 
-precip1 = ia_precip[0].copy()
-precip2 = ia_precip[1].copy()
-precip3 = ia_precip[2].copy()
+precip1 = ia_precip[0]
+precip2 = ia_precip[1]
+precip3 = ia_precip[2]
 
 @profile
 def iarray_mean_memory(expr):

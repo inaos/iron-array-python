@@ -197,7 +197,7 @@ cdef extern from "libiarray/iarray.h":
                               bool view,
                               iarray_storage_t *storage,
                               int flags,
-                              iarray_container_t **dest)
+                              iarray_container_t **dest) nogil
 
     ina_rc_t iarray_get_slice(iarray_context_t *ctx,
                                    iarray_container_t *src,

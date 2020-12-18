@@ -1,7 +1,7 @@
 import numpy as np
 import iarray as ia
 
-ia_precip = ia.load("precip-3m.iarr")
+ia_precip = ia.open("precip-3m.iarr")
 
 precip1 = ia_precip[0].data
 precip2 = ia_precip[1].data
