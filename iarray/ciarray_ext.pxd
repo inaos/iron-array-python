@@ -274,8 +274,7 @@ cdef extern from "libiarray/iarray.h":
                                      const char *llvm_bc,
                                      const char *name)
 
-    ina_rc_t iarray_eval(iarray_expression_t *e,
-                         iarray_container_t **c)
+    ina_rc_t iarray_eval(iarray_expression_t *e, iarray_container_t **c) nogil
 
 
     # Linear algebra

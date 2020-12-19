@@ -437,7 +437,9 @@ cdef class Expression:
 
     def eval(self):
         cdef ciarray.iarray_container_t *c;
-        iarray_check(ciarray.iarray_eval(self.ia_expr, &c))
+        with nogil:
+            error = ciarray.iarray_eval(self.ia_expr, &c)
+        iarray_check(error)
         c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
         return ia.IArray(self.context, c_c)
 
