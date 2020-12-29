@@ -162,7 +162,6 @@ def ones(dtshape: DTShape, cfg: ia.Config = None, **kwargs) -> ia.IArray:
     zeros : Create an array filled with zeros.
     """
     with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
-        print(cfg.chunkshape)
         return ext.ones(cfg, dtshape)
 
 
