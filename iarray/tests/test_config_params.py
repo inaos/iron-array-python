@@ -250,3 +250,9 @@ def test_nested_contexts():
     # Finally, the default should be enabling compression again
     a = ia.ones(ia.DTShape((100, 100)))
     assert a.cratio > 1
+
+
+@pytest.fixture(scope="function", autouse=True)
+def cleanup(request):
+    # Make the defaults sane for other tests to come
+    return request.addfinalizer(ia.reset_config_defaults)

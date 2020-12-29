@@ -74,6 +74,7 @@ def partition_advice(
     """
     if cfg is None:
         cfg = get_config()
+    print(dtshape)
     if dtshape.shape == ():
         return (), ()
     chunkshape, blockshape = ext.partition_advice(
@@ -508,16 +509,12 @@ def config(cfg: Config = None, dtshape=None, **kwargs):
     ia.set_config
     ia.Config
     """
-    try:
-        if cfg is None:
-            cfg = Config()
-        cfg_ = cfg._replace(**kwargs)
-        if dtshape is not None:
-            cfg_.storage._get_shape_advice(dtshape)
-
-        yield cfg_
-    finally:
-        ia.reset_config_defaults()
+    if cfg is None:
+        cfg = Config()
+    cfg_ = cfg._replace(**kwargs)
+    if dtshape is not None:
+        cfg_.storage._get_shape_advice(dtshape)
+    yield cfg_
 
 
 if __name__ == "__main__":
