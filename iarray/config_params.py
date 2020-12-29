@@ -309,7 +309,6 @@ class Storage:
         if self.plainbuffer:
             return
         chunkshape, blockshape = self.chunkshape, self.blockshape
-        print(chunkshape, blockshape)
         if chunkshape is not None and blockshape is not None:
             return
         if chunkshape is None and blockshape is None:
