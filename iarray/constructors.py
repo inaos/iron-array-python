@@ -33,7 +33,7 @@ class DTShape:
     dtype: (np.float32, np.float64) = np.float64
 
     def __post_init__(self):
-        if not self.shape:
+        if self.shape is None:
             raise ValueError("shape must be non-empty")
 
 
@@ -162,6 +162,7 @@ def ones(dtshape: DTShape, cfg: ia.Config = None, **kwargs) -> ia.IArray:
     zeros : Create an array filled with zeros.
     """
     with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
+        print(cfg.chunkshape)
         return ext.ones(cfg, dtshape)
 
 

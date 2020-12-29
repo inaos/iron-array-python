@@ -74,6 +74,8 @@ def partition_advice(
     """
     if cfg is None:
         cfg = get_config()
+    if dtshape.shape == ():
+        return (), ()
     chunkshape, blockshape = ext.partition_advice(
         dtshape, min_chunksize, max_chunksize, min_blocksize, max_blocksize, cfg
     )
@@ -307,6 +309,7 @@ class Storage:
         if self.plainbuffer:
             return
         chunkshape, blockshape = self.chunkshape, self.blockshape
+        print(chunkshape, blockshape)
         if chunkshape is not None and blockshape is not None:
             return
         if chunkshape is None and blockshape is None:
@@ -506,13 +509,16 @@ def config(cfg: Config = None, dtshape=None, **kwargs):
     ia.set_config
     ia.Config
     """
-    if cfg is None:
-        cfg = Config()
-    cfg_ = cfg._replace(**kwargs)
-    if dtshape is not None:
-        cfg_.storage._get_shape_advice(dtshape)
+    try:
+        if cfg is None:
+            cfg = Config()
+        cfg_ = cfg._replace(**kwargs)
+        if dtshape is not None:
+            cfg_.storage._get_shape_advice(dtshape)
 
-    yield cfg_
+        yield cfg_
+    finally:
+        ia.reset_config_defaults()
 
 
 if __name__ == "__main__":

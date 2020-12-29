@@ -48,7 +48,7 @@ def test_randn(shape, chunkshape, blockshape, dtype, plainbuffer):
 
     size = int(np.prod(shape))
     a = ia.irandom.standard_normal(ia.DTShape(shape, dtype), storage=storage)
-    b = np.random.randn(size).reshape(shape).astype(dtype)
+    b = np.random.standard_normal(size).reshape(shape).astype(dtype)
     c = ia.numpy2iarray(b, storage=storage)
 
     assert ia.irandom.kstest(a, c)

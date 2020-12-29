@@ -8,8 +8,6 @@ a = ia.arange(ia.DTShape([10, 20, 10, 14], np.float32), clevel=9)
 
 b = a[0]
 
-print(b)
-
 an = ia.iarray2numpy(a)
 
 cn2 = np.mean(an, axis=(2, 3, 1))
