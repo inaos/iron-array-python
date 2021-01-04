@@ -74,7 +74,6 @@ def partition_advice(
     """
     if cfg is None:
         cfg = get_config()
-    print(dtshape)
     if dtshape.shape == ():
         return (), ()
     chunkshape, blockshape = ext.partition_advice(
