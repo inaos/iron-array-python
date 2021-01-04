@@ -1042,7 +1042,10 @@ def reduce(cfg, a, method, axis):
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
     cdef ciarray.iarray_container_t *c
 
-    iarray_check(ciarray.iarray_reduce(ctx_, a_, func, axis, &c))
+    cdef ciarray.iarray_storage_t store_
+    set_storage(cfg.storage, &store_)
+
+    iarray_check(ciarray.iarray_reduce(ctx_, a_, func, axis, &store_, &c))
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     return ia.IArray(ctx, c_c)
@@ -1060,7 +1063,9 @@ def reduce_multi(cfg, a, method, axis):
     for i, ax in enumerate(axis):
         axis_[i] = ax
 
-    iarray_check(ciarray.iarray_reduce_multi(ctx_, a_, func, len(axis), axis_, &c))
+    cdef ciarray.iarray_storage_t store_
+    set_storage(cfg.storage, &store_)
+    iarray_check(ciarray.iarray_reduce_multi(ctx_, a_, func, len(axis), axis_, &store_, &c))
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     return ia.IArray(ctx, c_c)

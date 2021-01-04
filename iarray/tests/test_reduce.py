@@ -2,7 +2,7 @@ import pytest
 import iarray as ia
 import numpy as np
 from math import isclose
-
+import os
 
 params_names = "shape, chunkshape, blockshape, axis, dtype"
 params_data = [
@@ -16,14 +16,16 @@ params_data = [
 
 @pytest.mark.parametrize(params_names, params_data)
 @pytest.mark.parametrize("rfunc", ["mean", "sum", "prod", "max", "min"])
-def test_reduce(shape, chunkshape, blockshape, axis, dtype, rfunc):
+# @pytest.mark.parametrize("filename", [None, "test_reduce.iarray"])  # TODO: Fix on Windows
+@pytest.mark.parametrize("filename", [None])
+def test_reduce(shape, chunkshape, blockshape, axis, dtype, rfunc, filename):
 
     storage = ia.Storage(chunkshape, blockshape)
     a1 = ia.linspace(ia.DTShape(shape, dtype), -1, 0, storage=storage)
-    a2 = ia.iarray2numpy(a1)
+    a2 = a1.data
 
     b2 = getattr(np, rfunc)(a2, axis=axis)
-    b1 = getattr(ia, rfunc)(a1, axis=axis)
+    b1 = getattr(ia, rfunc)(a1, axis=axis, filename=filename)
 
     rtol = 1e-6 if dtype == np.float32 else 1e-14
 
@@ -31,3 +33,6 @@ def test_reduce(shape, chunkshape, blockshape, axis, dtype, rfunc):
         isclose(b1, b2, rel_tol=rtol, abs_tol=0.0)
     else:
         np.testing.assert_allclose(ia.iarray2numpy(b1), b2, rtol=rtol, atol=0)
+
+    if filename:
+        os.remove(filename)

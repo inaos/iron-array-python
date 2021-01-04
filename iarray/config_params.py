@@ -74,6 +74,8 @@ def partition_advice(
     """
     if cfg is None:
         cfg = get_config()
+    if dtshape.shape == ():
+        return (), ()
     chunkshape, blockshape = ext.partition_advice(
         dtshape, min_chunksize, max_chunksize, min_blocksize, max_blocksize, cfg
     )
@@ -511,7 +513,6 @@ def config(cfg: Config = None, dtshape=None, **kwargs):
     cfg_ = cfg._replace(**kwargs)
     if dtshape is not None:
         cfg_.storage._get_shape_advice(dtshape)
-
     yield cfg_
 
 

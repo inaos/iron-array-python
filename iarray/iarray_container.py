@@ -732,7 +732,7 @@ def reduce(
     if isinstance(axis, int):
         axis = (axis,)
 
-    shape = tuple([s for i, s in enumerate(a.shape) if i != axis])
+    shape = tuple([s for i, s in enumerate(a.shape) if i not in axis])
     dtshape = ia.DTShape(shape, a.dtype)
     with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
         c = ext.reduce_multi(cfg, a, method, axis)

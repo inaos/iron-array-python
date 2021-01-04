@@ -316,6 +316,7 @@ cdef extern from "libiarray/iarray.h":
                            iarray_container_t *a,
                            iarray_reduce_func_t func,
                            int8_t axis,
+                           iarray_storage_t *store,
                            iarray_container_t **b);
 
     ina_rc_t iarray_reduce_multi(iarray_context_t *ctx,
@@ -323,6 +324,7 @@ cdef extern from "libiarray/iarray.h":
                                  iarray_reduce_func_t func,
                                  int8_t naxis,
                                  int8_t *axis,
+                                 iarray_storage_t *store,
                                  iarray_container_t **b);
 
 

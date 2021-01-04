@@ -252,7 +252,7 @@ def test_nested_contexts():
     assert a.cratio > 1
 
 
-@pytest.fixture(scope="module", autouse=True)
+@pytest.fixture(scope="function", autouse=True)
 def cleanup(request):
     # Make the defaults sane for other tests to come
     return request.addfinalizer(ia.reset_config_defaults)

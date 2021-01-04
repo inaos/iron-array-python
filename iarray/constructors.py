@@ -33,7 +33,7 @@ class DTShape:
     dtype: (np.float32, np.float64) = np.float64
 
     def __post_init__(self):
-        if not self.shape:
+        if self.shape is None:
             raise ValueError("shape must be non-empty")
 
 
