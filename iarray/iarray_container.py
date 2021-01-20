@@ -37,9 +37,23 @@ class IArray(ext.Container):
     """
 
     @property
+    def info(self):
+        """
+        Print information about this array.
+        """
+        print(f"{'type':20}: {self.__class__.__name__}")
+        print(f"{'shape':20}: {self.shape}")
+        print(f"{'chunkshape':20}: {self.chunkshape}")
+        print(f"{'blockshape':20}: {self.blockshape}")
+
+    @property
     def data(self):
         """
-        ndarray with array data.
+        Get a ndarray with array data.
+
+        Returns
+        -------
+        np.ndarray
         """
         return ia.iarray2numpy(self)
 
@@ -718,7 +732,7 @@ def reduce(
     if isinstance(axis, int):
         axis = (axis,)
 
-    shape = tuple([s for i, s in enumerate(a.shape) if i != axis])
+    shape = tuple([s for i, s in enumerate(a.shape) if i not in axis])
     dtshape = ia.DTShape(shape, a.dtype)
     with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
         c = ext.reduce_multi(cfg, a, method, axis)

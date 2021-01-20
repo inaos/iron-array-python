@@ -45,7 +45,7 @@ if persistent:
     if not os.path.exists(afilename):
         aia = ia.linspace(dtshape, -1, 1, storage=astorage)
     else:
-        aia = ia.load("a.iarray", load_in_mem=False)
+        aia = ia.open("a.iarray")
         if (
             aia.dtshape.shape != shape
             or aia.chunkshape != chunkshape
@@ -62,7 +62,7 @@ if persistent:
     if not os.path.exists(bfilename):
         bia = ia.linspace(dtshape, -1, 1, storage=bstorage)
     else:
-        bia = ia.load("b.iarray", load_in_mem=False)
+        bia = ia.open("b.iarray")
         if (
             bia.dtshape.shape != shape
             or bia.chunkshape != chunkshape

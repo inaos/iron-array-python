@@ -197,7 +197,7 @@ cdef extern from "libiarray/iarray.h":
                               bool view,
                               iarray_storage_t *storage,
                               int flags,
-                              iarray_container_t **dest)
+                              iarray_container_t **dest) nogil
 
     ina_rc_t iarray_get_slice(iarray_context_t *ctx,
                                    iarray_container_t *src,
@@ -246,7 +246,10 @@ cdef extern from "libiarray/iarray.h":
 
     ina_rc_t iarray_container_load(iarray_context_t *ctx,
                                         char *filename,
-                                        bool enforce_frame,
+                                        iarray_container_t **container)
+
+    ina_rc_t iarray_container_open(iarray_context_t *ctx,
+                                        char *filename,
                                         iarray_container_t **container)
 
     ina_rc_t iarray_container_save(iarray_context_t *ctx,
@@ -271,8 +274,7 @@ cdef extern from "libiarray/iarray.h":
                                      const char *llvm_bc,
                                      const char *name)
 
-    ina_rc_t iarray_eval(iarray_expression_t *e,
-                         iarray_container_t **c)
+    ina_rc_t iarray_eval(iarray_expression_t *e, iarray_container_t **c) nogil
 
 
     # Linear algebra
@@ -314,6 +316,7 @@ cdef extern from "libiarray/iarray.h":
                            iarray_container_t *a,
                            iarray_reduce_func_t func,
                            int8_t axis,
+                           iarray_storage_t *store,
                            iarray_container_t **b);
 
     ina_rc_t iarray_reduce_multi(iarray_context_t *ctx,
@@ -321,6 +324,7 @@ cdef extern from "libiarray/iarray.h":
                                  iarray_reduce_func_t func,
                                  int8_t naxis,
                                  int8_t *axis,
+                                 iarray_storage_t *store,
                                  iarray_container_t **b);
 
 

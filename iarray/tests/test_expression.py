@@ -198,13 +198,13 @@ def test_ufuncs(ufunc, ia_expr):
         iout = expr.eval()
         npout = ia.iarray2numpy(iout)
 
-        decimal = 6 if dtype is np.float32 else 7
+        tol = 1e-5 if dtype is np.float32 else 1e-13
 
         # Lazy expression eval
         lazy_expr = eval("ia." + ufunc, {"ia": ia, "x": x, "y": y})
         iout2 = lazy_expr.eval()
         npout2 = ia.iarray2numpy(iout2)
-        np.testing.assert_almost_equal(npout, npout2, decimal=decimal)
+        np.testing.assert_allclose(npout, npout2, rtol=tol, atol=tol)
 
         # Lazy expression eval, but via numpy ufunc machinery
         # TODO: the next ufuncs still have some problems with the numpy machinery (bug?)
@@ -217,10 +217,10 @@ def test_ufuncs(ufunc, ia_expr):
             lazy_expr = eval("np." + ufunc, {"np": np, "x": x, "y": y})
             iout2 = lazy_expr.eval()
             npout2 = ia.iarray2numpy(iout2)
-            np.testing.assert_almost_equal(npout, npout2, decimal=decimal)
+            np.testing.assert_allclose(npout, npout2, rtol=tol, atol=tol)
 
         npout2 = eval("np." + ufunc, {"np": np, "x": npx, "y": npy})  # pure numpy
-        np.testing.assert_almost_equal(npout, npout2, decimal=decimal)
+        np.testing.assert_allclose(npout, npout2, rtol=tol, atol=tol)
 
 
 # ufuncs inside of expressions
@@ -258,7 +258,7 @@ def test_expr_ufuncs(ufunc):
         dtshape = ia.DTShape(shape, dtype)
         # The ranges below are important for not overflowing operations
         x = ia.linspace(dtshape, 0.1, 0.9, storage=storage)
-        y = ia.linspace(dtshape, 0, 1, storage=storage)
+        y = ia.linspace(dtshape, 0.5, 1, storage=storage)
 
         # NumPy computation
         npx = ia.iarray2numpy(x)
@@ -276,8 +276,8 @@ def test_expr_ufuncs(ufunc):
         iout2 = lazy_expr.eval()
         npout2 = ia.iarray2numpy(iout2)
 
-        decimal = 6 if dtype is np.float32 else 7
-        np.testing.assert_almost_equal(npout, npout2, decimal=decimal)
+        tol = 1e-5 if dtype is np.float32 else 1e-13
+        np.testing.assert_allclose(npout, npout2, rtol=tol, atol=tol)
 
 
 # Different operand fusions inside expressions
@@ -318,9 +318,9 @@ def test_expr_fusion(expr, np_expr):
         dtshape = ia.DTShape(shape, dtype)
         # The ranges below are important for not overflowing operations
         x = ia.linspace(dtshape, 0.1, 0.9, storage=storage)
-        y = ia.linspace(dtshape, 0.0, 1.0, storage=storage)
-        z = ia.linspace(dtshape, 0.0, 2.0, storage=storage)
-        t = ia.linspace(dtshape, 0.0, 3.0, storage=storage)
+        y = ia.linspace(dtshape, 0.5, 1.0, storage=storage)
+        z = ia.linspace(dtshape, 1.0, 2.0, storage=storage)
+        t = ia.linspace(dtshape, 1.5, 3.0, storage=storage)
 
         # NumPy computation
         npx = ia.iarray2numpy(x)

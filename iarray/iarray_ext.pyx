@@ -437,7 +437,9 @@ cdef class Expression:
 
     def eval(self):
         cdef ciarray.iarray_container_t *c;
-        iarray_check(ciarray.iarray_eval(self.ia_expr, &c))
+        with nogil:
+            error = ciarray.iarray_eval(self.ia_expr, &c)
+        iarray_check(error)
         c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
         return ia.IArray(self.context, c_c)
 
@@ -453,13 +455,16 @@ def copy(cfg, src, view=False):
     cdef ciarray.iarray_storage_t store_
     set_storage(cfg.storage, &store_)
 
-    flags = 0 if cfg.storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
+    cdef int flags = 0 if cfg.storage.filename is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     cdef ciarray.iarray_container_t *c
     cdef ciarray.iarray_container_t *src_ = <ciarray.iarray_container_t *> PyCapsule_GetPointer(
         src.to_capsule(), "iarray_container_t*")
 
-    iarray_check(ciarray.iarray_copy(ctx_, src_, view, &store_, flags, &c))
+    cdef int view_ = view
+    with nogil:
+        error = ciarray.iarray_copy(ctx_, src_, view_, &store_, flags, &c)
+    iarray_check(error)
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     return ia.IArray(ctx, c_c)
@@ -601,7 +606,7 @@ def save(cfg, c, filename):
     iarray_check(ciarray.iarray_container_save(ctx_, c_, filename))
 
 
-def load(cfg, filename, load_in_mem=False):
+def load(cfg, filename):
     ctx = Context(cfg)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
         ctx.to_capsule(), "iarray_context_t*")
@@ -609,7 +614,21 @@ def load(cfg, filename, load_in_mem=False):
     filename = filename.encode("utf-8") if isinstance(filename, str) else filename
 
     cdef ciarray.iarray_container_t *c
-    iarray_check(ciarray.iarray_container_load(ctx_, filename, load_in_mem, &c))
+    iarray_check(ciarray.iarray_container_load(ctx_, filename, &c))
+
+    c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
+    return ia.IArray(ctx, c_c)
+
+
+def open(cfg, filename):
+    ctx = Context(cfg)
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
+        ctx.to_capsule(), "iarray_context_t*")
+
+    filename = filename.encode("utf-8") if isinstance(filename, str) else filename
+
+    cdef ciarray.iarray_container_t *c
+    iarray_check(ciarray.iarray_container_open(ctx_, filename, &c))
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     return ia.IArray(ctx, c_c)
@@ -1023,7 +1042,10 @@ def reduce(cfg, a, method, axis):
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
     cdef ciarray.iarray_container_t *c
 
-    iarray_check(ciarray.iarray_reduce(ctx_, a_, func, axis, &c))
+    cdef ciarray.iarray_storage_t store_
+    set_storage(cfg.storage, &store_)
+
+    iarray_check(ciarray.iarray_reduce(ctx_, a_, func, axis, &store_, &c))
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     return ia.IArray(ctx, c_c)
@@ -1041,7 +1063,9 @@ def reduce_multi(cfg, a, method, axis):
     for i, ax in enumerate(axis):
         axis_[i] = ax
 
-    iarray_check(ciarray.iarray_reduce_multi(ctx_, a_, func, len(axis), axis_, &c))
+    cdef ciarray.iarray_storage_t store_
+    set_storage(cfg.storage, &store_)
+    iarray_check(ciarray.iarray_reduce_multi(ctx_, a_, func, len(axis), axis_, &store_, &c))
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     return ia.IArray(ctx, c_c)
