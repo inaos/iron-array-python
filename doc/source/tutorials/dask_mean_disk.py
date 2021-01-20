@@ -5,10 +5,13 @@ import dask
 import dask.array as da
 import zarr
 
+# Use a previous computation for getting metadata (shape, chunks...)
 precip_mean_disk = ia.open("mean-3m.iarr")
-blocksize = reduce(lambda x, y: x * y, precip_mean_disk.blockshape) * np.dtype(np.float32).itemsize
 shape = precip_mean_disk.shape
-chunks = precip_mean_disk.chunkshape
+# chunks = precip_mean_disk.chunkshape
+chunks = precip_mean_disk.blockshape
+# blocksize = reduce(lambda x, y: x * y, precip_mean_disk.blockshape) * np.dtype(np.float32).itemsize
+blocksize = 0  # automatic
 dtype = np.float32
 clevel = ia.Config().clevel
 
