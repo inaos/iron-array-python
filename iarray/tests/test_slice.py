@@ -15,6 +15,7 @@ from math import isclose
         (slice(5, 30), slice(10, 40)),
         (slice(5, 30), 47, ...),
         (..., slice(5, 6)),
+        (slice(5, 10), slice(5, 5)),
     ],
 )
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
