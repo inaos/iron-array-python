@@ -10,6 +10,7 @@ dtype = np.float64
 
 asize = int(np.prod(ashape))
 a = ia.linspace(ia.DTShape(ashape, dtype), -10, 10)
+
 an = ia.iarray2numpy(a)
 aslices = tuple(slice(astart[i], astop[i]) for i in range(len(astart)))
 if len(astart) == 1:

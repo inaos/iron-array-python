@@ -150,7 +150,7 @@ def test_expression(method, shape, chunkshape, blockshape, dtype, expression):
                 expression = expression.replace(ufunc + "(", "np." + ufunc + "(")
     npout2 = eval(expression, {"x": npx, "y": npy, "np": numpy})
 
-    tol = 1e-5 if dtype is np.float32 else 1e-13
+    tol = 1e-6 if dtype is np.float32 else 1e-14
     np.testing.assert_allclose(npout, npout2, rtol=tol, atol=tol)
 
 
@@ -334,5 +334,5 @@ def test_expr_fusion(expr, np_expr):
         iout2 = lazy_expr.eval()
         npout2 = ia.iarray2numpy(iout2)
 
-        tol = 1e-5 if dtype is np.float32 else 1e-13
+        tol = 1e-6 if dtype is np.float32 else 1e-14
         np.testing.assert_allclose(npout, npout2, rtol=tol, atol=tol)
