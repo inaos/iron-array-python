@@ -1,5 +1,9 @@
-sphynx
+sphinx
 git+https://github.com/pandas-dev/pydata-sphinx-theme.git@master
 zarr
+xarray
 dask
+s3fs
 numexpr
+memprofiler
+ipython_memwatcher
