@@ -16,8 +16,7 @@ params_data = [
 
 @pytest.mark.parametrize(params_names, params_data)
 @pytest.mark.parametrize("rfunc", ["mean", "sum", "prod", "max", "min"])
-# @pytest.mark.parametrize("filename", [None, "test_reduce.iarray"])  # TODO: Fix on Windows
-@pytest.mark.parametrize("filename", [None])
+@pytest.mark.parametrize("filename", [None, "test_reduce.iarray"])
 def test_reduce(shape, chunkshape, blockshape, axis, dtype, rfunc, filename):
 
     storage = ia.Storage(chunkshape, blockshape)
