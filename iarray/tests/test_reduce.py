@@ -16,15 +16,15 @@ params_data = [
 
 @pytest.mark.parametrize(params_names, params_data)
 @pytest.mark.parametrize("rfunc", ["mean", "sum", "prod", "max", "min"])
-@pytest.mark.parametrize("filename", [None, "test_reduce.iarray"])
-def test_reduce(shape, chunkshape, blockshape, axis, dtype, rfunc, filename):
+@pytest.mark.parametrize("urlpath", [None, "test_reduce.iarray"])
+def test_reduce(shape, chunkshape, blockshape, axis, dtype, rfunc, urlpath):
 
     storage = ia.Storage(chunkshape, blockshape)
     a1 = ia.linspace(ia.DTShape(shape, dtype), -1, 0, storage=storage)
     a2 = a1.data
 
     b2 = getattr(np, rfunc)(a2, axis=axis)
-    b1 = getattr(ia, rfunc)(a1, axis=axis, filename=filename)
+    b1 = getattr(ia, rfunc)(a1, axis=axis, urlpath=urlpath)
 
     rtol = 1e-6 if dtype == np.float32 else 1e-14
 
@@ -33,5 +33,5 @@ def test_reduce(shape, chunkshape, blockshape, axis, dtype, rfunc, filename):
     else:
         np.testing.assert_allclose(ia.iarray2numpy(b1), b2, rtol=rtol, atol=0)
 
-    if filename:
-        os.remove(filename)
+    if urlpath:
+        os.remove(urlpath)

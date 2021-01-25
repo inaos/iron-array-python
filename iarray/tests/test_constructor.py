@@ -53,7 +53,7 @@ def test_arange(start, stop, shape, chunkshape, blockshape, dtype):
 
 # from_file
 @pytest.mark.parametrize(
-    "start, stop, shape, chunkshape, blockshape, dtype, filename",
+    "start, stop, shape, chunkshape, blockshape, dtype, urlpath",
     [
         (0, 10, [1234], [123], [21], np.float64, "test.fromfile0.iarray"),
         (
@@ -67,16 +67,16 @@ def test_arange(start, stop, shape, chunkshape, blockshape, dtype):
         ),
     ],
 )
-def test_from_file(start, stop, shape, chunkshape, blockshape, dtype, filename):
+def test_from_file(start, stop, shape, chunkshape, blockshape, dtype, urlpath):
     size = int(np.prod(shape))
     npdtype = np.float64 if dtype == np.float64 else np.float32
     a = np.linspace(start, stop, size, dtype=npdtype).reshape(shape)
-    storage = ia.Storage(chunkshape, blockshape, filename, enforce_frame=True)
+    storage = ia.Storage(chunkshape, blockshape, urlpath, enforce_frame=True)
     ia.numpy2iarray(a, storage=storage)
-    c = ia.load(filename)
+    c = ia.load(urlpath)
     d = ia.iarray2numpy(c)
     np.testing.assert_almost_equal(a, d)
-    os.remove(filename)
+    os.remove(urlpath)
 
 
 # get_slice

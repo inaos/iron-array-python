@@ -47,7 +47,7 @@ ia.set_config(codec=CODEC, clevel=CLEVEL, nthreads=NTHREADS, fp_mantissa_bits=20
 if os.path.exists("iarray_reduce.iarray"):
     aia = ia.open("iarray_reduce.iarray")
 else:
-    astorage = ia.Storage(achunkshape, ablockshape, filename="iarray_reduce.iarray")
+    astorage = ia.Storage(achunkshape, ablockshape, urlpath="iarray_reduce.iarray")
     dtshape = ia.DTShape(ashape, dtype=DTYPE)
     aia = ia.irandom.normal(dtshape, 0, 1, storage=astorage)
 
