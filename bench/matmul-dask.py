@@ -30,17 +30,17 @@ cname = "lz4"
 clevel = 5
 shuffle = Blosc.SHUFFLE
 
-afilename = "a.zarr"
-bfilename = "b.zarr"
-cfilename = "c.zarr"
+aurlpath = "a.zarr"
+burlpath = "b.zarr"
+curlpath = "c.zarr"
 
 compressor = Blosc(cname=cname, clevel=clevel, shuffle=shuffle)
 
 if persistent:
     print("(Re-)Generating operand A")
-    if not os.path.exists(afilename):
+    if not os.path.exists(aurlpath):
         azarr = zarr.open(
-            afilename,
+            aurlpath,
             mode="w",
             shape=shape,
             chunks=chunkshape,
@@ -53,10 +53,10 @@ if persistent:
         azarr = zarr.open("a.zarr")
         if azarr.shape != shape or azarr.chunks != chunkshape:
             # Ooops, we cannot use the array on-disk.  Regenerate it.
-            if os.path.exists(afilename):
-                shutil.rmtree(afilename)
+            if os.path.exists(aurlpath):
+                shutil.rmtree(aurlpath)
             azarr = zarr.open(
-                afilename,
+                aurlpath,
                 mode="w",
                 shape=shape,
                 chunks=chunkshape,
@@ -67,9 +67,9 @@ if persistent:
             azarr[:] = tmp
 
     print("(Re-)Generating operand B")
-    if not os.path.exists(bfilename):
+    if not os.path.exists(burlpath):
         bzarr = zarr.open(
-            bfilename,
+            burlpath,
             mode="w",
             shape=shape,
             chunks=chunkshape,
@@ -83,10 +83,10 @@ if persistent:
         bzarr = zarr.open("b.zarr")
         if bzarr.shape != shape or bzarr.chunks != chunkshape:
             # Ooops, we cannot use the array on-disk.  Regenerate it.
-            if os.path.exists(bfilename):
-                shutil.rmtree(bfilename)
+            if os.path.exists(burlpath):
+                shutil.rmtree(burlpath)
             bzarr = zarr.open(
-                bfilename,
+                burlpath,
                 mode="w",
                 shape=shape,
                 chunks=chunkshape,
@@ -100,14 +100,14 @@ else:
     bzarr = zarr.empty(shape=shape, chunks=chunkshape, dtype=np.float64, compressor=compressor)
 
 if persistent:
-    if os.path.exists(cfilename):
-        shutil.rmtree(cfilename)
+    if os.path.exists(curlpath):
+        shutil.rmtree(curlpath)
 
 scheduler = "single-threaded" if nthreads == 1 else "threads"
 with dask.config.set(scheduler=scheduler, num_workers=nthreads):
     if persistent:
         czarr = zarr.open(
-            cfilename,
+            curlpath,
             mode="w",
             shape=shape,
             chunks=chunkshape,
@@ -127,9 +127,9 @@ with dask.config.set(scheduler=scheduler, num_workers=nthreads):
 
 
 if persistent:
-    # if os.path.exists(afilename):
-    #     shutil.rmtree(afilename)
-    # if os.path.exists(bfilename):
-    #     shutil.rmtree(bfilename)
-    if os.path.exists(cfilename):
-        shutil.rmtree(cfilename)
+    # if os.path.exists(aurlpath):
+    #     shutil.rmtree(aurlpath)
+    # if os.path.exists(burlpath):
+    #     shutil.rmtree(burlpath)
+    if os.path.exists(curlpath):
+        shutil.rmtree(curlpath)

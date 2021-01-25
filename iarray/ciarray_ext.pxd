@@ -101,7 +101,7 @@ cdef extern from "libiarray/iarray.h":
 
     ctypedef struct iarray_storage_t:
         iarray_storage_type_t backend
-        const char *filename
+        const char *urlpath
         bool enforce_frame
         int64_t chunkshape[IARRAY_DIMENSION_MAX]
         int64_t blockshape[IARRAY_DIMENSION_MAX]
@@ -245,16 +245,16 @@ cdef extern from "libiarray/iarray.h":
                                      iarray_container_t **container)
 
     ina_rc_t iarray_container_load(iarray_context_t *ctx,
-                                        char *filename,
+                                        char *urlpath,
                                         iarray_container_t **container)
 
     ina_rc_t iarray_container_open(iarray_context_t *ctx,
-                                        char *filename,
+                                        char *urlpath,
                                         iarray_container_t **container)
 
     ina_rc_t iarray_container_save(iarray_context_t *ctx,
                                         iarray_container_t *container,
-                                        char *filename)
+                                        char *urlpath)
 
     bool iarray_is_empty(iarray_container_t *container)
 

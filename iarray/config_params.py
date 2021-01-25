@@ -106,7 +106,7 @@ class DefaultConfig:
 class DefaultStorage:
     chunkshape: Any
     blockshape: Any
-    filename: Any
+    urlpath: Any
     enforce_frame: Any
     plainbuffer: Any
 
@@ -133,7 +133,7 @@ class Defaults(object):
     _storage = None
     chunkshape: Sequence = None
     blockshape: Sequence = None
-    filename: str = None
+    urlpath: str = None
     enforce_frame: bool = False
     plainbuffer: bool = False
 
@@ -211,8 +211,8 @@ class Defaults(object):
     def _blockshape(self):
         return self.blockshape
 
-    def _filename(self):
-        return self.filename
+    def _urlpath(self):
+        return self.urlpath
 
     def _enforce_frame(self):
         return self.enforce_frame
@@ -227,7 +227,7 @@ class Defaults(object):
             return DefaultStorage(
                 chunkshape=self.chunkshape,
                 blockshape=self.blockshape,
-                filename=self.filename,
+                urlpath=self.urlpath,
                 enforce_frame=self.enforce_frame,
                 plainbuffer=self.plainbuffer,
             )
@@ -238,7 +238,7 @@ class Defaults(object):
             raise ValueError(f"You need to use a `Storage` instance")
         self.chunkshape = value.chunkshape
         self.blockshape = value.blockshape
-        self.filename = value.filename
+        self.urlpath = value.urlpath
         self.enforce_frame = value.enforce_frame
         self.plainbuffer = value.plainbuffer
         self._storage = value
@@ -276,7 +276,7 @@ class Storage:
         The blockshape for the output array.  If None (the default), a sensible default
         will be used based on the shape of the array and the size of caches in the current
         processor.
-    filename : str
+    urlpath : str
         The name of the file for persistently storing the output array.  If None (the default),
         the output array will be stored in-memory.
     enforce_frame : bool
@@ -293,15 +293,15 @@ class Storage:
 
     chunkshape: Union[Sequence, None] = field(default_factory=defaults._chunkshape)
     blockshape: Union[Sequence, None] = field(default_factory=defaults._blockshape)
-    filename: bytes or str = field(default_factory=defaults._filename)
+    urlpath: bytes or str = field(default_factory=defaults._urlpath)
     enforce_frame: bool = field(default_factory=defaults._enforce_frame)
     plainbuffer: bool = field(default_factory=defaults._plainbuffer)
 
     def __post_init__(self):
-        self.filename = (
-            self.filename.encode("utf-8") if isinstance(self.filename, str) else self.filename
+        self.urlpath = (
+            self.urlpath.encode("utf-8") if isinstance(self.urlpath, str) else self.urlpath
         )
-        self.enforce_frame = True if self.filename else self.enforce_frame
+        self.enforce_frame = True if self.urlpath else self.enforce_frame
         if self.plainbuffer:
             if self.chunkshape is not None or self.blockshape is not None:
                 raise ValueError(
@@ -387,7 +387,7 @@ class Config(ext.Config):
     # These belong to Storage, but we accept them in top level too
     chunkshape: Union[Sequence, None] = field(default_factory=defaults._chunkshape)
     blockshape: Union[Sequence, None] = field(default_factory=defaults._blockshape)
-    filename: bytes or str = field(default_factory=defaults._filename)
+    urlpath: bytes or str = field(default_factory=defaults._urlpath)
     enforce_frame: bool = field(default_factory=defaults._enforce_frame)
     plainbuffer: bool = field(default_factory=defaults._plainbuffer)
 
@@ -404,7 +404,7 @@ class Config(ext.Config):
             self.storage = Storage(
                 chunkshape=self.chunkshape,
                 blockshape=self.blockshape,
-                filename=self.filename,
+                urlpath=self.urlpath,
                 enforce_frame=self.enforce_frame,
                 plainbuffer=self.plainbuffer,
             )
