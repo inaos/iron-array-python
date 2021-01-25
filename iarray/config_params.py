@@ -293,11 +293,14 @@ class Storage:
 
     chunkshape: Union[Sequence, None] = field(default_factory=defaults._chunkshape)
     blockshape: Union[Sequence, None] = field(default_factory=defaults._blockshape)
-    filename: str = field(default_factory=defaults._filename)
+    filename: bytes or str = field(default_factory=defaults._filename)
     enforce_frame: bool = field(default_factory=defaults._enforce_frame)
     plainbuffer: bool = field(default_factory=defaults._plainbuffer)
 
     def __post_init__(self):
+        self.filename = (
+            self.filename.encode("utf-8") if isinstance(self.filename, str) else self.filename
+        )
         self.enforce_frame = True if self.filename else self.enforce_frame
         if self.plainbuffer:
             if self.chunkshape is not None or self.blockshape is not None:
@@ -384,7 +387,7 @@ class Config(ext.Config):
     # These belong to Storage, but we accept them in top level too
     chunkshape: Union[Sequence, None] = field(default_factory=defaults._chunkshape)
     blockshape: Union[Sequence, None] = field(default_factory=defaults._blockshape)
-    filename: str = field(default_factory=defaults._filename)
+    filename: bytes or str = field(default_factory=defaults._filename)
     enforce_frame: bool = field(default_factory=defaults._enforce_frame)
     plainbuffer: bool = field(default_factory=defaults._plainbuffer)
 
@@ -538,7 +541,7 @@ if __name__ == "__main__":
 
     with config(clevel=0, enforce_frame=True) as cfg_new:
         print("Context form:", cfg_new)
-        assert cfg_new.storage.enforce_frame == True
+        assert cfg_new.storage.enforce_frame is True
 
     cfg = ia.Config(codec=ia.Codecs.BLOSCLZ)
     cfg2 = ia.set_config(cfg=cfg, codec=ia.Codecs.LIZARD)

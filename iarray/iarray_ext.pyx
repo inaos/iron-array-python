@@ -49,7 +49,7 @@ cdef set_storage(storage, ciarray.iarray_storage_t *cstore):
 
     if storage.filename is not None:
         filename = storage.filename.encode("utf-8") if isinstance(storage.filename, str) else storage.filename
-        cstore.filename = filename
+        cstore.filename = storage.filename
     else:
         cstore.filename = NULL
 
