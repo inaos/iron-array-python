@@ -408,7 +408,10 @@ class Config(ext.Config):
                 enforce_frame=self.enforce_frame,
                 plainbuffer=self.plainbuffer,
             )
-        self.nthreads = get_ncores(self.nthreads)
+        if self.nthreads == 0:
+            ncores = get_ncores(0)
+            # Experiments say that nthreads is optimal when is ~1.5x the number of logical cores
+            self.nthreads = ncores // 2 + ncores // 4
 
         # Initialize the Cython counterpart
         super().__init__(
