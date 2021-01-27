@@ -23,26 +23,26 @@ codec = ia.Codecs.LZ4
 clevel = 5
 
 if persistent:
-    afilename = "a.iarray"
-    bfilename = "b.iarray"
-    cfilename = "c.iarray"
+    aurlpath = "a.iarray"
+    burlpath = "b.iarray"
+    curlpath = "c.iarray"
 else:
-    afilename = None
-    bfilename = None
-    cfilename = None
+    aurlpath = None
+    burlpath = None
+    curlpath = None
 
 dtshape = ia.DTShape(shape, np.float64)
 
-astorage = ia.Storage(chunkshape, blockshape, filename=afilename)
-bstorage = ia.Storage(chunkshape, blockshape, filename=bfilename)
-cstorage = ia.Storage(chunkshape, blockshape, filename=cfilename)
+astorage = ia.Storage(chunkshape, blockshape, urlpath=aurlpath)
+bstorage = ia.Storage(chunkshape, blockshape, urlpath=burlpath)
+cstorage = ia.Storage(chunkshape, blockshape, urlpath=curlpath)
 
 ia.set_config(codec=codec, clevel=clevel, nthreads=nthreads)
 cfg = ia.get_config()
 
 print("(Re-)Generating operand A")
 if persistent:
-    if not os.path.exists(afilename):
+    if not os.path.exists(aurlpath):
         aia = ia.linspace(dtshape, -1, 1, storage=astorage)
     else:
         aia = ia.open("a.iarray")
@@ -52,14 +52,14 @@ if persistent:
             or aia.blockshape != blockshape
         ):
             # Ooops, we cannot use the array on-disk.  Regenerate it.
-            os.remove(afilename)
+            os.remove(aurlpath)
             aia = ia.linspace(dtshape, -1, 1, storage=astorage)
 else:
     aia = ia.linspace(dtshape, -1, 1, storage=astorage)
 
 print("(Re-)Generating operand B")
 if persistent:
-    if not os.path.exists(bfilename):
+    if not os.path.exists(burlpath):
         bia = ia.linspace(dtshape, -1, 1, storage=bstorage)
     else:
         bia = ia.open("b.iarray")
@@ -69,14 +69,14 @@ if persistent:
             or bia.blockshape != blockshape
         ):
             # Ooops, we cannot use the array on-disk.  Regenerate it.
-            os.remove(bfilename)
+            os.remove(burlpath)
             bia = ia.linspace(dtshape, -1, 1, storage=bstorage)
 else:
     bia = ia.linspace(dtshape, -1, 1, storage=bstorage)
 
 if persistent:
-    if os.path.exists(cfilename):
-        os.remove(cfilename)
+    if os.path.exists(curlpath):
+        os.remove(curlpath)
 
 print(f"Start actual matmul with nthreads = {cfg.nthreads}")
 t0 = time()
@@ -84,9 +84,9 @@ cia = ia.matmul(aia, bia, storage=cstorage)
 print("Time for iarray matmul:", round((time() - t0), 3))
 
 if persistent:
-    # if os.path.exists(afilename):
-    #     os.remove(afilename)
-    # if os.path.exists(bfilename):
-    #     os.remove(bfilename)
-    if os.path.exists(cfilename):
-        os.remove(cfilename)
+    # if os.path.exists(aurlpath):
+    #     os.remove(aurlpath)
+    # if os.path.exists(burlpath):
+    #     os.remove(burlpath)
+    if os.path.exists(curlpath):
+        os.remove(curlpath)

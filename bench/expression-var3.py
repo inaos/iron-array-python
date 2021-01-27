@@ -61,7 +61,7 @@ if PROFILE:
     a1_fname = "a1.iarray"
     if not os.path.isfile(a1_fname):
         print(f"Creating {a1_fname}")
-        a1_storage = ia.Storage(filename=a1_fname)
+        a1_storage = ia.Storage(urlpath=a1_fname)
         a1 = ia.linspace(dtshape, 0, 10, storage=a1_storage)
     else:
         print(f"Reading {a1_fname}")

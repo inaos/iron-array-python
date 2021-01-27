@@ -86,7 +86,7 @@ for year in years:
     # dtshape = ia.dtshape(shape=[nt_, nx, ny], pshape=[10, 40, 40], dtype=np.float32)
     dtshape = ia.DTShape(shape=[nt_, ny, nx], pshape=[1, ny, nx], dtype=np.float32)
     precipitation = ia.empty(
-        dtshape, filename=tgt_dir + year + "-zstd1.iarray", clevel=1, clib=ia.ZSTD
+        dtshape, urlpath=tgt_dir + year + "-zstd1.iarray", clevel=1, clib=ia.ZSTD
     )
 
     producer_iter = producer()

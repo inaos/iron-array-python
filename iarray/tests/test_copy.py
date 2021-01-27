@@ -14,7 +14,7 @@ import os
 )
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
 @pytest.mark.parametrize(
-    "plainbuffer, sequential, filename, filename2",
+    "plainbuffer, sequential, urlpath, urlpath2",
     [
         (True, False, None, None),
         (False, False, None, None),
@@ -22,20 +22,20 @@ import os
         (False, True, "test_copy.iarr", "test_copy2.iarr"),
     ],
 )
-def test_copy(shape, chunkshape, blockshape, dtype, plainbuffer, sequential, filename, filename2):
-    if filename and os.path.exists(filename):
-        os.remove(filename)
-    if filename2 and os.path.exists(filename2):
-        os.remove(filename2)
+def test_copy(shape, chunkshape, blockshape, dtype, plainbuffer, sequential, urlpath, urlpath2):
+    if urlpath and os.path.exists(urlpath):
+        os.remove(urlpath)
+    if urlpath2 and os.path.exists(urlpath2):
+        os.remove(urlpath2)
 
     if plainbuffer:
         storage = ia.Storage(plainbuffer=True)
     else:
-        storage = ia.Storage(chunkshape, blockshape, enforce_frame=sequential, filename=filename)
+        storage = ia.Storage(chunkshape, blockshape, enforce_frame=sequential, urlpath=urlpath)
     a_ = ia.linspace(ia.DTShape(shape, dtype), -10, 10, storage=storage)
     sl = tuple([slice(0, s - 1) for s in shape])
     a = a_[sl]
-    b = a.copy(filename=filename2)
+    b = a.copy(urlpath=urlpath2)
     an = ia.iarray2numpy(a)
     bn = ia.iarray2numpy(b)
 
@@ -43,7 +43,7 @@ def test_copy(shape, chunkshape, blockshape, dtype, plainbuffer, sequential, fil
 
     np.testing.assert_allclose(an, bn, rtol=rtol)
 
-    if filename and os.path.exists(filename):
-        os.remove(filename)
-    if filename2 and os.path.exists(filename2):
-        os.remove(filename2)
+    if urlpath and os.path.exists(urlpath):
+        os.remove(urlpath)
+    if urlpath2 and os.path.exists(urlpath2):
+        os.remove(urlpath2)
