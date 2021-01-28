@@ -112,7 +112,7 @@ class DefaultStorage:
 
 
 def default_filters():
-    return [ia.Filters.SHUFFLE]
+    return [ia.Filters.BITSHUFFLE]
 
 
 @dataclass
@@ -120,8 +120,8 @@ class Defaults(object):
     # Config params
     # Keep in sync the defaults below with Config.__doc__ docstring.
     _config = None
-    codec: ia.Codecs = ia.Codecs.LZ4
-    clevel: int = 5
+    codec: ia.Codecs = ia.Codecs.ZSTD
+    clevel: int = 1
     use_dict: bool = False
     filters: List[ia.Filters] = field(default_factory=default_filters)
     nthreads: int = 0
@@ -335,12 +335,12 @@ class Config(ext.Config):
     Parameters
     ----------
     codec : Codecs
-        The codec to be used inside Blosc.  Default is :py:obj:`Codecs.LZ4 <Codecs>`.
+        The codec to be used inside Blosc.  Default is :py:obj:`Codecs.ZSTD <Codecs>`.
     clevel : int
         The compression level.  It can have values between 0 (no compression) and
-        9 (max compression).  Default is 5.
+        9 (max compression).  Default is 1.
     filters : list
-        The list of filters for Blosc.  Default is [:py:obj:`Filters.SHUFFLE <Filters>`].
+        The list of filters for Blosc.  Default is [:py:obj:`Filters.BITSHUFFLE <Filters>`].
     fp_mantissa_bits : int
         The number of bits to be kept in the mantissa in output arrays.  If 0 (the default),
         no precision is capped.  FYI, double precision have 52 bit in mantissa, whereas
