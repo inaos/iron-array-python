@@ -11,5 +11,6 @@ Tutorials
    tutorials/views
    tutorials/matmul
    tutorials/reductions
-   tutorials/expressions
+   tutorials/expressions-memory
+   tutorials/expressions-disk
    tutorials/error-handling

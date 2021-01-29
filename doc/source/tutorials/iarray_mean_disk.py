@@ -46,7 +46,7 @@ storage = ia.Storage(chunkshape=precip1.chunkshape, blockshape=precip1.blockshap
 cfg = ia.Config(storage=storage)
 
 @profile
-def iarray_eval_disk(expr):
+def iarray_mean_disk(expr):
     with ia.config(urlpath="mean-3m.iarr", cfg=cfg) as cfg2:
         expr_val = expr.eval(cfg=cfg2)
     return expr_val
@@ -58,7 +58,7 @@ t = time() - t0
 print("mean expr time ->", round(t, 3))
 
 t0 = time()
-mean_disk = iarray_eval_disk(mean_expr)
+mean_disk = iarray_mean_disk(mean_expr)
 t = time() - t0
 print("mean eval time ->", round(t, 3))
 mean_disk.info
