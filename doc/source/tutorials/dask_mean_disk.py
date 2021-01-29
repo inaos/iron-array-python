@@ -10,7 +10,7 @@ precip = zarr.open("precip-3m.zarr")
 shape = precip.shape[1:]
 dtype = np.float32
 clevel = ia.Config().clevel
-compressor = zarr.Blosc(clevel=clevel, cname="lz4")
+compressor = zarr.Blosc(clevel=1, cname="zstd", shuffle=zarr.Blosc.BITSHUFFLE)
 
 #zarr.save("precip1.zarr", precip[0])
 #zarr.save("precip2.zarr", precip[1])
