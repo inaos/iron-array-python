@@ -2,28 +2,39 @@ trigger:
 - develop
 
 variables:
-- group: jfrog-artifactory
+  CONDA_CACHE_FOLDER: $(CONDA)/envs/iArrayEnv
 
 strategy:
   matrix:
     linux:
-      imageName: 'ubuntu-16.04'
-#    mac:
-#      imageName: 'macos-10.13'
-#    windows:
-#      imageName: 'vs2017-win2016'
+      imageName: 'ubuntu-20.04'
+      python.version: '3.8'
+      DISABLE_LLVM_CONFIG: True
+    mac:
+      imageName: 'macos-10.14'
+      python.version: '3.7'
+      DISABLE_LLVM_CONFIG: True
+    windows:
+      imageName: 'windows-2019'
+      VSINSTALL: "Microsoft Visual Studio\\2019\\Enterprise\\VC\\Auxiliary\\Build"
+      MSVC_PLATFORM: amd64
+      python.version: '3.7'
 
 pool:
   vmImage: $(imageName)
 
 
 steps:
+- checkout: self
+  submodules: recursive
+  persistCredentials: true
+
 - powershell: gci env:* | sort-object name
 
 - bash: |
     mkdir -p $HOME/.inaos/cmake
     mkdir -p $HOME/INAOS
-    echo "INAC_REPOSITORY_LOCAL=$HOME/INAOS" > $HOME/.inaos/cmake/repository.txt 
+    echo "INAC_REPOSITORY_LOCAL=$HOME/INAOS" > $HOME/.inaos/cmake/repository.txt
     echo "INAC_REPOSITORY_REMOTE=https://inaos.jfrog.io/inaos/libs-release-local/inaos" >> $HOME/.inaos/cmake/repository.txt
     echo "INAC_REPOSITORY_USRPWD=licensed:AKCp5bBraH7CasbsYCURsjzkbjXwVwdYcT7u39EiuL6GjnK1VKfKQWCd1E2E64mHokU5YUHku" >> $HOME/.inaos/cmake/repository.txt
     git submodule update --init --recursive
@@ -47,15 +58,75 @@ steps:
       fi
   displayName: Take ownership of conda installation
 
+  # Caching post-task takes quite a bit of time.  Disabling it.
+  # See: https://github.com/inaos/iron-array/issues/311
+  #- task: CacheBeta@0
+  #  inputs:
+  #  key: v1 | conda | $(Agent.OS)
+  #  path: $(CONDA_CACHE_FOLDER)
+  #  cacheHitVar: CACHE_RESTORED
+  #displayName: 'Cache CONDA'
+
 - bash: |
-    conda create --yes --quiet --name iArrayEnv
+    conda create --yes --quiet --name iArrayEnv python=$(python.version)
     source activate iArrayEnv
-    conda install -y --name iArrayEnv -c intel openmp
+    conda install -y --name iArrayEnv -c intel mkl-include
+    conda install -y --name iArrayEnv -c intel mkl-static
+    conda install -y --name iArrayEnv -c numba icc_rt
+    conda install -y --name iArrayEnv -c numba llvmdev
   displayName: Download dependencies
-    
-- bash: |
-    mkdir cmake-build-$BUILD_CONFIGURATION
-    cd cmake-build-$BUILD_CONFIGURATION
-    cmake ../ -DCMAKE_BUILD_TYPE=$BUILD_CONFIGURATION  -DMULTITHREADING=$MULTITHREADING
-    make -j
-  displayName: Generate wheel
+  condition: ne(variables.CACHE_RESTORED, 'true')
+
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: '$(python.version)'
+  displayName: 'Use Python $(python.version)'
+
+- script: |
+      python -m pip install --retries 3 -U pip setuptools setuptools-scm scikit-build numpy llvmlite cython numexpr ndindex
+  displayName: 'Install dependencies'
+
+- script: |
+      python setup.py build_ext -j 4 --build-type=RelWithDebInfo -- -DDISABLE_LLVM_CONFIG=$DISABLE_LLVM_CONFIG -DLLVM_DIR=$CONDA/envs/iArrayEnv/lib/cmake/llvm
+  displayName: 'Compile package'
+  condition: ne( variables['Agent.OS'], 'Windows_NT' )
+
+- script: |
+      call "C:\Program Files (x86)\%VSINSTALL%\vcvarsall.bat" %MSVC_PLATFORM%
+      python setup.py build_ext -i --build-type RelWithDebInfo --generator "NMake Makefiles" -- -DINAC_TARGET_ARCH=x86_64 -DLLVM_DIR=%CONDA%/envs/iArrayEnv/Library/lib/cmake/llvm -DWINGEN="NMake Makefiles"
+      rem copy the necesssary DLLs into iarray package
+      copy iarray\iarray-c-develop\build\iarray.dll iarray
+      copy iarray\iarray-c-develop\build\svml_dispmd.dll iarray
+  displayName: 'Compile package'
+  condition: eq( variables['Agent.OS'], 'Windows_NT' )
+
+
+- script: |
+      python -m pip install pytest pytest-azurepipelines pytest-cov
+      LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA/envs/iArrayEnv/lib pytest -vv -s --test-run-title="Linux test suite" --cov-config=.coveragerc --cov=iarray --cov-report=xml --cov-report=html
+  displayName: 'Run Tests'
+  condition:
+    eq( variables['Agent.OS'], 'Linux' )
+
+- script: |
+      pip install pytest pytest-azurepipelines pytest-cov
+      LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/miniconda/envs/iArrayEnv/lib pytest -vv -s --test-run-title="Mac test suite" --cov-config=.coveragerc --cov=iarray --cov-report=xml --cov-report=html
+  displayName: 'Run Tests'
+  condition:
+    eq( variables['Agent.OS'], 'Darwin' )
+
+- script: |
+      pip install pytest pytest-azurepipelines pytest-cov pytest-cov
+      PATH=%PATH%;C:\Miniconda/envs/iArrayEnv/Library/bin
+      pytest -vv -s --test-run-title="Windows test suite" --cov-config=.coveragerc --cov=iarray --cov-report=xml --cov-report=html
+  displayName: 'Run Tests'
+  condition:
+    eq( variables['Agent.OS'], 'Windows_NT' )
+
+
+- task: PublishCodeCoverageResults@1
+  inputs:
+    codeCoverageTool: Cobertura
+    summaryFileLocation: '$(System.DefaultWorkingDirectory)/**/coverage.xml'
+    reportDirectory: '$(System.DefaultWorkingDirectory)/**/htmlcov'
+  displayName: "Upload Coverage results"

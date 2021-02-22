@@ -1,31 +1,50 @@
 import pytest
 import iarray as ia
 import numpy as np
+from math import isclose
 
 
 # Slice
-@pytest.mark.parametrize("shape, pshape, start, stop, dtype",
-                         [
-                             ([100], [20], [20], [30], np.float64),
-                             ([100, 100], [20, 20], [5, 10], [30, 40], np.float32),
-                             ([100, 100], None, [5, 10], [30, 40], np.float64),
-                             ([100, 100, 100], None, [5, 46, 10], [30, 77, 40], np.float32)
 
-                         ])
-def test_slice(shape, pshape, start, stop, dtype):
-    if pshape is None:
-        storage = ia.StorageProperties("plainbuffer")
+
+@pytest.mark.parametrize(
+    "slices",
+    [
+        slice(10, 20),
+        60,
+        (slice(5, 30), slice(10, 40)),
+        (slice(5, 5), slice(5, 23)),
+        (slice(5, 5), slice(33, 12)),
+        (slice(5, 30), 47, ...),
+        (..., slice(5, 6)),
+    ],
+)
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+@pytest.mark.parametrize(
+    "shape, chunkshape, blockshape",
+    [
+        ([100, 100], [20, 20], [10, 13]),
+        ([100, 130], None, None),
+        ([98, 78, 55, 21], None, None),
+        ([100, 100], None, None),
+    ],
+)
+def test_slice(slices, shape, chunkshape, blockshape, dtype):
+    if chunkshape is None:
+        storage = ia.Storage(plainbuffer=True)
     else:
-        storage = ia.StorageProperties("blosc", True)
+        storage = ia.Storage(chunkshape, blockshape, enforce_frame=True)
 
-    slices = tuple(slice(start[i], stop[i]) for i in range(len(start)))
-    if len(start) == 1:
-        slices = slices[0]
-
-    a = ia.linspace(ia.dtshape(shape, pshape, dtype), -10, 10, storage=storage)
+    a = ia.linspace(ia.DTShape(shape, dtype), -10, 10, storage=storage)
     an = ia.iarray2numpy(a)
 
     b = a[slices]
-    bn = ia.iarray2numpy(b)
+    an2 = an[slices]
 
-    np.testing.assert_almost_equal(an[slices], bn)
+    if b.ndim == 0:
+        isclose(an2, b)
+    else:
+        bn = ia.iarray2numpy(b)
+        assert an2.shape == bn.shape
+        assert an2.ndim == bn.ndim
+        np.testing.assert_almost_equal(an[slices], bn)

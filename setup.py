@@ -1,100 +1,91 @@
+###########################################################################################
+# Copyright INAOS GmbH, Thalwil, 2018.
+# Copyright Francesc Alted, 2018.
+#
+# All rights reserved.
+#
+# This software is the confidential and proprietary information of INAOS GmbH
+# and Francesc Alted ("Confidential Information"). You shall not disclose such Confidential
+# Information and shall use it only in accordance with the terms of the license agreement.
+###########################################################################################
+
 import os
-from setuptools import setup, Extension, find_packages
-from Cython.Build import cythonize
-import numpy
+from sys import platform
+from skbuild import setup
+import codecs
+import os.path
 
-DESCRIPTION = 'A Python wrapper of the IronArray (N-dimensional arrays) C library for Python.'
 
-with open('README.md') as f:
+def read(rel_path):
+    here = os.path.abspath(os.path.dirname(__file__))
+    with codecs.open(os.path.join(here, rel_path), "r") as fp:
+        return fp.read()
+
+
+def get_version(rel_path):
+    for line in read(rel_path).splitlines():
+        if line.startswith("__version__"):
+            delim = '"' if '"' in line else "'"
+            return line.split(delim)[1]
+    else:
+        raise RuntimeError("Unable to find version string.")
+
+
+BUILD_WHEELS = True if "BUILD_WHEELS" in os.environ else False
+if not BUILD_WHEELS:
+    if os.path.exists("BUILD_WHEELS"):
+        BUILD_WHEELS = True
+
+DESCRIPTION = "The Math Array Accelerator for Python"
+
+
+with open("README.md") as f:
     LONG_DESCRIPTION = f.read()
 
-# Compiler & linker flags
-CFLAGS = os.environ.get('CFLAGS', '').split()
-LFLAGS = os.environ.get('LFLAGS', '').split()
-
-# Sources & libraries
-include_dirs = [numpy.get_include()]
-library_dirs = []
-libraries = ['iarray']
-define_macros = []
-sources = ['iarray/iarray_ext.pyx']
-
-if 'IARRAY_DEVELOP_MODE' in os.environ:
-    print("*** Entering iarray develop mode ***")
-    IARRAY_DIR = os.environ.get('IARRAY_DIR', '../iron-array')
-    IARRAY_DIR = os.path.expanduser(IARRAY_DIR)
-    print("Looking at iarray sources at:", IARRAY_DIR, ".  If not correct, use the `IARRAY_DIR` envvar")
-
-    if IARRAY_DIR != '':
-        IARRAY_BUILD_DIR = os.environ.get('IARRAY_BUILD_DIR', os.path.join(IARRAY_DIR, 'build'))
-        print("Looking at iarray library at:", IARRAY_BUILD_DIR, ".  If not correct, use the `IARRAY_BUILD_DIR` envvar")
-        library_dirs += [IARRAY_BUILD_DIR]
-        include_dirs += [os.path.join(IARRAY_DIR, 'include')]
-
-    INAC_DIR = os.environ.get('INAC_DIR', '../INAOS')
-    INAC_DIR = os.path.expanduser(INAC_DIR)
-    print("Looking at the inac library at:", INAC_DIR, ".  If not correct, use the `INAC_DIR` envvar")
-    if INAC_DIR != '':
-        library_dirs += [os.path.join(INAC_DIR, 'lib')]
-        include_dirs += [os.path.join(INAC_DIR, 'include')]
-        libraries += ['inac']
+# Libraries to copy as 'data' in package
+# Copying just 'libarray' seems good enough
+if platform == "linux" or platform == "linux2":
+    copy_libs = ["libiarray.so", "libsvml.so", "libintlc.so.5"]
+elif platform == "darwin":
+    copy_libs = ["libiarray.dylib"]
+elif platform == "win32":
+    copy_libs = ["iarray.dll", "svml_dispmd.dll"]
 else:
-    print("*** Entering iarray production mode ***")
-    IARRAY_DIR = os.environ.get('IARRAY_DIR', '/usr/local')
-    print("Looking at iarray library at:", IARRAY_DIR, ".  If not correct, use the `IARRAY_DIR` envvar")
+    copy_libs = []
 
-    if IARRAY_DIR != '':
-        library_dirs += [os.path.join(IARRAY_DIR, 'lib')]
-        include_dirs += [os.path.join(IARRAY_DIR, 'include')]
+doc_deps = [
+    "sphinx >= 1.5",
+    "sphinx_rtd_theme",
+    "numpydoc",
+]
+examples_deps = [
+    "matplotlib",
+    "numexpr",
+    "numba",
+]
 
+if BUILD_WHEELS:
+    print("BUILD_WHEELS mode is ON!")
+    install_requires = open("requirements-runtime.txt").read().split()
+    package_info = dict(
+        package_dir={"iarray": "iarray"},
+        packages=["iarray", "iarray.py2llvm", "iarray.tests"],
+        package_data={"iarray": copy_libs},
+        install_requires=install_requires,
+    )
+else:
+    # For some reason this is necessary for inplace compilation
+    # One can avoid using this if we nuke _skbuild/ next to iarray/
+    package_info = dict(
+        package_dir={"": "."},
+    )
 
 setup(
     name="iarray",
+    version=get_version("iarray/__init__.py"),
     description=DESCRIPTION,
-    long_description=LONG_DESCRIPTION,
-    use_scm_version={
-        'version_scheme': 'guess-next-dev',
-        'local_scheme': 'dirty-tag',
-        'write_to': 'iarray/version.py'
-    },
-    setup_requires=[
-        'setuptools>18.0',
-        'setuptools-scm>3.0'
-        'numpy>=1.15',
-        'cython>=0.23',
-    ],
-    python_requires=">=3.6",
-    install_requires=[
-        'numpy>=1.15',
-        'numexpr>=2.6',
-        'numba>=0.42',
-        'llvmlite',
-        'pytest',
-        'hypothesis',
-    ],
-    package_dir={'': '.'},
-    packages=find_packages(),
-    ext_modules=cythonize([
-        Extension(
-            "iarray.iarray_ext", sources,
-            define_macros=define_macros,
-            include_dirs=include_dirs,
-            library_dirs=library_dirs,
-            libraries=libraries,
-            extra_compile_args=CFLAGS,
-            extra_link_args=LFLAGS,
-            )
-    ],
-    ),
-    extras_require={
-        'doc': [
-            'sphinx >= 1.5',
-            'sphinx_rtd_theme',
-            'numpydoc',
-        ],
-        'examples': [
-            'matplotlib',
-            'numexpr',
-            'numba',
-        ]},
+    # long_description=LONG_DESCRIPTION,
+    python_requires=">=3.7",
+    extras_require={"doc": doc_deps, "examples": examples_deps},
+    **package_info,
 )

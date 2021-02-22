@@ -1,3 +1,5 @@
+# This uses the binary code in LLVM .bc file for evaluating expressions.  Only meant for developers, really.
+
 import iarray as ia
 import numpy as np
 
@@ -5,25 +7,26 @@ import numpy as np
 NITER = 10
 
 # Define array params
-# shape = [10000, 2000]
-# pshape = [1000, 200]
 shape = [10 * 1000 * 1000]
-pshape = [200 * 1000]
+cshape = [200 * 1000]
+bshape = [20 * 1000]
 dtype = np.float64
 
+storage = ia.Storage(cshape, bshape)
+dtshape = ia.DTShape(shape, dtype)
+
 # Create initial containers
-a1 = ia.linspace(ia.dtshape(shape, pshape, dtype), 0, 10)
-#a2 = ia.iarray2numpy(a1)
+a1 = ia.linspace(dtshape, 0, 10, storage=storage)
 a2 = np.linspace(0, 10, shape[0], dtype=dtype).reshape(shape)
 
 
 print("iarray evaluation...")
 
 # And now, the expression
-expr = ia.Expr(eval_flags=ia.EvalFlags(method="iterblosc", engine="compiler"), nthreads=1)
+expr = ia.Expr(eval_method=ia.Eval.ITERBLOSC, nthreads=1)
 expr.bind("x", a1)
-expr.bind_out_properties(ia.dtshape(shape, pshape, dtype))
-bc = open('examples/expression.bc', 'rb').read()
+expr.bind_out_properties(dtshape, storage)
+bc = open("examples/expression.bc", "rb").read()
 expr.compile_bc(bc, "expr_func")
 for i in range(NITER):
     b1 = expr.eval()

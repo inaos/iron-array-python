@@ -1,0 +1,11 @@
+setuptools
+wheel
+scikit-build
+cmake
+cython
+ninja
+numpy
+icc-rt
+llvmlite>=0.33.0
+pytest
+ndindex

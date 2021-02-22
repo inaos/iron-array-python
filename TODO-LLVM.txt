@@ -1,6 +1,0 @@
-- Initialize LLVM once (now it's initialized in iron-array & py2llvm)
-- Support multiple dimensions (requires change to blosc2)
-- Move py2llvm to iron-array (setuptools find_packages)
-- Stable API
-- Unit tests
-- Missing features (operators, etc.)

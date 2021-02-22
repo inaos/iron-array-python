@@ -1,142 +1,168 @@
 # Standard Library
-import argparse
-import ast
 import math
 
 # Requirements
 import iarray as ia
 from llvmlite import ir
-import py2llvm
-from py2llvm import int8p, int32, int64
-from py2llvm import types
+from . import py2llvm
+from .py2llvm import float32, float64, void
+from .py2llvm import int8, int8p, int32, int64, int32p, int64p
+from .py2llvm import types
+
+from . import iarray_ext
+
+assert math  # Silence pyflakes warning
 
 
-assert math # Silence pyflakes warning
-
-parser = argparse.ArgumentParser()
-parser.add_argument('-v', '--verbose', action='count', default=0)
-args = parser.parse_args()
-verbose = args.verbose
+# From iarray/iarray-c-develop/src/iarray_expression.c
+IARRAY_EXPR_OPERANDS_MAX = 128
 
 
-"""
-typedef struct {
-  int ninputs;  // number of data inputs
-  uint8_t* inputs[BLOSC2_PREFILTER_INPUTS_MAX];  // the data inputs
-  int32_t input_typesizes[BLOSC2_PREFILTER_INPUTS_MAX];  // the typesizes for data inputs
-  void *user_data;  // user-provided info (optional)
-  uint8_t *out;  // automatically filled
-  int32_t out_size;  // automatically filled
-  int32_t out_typesize;  // automatically filled
-} blosc2_prefilter_params;
-
-/**
- * @brief The type of the prefilter function.
- *
- * If the function call is successful, the return value should be 0; else, a negative value.
- */
-#typedef int (*blosc2_prefilter_fn)(blosc2_prefilter_params* params);
-"""
-
-BLOSC2_PREFILTER_INPUTS_MAX = 128
 class udf_type(types.StructType):
-    _name_ = 'blosc2_prefilter_params'
+    _name_ = "iarray_eval_pparams_t"
     _fields_ = [
-        ('ninputs', int32), # int32 may not be the same as int
-        ('inputs', ir.ArrayType(int8p, BLOSC2_PREFILTER_INPUTS_MAX)),
-        ('input_typesizes', ir.ArrayType(int32, BLOSC2_PREFILTER_INPUTS_MAX)),
-        ('user_data', int8p), # LLVM does not have the concept of void*
-        ('out', int8p), # LLVM doesn't make the difference between signed and unsigned
-        ('out_size', int32),
-        ('out_typesize', int32), # int32_t out_typesize;  // automatically filled
+        ("ninputs", int32),  # int32 may not be the same as int
+        ("inputs", ir.ArrayType(int8p, IARRAY_EXPR_OPERANDS_MAX)),
+        ("input_typesizes", ir.ArrayType(int32, IARRAY_EXPR_OPERANDS_MAX)),
+        ("user_data", int8p),  # LLVM does not have the concept of void*
+        ("out", int8p),  # LLVM doesn't make the difference between signed and unsigned
+        ("out_size", int32),
+        ("out_typesize", int32),  # int32_t out_typesize;  // automatically filled
+        ("ndim", int8),
+        ("window_shape", int32p),
+        ("window_start", int64p),
+        ("window_strides", int32p),
     ]
 
 
 class ArrayShape(types.ArrayShape):
-
-    def __init__(self, array):
+    def __init__(self, name, shape, array):
+        self.name = name
+        self.shape = shape
         self.array = array
 
-    def get(self, visitor, n):
-        # The dimension size is the same for every dimension in every array
-        builder = visitor.builder
-        out_size = self.array.get_field(builder, 5) # gep
-        out_typesize = self.array.get_field(builder, 6) # load
-        out_size = builder.load(out_size) # gep
-        out_typesize = builder.load(out_typesize) # load
-        return visitor.BinOp_exit(None, None, out_size, ast.Div, out_typesize)
+    def get(self, builder, n):
+        n_ir = types.value_to_ir_value(builder, n, type_=int8)
+
+        # Check bounds
+        if self.name == "window_shape":
+            ndim = self.array.function._ndim
+            test = builder.icmp_signed(">=", n_ir, ndim)
+            with builder.if_then(test, likely=False):
+                return_type = builder.function.type.pointee.return_type
+                error = ir.Constant(return_type, iarray_ext.IARRAY_ERR_EVAL_ENGINE_OUT_OF_RANGE)
+                builder.ret(error)
+
+        # General case
+        name = f"{self.name}_{n}"
+        size = builder.gep(self.shape, [n_ir])  # i64*
+        size = builder.load(size, name=name)  # i64
+        return size
 
 
 class ArrayType(types.ArrayType):
-
-    def __init__(self, name, args):
+    def __init__(self, function, name, args):
+        self.function = function
         self.name = name
-        self.params = args['params']
-        self.shape = ArrayShape(self)
+        self.window_shape = ArrayShape("window_shape", self._shape, self)
+        self.window_start = ArrayShape("window_start", self._start, self)
+        self.window_strides = ArrayShape("window_strides", self._strides, self)
 
     def preamble(self, builder):
         if self.idx == 0:
             # .out (uint8_t*)
-            ptr = self.get_field(builder, 4)
-            ptr = builder.load(ptr)
+            ptr = self.function._out
         else:
             # .inputs (uint8_t**)
-            ptr = self.get_field(builder, 1)
+            ptr = self.function.get_field(builder, 1, name="inputs")
             # .inputs[n] (uint8_t*)
             idx = ir.Constant(int32, self.idx - 1)
             ptr = builder.gep(ptr, [types.zero, idx])
             ptr = builder.load(ptr)
 
         # Cast
-        self.ptr = builder.bitcast(ptr, self.dtype.as_pointer())
+        self.ptr = builder.bitcast(ptr, self.dtype.as_pointer(), name=self.name)
 
-    def get_field(self, builder, idx):
-        idx = ir.Constant(int32, idx)
-        ptr = builder.load(self.params)
-        return builder.gep(ptr, [types.zero32, idx])
+        # Strides
+        self.strides_cache = []
+        for dim in range(self.ndim):
+            stride = self.strides.get(builder, dim)
+            self.strides_cache.append(stride)
+
+    @property
+    def _shape(self):
+        return self.function._shape
+
+    @property
+    def _start(self):
+        return self.function._start
+
+    @property
+    def _strides(self):
+        return self.function._strides
 
     def get_ptr(self, visitor):
         return self.ptr
 
+    # For compatibility with numpy arrays
+    @property
+    def shape(self):
+        return self.window_shape
+
+    @property
+    def strides(self):
+        return self.window_strides
+
 
 def Array(dtype, ndim):
-    return type(
-        f'Array[{dtype}, {ndim}]',
-        (ArrayType,),
-        dict(dtype=dtype, ndim=ndim)
-    )
+    return type(f"Array[{dtype}, {ndim}]", (ArrayType,), dict(dtype=dtype, ndim=ndim))
 
 
 class Function(py2llvm.Function):
-
-    def get_ir_signature(self, node, verbose=0, *args):
-        dtype = self.llvm.get_dtype(self.ir_module, udf_type)
-        params = [py2llvm.Parameter('params', dtype)]
-
-        return_type = types.type_to_ir_type(int64)
-        return py2llvm.Signature(params, return_type)
-
     def get_py_signature(self, signature):
         signature = super().get_py_signature(signature)
         for i, param in enumerate(signature.parameters):
             param.type.idx = i
         return signature
 
-    def create_expr(self, inputs, dtshape, **cparams):
-        eval_flags = ia.EvalFlags(method="iterblosc", engine="compiler")
-        expr = ia.Expr(eval_flags=eval_flags, **cparams)
-        for a in inputs:
-            expr.bind("", a)
-        cfg = ia.Config(**cparams)
-        expr.bind_out_properties(dtshape, cfg._storage)
-        expr.compile_udf(self)
+    def get_ir_signature(self, node, verbose=0, *args):
+        dtype = self.llvm.get_dtype(self.ir_module, udf_type)
+        params = [py2llvm.Parameter("params", dtype)]
+
+        return_type = types.type_to_ir_type(int64)
+        return py2llvm.Signature(params, return_type)
+
+    def preamble(self, builder, args):
+        params = args["params"]
+        self.params_ptr = builder.load(params)  # iarray_eval_pparams_t*
+        # self._ninputs = self.load_field(builder, 0, name='ninputs')
+        # self._inputs = self.load_field(builder, 1, name='ninputs')                  # i8**
+        # self._input_typesizes = self.load_field(builder, 2, name='input_typesizes') # i8*
+        # self._user_data = self.load_field(builder, 3, name='user_data')             # i8*
+        self._out = self.load_field(builder, 4, name="out")  # i8*
+        # self._out_size = self.load_field(builder, 5, name='out_size')               # i32
+        # self._out_typesize = self.load_field(builder, 6, name='out_typesize')       # i32
+        self._ndim = self.load_field(builder, 7, name="ndim")  # i8
+        self._shape = self.load_field(builder, 8, name="window_shape")  # i32*
+        self._start = self.load_field(builder, 9, name="window_start")  # i64*
+        self._strides = self.load_field(builder, 10, name="window_strides")  # i32*
+
+    def get_field(self, builder, idx, name=""):
+        idx = ir.Constant(int32, idx)
+        return builder.gep(self.params_ptr, [types.zero32, idx], name=name)
+
+    def load_field(self, builder, idx, name=""):
+        ptr = self.get_field(builder, idx)
+        return builder.load(ptr, name=name)
+
+    def create_expr(self, inputs, cfg=None, **kwargs):
+        expr = ia.expr_from_udf(self, inputs, cfg=cfg, **kwargs)
         return expr
 
 
 class LLVM(py2llvm.LLVM):
-
     def jit(self, *args, **kwargs):
-        kwargs['optimize'] = False # iron-array optimizes, not py2llvm
+        kwargs["optimize"] = False  # iron-array optimizes, not py2llvm
         return super().jit(*args, **kwargs)
 
 
