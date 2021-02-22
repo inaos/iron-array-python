@@ -46,7 +46,7 @@ versions=(cp36-cp36m cp37-cp37m cp38-cp38)
 
 for version in "${versions[@]}"; do
   /opt/python/${version}/bin/python -m pip install --upgrade pip
-  /opt/python/${version}/bin/python -m pip install cython numpy
+  /opt/python/${version}/bin/python -m pip install cython numpy ndindex
   rm -rf _skbuild/
   /opt/python/${version}/bin/python setup.py build --build-type RelWithDebInfo -- -DDISABLE_LLVM_CONFIG=True -DLLVM_DIR=$CONDA_PREFIX/lib/cmake/llvm
   # Copy the necessary shared libraries
