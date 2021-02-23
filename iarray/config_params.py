@@ -92,6 +92,7 @@ def partition_advice(
 class DefaultConfig:
     codec: Any
     clevel: Any
+    favor: Any
     use_dict: Any
     filters: Any
     nthreads: Any
@@ -122,6 +123,7 @@ class Defaults(object):
     _config = None
     codec: ia.Codecs = ia.Codecs.ZSTD
     clevel: int = 1
+    favor: ia.Favors = ia.Favors.BALANCE
     use_dict: bool = False
     filters: List[ia.Filters] = field(default_factory=default_filters)
     nthreads: int = 0
@@ -147,6 +149,9 @@ class Defaults(object):
 
     def _clevel(self):
         return self.clevel
+
+    def _favor(self):
+        return self.favor
 
     def _use_dict(self):
         return self.use_dict
@@ -176,6 +181,7 @@ class Defaults(object):
             return DefaultConfig(
                 codec=self.codec,
                 clevel=self.clevel,
+                favor=self.favor,
                 use_dict=self.use_dict,
                 filters=self.filters,
                 nthreads=self.nthreads,
@@ -193,6 +199,7 @@ class Defaults(object):
             raise ValueError(f"You need to use a `Config` instance")
         self.codec = value.codec
         self.clevel = value.clevel
+        self.favor = value.favor
         self.use_dict = value.use_dict
         self.filters = value.filters
         self.nthreads = value.nthreads
@@ -308,14 +315,14 @@ class Storage:
                     "plainbuffer array does not support neither a chunkshape nor blockshape"
                 )
 
-    def _get_shape_advice(self, dtshape):
+    def _get_shape_advice(self, dtshape, cfg=None):
         if self.plainbuffer:
             return
         chunkshape, blockshape = self.chunkshape, self.blockshape
         if chunkshape is not None and blockshape is not None:
             return
         if chunkshape is None and blockshape is None:
-            chunkshape_, blockshape_ = partition_advice(dtshape)
+            chunkshape_, blockshape_ = partition_advice(dtshape, cfg=cfg)
             self.chunkshape = chunkshape_
             self.blockshape = blockshape_
             return
@@ -339,6 +346,10 @@ class Config(ext.Config):
     clevel : int
         The compression level.  It can have values between 0 (no compression) and
         9 (max compression).  Default is 1.
+    favor : Favors
+        What favor when compressing. Possible values are :py:obj:`Favors.SPEED <Favors>`
+        for better speed, :py:obj:`Favors.CRATIO <Favors>` for bettwer compresion ratios
+        and :py:obj:`Favors.BALANCE <Favors>`.  Default is :py:obj:`Favors.BALANCE <Favors>`.
     filters : list
         The list of filters for Blosc.  Default is [:py:obj:`Filters.BITSHUFFLE <Filters>`].
     fp_mantissa_bits : int
@@ -375,6 +386,7 @@ class Config(ext.Config):
 
     codec: ia.Codecs = field(default_factory=defaults._codec)
     clevel: int = field(default_factory=defaults._clevel)
+    favor: int = field(default_factory=defaults._favor)
     filters: List[ia.Filters] = field(default_factory=defaults._filters)
     fp_mantissa_bits: int = field(default_factory=defaults._fp_mantissa_bits)
     use_dict: bool = field(default_factory=defaults._use_dict)
@@ -417,6 +429,7 @@ class Config(ext.Config):
         super().__init__(
             self.codec,
             self.clevel,
+            self.favor,
             self.use_dict,
             self.filters,
             self.nthreads,
@@ -474,7 +487,7 @@ def set_config(cfg: Config = None, dtshape=None, **kwargs):
     if kwargs != {}:
         cfg = cfg._replace(**kwargs)
     if dtshape is not None:
-        cfg.storage._get_shape_advice(dtshape)
+        cfg.storage._get_shape_advice(dtshape, cfg=cfg)
 
     global_config = cfg
     # Set the defaults for Config() constructor and other nested configs (Storage...)

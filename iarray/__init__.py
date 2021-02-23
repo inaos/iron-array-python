@@ -55,6 +55,13 @@ class Filters(Enum):
     TRUNC_PREC = 8
 
 
+# Favors.  Select to favor compression speed, compression ratio or a balance between them.
+class Favors(Enum):
+    BALANCE = 0
+    SPEED = 1
+    CRATIO = 2
+
+
 # Random generators
 class RandomGen(Enum):
     MERSENNE_TWISTER = 0

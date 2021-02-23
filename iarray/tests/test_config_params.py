@@ -3,21 +3,22 @@ import iarray as ia
 
 
 @pytest.mark.parametrize(
-    "clevel, codec, filters, chunkshape, blockshape, enforce_frame",
+    "clevel, codec, favor, filters, chunkshape, blockshape, enforce_frame",
     [
-        (0, ia.Codecs.ZSTD, [ia.Filters.SHUFFLE], None, None, False),
-        (1, ia.Codecs.BLOSCLZ, [ia.Filters.BITSHUFFLE], [50, 50], [20, 20], True),
-        (9, ia.Codecs.ZSTD, [ia.Filters.SHUFFLE, ia.Filters.DELTA], [50, 50], [20, 20], False),
-        (6, ia.Codecs.ZSTD, [ia.Filters.SHUFFLE], [100, 50], [50, 20], False),
-        (0, ia.Codecs.ZSTD, [ia.Filters.SHUFFLE], None, None, False),
+        (0, ia.Codecs.ZSTD, ia.Favors.BALANCE, [ia.Filters.SHUFFLE], None, None, False),
+        (1, ia.Codecs.BLOSCLZ, ia.Favors.SPEED, [ia.Filters.BITSHUFFLE], [50, 50], [20, 20], True),
+        (9, ia.Codecs.ZSTD, ia.Favors.CRATIO, [ia.Filters.SHUFFLE, ia.Filters.DELTA], [50, 50], [20, 20], False),
+        (6, ia.Codecs.ZSTD, ia.Favors.BALANCE, [ia.Filters.SHUFFLE], [100, 50], [50, 20], False),
+        (0, ia.Codecs.ZSTD, ia.Favors.SPEED, [ia.Filters.SHUFFLE], None, None, False),
     ],
 )
-def test_global_config(clevel, codec, filters, chunkshape, blockshape, enforce_frame):
+def test_global_config(clevel, codec, favor, filters, chunkshape, blockshape, enforce_frame):
     storage = ia.Storage(chunkshape, blockshape, enforce_frame=enforce_frame)
-    ia.set_config(clevel=clevel, codec=codec, filters=filters, storage=storage)
+    ia.set_config(clevel=clevel, codec=codec, favor=favor, filters=filters, storage=storage)
     config = ia.get_config()
     assert config.clevel == clevel
     assert config.codec == codec
+    assert config.favor == favor
     assert config.filters == filters
     storage2 = config.storage
     assert storage2.chunkshape == chunkshape
@@ -28,6 +29,7 @@ def test_global_config(clevel, codec, filters, chunkshape, blockshape, enforce_f
     ia.set_config(
         clevel=clevel,
         codec=codec,
+        favor=favor,
         filters=filters,
         chunkshape=chunkshape,
         blockshape=blockshape,
@@ -46,6 +48,7 @@ def test_global_config(clevel, codec, filters, chunkshape, blockshape, enforce_f
     cfg = ia.Config(
         clevel=clevel,
         codec=codec,
+        favor=favor,
         filters=filters,
         chunkshape=chunkshape,
         blockshape=blockshape,
@@ -72,6 +75,7 @@ def test_global_config(clevel, codec, filters, chunkshape, blockshape, enforce_f
     config = ia.get_config()
     assert config.clevel == clevel
     assert config.codec == codec
+    assert config.favor == favor
     assert config.filters == filters
     storage2 = ia.Storage()
     assert storage2.chunkshape == chunkshape
