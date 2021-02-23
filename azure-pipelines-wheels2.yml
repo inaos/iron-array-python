@@ -192,7 +192,7 @@ jobs:
     displayName: 'Install build dependencies'
 
   - script: |
-      call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" amd64
+      call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" amd64
       python setup.py clean
       python setup.py build_ext -i --build-type RelWithDebInfo --generator "NMake Makefiles" -- -DINAC_TARGET_ARCH=x86_64 -DLLVM_DIR=%CONDA%/envs/iArrayEnv/Library/lib/cmake/llvm -DWINGEN="NMake Makefiles"
       rem copy the necesssary DLLs into iarray package
