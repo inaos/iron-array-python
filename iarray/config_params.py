@@ -420,10 +420,21 @@ class Config(ext.Config):
                 enforce_frame=self.enforce_frame,
                 plainbuffer=self.plainbuffer,
             )
+        # Once we have all the settings and hints from the user, we can proceed
+        # with some fine tuning.
+        # The settings below are based on experiments on a i9-10940X processor.
         if self.nthreads == 0:
             ncores = get_ncores(0)
             # Experiments say that nthreads is optimal when is ~1.5x the number of logical cores
             self.nthreads = ncores // 2 + ncores // 4
+        if self.favor == ia.Favors.SPEED:
+            self.codec = ia.Codecs.LZ4 if self.codec == Defaults.codec else self.codec
+            self.clevel = 9 if self.clevel == Defaults.clevel else self.clevel
+            self.filters = [ia.Filters.SHUFFLE] if self.filters == default_filters() else self.filters
+        elif self.favor == ia.Favors.CRATIO:
+            self.codec = ia.Codecs.ZSTD if self.codec == Defaults.codec else self.codec
+            self.clevel = 5 if self.clevel == Defaults.clevel else self.clevel
+            self.filters = [ia.Filters.BITSHUFFLE] if self.filters == default_filters() else self.filters
 
         # Initialize the Cython counterpart
         super().__init__(
