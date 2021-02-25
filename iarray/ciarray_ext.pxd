@@ -61,18 +61,23 @@ cdef extern from "libiarray/iarray.h":
         IARRAY_CONTAINER_PERSIST = 0x1
 
     ctypedef enum iarray_data_type_t:
-        IARRAY_DATA_TYPE_DOUBLE,
-        IARRAY_DATA_TYPE_FLOAT,
+        IARRAY_DATA_TYPE_DOUBLE
+        IARRAY_DATA_TYPE_FLOAT
         IARRAY_DATA_TYPE_MAX
 
     ctypedef enum iarray_compression_codec_t:
-        IARRAY_COMPRESSION_BLOSCLZ = 0,
-        IARRAY_COMPRESSION_LZ4,
-        IARRAY_COMPRESSION_LZ4HC,
-        IARRAY_COMPRESSION_SNAPPY,
-        IARRAY_COMPRESSION_ZLIB,
-        IARRAY_COMPRESSION_ZSTD,
+        IARRAY_COMPRESSION_BLOSCLZ = 0
+        IARRAY_COMPRESSION_LZ4
+        IARRAY_COMPRESSION_LZ4HC
+        IARRAY_COMPRESSION_SNAPPY
+        IARRAY_COMPRESSION_ZLIB
+        IARRAY_COMPRESSION_ZSTD
         IARRAY_COMPRESSION_LIZARD
+
+    ctypedef enum iarray_compression_favor_t:
+        IARRAY_COMPRESSION_FAVOR_BALANCE = 0
+        IARRAY_COMPRESSION_FAVOR_SPEED
+        IARRAY_COMPRESSION_FAVOR_CRATIO
 
     ctypedef enum iarray_eval_method_t:
         IARRAY_EVAL_METHOD_AUTO
@@ -88,6 +93,7 @@ cdef extern from "libiarray/iarray.h":
     ctypedef struct iarray_config_t:
         iarray_compression_codec_t compression_codec
         int compression_level
+        iarray_compression_favor_t compression_favor
         int use_dict
         int filter_flags
         int eval_method

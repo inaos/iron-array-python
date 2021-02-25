@@ -12,7 +12,7 @@ from iarray.udf import Array
 from iarray.py2llvm import float64, int64
 
 
-NITER = 10  # number of iterations per benchmark
+NITER = 3  # number of iterations per benchmark
 PROFILE = False
 NVARS = 3  # number of variables in expression (only 1 or 3)
 assert NVARS in (1, 3)
@@ -22,16 +22,19 @@ expr3 = "(x - 1.35) * (y - 4.45) * (z - 8.5)"
 
 # Define array params
 shape = [20_000_000]
-chunkshape, blockshape = [4_000_000], [20_000]
-# chunkshape, blockshape = None, None   # uncomment for automatic partitioning
+#chunkshape, blockshape = [2_000_000], [20_000]
+#chunkshape, blockshape = [2**24], [2**16]
+chunkshape, blockshape = None, None   # uncomment for automatic partitioning
 dtype = np.float64
 nthreads = 8
 dtshape = ia.DTShape(shape=shape, dtype=dtype)
 
 # Set global defaults
-ia.set_config(clevel=9, nthreads=nthreads, chunkshape=chunkshape, blockshape=blockshape)
+ia.set_config(chunkshape=chunkshape, blockshape=blockshape,
+              favor=ia.Favors.SPEED)
 # Output required precision (in significant bits for the mantissa)
-out_prec = 20
+#out_prec = 0
+out_prec = 30
 
 
 @udf.jit(verbose=0)

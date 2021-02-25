@@ -5,8 +5,8 @@ import iarray as ia
 @pytest.mark.parametrize(
     "clevel, codec, filters, chunkshape, blockshape, enforce_frame",
     [
-        (0, ia.Codecs.ZSTD, [ia.Filters.SHUFFLE], None, None, False),
-        (1, ia.Codecs.BLOSCLZ, [ia.Filters.BITSHUFFLE], [50, 50], [20, 20], True),
+        (0, ia.Codecs.ZSTD,[ia.Filters.SHUFFLE], None, None, False),
+        (1, ia.Codecs.BLOSCLZ,[ia.Filters.SHUFFLE], [50, 50], [20, 20], True),
         (9, ia.Codecs.ZSTD, [ia.Filters.SHUFFLE, ia.Filters.DELTA], [50, 50], [20, 20], False),
         (6, ia.Codecs.ZSTD, [ia.Filters.SHUFFLE], [100, 50], [50, 20], False),
         (0, ia.Codecs.ZSTD, [ia.Filters.SHUFFLE], None, None, False),
@@ -77,6 +77,24 @@ def test_global_config(clevel, codec, filters, chunkshape, blockshape, enforce_f
     assert storage2.chunkshape == chunkshape
     assert storage2.blockshape == blockshape
     assert storage2.enforce_frame == False
+
+
+@pytest.mark.parametrize(
+    "favor, filters, chunkshape, blockshape",
+    [
+        (ia.Favors.BALANCE, [ia.Filters.BITSHUFFLE], None, None),
+        (ia.Favors.SPEED, [ia.Filters.SHUFFLE], [50, 50], [20, 20]),
+        (ia.Favors.CRATIO, [ia.Filters.BITSHUFFLE], [50, 50], [20, 20]),
+    ],
+)
+def test_global_favor(favor, filters, chunkshape, blockshape):
+    storage = ia.Storage(chunkshape, blockshape)
+    ia.set_config(favor=favor, storage=storage)
+    config = ia.get_config()
+    assert config.favor == favor
+    assert config.filters == filters
+    assert config.storage.chunkshape == chunkshape
+    assert config.storage.blockshape == blockshape
 
 
 @pytest.mark.parametrize(

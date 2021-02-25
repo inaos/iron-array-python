@@ -30,13 +30,3 @@ t0 = time()
 d = v.copy()
 t1 = time()
 print(f"Time to make a copy (view -> cont): {t1 - t0:.5f}")
-
-# Do a copy of the slice (view)
-dn = ia.iarray2numpy(d)
-t0 = time()
-e = v.copy(view=True)
-t1 = time()
-print(f"Time to make a copy (view -> view): {t1 - t0:.5f}")
-
-en = ia.iarray2numpy(e)
-np.testing.assert_allclose(dn, en)

@@ -1,7 +1,7 @@
 import os
 import pytest
-import iarray as ia
 import numpy as np
+import iarray as ia
 
 
 # linspace

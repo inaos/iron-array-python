@@ -173,10 +173,11 @@ cdef class IArrayInit:
 cdef class Config:
     cdef ciarray.iarray_config_t config
 
-    def __init__(self, compression_codec, compression_level, use_dict, filters,
-                 max_num_threads, fp_mantissa_bits, eval_method):
+    def __init__(self, compression_codec, compression_level, compression_favor,
+                 use_dict, filters, max_num_threads, fp_mantissa_bits, eval_method):
         self.config.compression_codec = compression_codec.value
         self.config.compression_level = compression_level
+        self.config.compression_favor = compression_favor.value
         self.config.use_dict = 1 if use_dict else 0
         cdef int filter_flags = 0
         # TODO: filters are really a pipeline, and here we are just ORing them, which is tricky.
