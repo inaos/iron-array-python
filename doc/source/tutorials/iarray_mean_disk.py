@@ -2,7 +2,9 @@ from time import time
 
 t0 = time()
 import iarray as ia
+import zarr
 
+zarr.save_array()
 t = time() - t0
 print("iarray import time ->", round(t, 3))
 

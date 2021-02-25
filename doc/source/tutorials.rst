@@ -7,10 +7,11 @@ Tutorials
    :maxdepth: 1
 
    tutorials/creation
+   tutorials/slicing
    tutorials/random
-   tutorials/views
-   tutorials/matmul
    tutorials/reductions
    tutorials/expressions-memory
    tutorials/expressions-disk
    tutorials/error-handling
+   tutorials/linear-algebra
+
