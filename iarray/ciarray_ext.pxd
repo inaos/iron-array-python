@@ -258,10 +258,6 @@ cdef extern from "libiarray/iarray.h":
                                         char *urlpath,
                                         iarray_container_t **container)
 
-    ina_rc_t iarray_container_save(iarray_context_t *ctx,
-                                        iarray_container_t *container,
-                                        char *urlpath)
-
     bool iarray_is_empty(iarray_container_t *container)
 
     ina_rc_t iarray_expr_new(iarray_context_t *ctx,

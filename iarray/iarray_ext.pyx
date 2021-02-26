@@ -596,17 +596,6 @@ def full(cfg, fill_value, dtshape):
     return ia.IArray(ctx, c_c)
 
 
-def save(cfg, c, urlpath):
-    ctx = Context(cfg)
-    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
-        ctx.to_capsule(), "iarray_context_t*")
-    cdef ciarray.iarray_container_t *c_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(
-        c.to_capsule(), "iarray_container_t*")
-    urlpath = urlpath.encode("utf-8") if isinstance(urlpath, str) else urlpath
-
-    iarray_check(ciarray.iarray_container_save(ctx_, c_, urlpath))
-
-
 def load(cfg, urlpath):
     ctx = Context(cfg)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(

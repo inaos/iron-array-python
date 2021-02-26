@@ -2,14 +2,15 @@ from time import time
 
 t0 = time()
 import iarray as ia
+
 t = time() - t0
 print("iarray import time ->", round(t, 3))
 
-#ia_precip = ia.open("precip-3m.iarr")
-#chunkshape = ia_precip.chunkshape[1:]
-#blockshape = ia_precip.blockshape[1:]
+# ia_precip = ia.open("precip-3m.iarr")
+# chunkshape = ia_precip.chunkshape[1:]
+# blockshape = ia_precip.blockshape[1:]
 
-#print("-->", ia_precip.info)
+# print("-->", ia_precip.info)
 
 # precip1 = ia_precip[0].copy(chunkshape=chunkshape, blockshape=blockshape)
 # precip2 = ia_precip[1].copy(chunkshape=chunkshape, blockshape=blockshape)
@@ -21,16 +22,17 @@ print("iarray import time ->", round(t, 3))
 # precip3 = ia_precip[2].copy()
 # print("1 -->", precip1.info)
 
-# ia.save(precip1, "precip1.iarr")
-# ia.save(precip2, "precip2.iarr")
-# ia.save(precip3, "precip3.iarr")
+# ia.save("precip1.iarr", precip1)
+# ia.save("precip2.iarr", precip2)
+# ia.save("precip3.iarr", precip3)
 
-#@profile
+# @profile
 def iarray_open_data():
     precip1 = ia.open("precip1.iarr")
     precip2 = ia.open("precip2.iarr")
     precip3 = ia.open("precip3.iarr")
     return precip1, precip2, precip3
+
 
 t0 = time()
 precip1, precip2, precip3 = iarray_open_data()
@@ -42,8 +44,9 @@ chunkshape = precip1.chunkshape
 blockshape = precip1.blockshape
 
 storage = ia.Storage(chunkshape=precip1.chunkshape, blockshape=precip1.blockshape)
-#cfg = ia.Config(nthreads=14, storage=storage, clevel=1, codec=ia.Codecs.ZSTD, filters=[ia.Filters.BITSHUFFLE])
+# cfg = ia.Config(nthreads=14, storage=storage, clevel=1, codec=ia.Codecs.ZSTD, filters=[ia.Filters.BITSHUFFLE])
 cfg = ia.Config(storage=storage)
+
 
 @profile
 def iarray_mean_disk(expr):

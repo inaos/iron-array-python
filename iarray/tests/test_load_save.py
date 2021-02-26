@@ -21,7 +21,7 @@ def test_load_save(shape, chunkshape, blockshape, dtype, func):
     a = ia.linspace(ia.DTShape(shape, dtype), -10, 10, storage=storage)
     an = ia.iarray2numpy(a)
 
-    ia.save(a, "test_load_save.iarray")
+    ia.save("test_load_save.iarray", a)
 
     b = func("test_load_save.iarray")
     bn = ia.iarray2numpy(b)

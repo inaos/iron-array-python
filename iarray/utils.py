@@ -41,7 +41,7 @@ def cmp_arrays(a, b, success=None) -> None:
 
 
 # TODO: are cfg and kwargs needed here?
-def save(iarr: ia.IArray, filename: str, cfg: ia.Config = None, **kwargs) -> None:
+def save(urlpath: str, iarr: ia.IArray, cfg: ia.Config = None, **kwargs) -> None:
     """Save an array to a binary file in ironArray ``.iarray`` format.
 
     `cfg` and `kwargs` are the same than for :func:`empty`.
@@ -50,16 +50,15 @@ def save(iarr: ia.IArray, filename: str, cfg: ia.Config = None, **kwargs) -> Non
     ----------
     iarr : IArray
         The array to save.
-    filename : str
-        The file name to save the array.
+    urlpath : str
+        The url path to save the array.
 
     See Also
     --------
     load : Load an array from disk.
     open : Open an array from disk.
     """
-    with ia.config(cfg=cfg, **kwargs) as cfg:
-        ext.save(cfg, iarr, filename)
+    iarr.copy(view=False, cfg=cfg, urlpath=urlpath, **kwargs)
 
 
 def load(filename: str, cfg: ia.Config = None, **kwargs) -> ia.IArray:
