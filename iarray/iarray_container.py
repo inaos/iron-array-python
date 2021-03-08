@@ -41,11 +41,14 @@ class IArray(ext.Container):
         """
         Print information about this array.
         """
-        print(f"{'type':20}: {self.__class__.__name__}")
-        print(f"{'shape':20}: {self.shape}")
-        print(f"{'chunkshape':20}: {self.chunkshape}")
-        print(f"{'blockshape':20}: {self.blockshape}")
-
+        padding = 15
+        return f"""
+{'type':{padding}}: {self.__class__.__name__}
+{'shape':{padding}}: {self.shape}
+{'chunkshape':{padding}}: {self.chunkshape}
+{'blockshape':{padding}}: {self.blockshape}
+{'cratio':{padding}}: {self.cratio:.2f}
+"""
     @property
     def data(self):
         """
