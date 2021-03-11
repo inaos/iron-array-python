@@ -41,7 +41,7 @@ rm -rf dist
 touch BUILD_WHEELS
 
 ########### Python specific work begins here ###########################
-versions=(cp36-cp36m cp37-cp37m cp38-cp38)
+versions=(cp37-cp37m cp38-cp38 cp39-cp39)
 #versions=(cp37-cp37m)
 
 for version in "${versions[@]}"; do
