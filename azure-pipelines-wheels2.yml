@@ -51,8 +51,8 @@ jobs:
         python.version: '3.8'
       # Activate 3.9 when Azure pipelines would support it
       # https://github.com/Azure/azure-functions-python-worker/issues/742
-      # Python39:
-      #   python.version: '3.9'
+      Python39:
+        python.version: '3.9'
 
   steps:
   - task: UsePythonVersion@0
@@ -88,7 +88,7 @@ jobs:
       conda install -y -c intel mkl-static
       conda install -y -c intel icc_rt
       conda install -y -c numba llvmdev
-      conda install -y -c numba llvmlite>=0.33.0
+      conda install -y -c numba llvmlite==0.33.0
       python -m pip install --upgrade pip
       python -m pip install cython numpy ninja cmake scikit-build wheel delocate ndindex
     displayName: 'Install build dependencies'
@@ -145,8 +145,8 @@ jobs:
         python.version: '3.8'
       # Activate 3.9 when Azure pipelines would support it
       # https://github.com/Azure/azure-functions-python-worker/issues/742
-      # Python39:
-      #   python.version: '3.9'
+      Python39:
+        python.version: '3.9'
 
   steps:
   - task: UsePythonVersion@0
