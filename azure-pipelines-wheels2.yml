@@ -87,8 +87,7 @@ jobs:
       conda install -y -c intel mkl-include
       conda install -y -c intel mkl-static
       conda install -y -c intel icc_rt
-      conda install -y -c numba llvmdev
-      conda install -y -c numba llvmlite==0.33.0
+      conda install -y -c numba 'llvmdev<11'
       python -m pip install --upgrade pip
       python -m pip install cython numpy ninja cmake scikit-build wheel delocate ndindex
     displayName: 'Install build dependencies'
@@ -107,7 +106,7 @@ jobs:
     displayName: 'Build wheel'
 
   - script: |
-      python -m pip install pytest numexpr
+      python -m pip install pytest numexpr llvmlite
       python -m pip install iarray --force-reinstall --no-index --no-cache-dir -f ./dist/
       python -m pytest iarray/tests
     displayName: 'Test wheel'
@@ -187,8 +186,7 @@ jobs:
       conda install -y --name iArrayEnv -c intel mkl-include
       conda install -y --name iArrayEnv -c intel mkl-static
       conda install -y --name iArrayEnv -c intel icc_rt
-      conda install -y --name iArrayEnv -c numba llvmdev
-      conda install -y --name iArrayEnv -c numba llvmlite>=0.33.0
+      conda install -y --name iArrayEnv -c numba 'llvmdev<11'
     displayName: 'Install build dependencies'
 
   - script: |
@@ -207,7 +205,7 @@ jobs:
       targetPath: './dist'
 
   - script: |
-      python -m pip install pytest numexpr llvmlite icc-rt
+      python -m pip install pytest numexpr llvmlite
       python -m pip install iarray --force-reinstall --no-index --no-cache-dir -f ./dist/
       python -m pytest iarray/tests
     displayName: 'Test wheel'

@@ -35,7 +35,7 @@ conda update --all --yes
 conda clean -tipy
 
 # Install conda build and deployment tools.
-conda install -y --quiet llvmdev
+conda install -y --quiet -c numba 'llvmdev<11'
 conda install -y --quiet -c intel mkl-include
 conda install -y --quiet -c intel mkl-static
 conda install -y --quiet -c intel icc_rt
