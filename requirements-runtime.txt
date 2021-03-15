@@ -1,6 +1,5 @@
-numpy
 icc-rt
-llvmdev<11
 llvmlite
-pytest
+numpy
 ndindex
+pytest
