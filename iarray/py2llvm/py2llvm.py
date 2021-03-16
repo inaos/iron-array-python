@@ -1151,11 +1151,35 @@ class Function:
 
         # (5) Load functions
         node.compiled = {}
+        names = [
+            'fabs', 'fmod', 'remainder',
+            # Exponential functions
+            'exp', 'expm1', 'log', 'log2', 'log10', 'log1p',
+            # Power functions
+            'sqrt', 'hypot', 'pow',
+            # Trigonometric functions
+            'sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'atan2',
+            # Hiperbolic functions
+            'sinh', 'cosh', 'tanh', 'asinh', 'acosh', 'atanh',
+            # Error and gamma functions
+            'erf', 'lgamma',
+            # Nearest ingeger floating-point operations
+            'ceil', 'floor', 'trunc',
+            # Floating-point manipulation functions
+            'copysign',
+        ]
+
         signatures = {}
-        names = ['acos', 'asin', 'atan', 'cos', 'cosh', 'sin', 'sinh', 'tan', 'tanh', 'atan2', 'pow']
         for name in names:
             py_func = getattr(math, name)
-            nargs = len(inspect.signature(py_func).parameters)
+            try:
+                signature = inspect.signature(py_func)
+            except ValueError:
+                # inspect.signature(math.log) fails: a Python bug
+                nargs = 1
+            else:
+                nargs = len(signature.parameters)
+
             for t in types.float32, types.float64:
                 args = tuple(nargs * [t])
                 signature = signatures.get(args)

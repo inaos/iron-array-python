@@ -134,7 +134,26 @@ def f_1dim_f32(out: udf.Array(udf.float32, 1), x: udf.Array(udf.float32, 1)):
     return 0
 
 
-@pytest.mark.parametrize("f,dtype", [(f_1dim, np.float64), (f_1dim_f32, np.float32)])
+@udf.jit
+def f_math(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
+    n = out.shape[0]
+    for i in range(n):
+        if x[i] > 0.0:
+            out[i] = (
+                math.log(x[i]) +
+                math.log10(x[i]) +
+                math.sqrt(x[i]) +
+                math.floor(x[i]) +
+                math.ceil(x[i]) +
+                math.fabs(x[i])
+            )
+        else:
+            out[i] = x[i]
+
+    return 0
+
+
+@pytest.mark.parametrize("f,dtype", [(f_1dim, np.float64), (f_1dim_f32, np.float32), (f_math, np.float64)])
 def test_1dim_plain(f, dtype):
     shape = [10 * 1000]
     cparams = dict(clevel=5, nthreads=16)
@@ -260,7 +279,7 @@ def test_error(f):
 
 
 def f_unsupported_function(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
-    math.sqrt(5.0)
+    math.isinf(5.0)
     return 0
 
 
@@ -278,29 +297,18 @@ def test_function_call_errors():
 
 
 @udf.jit
-def f_pow(
+def f_math2(
     out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1), y: udf.Array(udf.float64, 1)
 ):
     n = out.shape[0]
     for i in range(n):
-        out[i] = math.pow(x[i], y[i])
+        out[i] = math.pow(x[i], y[i]) + math.atan2(x[i], y[i])
 
     return 0
 
 
-@udf.jit
-def f_atan2(
-    out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1), y: udf.Array(udf.float64, 1)
-):
-    n = out.shape[0]
-    for i in range(n):
-        out[i] = math.atan2(x[i], y[i])
-
-    return 0
-
-
-@pytest.mark.parametrize("f", [f_pow, f_atan2])
-def test_math(f):
+@pytest.mark.parametrize("f", [f_math2])
+def test_math2(f):
     shape = [10 * 1000]
     chunkshape = [3 * 1000]
     blockshape = [3 * 100]
