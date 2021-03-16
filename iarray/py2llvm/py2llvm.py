@@ -947,6 +947,9 @@ class GenVisitor(NodeVisitor):
         else:
             # x[i] =
             ptr = target
+            # Convert type if needed
+            ltype = target.type.pointee
+            value = self.convert(value, ltype)
 
         return builder.store(value, ptr)
 

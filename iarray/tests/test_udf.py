@@ -124,7 +124,9 @@ def test_1dim(f):
 def f_1dim_f32(out: udf.Array(udf.float32, 1), x: udf.Array(udf.float32, 1)):
     n = out.shape[0]
     for i in range(n):
-        if x[i] > 1.0 or x[i] <= 3.0 and i % 2 == 0:
+        if i % 3 == 0:
+            out[i] = 0.0
+        elif x[i] > 1.0 or x[i] <= 3.0 and i % 2 == 0:
             out[i] = (math.sin(x[i]) + 1.35) * (x[i] + 4.45) * (x[i] + 8.5)
         else:
             out[i] = (math.sin(x[i]) - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
