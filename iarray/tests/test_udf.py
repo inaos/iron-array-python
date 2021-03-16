@@ -120,10 +120,21 @@ def test_1dim(f):
         cmp_udf_np(f, (start, stop), shape, (chunkshape, blockshape), dtype, cparams)
 
 
-@pytest.mark.parametrize("f", [f_1dim])
-def test_1dim_plain(f):
+@udf.jit
+def f_1dim_f32(out: udf.Array(udf.float32, 1), x: udf.Array(udf.float32, 1)):
+    n = out.shape[0]
+    for i in range(n):
+        if x[i] > 1.0 or x[i] <= 3.0 and i % 2 == 0:
+            out[i] = (math.sin(x[i]) + 1.35) * (x[i] + 4.45) * (x[i] + 8.5)
+        else:
+            out[i] = (math.sin(x[i]) - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
+
+    return 0
+
+
+@pytest.mark.parametrize("f,dtype", [(f_1dim, np.float64), (f_1dim_f32, np.float32)])
+def test_1dim_plain(f, dtype):
     shape = [10 * 1000]
-    dtype = np.float64
     cparams = dict(clevel=5, nthreads=16)
     start, stop = 0, 10
 

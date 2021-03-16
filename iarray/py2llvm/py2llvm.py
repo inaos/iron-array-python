@@ -982,7 +982,8 @@ class GenVisitor(NodeVisitor):
         if func is range:
             return Range(self.builder, *args)
 
-        func = self.root.compiled.get(func, func)
+        key = (func,) + tuple(types.value_to_ir_type(x) for x in args)
+        func = self.root.compiled.get(key, func)
         if not isinstance(func, ir.Function):
             raise TypeError(f"unexpected {func}")
 
@@ -1147,26 +1148,19 @@ class Function:
 
         # (5) Load functions
         node.compiled = {}
-        ft_f64 = ir.FunctionType(types.float64, (types.float64,))
-        fs = [
-            math.acos,
-            math.asin,
-            math.atan,
-            math.cos,
-            math.cosh,
-            math.sin,
-            math.sinh,
-            math.tan,
-            math.tanh,
-        ]
-        for f in fs:
-            name = f.__name__
-            node.compiled[f] = ir.Function(self.ir_module, ft_f64, name=name)
-
-        ft_f64_f64 = ir.FunctionType(types.float64, (types.float64, types.float64))
-        for f in [math.atan2, math.pow]:
-            name = f.__name__
-            node.compiled[f] = ir.Function(self.ir_module, ft_f64_f64, name=name)
+        signatures = {}
+        names = ['acos', 'asin', 'atan', 'cos', 'cosh', 'sin', 'sinh', 'tan', 'tanh', 'atan2', 'pow']
+        for name in names:
+            py_func = getattr(math, name)
+            nargs = len(inspect.signature(py_func).parameters)
+            for t in types.float32, types.float64:
+                args = tuple(nargs * [t])
+                signature = signatures.get(args)
+                if signature is None:
+                    signature = ir.FunctionType(t, args)
+                    signatures[args] = signature
+                fname = name if t is types.float64 else f'{name}f'
+                node.compiled[(py_func,) + args] = ir.Function(self.ir_module, signature, name=fname)
 
         for plugin in plugins:
             load_functions = getattr(plugin, "load_functions", None)
