@@ -947,6 +947,9 @@ class GenVisitor(NodeVisitor):
         else:
             # x[i] =
             ptr = target
+            # Convert type if needed
+            ltype = target.type.pointee
+            value = self.convert(value, ltype)
 
         return builder.store(value, ptr)
 
@@ -982,7 +985,8 @@ class GenVisitor(NodeVisitor):
         if func is range:
             return Range(self.builder, *args)
 
-        func = self.root.compiled.get(func, func)
+        key = (func,) + tuple(types.value_to_ir_type(x) for x in args)
+        func = self.root.compiled.get(key, func)
         if not isinstance(func, ir.Function):
             raise TypeError(f"unexpected {func}")
 
@@ -1147,26 +1151,43 @@ class Function:
 
         # (5) Load functions
         node.compiled = {}
-        ft_f64 = ir.FunctionType(types.float64, (types.float64,))
-        fs = [
-            math.acos,
-            math.asin,
-            math.atan,
-            math.cos,
-            math.cosh,
-            math.sin,
-            math.sinh,
-            math.tan,
-            math.tanh,
+        names = [
+            'fabs', 'fmod', 'remainder',
+            # Exponential functions
+            'exp', 'expm1', 'log', 'log2', 'log10', 'log1p',
+            # Power functions
+            'sqrt', 'hypot', 'pow',
+            # Trigonometric functions
+            'sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'atan2',
+            # Hiperbolic functions
+            'sinh', 'cosh', 'tanh', 'asinh', 'acosh', 'atanh',
+            # Error and gamma functions
+            'erf', 'lgamma',
+            # Nearest ingeger floating-point operations
+            'ceil', 'floor', 'trunc',
+            # Floating-point manipulation functions
+            'copysign',
         ]
-        for f in fs:
-            name = f.__name__
-            node.compiled[f] = ir.Function(self.ir_module, ft_f64, name=name)
 
-        ft_f64_f64 = ir.FunctionType(types.float64, (types.float64, types.float64))
-        for f in [math.atan2, math.pow]:
-            name = f.__name__
-            node.compiled[f] = ir.Function(self.ir_module, ft_f64_f64, name=name)
+        signatures = {}
+        for name in names:
+            py_func = getattr(math, name)
+            try:
+                signature = inspect.signature(py_func)
+            except ValueError:
+                # inspect.signature(math.log) fails: a Python bug
+                nargs = 1
+            else:
+                nargs = len(signature.parameters)
+
+            for t in types.float32, types.float64:
+                args = tuple(nargs * [t])
+                signature = signatures.get(args)
+                if signature is None:
+                    signature = ir.FunctionType(t, args)
+                    signatures[args] = signature
+                fname = name if t is types.float64 else f'{name}f'
+                node.compiled[(py_func,) + args] = ir.Function(self.ir_module, signature, name=fname)
 
         for plugin in plugins:
             load_functions = getattr(plugin, "load_functions", None)
