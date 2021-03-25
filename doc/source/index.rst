@@ -11,6 +11,7 @@ Welcome to ironArray for Python's documentation!
    :caption: User's Guide:
 
    intro
+   two-level-chunking
    install
    tutorials
    reference
