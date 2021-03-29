@@ -174,7 +174,7 @@ cdef class Config:
     cdef ciarray.iarray_config_t config
 
     def __init__(self, compression_codec, compression_level, compression_favor,
-                 use_dict, filters, max_num_threads, fp_mantissa_bits, eval_method):
+                 use_dict, filters, max_num_threads, fp_mantissa_bits, eval_method, btune):
         self.config.compression_codec = compression_codec.value
         self.config.compression_level = compression_level
         self.config.compression_favor = compression_favor.value
@@ -201,7 +201,7 @@ cdef class Config:
         self.config.eval_method = method
         self.config.max_num_threads = max_num_threads
         self.config.fp_mantissa_bits = fp_mantissa_bits
-
+        self.config.btune = btune
     def _to_dict(self):
         return <object> self.config
 

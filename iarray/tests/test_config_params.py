@@ -5,8 +5,8 @@ import iarray as ia
 @pytest.mark.parametrize(
     "clevel, codec, filters, chunkshape, blockshape, enforce_frame",
     [
-        (0, ia.Codecs.ZSTD,[ia.Filters.SHUFFLE], None, None, False),
-        (1, ia.Codecs.BLOSCLZ,[ia.Filters.SHUFFLE], [50, 50], [20, 20], True),
+        (0, ia.Codecs.ZSTD, [ia.Filters.SHUFFLE], None, None, False),
+        (1, ia.Codecs.BLOSCLZ, [ia.Filters.SHUFFLE], [50, 50], [20, 20], True),
         (9, ia.Codecs.ZSTD, [ia.Filters.SHUFFLE, ia.Filters.DELTA], [50, 50], [20, 20], False),
         (6, ia.Codecs.ZSTD, [ia.Filters.SHUFFLE], [100, 50], [50, 20], False),
         (0, ia.Codecs.ZSTD, [ia.Filters.SHUFFLE], None, None, False),
@@ -244,7 +244,7 @@ def test_config_ctx_dtype(chunkshape, blockshape, shape):
 
 def test_nested_contexts():
     # Set the default to enable compression
-    ia.set_config(clevel=5)
+    ia.set_config(clevel=5, btune=False)
     a = ia.ones(ia.DTShape((100, 100)))
     assert a.cratio > 1
 
