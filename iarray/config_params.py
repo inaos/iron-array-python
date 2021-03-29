@@ -101,6 +101,7 @@ class DefaultConfig:
     eval_method: Any
     seed: Any
     random_gen: Any
+    btune: any
 
 
 @dataclass
@@ -131,6 +132,8 @@ class Defaults(object):
     eval_method: int = ia.Eval.AUTO
     seed: int = None
     random_gen: ia.RandomGen = ia.RandomGen.MERSENNE_TWISTER
+    btune: bool = True
+
     # Storage
     _storage = None
     chunkshape: Sequence = None
@@ -174,6 +177,9 @@ class Defaults(object):
     def _random_gen(self):
         return self.random_gen
 
+    def _btune(self):
+        return self.btune
+
     @property
     def config(self):
         if self._config is None:
@@ -190,6 +196,7 @@ class Defaults(object):
                 eval_method=self.eval_method,
                 seed=self.seed,
                 random_gen=self.random_gen,
+                btune=self.btune,
             )
         return self._config
 
@@ -207,6 +214,7 @@ class Defaults(object):
         self.eval_method = value.eval_method
         self.seed = value.seed
         self.random_gen = value.random_gen
+        self.btune = value.btune
         self._storage = value.storage
         self._config = value
         if self._storage is not None:
@@ -394,6 +402,7 @@ class Config(ext.Config):
     eval_method: int = field(default_factory=defaults._eval_method)
     seed: int = field(default_factory=defaults._seed)
     random_gen: ia.RandomGen = field(default_factory=defaults._random_gen)
+    btune: bool = field(default_factory=defaults._btune)
     storage: Storage = None  # delayed initialization
 
     # These belong to Storage, but we accept them in top level too
@@ -430,11 +439,15 @@ class Config(ext.Config):
         if self.favor == ia.Favors.SPEED:
             self.codec = ia.Codecs.LZ4 if self.codec == Defaults.codec else self.codec
             self.clevel = 9 if self.clevel == Defaults.clevel else self.clevel
-            self.filters = [ia.Filters.SHUFFLE] if self.filters == default_filters() else self.filters
+            self.filters = (
+                [ia.Filters.SHUFFLE] if self.filters == default_filters() else self.filters
+            )
         elif self.favor == ia.Favors.CRATIO:
             self.codec = ia.Codecs.ZSTD if self.codec == Defaults.codec else self.codec
             self.clevel = 5 if self.clevel == Defaults.clevel else self.clevel
-            self.filters = [ia.Filters.BITSHUFFLE] if self.filters == default_filters() else self.filters
+            self.filters = (
+                [ia.Filters.BITSHUFFLE] if self.filters == default_filters() else self.filters
+            )
 
         # Initialize the Cython counterpart
         super().__init__(
@@ -446,6 +459,7 @@ class Config(ext.Config):
             self.nthreads,
             self.fp_mantissa_bits,
             self.eval_method,
+            self.btune,
         )
 
     def _replace(self, **kwargs):

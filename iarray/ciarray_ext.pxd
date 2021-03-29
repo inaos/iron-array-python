@@ -99,6 +99,7 @@ cdef extern from "libiarray/iarray.h":
         int eval_method
         int max_num_threads
         int8_t fp_mantissa_bits
+        bool btune
 
     ctypedef enum iarray_storage_type_t:
         IARRAY_STORAGE_PLAINBUFFER = 0
