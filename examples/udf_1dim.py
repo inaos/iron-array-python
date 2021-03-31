@@ -11,13 +11,14 @@ from iarray.udf import jit, Array, float64, int64
 
 
 # Number of iterations per benchmark
-NITER = 10
+NITER = 5
 
 # Define array params
 shape = [20_000_000]
 dtshape = ia.DTShape(shape, np.float64)
-# Most of modern computers can reach 8 threads
-ia.set_config(nthreads=8)
+
+# Let's favor speed during computations
+ia.set_config(favor=ia.Favors.SPEED)
 
 
 @jit(verbose=0)
@@ -48,6 +49,7 @@ t0 = time()
 for i in range(NITER):
     b1 = expr.eval()
 print("Time for UDF eval:", round((time() - t0) / NITER, 3))
+print(f"CRatio for result: {b1.cratio:.3f}")
 b1_n = ia.iarray2numpy(b1)
 print(b1_n)
 
@@ -59,6 +61,7 @@ t0 = time()
 for i in range(NITER):
     b2 = expr.eval()
 print("Time for internal compiler eval:", round((time() - t0) / NITER, 3))
+print(f"CRatio for result: {b1.cratio:.3f}")
 b2_n = ia.iarray2numpy(b2)
 print(b2_n)
 

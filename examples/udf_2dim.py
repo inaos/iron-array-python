@@ -12,15 +12,15 @@ from iarray.udf import jit, Array, float64, int64
 
 
 # Number of iterations per benchmark
-NITER = 10
+NITER = 5
 
 # Define array params
 shape = [1000, 10_000]
 dtype = np.float64
 dtshape = ia.DTShape(shape, dtype)
-# Most of modern computers can reach 8 threads
-ia.set_config(nthreads=8)
 
+# Let's favor speed during computations
+ia.set_config(favor=ia.Favors.SPEED)
 
 @jit(verbose=0)
 def f(out: Array(float64, 2), x: Array(float64, 2)) -> int64:
@@ -54,6 +54,7 @@ t0 = time()
 for i in range(NITER):
     ia_out = expr.eval()
 print("Time for UDF eval:", round((time() - t0) / NITER, 3))
+print(f"CRatio for result: {ia_out.cratio:.3f}")
 ia_out = ia.iarray2numpy(ia_out)
 
 # compare
