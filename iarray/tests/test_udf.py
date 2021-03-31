@@ -38,9 +38,7 @@ def cmp_udf_np(f, start_stop, shape, partitions, dtype, cparams):
     inputs = [
         ia.linspace(dtshape, start, stop, storage=storage, **cparams) for start, stop in start_stop
     ]
-    # Both functions should work, but we are encouraging ia.expr_from_udf()
-    # expr = f.create_expr(inputs, dtshape, storage=storage, **cparams)
-    expr = ia.expr_from_udf(f, inputs, storage=storage, **cparams)
+    expr = ia.expr_from_udf(f, inputs, dtshape=dtshape, storage=storage, **cparams)
     out = expr.eval()
 
     num = functools.reduce(lambda x, y: x * y, shape)
@@ -216,6 +214,28 @@ def test_while(f):
     start, stop = 0, 10
 
     cmp_udf_np(f, (start, stop), shape, (chunkshape, blockshape), dtype, cparams)
+
+
+@udf.jit
+def f_ifexp(out: udf.Array(udf.float64, 2)):
+    n = out.window_shape[0]
+    m = out.window_shape[1]
+    for i in range(n):
+        for j in range(m):
+            out[i, j] = 1. if i == j else 0.
+
+    return 0
+
+
+@pytest.mark.parametrize("f", [f_ifexp])
+def test_ifexp(f):
+    shape = [400, 800]
+    chunkshape = [60, 200]
+    blockshape = [11, 200]
+    dtype = np.float64
+    cparams = dict()
+
+    cmp_udf_np(f, [], shape, (chunkshape, blockshape), dtype, cparams)
 
 
 @udf.jit
