@@ -101,7 +101,7 @@ class DefaultConfig:
     eval_method: Any
     seed: Any
     random_gen: Any
-    btune: any
+    btune: Any
 
 
 @dataclass
