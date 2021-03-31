@@ -722,6 +722,9 @@ class GenVisitor(NodeVisitor):
         """
         IfExp(expr test, expr body, expr orelse)
         """
+        body = types.value_to_ir_value(self.builder, body)
+        orelse = types.value_to_ir_value(self.builder, orelse)
+
         ltype = types.value_to_type(body)
         rtype = types.value_to_type(orelse)
         assert ltype is rtype
