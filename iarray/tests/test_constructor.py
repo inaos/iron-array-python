@@ -125,7 +125,8 @@ def test_empty(shape, chunkshape, blockshape, dtype):
         storage = ia.Storage(plainbuffer=True)
     else:
         storage = ia.Storage(chunkshape, blockshape)
-    a = ia.empty(ia.DTShape(shape, dtype), storage=storage)
+    with ia.config(storage=storage):
+        a = ia.empty(ia.DTShape(shape, dtype))
     b = ia.iarray2numpy(a)
     npdtype = np.float64 if dtype == np.float64 else np.float32
     assert b.dtype == npdtype

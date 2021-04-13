@@ -29,7 +29,7 @@ t1 = time()
 print("Time for numexpr evaluation: %.3f" % (t1 - t0))
 
 t0 = time()
-expr = ia.expr_from_string("cos(x)", {"x": ia1})
+expr = ia.expr_from_string("cos(x)", {"x": ia1}, favor=ia.Favors.SPEED)
 ia2 = expr.eval()
 t1 = time()
 print("Time for iarray evaluation: %.3f (cratio: %.2fx)" % ((t1 - t0), ia2.cratio))

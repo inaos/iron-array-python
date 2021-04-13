@@ -250,19 +250,19 @@ def test_nested_contexts():
 
     # Now play with contexts and params in calls
     # Disable compression in contexts
-    with ia.config(clevel=0) as cfg:
-        a = ia.ones(ia.DTShape((100, 100)), cfg, clevel=0)
+    with ia.config(clevel=0):
+        a = ia.ones(ia.DTShape((100, 100)))
         assert a.cratio < 1
         # Enable compression in call
-        a = ia.ones(ia.DTShape((100, 100)), cfg, clevel=1)
+        a = ia.ones(ia.DTShape((100, 100)), clevel=1)
         assert a.cratio > 1
         # Enable compression in nested context
-        with ia.config(clevel=1) as cfg:
-            a = ia.ones(ia.DTShape((100, 100)), cfg)
+        with ia.config(clevel=1):
+            a = ia.ones(ia.DTShape((100, 100)))
             assert a.cratio > 1
             # Disable compression in double nested context
-            with ia.config(clevel=0) as cfg:
-                a = ia.ones(ia.DTShape((100, 100)), cfg)
+            with ia.config(clevel=0):
+                a = ia.ones(ia.DTShape((100, 100)))
                 assert a.cratio < 1
 
     # Finally, the default should be enabling compression again

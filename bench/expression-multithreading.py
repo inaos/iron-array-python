@@ -93,9 +93,9 @@ for num_threads in range(1, max_num_threads + 1):
     res_i.append(np.mean(t))
 
     # Superchunk with compression and UDF
-    with ia.config(storage=bstorage, nthreads=num_threads, clevel=9) as cfg:
-        a1 = ia.linspace(dtshape, 0, 10, cfg=cfg)
-        expr = ia.expr_from_udf(poly_udf, [a1], cfg=cfg)
+    with ia.config(store=bstorage, nthreads=num_threads, clevel=9):
+        a1 = ia.linspace(shape, 0, 10, dtype=dtype)
+        expr = ia.expr_from_udf(poly_udf, [a1])
         time_expr(expr, res_i)
 
     res.append(res_i)

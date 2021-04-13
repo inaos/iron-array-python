@@ -14,14 +14,14 @@ import iarray as ia
 )
 def test_btune(start, stop, shape, chunkshape, blockshape, dtype):
 
-    with ia.config(favor=ia.Favors.SPEED, btune=True) as cfg:
+    with ia.config(favor=ia.Favors.SPEED, btune=True):
         storage = ia.Storage(chunkshape, blockshape)
-        a = ia.linspace(ia.DTShape(shape, dtype), start, stop, storage=storage, cfg=cfg)
+        a = ia.linspace(ia.DTShape(shape, dtype), start, stop, storage=storage)
         c1 = a.cratio
 
-    with ia.config(favor=ia.Favors.CRATIO, btune=True) as cfg:
+    with ia.config(favor=ia.Favors.CRATIO, btune=True):
         storage = ia.Storage(chunkshape, blockshape)
-        a = ia.linspace(ia.DTShape(shape, dtype), start, stop, storage=storage, cfg=cfg)
+        a = ia.linspace(ia.DTShape(shape, dtype), start, stop, storage=storage)
         c2 = a.cratio
 
     assert c1 < c2

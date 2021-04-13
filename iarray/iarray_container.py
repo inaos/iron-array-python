@@ -49,6 +49,7 @@ class IArray(ext.Container):
 {'blockshape':{padding}}: {self.blockshape}
 {'cratio':{padding}}: {self.cratio:.2f}
 """
+
     @property
     def data(self):
         """
@@ -79,6 +80,9 @@ class IArray(ext.Container):
         IArray
             The copy.
         """
+        if cfg is None:
+            cfg = ia.get_config()
+
         with ia.config(dtshape=self.dtshape, cfg=cfg, **kwargs) as cfg:
             return ext.copy(cfg, self, view)
 
@@ -737,6 +741,10 @@ def reduce(
 
     shape = tuple([s for i, s in enumerate(a.shape) if i not in axis])
     dtshape = ia.DTShape(shape, a.dtype)
+
+    if cfg is None:
+        cfg = ia.get_config()
+
     with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
         c = ext.reduce_multi(cfg, a, method, axis)
         if c.ndim == 0:
@@ -912,6 +920,10 @@ def matmul(a: IArray, b: IArray, cfg=None, **kwargs):
     """
     shape = (a.shape[0], b.shape[1]) if b.ndim == 2 else (a.shape[0],)
     dtshape = ia.DTShape(shape, a.dtype)
+
+    if cfg is None:
+        cfg = ia.get_config()
+
     with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
         return ext.matmul(cfg, a, b)
 
@@ -938,6 +950,9 @@ def transpose(a: IArray, cfg=None, **kwargs):
     """
     if a.ndim != 2:
         raise AttributeError("Array dimension must be 2")
+
+    if cfg is None:
+        cfg = ia.get_config()
 
     with ia.config(cfg=cfg, **kwargs) as cfg:
         return ext.transpose(cfg, a)

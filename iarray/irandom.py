@@ -39,6 +39,9 @@ def random_sample(dtshape: ia.DTShape, cfg: ia.Config = None, **kwargs) -> ia.IA
     --------
     np.random.random_sample
     """
+    if cfg is None:
+        cfg = ia.get_config()
+
     with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
         return ext.random_rand(cfg, dtshape)
 
@@ -63,6 +66,9 @@ def standard_normal(dtshape: ia.DTShape, cfg: ia.Config = None, **kwargs) -> ia.
     random.random_sample
     np.random.standard_normal
     """
+    if cfg is None:
+        cfg = ia.get_config()
+
     with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
         return ext.random_randn(cfg, dtshape)
 
@@ -93,6 +99,9 @@ def beta(
     random.random_sample
     np.random.beta
     """
+    if cfg is None:
+        cfg = ia.get_config()
+
     with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
         return ext.random_beta(cfg, alpha, beta, dtshape)
 
@@ -124,6 +133,9 @@ def lognormal(
     random.random_sample
     np.random.lognormal
     """
+    if cfg is None:
+        cfg = ia.get_config()
+
     with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
         return ext.random_lognormal(cfg, mean, sigma, dtshape)
 
@@ -153,6 +165,9 @@ def exponential(
     random.random_sample
     np.random.exponential
     """
+    if cfg is None:
+        cfg = ia.get_config()
+
     with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
         return ext.random_exponential(cfg, scale, dtshape)
 
@@ -185,6 +200,9 @@ def uniform(
     random.random_sample
     np.random.uniform
     """
+    if cfg is None:
+        cfg = ia.get_config()
+
     with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
         return ext.random_uniform(cfg, low, high, dtshape)
 
@@ -216,6 +234,9 @@ def normal(
     random.random_sample
     np.random.normal
     """
+    if cfg is None:
+        cfg = ia.get_config()
+
     with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
         return ext.random_normal(cfg, loc, scale, dtshape)
 
@@ -245,6 +266,9 @@ def bernoulli(dtshape: ia.DTShape, p: float, cfg: ia.Config = None, **kwargs) ->
     random.random_sample
     random.binomial
     """
+    if cfg is None:
+        cfg = ia.get_config()
+
     with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
         return ext.random_bernoulli(cfg, p, dtshape)
 
@@ -276,6 +300,9 @@ def binomial(
     random.random_sample
     np.random.binomial
     """
+    if cfg is None:
+        cfg = ia.get_config()
+
     with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
         return ext.random_binomial(cfg, n, p, dtshape)
 
@@ -302,6 +329,9 @@ def poisson(dtshape: ia.DTShape, lam: float, cfg: ia.Config = None, **kwargs) ->
     random.random_sample
     np.random.poisson
     """
+    if cfg is None:
+        cfg = ia.get_config()
+
     with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
         return ext.random_poisson(cfg, lam, dtshape)
 
@@ -330,5 +360,8 @@ def kstest(a: ia.IArray, b: ia.IArray, cfg: ia.Config = None, **kwargs) -> bool:
     random.random_sample
     np.random.poisson
     """
+    if cfg is None:
+        cfg = ia.get_config()
+
     with ia.config(cfg=cfg, **kwargs) as cfg:
         return ext.random_kstest(cfg, a, b)

@@ -62,6 +62,9 @@ def empty(dtshape: DTShape, cfg: ia.Config = None, **kwargs) -> ia.IArray:
     --------
     IArray.iter_write_block : Iterator for filling an empty array.
     """
+    if cfg is None:
+        cfg = ia.get_config()
+
     with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
         return ext.empty(cfg, dtshape)
 
@@ -101,6 +104,9 @@ def arange(
             step = (stop - start) / np.prod(dtshape.shape)
     slice_ = slice(start, stop, step)
 
+    if cfg is None:
+        cfg = ia.get_config()
+
     with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
         return ext.arange(cfg, slice_, dtshape)
 
@@ -123,6 +129,9 @@ def linspace(
     --------
     empty : Create an empty array.
     """
+    if cfg is None:
+        cfg = ia.get_config()
+
     with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
         return ext.linspace(cfg, start, stop, dtshape)
 
@@ -142,6 +151,9 @@ def zeros(dtshape: DTShape, cfg: ia.Config = None, **kwargs) -> ia.IArray:
     empty : Create an empty array.
     ones : Create an array filled with ones.
     """
+    if cfg is None:
+        cfg = ia.get_config()
+
     with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
         return ext.zeros(cfg, dtshape)
 
@@ -161,6 +173,9 @@ def ones(dtshape: DTShape, cfg: ia.Config = None, **kwargs) -> ia.IArray:
     empty : Create an empty array.
     zeros : Create an array filled with zeros.
     """
+    if cfg is None:
+        cfg = ia.get_config()
+
     with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
         return ext.ones(cfg, dtshape)
 
@@ -180,5 +195,8 @@ def full(dtshape: DTShape, fill_value: float, cfg: ia.Config = None, **kwargs) -
     empty : Create an empty array.
     zeros : Create an array filled with zeros.
     """
+    if cfg is None:
+        cfg = ia.get_config()
+
     with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
         return ext.full(cfg, fill_value, dtshape)

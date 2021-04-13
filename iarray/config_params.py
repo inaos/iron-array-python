@@ -262,14 +262,14 @@ class Defaults(object):
 # Global variable where the defaults for config params are stored
 defaults = Defaults()
 # Global config
-global_config = None
+global_config = []
 
 
 def reset_config_defaults():
     """Reset the defaults of the configuration parameters."""
     global global_config
     defaults.config = Defaults()
-    global_config = None
+    global_config = []
     set_config()
     return global_config
 
@@ -504,21 +504,21 @@ def set_config(cfg: Config = None, dtshape=None, **kwargs):
     """
     global global_config
     if cfg is None:
-        if global_config is None:
+        if not global_config:
             cfg = Config()
         else:
-            cfg = global_config
+            cfg = global_config.pop()
 
     if kwargs != {}:
         cfg = cfg._replace(**kwargs)
     if dtshape is not None:
         cfg.storage._get_shape_advice(dtshape, cfg=cfg)
 
-    global_config = cfg
+    global_config.append(cfg)
     # Set the defaults for Config() constructor and other nested configs (Storage...)
     defaults.config = cfg
 
-    return global_config
+    return global_config[-1]
 
 
 # Initialize the configuration
@@ -537,7 +537,9 @@ def get_config():
     --------
     ia.set_config
     """
-    return global_config
+    global global_config
+
+    return global_config[-1]
 
 
 @contextmanager
@@ -552,37 +554,45 @@ def config(cfg: Config = None, dtshape=None, **kwargs):
     ia.set_config
     ia.Config
     """
+    global global_config
+
     if cfg is None:
         cfg = Config()
     cfg_ = cfg._replace(**kwargs)
     if dtshape is not None:
         cfg_.storage._get_shape_advice(dtshape)
-    yield cfg_
+    global_config.append(cfg_)
+
+    try:
+        yield cfg_
+    finally:
+        global_config.pop()
 
 
 if __name__ == "__main__":
     cfg_ = get_config()
     print("Defaults:", cfg_)
-    assert cfg_.storage.enforce_frame == False
+    assert cfg_.storage.enforce_frame is False
 
     set_config(storage=Storage(enforce_frame=True))
     cfg = get_config()
     print("1st form:", cfg)
-    assert cfg.storage.enforce_frame == True
+    assert cfg.storage.enforce_frame is True
 
     set_config(enforce_frame=False)
     cfg = get_config()
     print("2nd form:", cfg)
-    assert cfg.storage.enforce_frame == False
+    assert cfg.storage.enforce_frame is False
 
-    set_config(Config(clevel=1))
+    set_config(Config(clevel=5))
     cfg = get_config()
     print("3rd form:", cfg)
-    assert cfg.clevel == 1
+    assert cfg.clevel == 5
 
     with config(clevel=0, enforce_frame=True) as cfg_new:
         print("Context form:", cfg_new)
         assert cfg_new.storage.enforce_frame is True
+        assert get_config().clevel == 0
 
     cfg = ia.Config(codec=ia.Codecs.BLOSCLZ)
     cfg2 = ia.set_config(cfg=cfg, codec=ia.Codecs.LIZARD)

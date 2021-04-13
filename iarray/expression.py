@@ -27,6 +27,9 @@ class Expr(ext.Expression):
     """
 
     def __init__(self, dtshape, cfg=None, **kwargs):
+        if cfg is None:
+            cfg = ia.get_config()
+
         with ia.config(cfg=cfg, dtshape=dtshape, **kwargs) as cfg:
             self.cfg = cfg
             super().__init__(self.cfg)
