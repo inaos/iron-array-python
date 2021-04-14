@@ -9,7 +9,7 @@ from iarray import udf
 from iarray.udf import int32
 
 
-def cmp_udf_np(f, start_stop, shape, partitions, dtype, cparams):
+def cmp_udf_np(f, start_stop, shape, partitions, dtype, cparams, f_np=None):
     """Helper function that compares UDF against numpy.
 
     Parameters:
@@ -21,6 +21,7 @@ def cmp_udf_np(f, start_stop, shape, partitions, dtype, cparams):
                      If None, a plainbuffer is used.
         dtype      : Data type.
         cparams    : Configuration parameters for ironArray.
+        f_np       : An equivalent function for NumPy (for incompatible UDFs).
 
     Function results must not depend on chunkshape/blockshape, otherwise the
     comparison with numpy will fail.
@@ -38,9 +39,7 @@ def cmp_udf_np(f, start_stop, shape, partitions, dtype, cparams):
     inputs = [
         ia.linspace(dtshape, start, stop, storage=storage, **cparams) for start, stop in start_stop
     ]
-    # Both functions should work, but we are encouraging ia.expr_from_udf()
-    # expr = f.create_expr(inputs, dtshape, storage=storage, **cparams)
-    expr = ia.expr_from_udf(f, inputs, storage=storage, **cparams)
+    expr = ia.expr_from_udf(f, inputs, dtshape=dtshape, storage=storage, **cparams)
     out = expr.eval()
 
     num = functools.reduce(lambda x, y: x * y, shape)
@@ -48,7 +47,10 @@ def cmp_udf_np(f, start_stop, shape, partitions, dtype, cparams):
         np.linspace(start, stop, num, dtype=dtype).reshape(shape) for start, stop in start_stop
     ]
     out_ref = np.empty(num, dtype=dtype).reshape(shape)
-    f.py_function(out_ref, *inputs_ref)
+    if f_np is None:
+        f.py_function(out_ref, *inputs_ref)
+    else:
+        f_np(out_ref, *inputs_ref)
 
     ia.cmp_arrays(out, out_ref)
 
@@ -216,6 +218,40 @@ def test_while(f):
     start, stop = 0, 10
 
     cmp_udf_np(f, (start, stop), shape, (chunkshape, blockshape), dtype, cparams)
+
+
+@udf.jit
+def f_ifexp(out: udf.Array(udf.float64, 2)):
+    n = out.shape[0]
+    m = out.shape[1]
+    start_n = out.window_start[0]
+    start_m = out.window_start[1]
+    for i in range(n):
+        for j in range(m):
+            out[i, j] = 1. if i + start_n == j + start_m else 0.
+
+    return 0
+
+# NumPy counterpart of the above
+def f_ifexp_np(out):
+    n = out.shape[0]
+    m = out.shape[1]
+    for i in range(n):
+        for j in range(m):
+            out[i, j] = 1. if i == j else 0.
+
+    return 0
+
+
+@pytest.mark.parametrize("f, f_np", [(f_ifexp, f_ifexp_np)])
+def test_ifexp(f, f_np):
+    shape = [400, 800]
+    chunkshape = [60, 200]
+    blockshape = [11, 200]
+    dtype = np.float64
+    cparams = dict()
+
+    cmp_udf_np(f, [], shape, (chunkshape, blockshape), dtype, cparams, f_np=f_np)
 
 
 @udf.jit

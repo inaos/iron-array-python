@@ -16,7 +16,7 @@ from iarray import py2llvm
 
 # The main expression class
 class Expr(ext.Expression):
-    """An class that is meant to hold an expression.
+    """A class that is meant to hold an expression.
 
     This is not meant to be called directly from user space.
 
@@ -82,7 +82,7 @@ def expr_from_string(sexpr: str, inputs: dict, cfg: ia.Config = None, **kwargs) 
     return expr
 
 
-def expr_from_udf(udf: py2llvm.Function, inputs: list, cfg=None, **kwargs) -> Expr:
+def expr_from_udf(udf: py2llvm.Function, inputs: list, cfg=None, dtshape=None, **kwargs) -> Expr:
     """Create an `Expr` instance from an UDF function.
 
     Parameters
@@ -104,7 +104,9 @@ def expr_from_udf(udf: py2llvm.Function, inputs: list, cfg=None, **kwargs) -> Ex
     Expr
         An expression ready to be evaluated via :func:`Expr.eval`.
     """
-    dtshape = check_inputs(inputs)
+    if dtshape is None:
+        dtshape = check_inputs(inputs)
+
     expr = Expr(dtshape=dtshape, cfg=cfg, **kwargs)
     for i in inputs:
         expr.bind("", i)
