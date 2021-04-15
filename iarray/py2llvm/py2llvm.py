@@ -12,8 +12,12 @@ import typing
 from llvmlite import binding, ir
 from llvmlite.llvmpy.core import Module
 
+# Project
 from . import default
 from . import types
+
+# Add UDFJIT to builtins
+builtins.UDFJIT = 0
 
 
 # Plugins
@@ -277,6 +281,9 @@ class NodeVisitor(BaseNodeVisitor):
 
         if name in self.root.globals:
             return self.root.globals[name]
+
+        if name == 'UDFJIT':
+            return 1
 
         return getattr(builtins, name)
 
@@ -807,6 +814,7 @@ class GenVisitor(NodeVisitor):
         """
         If(expr test, stmt* body, stmt* orelse)
         """
+        test = types.value_to_ir_value(self.builder, test, type_=types.int1)
         self.builder.cbranch(test, node.block_true, node.block_false)
         self.builder.position_at_end(node.block_true)
 

@@ -22,6 +22,7 @@ except ImportError:
 void = ir.VoidType()
 float32 = ir.FloatType()
 float64 = ir.DoubleType()
+int1 = ir.IntType(1)
 int8 = ir.IntType(8)
 int16 = ir.IntType(16)
 int32 = ir.IntType(32)
