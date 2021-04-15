@@ -444,6 +444,12 @@ cdef class Expression:
         c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
         return ia.IArray(self.context, c_c)
 
+    def register_as_postfilter(self, arr):
+        cdef ciarray.iarray_container_t *c = <ciarray.iarray_container_t *> PyCapsule_GetPointer(
+            arr.to_capsule(), "iarray_container_t*")
+        error = ciarray.iarray_expr_register_as_postfilter(self.ia_expr, c)
+        iarray_check(error)
+
 #
 # Iarray container constructors
 #
