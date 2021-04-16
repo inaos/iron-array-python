@@ -30,7 +30,7 @@ class Expr(ext.Expression):
         if cfg is None:
             cfg = ia.get_config()
 
-        with ia.config(cfg=cfg, dtshape=dtshape, **kwargs) as cfg:
+        with ia.config(cfg=cfg, shape=dtshape.shape, **kwargs) as cfg:
             self.cfg = cfg
             super().__init__(self.cfg)
             super().bind_out_properties(dtshape, cfg.storage)
@@ -53,7 +53,7 @@ def check_inputs(inputs: list):
             raise ValueError("Inputs should have the same shape")
         if first_input.dtype != input_.dtype:
             raise TypeError("Inputs should have the same dtype")
-    return first_input.dtshape
+    return ia.DTShape(first_input.shape, first_input.dtype)
 
 
 def expr_from_string(sexpr: str, inputs: dict, cfg: ia.Config = None, **kwargs) -> Expr:

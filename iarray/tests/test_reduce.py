@@ -20,7 +20,7 @@ params_data = [
 def test_reduce(shape, chunkshape, blockshape, axis, dtype, rfunc, urlpath):
 
     storage = ia.Storage(chunkshape, blockshape)
-    a1 = ia.linspace(ia.DTShape(shape, dtype), -1, 0, storage=storage)
+    a1 = ia.linspace(shape, -1, 0, dtype=dtype, storage=storage)
     a2 = a1.data
 
     b2 = getattr(np, rfunc)(a2, axis=axis)

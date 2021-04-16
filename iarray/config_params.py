@@ -15,6 +15,7 @@ from dataclasses import dataclass, field, fields, replace
 from typing import List, Sequence, Any, Union
 import warnings
 from contextlib import contextmanager
+import numpy as np
 
 # Global variable for random seed
 RANDOM_SEED = 0
@@ -47,14 +48,14 @@ def get_ncores(max_ncores=0):
 
 
 def partition_advice(
-    dtshape, min_chunksize=0, max_chunksize=0, min_blocksize=0, max_blocksize=0, cfg=None
+    shape, min_chunksize=0, max_chunksize=0, min_blocksize=0, max_blocksize=0, cfg=None
 ):
     """Provide advice for the chunk and block shapes for a certain `dtshape`.
 
     Parameters
     ----------
-    dtshape : ia.DTShape
-        The shape and dtype of the array.
+    shape : Sequence
+        The shape of the array.
     min_chunksize : int
         Minimum value for chunksize (in bytes).  If 0 (default), a sensible value is chosen.
     max_chunksize : int
@@ -74,6 +75,8 @@ def partition_advice(
     """
     if cfg is None:
         cfg = get_config()
+
+    dtshape = ia.DTShape(shape, cfg.dtype)
     if dtshape.shape == ():
         return (), ()
     chunkshape, blockshape = ext.partition_advice(
@@ -102,6 +105,7 @@ class DefaultConfig:
     seed: Any
     random_gen: Any
     btune: Any
+    dtype: Any
 
 
 @dataclass
@@ -133,6 +137,7 @@ class Defaults(object):
     seed: int = None
     random_gen: ia.RandomGen = ia.RandomGen.MERSENNE_TWISTER
     btune: bool = True
+    dtype: (np.float32, np.float64) = np.float64
 
     # Storage
     _storage = None
@@ -180,6 +185,9 @@ class Defaults(object):
     def _btune(self):
         return self.btune
 
+    def _dtype(self):
+        return self.dtype
+
     @property
     def config(self):
         if self._config is None:
@@ -197,6 +205,7 @@ class Defaults(object):
                 seed=self.seed,
                 random_gen=self.random_gen,
                 btune=self.btune,
+                dtype=self.dtype,
             )
         return self._config
 
@@ -215,6 +224,7 @@ class Defaults(object):
         self.seed = value.seed
         self.random_gen = value.random_gen
         self.btune = value.btune
+        self.dtype = value.dtype
         self._storage = value.storage
         self._config = value
         if self._storage is not None:
@@ -323,14 +333,14 @@ class Storage:
                     "plainbuffer array does not support neither a chunkshape nor blockshape"
                 )
 
-    def _get_shape_advice(self, dtshape, cfg=None):
+    def _get_shape_advice(self, shape, cfg=None):
         if self.plainbuffer:
             return
         chunkshape, blockshape = self.chunkshape, self.blockshape
         if chunkshape is not None and blockshape is not None:
             return
         if chunkshape is None and blockshape is None:
-            chunkshape_, blockshape_ = partition_advice(dtshape, cfg=cfg)
+            chunkshape_, blockshape_ = partition_advice(shape, cfg=cfg)
             self.chunkshape = chunkshape_
             self.blockshape = blockshape_
             return
@@ -381,6 +391,10 @@ class Config(ext.Config):
     random_gen : RandomGen
         The random generator to be used.  The default is
         :py:obj:`RandomGen.MERSENNE_TWISTER <RandomGen>`.
+    btune: bool
+        Enable btune machinery. The default is True.
+    dtype: (np.float32, np.float64)
+        The data type to use. The default is np.float64.
     storage : Storage
         Storage instance where you can specify different properties of the output
         storage.  See :py:obj:`Storage` docs for details.  For convenience, you can also
@@ -403,6 +417,7 @@ class Config(ext.Config):
     seed: int = field(default_factory=defaults._seed)
     random_gen: ia.RandomGen = field(default_factory=defaults._random_gen)
     btune: bool = field(default_factory=defaults._btune)
+    dtype: (np.float32, np.float64) = field(default_factory=defaults._dtype)
     storage: Storage = None  # delayed initialization
 
     # These belong to Storage, but we accept them in top level too
@@ -476,7 +491,7 @@ class Config(ext.Config):
         return cfg_
 
 
-def set_config(cfg: Config = None, dtshape=None, **kwargs):
+def set_config(cfg: Config = None, shape=None, **kwargs):
     """Set the global defaults for iarray operations.
 
     Parameters
@@ -484,7 +499,7 @@ def set_config(cfg: Config = None, dtshape=None, **kwargs):
     cfg : ia.Config
         The configuration that will become the default for iarray operations.
         If None, the defaults are not changed.
-    dtshape : ia.DTShape
+    shape : Sequence
         This is not part of the global configuration as such, but if passed,
         it will be used so as to compute sensible defaults for storage properties
         like chunkshape and blockshape.  This is mainly meant for internal use.
@@ -511,8 +526,8 @@ def set_config(cfg: Config = None, dtshape=None, **kwargs):
 
     if kwargs != {}:
         cfg = cfg._replace(**kwargs)
-    if dtshape is not None:
-        cfg.storage._get_shape_advice(dtshape, cfg=cfg)
+    if shape is not None:
+        cfg.storage._get_shape_advice(shape, cfg=cfg)
 
     global_config.append(cfg)
     # Set the defaults for Config() constructor and other nested configs (Storage...)
@@ -543,7 +558,7 @@ def get_config():
 
 
 @contextmanager
-def config(cfg: Config = None, dtshape=None, **kwargs):
+def config(cfg: Config = None, shape=None, **kwargs):
     """Create a context with some specific configuration parameters.
 
     All parameters are the same than in `ia.set_config()`.
@@ -559,8 +574,8 @@ def config(cfg: Config = None, dtshape=None, **kwargs):
     if cfg is None:
         cfg = Config()
     cfg_ = cfg._replace(**kwargs)
-    if dtshape is not None:
-        cfg_.storage._get_shape_advice(dtshape)
+    if shape is not None:
+        cfg_.storage._get_shape_advice(shape)
     global_config.append(cfg_)
 
     try:

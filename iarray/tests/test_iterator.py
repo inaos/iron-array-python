@@ -23,10 +23,10 @@ def test_iterator(shape, chunkshape, blockshape, itershape, dtype):
         storage = ia.Storage(plainbuffer=True)
     else:
         storage = ia.Storage(chunkshape, blockshape)
-    a = ia.linspace(ia.DTShape(shape, dtype), -10, 10, storage=storage)
+    a = ia.linspace(shape, -10, 10, dtype=dtype, storage=storage)
     an = ia.iarray2numpy(a)
 
-    b = ia.empty(ia.DTShape(shape, dtype), storage=storage)
+    b = ia.empty(shape, dtype=dtype, storage=storage)
 
     zip = izip(a.iter_read_block(itershape), b.iter_write_block(itershape))
     for i, ((ainfo, aslice), (_, bslice)) in enumerate(zip):

@@ -110,8 +110,7 @@ def test_global_favor(favor, filters, chunkshape, blockshape):
 def test_global_config_dtype(chunkshape, blockshape, shape):
     try:
         storage = ia.Storage(chunkshape, blockshape)
-        dtshape = ia.DTShape(shape)
-        cfg = ia.set_config(dtshape=dtshape, storage=storage)
+        cfg = ia.set_config(shape=shape, storage=storage)
         storage2 = cfg.storage
         if chunkshape is not None:
             assert storage2.chunkshape == chunkshape
@@ -126,9 +125,8 @@ def test_global_config_dtype(chunkshape, blockshape, shape):
 
     # One can pass storage parameters straight to config() dataclass too
     try:
-        dtshape = ia.DTShape(shape)
         cfg = ia.set_config(
-            dtshape=dtshape,
+            shape=shape,
             chunkshape=chunkshape,
             blockshape=blockshape,
             enforce_frame=True,
@@ -205,8 +203,7 @@ def test_config_ctx(clevel, codec, filters, chunkshape, blockshape, plainbuffer)
 def test_config_ctx_dtype(chunkshape, blockshape, shape):
     try:
         storage = ia.Storage(chunkshape, blockshape)
-        dtshape = ia.DTShape(shape)
-        with ia.config(dtshape=dtshape, storage=storage) as cfg:
+        with ia.config(shape=shape, storage=storage) as cfg:
             storage2 = cfg.storage
             if chunkshape is not None:
                 assert storage2.chunkshape == chunkshape
@@ -221,9 +218,8 @@ def test_config_ctx_dtype(chunkshape, blockshape, shape):
 
     # One can pass storage parameters straight to config() dataclass too
     try:
-        dtshape = ia.DTShape(shape)
         with ia.config(
-            dtshape=dtshape,
+            shape=shape,
             chunkshape=chunkshape,
             blockshape=blockshape,
             enforce_frame=True,
@@ -245,28 +241,28 @@ def test_config_ctx_dtype(chunkshape, blockshape, shape):
 def test_nested_contexts():
     # Set the default to enable compression
     ia.set_config(clevel=5, btune=False)
-    a = ia.ones(ia.DTShape((100, 100)))
+    a = ia.ones((100, 100))
     assert a.cratio > 1
 
     # Now play with contexts and params in calls
     # Disable compression in contexts
     with ia.config(clevel=0):
-        a = ia.ones(ia.DTShape((100, 100)))
+        a = ia.ones((100, 100))
         assert a.cratio < 1
         # Enable compression in call
-        a = ia.ones(ia.DTShape((100, 100)), clevel=1)
+        a = ia.ones((100, 100), clevel=1)
         assert a.cratio > 1
         # Enable compression in nested context
         with ia.config(clevel=1):
-            a = ia.ones(ia.DTShape((100, 100)))
+            a = ia.ones((100, 100))
             assert a.cratio > 1
             # Disable compression in double nested context
             with ia.config(clevel=0):
-                a = ia.ones(ia.DTShape((100, 100)))
+                a = ia.ones((100, 100))
                 assert a.cratio < 1
 
     # Finally, the default should be enabling compression again
-    a = ia.ones(ia.DTShape((100, 100)))
+    a = ia.ones((100, 100))
     assert a.cratio > 1
 
 

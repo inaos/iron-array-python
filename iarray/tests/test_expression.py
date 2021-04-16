@@ -118,12 +118,11 @@ def test_expression(method, shape, chunkshape, blockshape, dtype, expression):
     else:
         storage = ia.Storage(chunkshape=chunkshape, blockshape=blockshape)
 
-    x = ia.linspace(ia.DTShape(shape, dtype), 0.1, 0.2, storage=storage)
-    y = ia.linspace(ia.DTShape(shape, dtype), 0, 1, storage=storage)
+    x = ia.linspace(shape, 0.1, 0.2, dtype=dtype, storage=storage)
+    y = ia.linspace(shape, 0, 1, dtype=dtype, storage=storage)
     npx = ia.iarray2numpy(x)
     npy = ia.iarray2numpy(y)
 
-    dtshape = ia.DTShape(shape, dtype)
     expr = ia.expr_from_string(expression, {"x": x, "y": y}, storage=storage, eval_method=method)
     iout = expr.eval()
     npout = ia.iarray2numpy(iout)
@@ -187,10 +186,9 @@ def test_ufuncs(ufunc, ia_expr):
     storage = ia.Storage(chunkshape=chunkshape, blockshape=bshape)
 
     for dtype in np.float64, np.float32:
-        dtshape = ia.DTShape(shape, dtype)
         # The ranges below are important for not overflowing operations
-        x = ia.linspace(dtshape, 0.1, 0.9, storage=storage)
-        y = ia.linspace(dtshape, 0, 1, storage=storage)
+        x = ia.linspace(shape, 0.1, 0.9, dtype=dtype, storage=storage)
+        y = ia.linspace(shape, 0, 1, dtype=dtype, storage=storage)
         npx = ia.iarray2numpy(x)
         npy = ia.iarray2numpy(y)
 
@@ -255,10 +253,9 @@ def test_expr_ufuncs(ufunc):
     storage = ia.Storage(chunkshape=cshape, blockshape=bshape)
 
     for dtype in np.float64, np.float32:
-        dtshape = ia.DTShape(shape, dtype)
         # The ranges below are important for not overflowing operations
-        x = ia.linspace(dtshape, 0.1, 0.9, storage=storage)
-        y = ia.linspace(dtshape, 0.5, 1, storage=storage)
+        x = ia.linspace(shape, 0.1, 0.9, dtype=dtype, storage=storage)
+        y = ia.linspace(shape, 0.5, 1, dtype=dtype, storage=storage)
 
         # NumPy computation
         npx = ia.iarray2numpy(x)
@@ -315,12 +312,11 @@ def test_expr_fusion(expr, np_expr):
     storage = ia.Storage(chunkshape=chunkshape, blockshape=bshape)
 
     for dtype in np.float64, np.float32:
-        dtshape = ia.DTShape(shape, dtype)
         # The ranges below are important for not overflowing operations
-        x = ia.linspace(dtshape, 0.1, 0.9, storage=storage)
-        y = ia.linspace(dtshape, 0.5, 1.0, storage=storage)
-        z = ia.linspace(dtshape, 1.0, 2.0, storage=storage)
-        t = ia.linspace(dtshape, 1.5, 3.0, storage=storage)
+        x = ia.linspace(shape, 0.1, 0.9, dtype=dtype, storage=storage)
+        y = ia.linspace(shape, 0.5, 1.0, dtype=dtype, storage=storage)
+        z = ia.linspace(shape, 1.0, 2.0, dtype=dtype, storage=storage)
+        t = ia.linspace(shape, 1.5, 3.0, dtype=dtype, storage=storage)
 
         # NumPy computation
         npx = ia.iarray2numpy(x)

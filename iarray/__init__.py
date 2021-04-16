@@ -157,7 +157,7 @@ from .iarray_container import (
 )
 
 from .constructors import (
-    DTShape,
+    DTShape,  # remove from here
     empty,
     arange,
     linspace,
@@ -179,7 +179,6 @@ from .utils import (
 from . import irandom
 
 from .expression import (
-    Expr,
     expr_from_string,
     expr_from_udf,
 )

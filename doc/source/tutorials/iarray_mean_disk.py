@@ -2,9 +2,8 @@ from time import time
 
 t0 = time()
 import iarray as ia
-import zarr
 
-zarr.save_array()
+
 t = time() - t0
 print("iarray import time ->", round(t, 3))
 
@@ -52,8 +51,8 @@ cfg = ia.Config(storage=storage)
 
 @profile
 def iarray_mean_disk(expr):
-    with ia.config(urlpath="mean-3m.iarr", cfg=cfg) as cfg2:
-        expr_val = expr.eval(cfg=cfg2)
+    with ia.config(urlpath="mean-3m.iarr", cfg=cfg):
+        expr_val = expr.eval()
     return expr_val
 
 
@@ -71,8 +70,8 @@ mean_disk.info
 
 @profile
 def iarray_trans_disk(expr):
-    with ia.config(urlpath="trans-3m.iarr", cfg=cfg) as cfg2:
-        expr_val = expr.eval(cfg=cfg2)
+    with ia.config(urlpath="trans-3m.iarr", cfg=cfg):
+        expr_val = expr.eval()
     return expr_val
 
 

@@ -16,12 +16,12 @@ def test_btune(start, stop, shape, chunkshape, blockshape, dtype):
 
     with ia.config(favor=ia.Favors.SPEED, btune=True):
         storage = ia.Storage(chunkshape, blockshape)
-        a = ia.linspace(ia.DTShape(shape, dtype), start, stop, storage=storage)
+        a = ia.linspace(shape, start, stop, dtype=dtype, storage=storage)
         c1 = a.cratio
 
     with ia.config(favor=ia.Favors.CRATIO, btune=True):
         storage = ia.Storage(chunkshape, blockshape)
-        a = ia.linspace(ia.DTShape(shape, dtype), start, stop, storage=storage)
+        a = ia.linspace(shape, start, stop, dtype=dtype, storage=storage)
         c2 = a.cratio
 
     assert c1 < c2

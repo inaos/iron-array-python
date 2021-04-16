@@ -32,7 +32,7 @@ def test_copy(shape, chunkshape, blockshape, dtype, plainbuffer, sequential, url
         storage = ia.Storage(plainbuffer=True)
     else:
         storage = ia.Storage(chunkshape, blockshape, enforce_frame=sequential, urlpath=urlpath)
-    a_ = ia.linspace(ia.DTShape(shape, dtype), -10, 10, storage=storage)
+    a_ = ia.linspace(shape, -10, 10, dtype=dtype, storage=storage)
     sl = tuple([slice(0, s - 1) for s in shape])
     a = a_[sl]
     b = a.copy(urlpath=urlpath2)

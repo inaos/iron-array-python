@@ -168,10 +168,11 @@ def numpy2iarray(arr: np.ndarray, cfg: ia.Config = None, **kwargs) -> ia.IArray:
     else:
         raise NotImplementedError("Only float32 and float64 types are supported for now")
 
-    dtshape = ia.DTShape(arr.shape, dtype)
+    kwargs["dtype"] = dtype
 
     if cfg is None:
         cfg = ia.get_config()
 
-    with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
+    with ia.config(shape=arr.shape, cfg=cfg, **kwargs) as cfg:
+        dtshape = ia.DTShape(arr.shape, cfg.dtype)
         return ext.numpy2iarray(cfg, arr, dtshape)
