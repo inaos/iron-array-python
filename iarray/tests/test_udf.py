@@ -253,6 +253,32 @@ def test_ifexp(f, f_np):
 
     cmp_udf_np(f, [], shape, (chunkshape, blockshape), dtype, cparams, f_np=f_np)
 
+@udf.jit
+def f_ifexp2(out: udf.Array(udf.float64, 2)):
+    n = out.shape[0]
+    m = out.shape[1]
+    if UDFJIT:
+        start_n = out.window_start[0]
+        start_m = out.window_start[1]
+    for i in range(n):
+        for j in range(m):
+            if UDFJIT:
+                out[i, j] = 1. if i + start_n == j + start_m else 0.
+            else:
+                out[i, j] = 1. if i == j else 0.
+
+    return 0
+
+@pytest.mark.parametrize("f", [f_ifexp2])
+def test_ifexp2(f):
+    shape = [400, 800]
+    chunkshape = [60, 200]
+    blockshape = [11, 200]
+    dtype = np.float64
+    cparams = dict()
+
+    cmp_udf_np(f, [], shape, (chunkshape, blockshape), dtype, cparams)
+
 
 @udf.jit
 def f_avg(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
