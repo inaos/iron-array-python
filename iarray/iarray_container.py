@@ -740,12 +740,11 @@ def reduce(
         axis = (axis,)
 
     shape = tuple([s for i, s in enumerate(a.shape) if i not in axis])
-    dtshape = ia.DTShape(shape, a.dtype)
 
     if cfg is None:
         cfg = ia.get_config()
 
-    with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
+    with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
         c = ext.reduce_multi(cfg, a, method, axis)
         if c.ndim == 0:
             c = float(ia.iarray2numpy(c))
@@ -919,12 +918,11 @@ def matmul(a: IArray, b: IArray, cfg=None, **kwargs):
 
     """
     shape = (a.shape[0], b.shape[1]) if b.ndim == 2 else (a.shape[0],)
-    dtshape = ia.DTShape(shape, a.dtype)
 
     if cfg is None:
         cfg = ia.get_config()
 
-    with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
+    with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
         return ext.matmul(cfg, a, b)
 
 

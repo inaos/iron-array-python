@@ -114,16 +114,16 @@ import numpy as np
 def test_expression(method, shape, chunkshape, blockshape, dtype, expression):
     # The ranges below are important for not overflowing operations
     if chunkshape is None:
-        storage = ia.Storage(plainbuffer=True)
+        store = ia.Store(plainbuffer=True)
     else:
-        storage = ia.Storage(chunkshape=chunkshape, blockshape=blockshape)
+        store = ia.Store(chunkshape=chunkshape, blockshape=blockshape)
 
-    x = ia.linspace(shape, 0.1, 0.2, dtype=dtype, storage=storage)
-    y = ia.linspace(shape, 0, 1, dtype=dtype, storage=storage)
+    x = ia.linspace(shape, 0.1, 0.2, dtype=dtype, store=store)
+    y = ia.linspace(shape, 0, 1, dtype=dtype, store=store)
     npx = ia.iarray2numpy(x)
     npy = ia.iarray2numpy(y)
 
-    expr = ia.expr_from_string(expression, {"x": x, "y": y}, storage=storage, eval_method=method)
+    expr = ia.expr_from_string(expression, {"x": x, "y": y}, store=store, eval_method=method)
     iout = expr.eval()
     npout = ia.iarray2numpy(iout)
 
@@ -183,16 +183,16 @@ def test_ufuncs(ufunc, ia_expr):
     chunkshape = [40, 40]
     bshape = [10, 17]
 
-    storage = ia.Storage(chunkshape=chunkshape, blockshape=bshape)
+    store = ia.Store(chunkshape=chunkshape, blockshape=bshape)
 
     for dtype in np.float64, np.float32:
         # The ranges below are important for not overflowing operations
-        x = ia.linspace(shape, 0.1, 0.9, dtype=dtype, storage=storage)
-        y = ia.linspace(shape, 0, 1, dtype=dtype, storage=storage)
+        x = ia.linspace(shape, 0.1, 0.9, dtype=dtype, store=store)
+        y = ia.linspace(shape, 0, 1, dtype=dtype, store=store)
         npx = ia.iarray2numpy(x)
         npy = ia.iarray2numpy(y)
 
-        expr = ia.expr_from_string(ia_expr, {"x": x, "y": y}, storage=storage)
+        expr = ia.expr_from_string(ia_expr, {"x": x, "y": y}, store=store)
         iout = expr.eval()
         npout = ia.iarray2numpy(iout)
 
@@ -250,12 +250,12 @@ def test_expr_ufuncs(ufunc):
     shape = [200, 300]
     cshape = [40, 50]
     bshape = [20, 20]
-    storage = ia.Storage(chunkshape=cshape, blockshape=bshape)
+    store = ia.Store(chunkshape=cshape, blockshape=bshape)
 
     for dtype in np.float64, np.float32:
         # The ranges below are important for not overflowing operations
-        x = ia.linspace(shape, 0.1, 0.9, dtype=dtype, storage=storage)
-        y = ia.linspace(shape, 0.5, 1, dtype=dtype, storage=storage)
+        x = ia.linspace(shape, 0.1, 0.9, dtype=dtype, store=store)
+        y = ia.linspace(shape, 0.5, 1, dtype=dtype, store=store)
 
         # NumPy computation
         npx = ia.iarray2numpy(x)
@@ -309,14 +309,14 @@ def test_expr_fusion(expr, np_expr):
     shape = [200, 300]
     chunkshape = [40, 50]
     bshape = [20, 20]
-    storage = ia.Storage(chunkshape=chunkshape, blockshape=bshape)
+    store = ia.Store(chunkshape=chunkshape, blockshape=bshape)
 
     for dtype in np.float64, np.float32:
         # The ranges below are important for not overflowing operations
-        x = ia.linspace(shape, 0.1, 0.9, dtype=dtype, storage=storage)
-        y = ia.linspace(shape, 0.5, 1.0, dtype=dtype, storage=storage)
-        z = ia.linspace(shape, 1.0, 2.0, dtype=dtype, storage=storage)
-        t = ia.linspace(shape, 1.5, 3.0, dtype=dtype, storage=storage)
+        x = ia.linspace(shape, 0.1, 0.9, dtype=dtype, store=store)
+        y = ia.linspace(shape, 0.5, 1.0, dtype=dtype, store=store)
+        z = ia.linspace(shape, 1.0, 2.0, dtype=dtype, store=store)
+        t = ia.linspace(shape, 1.5, 3.0, dtype=dtype, store=store)
 
         # NumPy computation
         npx = ia.iarray2numpy(x)

@@ -13,18 +13,18 @@ import iarray as ia
     ],
 )
 def test_global_config(clevel, codec, filters, chunkshape, blockshape, enforce_frame):
-    storage = ia.Storage(chunkshape, blockshape, enforce_frame=enforce_frame)
-    ia.set_config(clevel=clevel, codec=codec, filters=filters, storage=storage)
+    store = ia.Store(chunkshape, blockshape, enforce_frame=enforce_frame)
+    ia.set_config(clevel=clevel, codec=codec, filters=filters, store=store)
     config = ia.get_config()
     assert config.clevel == clevel
     assert config.codec == codec
     assert config.filters == filters
-    storage2 = config.storage
-    assert storage2.chunkshape == chunkshape
-    assert storage2.blockshape == blockshape
-    assert storage2.enforce_frame == enforce_frame
+    store2 = config.store
+    assert store2.chunkshape == chunkshape
+    assert store2.blockshape == blockshape
+    assert store2.enforce_frame == enforce_frame
 
-    # One can pass storage parameters straight to config() dataclass too
+    # One can pass store parameters straight to config() dataclass too
     ia.set_config(
         clevel=clevel,
         codec=codec,
@@ -37,10 +37,10 @@ def test_global_config(clevel, codec, filters, chunkshape, blockshape, enforce_f
     assert config.clevel == clevel
     assert config.codec == codec
     assert config.filters == filters
-    storage2 = ia.Storage()
-    assert storage2.chunkshape == chunkshape
-    assert storage2.blockshape == blockshape
-    assert storage2.enforce_frame == False
+    store2 = ia.Store()
+    assert store2.chunkshape == chunkshape
+    assert store2.blockshape == blockshape
+    assert store2.enforce_frame == False
 
     # Or, we can set defaults via Config (for better auto-completion)
     cfg = ia.Config(
@@ -56,10 +56,10 @@ def test_global_config(clevel, codec, filters, chunkshape, blockshape, enforce_f
     assert config.clevel == clevel
     assert config.codec == codec
     assert config.filters == filters
-    storage2 = ia.Storage()
-    assert storage2.chunkshape == chunkshape
-    assert storage2.blockshape == blockshape
-    assert storage2.enforce_frame == False
+    store2 = ia.Store()
+    assert store2.chunkshape == chunkshape
+    assert store2.blockshape == blockshape
+    assert store2.enforce_frame == False
 
     # Or, we can use a mix of Config and keyword args
     cfg = ia.Config(
@@ -73,10 +73,10 @@ def test_global_config(clevel, codec, filters, chunkshape, blockshape, enforce_f
     assert config.clevel == clevel
     assert config.codec == codec
     assert config.filters == filters
-    storage2 = ia.Storage()
-    assert storage2.chunkshape == chunkshape
-    assert storage2.blockshape == blockshape
-    assert storage2.enforce_frame == False
+    store2 = ia.Store()
+    assert store2.chunkshape == chunkshape
+    assert store2.blockshape == blockshape
+    assert store2.enforce_frame == False
 
 
 @pytest.mark.parametrize(
@@ -88,13 +88,13 @@ def test_global_config(clevel, codec, filters, chunkshape, blockshape, enforce_f
     ],
 )
 def test_global_favor(favor, filters, chunkshape, blockshape):
-    storage = ia.Storage(chunkshape, blockshape)
-    ia.set_config(favor=favor, storage=storage)
+    store = ia.Store(chunkshape, blockshape)
+    ia.set_config(favor=favor, store=store)
     config = ia.get_config()
     assert config.favor == favor
     assert config.filters == filters
-    assert config.storage.chunkshape == chunkshape
-    assert config.storage.blockshape == blockshape
+    assert config.store.chunkshape == chunkshape
+    assert config.store.blockshape == blockshape
 
 
 @pytest.mark.parametrize(
@@ -109,21 +109,21 @@ def test_global_favor(favor, filters, chunkshape, blockshape):
 )
 def test_global_config_dtype(chunkshape, blockshape, shape):
     try:
-        storage = ia.Storage(chunkshape, blockshape)
-        cfg = ia.set_config(shape=shape, storage=storage)
-        storage2 = cfg.storage
+        store = ia.Store(chunkshape, blockshape)
+        cfg = ia.set_config(shape=shape, store=store)
+        store2 = cfg.store
         if chunkshape is not None:
-            assert storage2.chunkshape == chunkshape
-            assert storage2.blockshape == blockshape
+            assert store2.chunkshape == chunkshape
+            assert store2.blockshape == blockshape
         else:
             # automatic partitioning
-            assert storage2.chunkshape <= shape
-            assert storage2.blockshape <= storage2.chunkshape
+            assert store2.chunkshape <= shape
+            assert store2.blockshape <= store2.chunkshape
     except ValueError:
         # chunkshape cannot be set when a plainbuffer is used
         assert shape == ()
 
-    # One can pass storage parameters straight to config() dataclass too
+    # One can pass store parameters straight to config() dataclass too
     try:
         cfg = ia.set_config(
             shape=shape,
@@ -131,15 +131,15 @@ def test_global_config_dtype(chunkshape, blockshape, shape):
             blockshape=blockshape,
             enforce_frame=True,
         )
-        storage2 = cfg.storage
+        store2 = cfg.store
         if chunkshape is not None:
-            assert storage2.chunkshape == chunkshape
-            assert storage2.blockshape == blockshape
+            assert store2.chunkshape == chunkshape
+            assert store2.blockshape == blockshape
         else:
             # automatic partitioning
-            assert storage2.chunkshape <= shape
-            assert storage2.blockshape <= storage2.chunkshape
-        assert storage2.enforce_frame == True
+            assert store2.chunkshape <= shape
+            assert store2.blockshape <= store2.chunkshape
+        assert store2.enforce_frame == True
     except ValueError:
         # chunkshape cannot be set when a plainbuffer is used
         assert shape == ()
@@ -157,19 +157,19 @@ def test_global_config_dtype(chunkshape, blockshape, shape):
 )
 def test_config_ctx(clevel, codec, filters, chunkshape, blockshape, plainbuffer):
     try:
-        storage = ia.Storage(chunkshape, blockshape, plainbuffer=plainbuffer)
-        with ia.config(clevel=clevel, codec=codec, filters=filters, storage=storage) as cfg:
+        store = ia.Store(chunkshape, blockshape, plainbuffer=plainbuffer)
+        with ia.config(clevel=clevel, codec=codec, filters=filters, store=store) as cfg:
             assert cfg.clevel == clevel
             assert cfg.codec == codec
             assert cfg.filters == filters
-            assert cfg.storage.chunkshape == chunkshape
-            assert cfg.storage.blockshape == blockshape
-            assert cfg.storage.plainbuffer == plainbuffer
+            assert cfg.store.chunkshape == chunkshape
+            assert cfg.store.blockshape == blockshape
+            assert cfg.store.plainbuffer == plainbuffer
     except ValueError:
         # chunkshape cannot be set when a plainbuffer is used
         assert plainbuffer and chunkshape is not None
 
-    # One can pass storage parameters straight to config() dataclass too
+    # One can pass store parameters straight to config() dataclass too
     try:
         with ia.config(
             clevel=clevel,
@@ -182,9 +182,9 @@ def test_config_ctx(clevel, codec, filters, chunkshape, blockshape, plainbuffer)
             assert cfg.clevel == clevel
             assert cfg.codec == codec
             assert cfg.filters == filters
-            assert cfg.storage.chunkshape == chunkshape
-            assert cfg.storage.blockshape == blockshape
-            assert cfg.storage.plainbuffer == False
+            assert cfg.store.chunkshape == chunkshape
+            assert cfg.store.blockshape == blockshape
+            assert cfg.store.plainbuffer == False
     except ValueError:
         # chunkshape cannot be set when a plainbuffer is used
         assert plainbuffer and chunkshape is not None
@@ -202,21 +202,21 @@ def test_config_ctx(clevel, codec, filters, chunkshape, blockshape, plainbuffer)
 )
 def test_config_ctx_dtype(chunkshape, blockshape, shape):
     try:
-        storage = ia.Storage(chunkshape, blockshape)
-        with ia.config(shape=shape, storage=storage) as cfg:
-            storage2 = cfg.storage
+        store = ia.Store(chunkshape, blockshape)
+        with ia.config(shape=shape, store=store) as cfg:
+            store2 = cfg.store
             if chunkshape is not None:
-                assert storage2.chunkshape == chunkshape
-                assert storage2.blockshape == blockshape
+                assert store2.chunkshape == chunkshape
+                assert store2.blockshape == blockshape
             else:
                 # automatic partitioning
-                assert storage2.chunkshape <= shape
-                assert storage2.blockshape <= storage2.chunkshape
+                assert store2.chunkshape <= shape
+                assert store2.blockshape <= store2.chunkshape
     except ValueError:
         # chunkshape cannot be set when a plainbuffer is used
         assert shape == ()
 
-    # One can pass storage parameters straight to config() dataclass too
+    # One can pass store parameters straight to config() dataclass too
     try:
         with ia.config(
             shape=shape,
@@ -224,15 +224,15 @@ def test_config_ctx_dtype(chunkshape, blockshape, shape):
             blockshape=blockshape,
             enforce_frame=True,
         ) as cfg:
-            storage2 = cfg.storage
+            store2 = cfg.store
             if chunkshape is not None:
-                assert storage2.chunkshape == chunkshape
-                assert storage2.blockshape == blockshape
+                assert store2.chunkshape == chunkshape
+                assert store2.blockshape == blockshape
             else:
                 # automatic partitioning
-                assert storage2.chunkshape <= shape
-                assert storage2.blockshape <= storage2.chunkshape
-            assert storage2.enforce_frame == True
+                assert store2.chunkshape <= shape
+                assert store2.blockshape <= store2.chunkshape
+            assert store2.enforce_frame == True
     except ValueError:
         # chunkshape cannot be set when a plainbuffer is used
         assert shape == ()

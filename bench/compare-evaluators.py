@@ -134,9 +134,9 @@ def do_regular_evaluation():
 def do_block_evaluation(plainbuffer):
     print(f"Block evaluation (plainbuffer={plainbuffer})")
     if plainbuffer:
-        storage = ia.Storage(plainbuffer=True)
+        storage = ia.Store(plainbuffer=True)
     else:
-        storage = ia.Storage(chunkshape, blockshape, plainbuffer=False)
+        storage = ia.Store(chunkshape, blockshape, plainbuffer=False)
 
     ia.set_config(clevel=clevel, nthreads=nthreads, storage=storage)
     print(ia.get_config())

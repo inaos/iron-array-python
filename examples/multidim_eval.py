@@ -17,7 +17,7 @@ sexpr = "(cos(x) - sin(y)) * (x - 1.35) * (y - 4.45)"
 
 # Create initial arrays.  You may opt to use automatic chunkshape and blockshape,
 # but you typically get optimal results when you fine-tune them.
-storage = ia.Storage(chunkshape=[1000, 800], blockshape=[100, 100])
+storage = ia.Store(chunkshape=[1000, 800], blockshape=[100, 100])
 ia.set_config(storage=storage, fp_mantissa_bits=24, nthreads=nthreads)
 
 size = shape[0] * shape[1]

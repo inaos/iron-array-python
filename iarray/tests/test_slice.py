@@ -31,11 +31,11 @@ from math import isclose
 )
 def test_slice(slices, shape, chunkshape, blockshape, dtype):
     if chunkshape is None:
-        storage = ia.Storage(plainbuffer=True)
+        store = ia.Store(plainbuffer=True)
     else:
-        storage = ia.Storage(chunkshape, blockshape, enforce_frame=True)
+        store = ia.Store(chunkshape, blockshape, enforce_frame=True)
 
-    a = ia.linspace(ia.DTShape(shape, dtype), -10, 10, storage=storage)
+    a = ia.linspace(shape, -10, 10, store=store, dtype=dtype)
     an = ia.iarray2numpy(a)
 
     b = a[slices]

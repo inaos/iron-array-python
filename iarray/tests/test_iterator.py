@@ -20,13 +20,13 @@ from itertools import zip_longest as izip
 )
 def test_iterator(shape, chunkshape, blockshape, itershape, dtype):
     if chunkshape is None:
-        storage = ia.Storage(plainbuffer=True)
+        store = ia.Store(plainbuffer=True)
     else:
-        storage = ia.Storage(chunkshape, blockshape)
-    a = ia.linspace(shape, -10, 10, dtype=dtype, storage=storage)
+        store = ia.Store(chunkshape, blockshape)
+    a = ia.linspace(shape, -10, 10, dtype=dtype, store=store)
     an = ia.iarray2numpy(a)
 
-    b = ia.empty(shape, dtype=dtype, storage=storage)
+    b = ia.empty(shape, dtype=dtype, store=store)
 
     zip = izip(a.iter_read_block(itershape), b.iter_write_block(itershape))
     for i, ((ainfo, aslice), (_, bslice)) in enumerate(zip):

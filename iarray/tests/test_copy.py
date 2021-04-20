@@ -29,10 +29,10 @@ def test_copy(shape, chunkshape, blockshape, dtype, plainbuffer, sequential, url
         os.remove(urlpath2)
 
     if plainbuffer:
-        storage = ia.Storage(plainbuffer=True)
+        store = ia.Store(plainbuffer=True)
     else:
-        storage = ia.Storage(chunkshape, blockshape, enforce_frame=sequential, urlpath=urlpath)
-    a_ = ia.linspace(shape, -10, 10, dtype=dtype, storage=storage)
+        store = ia.Store(chunkshape, blockshape, enforce_frame=sequential, urlpath=urlpath)
+    a_ = ia.linspace(shape, -10, 10, dtype=dtype, store=store)
     sl = tuple([slice(0, s - 1) for s in shape])
     a = a_[sl]
     b = a.copy(urlpath=urlpath2)

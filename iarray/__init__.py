@@ -115,7 +115,7 @@ UFUNC_LIST = (
 
 from .config_params import (
     Config,
-    Storage,
+    Store,
     set_config,
     get_config,
     config,
@@ -157,7 +157,7 @@ from .iarray_container import (
 )
 
 from .constructors import (
-    DTShape,  # remove from here
+    DTShape,
     empty,
     arange,
     linspace,

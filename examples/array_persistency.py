@@ -10,7 +10,7 @@ size = int(np.prod(shape))
 a = np.arange(size, dtype=np.float64).reshape(shape)
 
 print(f"Creating {urlpath}")
-store = ia.Storage(urlpath=urlpath)
+store = ia.Store(urlpath=urlpath)
 b = ia.numpy2iarray(a, storage=store)
 
 print(f"Reading {urlpath}")

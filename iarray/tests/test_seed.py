@@ -20,16 +20,16 @@ import numpy as np
 )
 def test_rand(shape, chunkshape, blockshape, dtype, seed):
     if chunkshape is None:
-        storage = ia.Storage(plainbuffer=True)
+        store = ia.Store(plainbuffer=True)
     else:
-        storage = ia.Storage(chunkshape, blockshape)
+        store = ia.Store(chunkshape, blockshape)
 
-    a = ia.irandom.random_sample(ia.DTShape(shape, dtype), storage=storage, seed=seed)
-    b = ia.irandom.random_sample(ia.DTShape(shape, dtype), storage=storage, seed=seed)
+    a = ia.irandom.random_sample(shape, store=store, seed=seed, dtype=dtype)
+    b = ia.irandom.random_sample(shape, store=store, seed=seed, dtype=dtype)
     np.testing.assert_array_equal(ia.iarray2numpy(a), ia.iarray2numpy(b))
 
     # Check that the default seed is None
-    c = ia.irandom.random_sample(ia.DTShape(shape, dtype), storage=storage)
+    c = ia.irandom.random_sample(shape, store=store, dtype=dtype)
     assert np.alltrue(ia.iarray2numpy(b) != ia.iarray2numpy(c))
 
 
@@ -45,12 +45,12 @@ def test_rand(shape, chunkshape, blockshape, dtype, seed):
 )
 def test_randn(shape, chunkshape, blockshape, dtype, seed):
     if chunkshape is None:
-        storage = ia.Storage(plainbuffer=True)
+        store = ia.Store(plainbuffer=True)
     else:
-        storage = ia.Storage(chunkshape, blockshape)
+        store = ia.Store(chunkshape, blockshape)
 
-    a = ia.irandom.standard_normal(ia.DTShape(shape, dtype), storage=storage, seed=seed)
-    b = ia.irandom.standard_normal(ia.DTShape(shape, dtype), storage=storage, seed=seed)
+    a = ia.irandom.standard_normal(shape, store=store, seed=seed, dtype=dtype)
+    b = ia.irandom.standard_normal(shape, store=store, seed=seed, dtype=dtype)
     np.testing.assert_array_equal(ia.iarray2numpy(a), ia.iarray2numpy(b))
 
 
@@ -66,12 +66,12 @@ def test_randn(shape, chunkshape, blockshape, dtype, seed):
 )
 def test_beta(alpha, beta, shape, chunkshape, blockshape, dtype, seed):
     if chunkshape is None:
-        storage = ia.Storage(plainbuffer=True)
+        store = ia.Store(plainbuffer=True)
     else:
-        storage = ia.Storage(chunkshape, blockshape)
+        store = ia.Store(chunkshape, blockshape)
 
-    a = ia.irandom.beta(ia.DTShape(shape, dtype), alpha, beta, storage=storage, seed=seed)
-    b = ia.irandom.beta(ia.DTShape(shape, dtype), alpha, beta, storage=storage, seed=seed)
+    a = ia.irandom.beta(shape, alpha, beta, store=store, seed=seed, dtype=dtype)
+    b = ia.irandom.beta(shape, alpha, beta, store=store, seed=seed, dtype=dtype)
     np.testing.assert_array_equal(ia.iarray2numpy(a), ia.iarray2numpy(b))
 
 
@@ -87,12 +87,12 @@ def test_beta(alpha, beta, shape, chunkshape, blockshape, dtype, seed):
 )
 def test_lognormal(mu, sigma, shape, chunkshape, blockshape, dtype, seed):
     if chunkshape is None:
-        storage = ia.Storage(plainbuffer=True)
+        store = ia.Store(plainbuffer=True)
     else:
-        storage = ia.Storage(chunkshape, blockshape)
+        store = ia.Store(chunkshape, blockshape)
 
-    a = ia.irandom.lognormal(ia.DTShape(shape, dtype), mu, sigma, storage=storage, seed=seed)
-    b = ia.irandom.lognormal(ia.DTShape(shape, dtype), mu, sigma, storage=storage, seed=seed)
+    a = ia.irandom.lognormal(shape, mu, sigma, store=store, seed=seed, dtype=dtype)
+    b = ia.irandom.lognormal(shape, mu, sigma, store=store, seed=seed, dtype=dtype)
     np.testing.assert_array_equal(ia.iarray2numpy(a), ia.iarray2numpy(b))
 
 
@@ -108,12 +108,12 @@ def test_lognormal(mu, sigma, shape, chunkshape, blockshape, dtype, seed):
 )
 def test_exponential(beta, shape, chunkshape, blockshape, dtype, seed):
     if chunkshape is None:
-        storage = ia.Storage(plainbuffer=True)
+        store = ia.Store(plainbuffer=True)
     else:
-        storage = ia.Storage(chunkshape, blockshape)
+        store = ia.Store(chunkshape, blockshape)
 
-    a = ia.irandom.exponential(ia.DTShape(shape, dtype), beta, storage=storage, seed=seed)
-    b = ia.irandom.exponential(ia.DTShape(shape, dtype), beta, storage=storage, seed=seed)
+    a = ia.irandom.exponential(shape, beta, store=store, seed=seed, dtype=dtype)
+    b = ia.irandom.exponential(shape, beta, store=store, seed=seed, dtype=dtype)
     np.testing.assert_array_equal(ia.iarray2numpy(a), ia.iarray2numpy(b))
 
 
@@ -129,12 +129,12 @@ def test_exponential(beta, shape, chunkshape, blockshape, dtype, seed):
 )
 def test_uniform(a_, b_, shape, chunkshape, blockshape, dtype, seed):
     if chunkshape is None:
-        storage = ia.Storage(plainbuffer=True)
+        store = ia.Store(plainbuffer=True)
     else:
-        storage = ia.Storage(chunkshape, blockshape)
+        store = ia.Store(chunkshape, blockshape)
 
-    a = ia.irandom.uniform(ia.DTShape(shape, dtype), a_, b_, storage=storage, seed=seed)
-    b = ia.irandom.uniform(ia.DTShape(shape, dtype), a_, b_, storage=storage, seed=seed)
+    a = ia.irandom.uniform(shape, a_, b_, store=store, seed=seed, dtype=dtype)
+    b = ia.irandom.uniform(shape, a_, b_, store=store, seed=seed, dtype=dtype)
     np.testing.assert_array_equal(ia.iarray2numpy(a), ia.iarray2numpy(b))
 
 
@@ -150,12 +150,12 @@ def test_uniform(a_, b_, shape, chunkshape, blockshape, dtype, seed):
 )
 def test_normal(mu, sigma, shape, chunkshape, blockshape, dtype, seed):
     if chunkshape is None:
-        storage = ia.Storage(plainbuffer=True)
+        store = ia.Store(plainbuffer=True)
     else:
-        storage = ia.Storage(chunkshape, blockshape)
+        store = ia.Store(chunkshape, blockshape)
 
-    a = ia.irandom.normal(ia.DTShape(shape, dtype), mu, sigma, storage=storage, seed=seed)
-    b = ia.irandom.normal(ia.DTShape(shape, dtype), mu, sigma, storage=storage, seed=seed)
+    a = ia.irandom.normal(shape, mu, sigma, store=store, seed=seed, dtype=dtype)
+    b = ia.irandom.normal(shape, mu, sigma, store=store, seed=seed, dtype=dtype)
 
     np.testing.assert_array_equal(ia.iarray2numpy(a), ia.iarray2numpy(b))
 
@@ -172,12 +172,12 @@ def test_normal(mu, sigma, shape, chunkshape, blockshape, dtype, seed):
 )
 def test_bernoulli(p, shape, chunkshape, blockshape, dtype, seed):
     if chunkshape is None:
-        storage = ia.Storage(plainbuffer=True)
+        store = ia.Store(plainbuffer=True)
     else:
-        storage = ia.Storage(chunkshape, blockshape)
+        store = ia.Store(chunkshape, blockshape)
 
-    a = ia.irandom.bernoulli(ia.DTShape(shape, dtype), p, storage=storage, seed=seed)
-    b = ia.irandom.bernoulli(ia.DTShape(shape, dtype), p, storage=storage, seed=seed)
+    a = ia.irandom.bernoulli(shape, p, store=store, seed=seed, dtype=dtype)
+    b = ia.irandom.bernoulli(shape, p, store=store, seed=seed, dtype=dtype)
     np.testing.assert_array_equal(ia.iarray2numpy(a), ia.iarray2numpy(b))
 
 
@@ -193,12 +193,12 @@ def test_bernoulli(p, shape, chunkshape, blockshape, dtype, seed):
 )
 def test_binomial(n, p, shape, chunkshape, blockshape, dtype, seed):
     if chunkshape is None:
-        storage = ia.Storage(plainbuffer=True)
+        store = ia.Store(plainbuffer=True)
     else:
-        storage = ia.Storage(chunkshape, blockshape)
+        store = ia.Store(chunkshape, blockshape)
 
-    a = ia.irandom.binomial(ia.DTShape(shape, dtype), n, p, storage=storage, seed=seed)
-    b = ia.irandom.binomial(ia.DTShape(shape, dtype), n, p, storage=storage, seed=seed)
+    a = ia.irandom.binomial(shape, n, p, store=store, seed=seed, dtype=dtype)
+    b = ia.irandom.binomial(shape, n, p, store=store, seed=seed, dtype=dtype)
     np.testing.assert_array_equal(ia.iarray2numpy(a), ia.iarray2numpy(b))
 
 
@@ -214,10 +214,10 @@ def test_binomial(n, p, shape, chunkshape, blockshape, dtype, seed):
 )
 def test_poisson(lamb, shape, chunkshape, blockshape, dtype, seed):
     if chunkshape is None:
-        storage = ia.Storage(plainbuffer=True)
+        store = ia.Store(plainbuffer=True)
     else:
-        storage = ia.Storage(chunkshape, blockshape)
+        store = ia.Store(chunkshape, blockshape)
 
-    a = ia.irandom.poisson(ia.DTShape(shape, dtype), lamb, storage=storage, seed=seed)
-    b = ia.irandom.poisson(ia.DTShape(shape, dtype), lamb, storage=storage, seed=seed)
+    a = ia.irandom.poisson(shape, lamb, store=store, seed=seed, dtype=dtype)
+    b = ia.irandom.poisson(shape, lamb, store=store, seed=seed, dtype=dtype)
     np.testing.assert_array_equal(ia.iarray2numpy(a), ia.iarray2numpy(b))

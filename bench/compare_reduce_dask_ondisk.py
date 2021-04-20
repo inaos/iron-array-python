@@ -50,7 +50,7 @@ print("iA config: ", ia.get_config())
 if os.path.exists("iarray_reduce.iarray"):
     aia = ia.open("iarray_reduce.iarray")
 else:
-    astorage = ia.Storage(achunkshape, ablockshape, urlpath="iarray_reduce.iarray")
+    astorage = ia.Store(achunkshape, ablockshape, urlpath="iarray_reduce.iarray")
     dtshape = ia.DTShape(ashape, dtype=DTYPE)
     aia = ia.irandom.normal(dtshape, 0, 1, storage=astorage)
 

@@ -14,10 +14,10 @@ import numpy as np
 )
 def test_transpose(shape, chunkshape, blockshape, dtype):
     if chunkshape is None:
-        storage = ia.Storage(plainbuffer=True)
+        store = ia.Store(plainbuffer=True)
     else:
-        storage = ia.Storage(chunkshape, blockshape)
-    a = ia.linspace(ia.DTShape(shape, dtype), -10, 10, storage=storage)
+        store = ia.Store(chunkshape, blockshape)
+    a = ia.linspace(shape, -10, 10, store=store, dtype=dtype)
 
     b = ia.iarray2numpy(a)
     bn = b.T

@@ -40,8 +40,7 @@ dtshape = ia.DTShape(shape)
 size = int(np.prod(shape))
 sizeMB = int(np.prod(shape)) * 8 / 2 ** 20
 
-bstorage = ia.Storage(chunkshape, blockshape)
-
+bstorage = ia.Store(chunkshape, blockshape)
 
 def time_expr(expr, result):
     t = []

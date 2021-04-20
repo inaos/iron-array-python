@@ -34,7 +34,7 @@ for i, shape in enumerate(shapes):
     dtshape = ia.DTShape(shape, dtype)
     print("Using vector of length:", shape[0])
 
-    storage_in = ia.Storage(chunkshape, blockshape, "iarray_infile.iarray")
+    storage_in = ia.Store(chunkshape, blockshape, "iarray_infile.iarray")
     ia.arange(dtshape, storage=storage_in)
 
     t0 = time()

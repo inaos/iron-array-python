@@ -31,25 +31,25 @@ def test_matmul(
     dtype,
 ):
     if achunkshape is None:
-        astorage = ia.Storage(plainbuffer=True)
+        astore = ia.Store(plainbuffer=True)
     else:
-        astorage = ia.Storage(achunkshape, ablockshape)
-    a = ia.linspace(ashape, -10, 1, dtype=dtype, storage=astorage)
+        astore = ia.Store(achunkshape, ablockshape)
+    a = ia.linspace(ashape, -10, 1, dtype=dtype, store=astore)
     an = ia.iarray2numpy(a)
 
     if bchunkshape is None:
-        bstorage = ia.Storage(plainbuffer=True)
+        bstore = ia.Store(plainbuffer=True)
     else:
-        bstorage = ia.Storage(bchunkshape, bblockshape)
-    b = ia.linspace(bshape, -1, 10, dtype=dtype, storage=bstorage)
+        bstore = ia.Store(bchunkshape, bblockshape)
+    b = ia.linspace(bshape, -1, 10, dtype=dtype, store=bstore)
     bn = ia.iarray2numpy(b)
 
     if cchunkshape is None:
-        cstorage = ia.Storage(plainbuffer=True)
+        cstore = ia.Store(plainbuffer=True)
     else:
-        cstorage = ia.Storage(chunkshape=cchunkshape, blockshape=cblockshape)
+        cstore = ia.Store(chunkshape=cchunkshape, blockshape=cblockshape)
 
-    c = ia.matmul(a, b, storage=cstorage)
+    c = ia.matmul(a, b, store=cstore)
     cn_2 = ia.iarray2numpy(c)
 
     cn = np.matmul(an, bn)
@@ -203,10 +203,10 @@ def test_matmul_slice(
     dtype,
 ):
     if achunkshape is None:
-        astorage = ia.Storage(plainbuffer=True)
+        astore = ia.Store(plainbuffer=True)
     else:
-        astorage = ia.Storage(achunkshape, ablockshape)
-    a = ia.linspace(ashape, -1, -2, dtype=dtype, storage=astorage)
+        astore = ia.Store(achunkshape, ablockshape)
+    a = ia.linspace(ashape, -1, -2, dtype=dtype, store=astore)
     an = ia.iarray2numpy(a)
     aslices = tuple(slice(astart[i], astop[i]) for i in range(len(astart)))
     if len(astart) == 1:
@@ -214,10 +214,10 @@ def test_matmul_slice(
     asl = a[aslices]
 
     if bchunkshape is None:
-        bstorage = ia.Storage(plainbuffer=True)
+        bstore = ia.Store(plainbuffer=True)
     else:
-        bstorage = ia.Storage(bchunkshape, bblockshape)
-    b = ia.linspace(bshape, 1, 200, dtype=dtype, storage=bstorage)
+        bstore = ia.Store(bchunkshape, bblockshape)
+    b = ia.linspace(bshape, 1, 200, dtype=dtype, store=bstore)
     bn = ia.iarray2numpy(b)
     bslices = tuple(slice(bstart[i], bstop[i]) for i in range(len(bstart)))
     if len(bstart) == 1:
@@ -225,11 +225,11 @@ def test_matmul_slice(
     bsl = b[bslices]
 
     if cchunkshape is None:
-        cstorage = ia.Storage(plainbuffer=True)
+        cstore = ia.Store(plainbuffer=True)
     else:
-        cstorage = ia.Storage(chunkshape=cchunkshape, blockshape=cblockshape)
+        cstore = ia.Store(chunkshape=cchunkshape, blockshape=cblockshape)
 
-    c = ia.matmul(asl, bsl, storage=cstorage)
+    c = ia.matmul(asl, bsl, store=cstore)
     cn = np.matmul(an[aslices], bn[bslices])
 
     cn_2 = ia.iarray2numpy(c)

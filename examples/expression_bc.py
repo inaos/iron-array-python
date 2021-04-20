@@ -12,7 +12,7 @@ cshape = [200 * 1000]
 bshape = [20 * 1000]
 dtype = np.float64
 
-storage = ia.Storage(cshape, bshape)
+storage = ia.Store(cshape, bshape)
 dtshape = ia.DTShape(shape, dtype)
 
 # Create initial containers

@@ -21,12 +21,12 @@ import numpy as np
     ],
 )
 def test_rand(shape, chunkshape, blockshape, dtype, plainbuffer):
-    storage = ia.Storage(chunkshape, blockshape, plainbuffer=plainbuffer)
+    store = ia.Store(chunkshape, blockshape, plainbuffer=plainbuffer)
 
     size = int(np.prod(shape))
-    a = ia.irandom.random_sample(ia.DTShape(shape, dtype), storage=storage)
+    a = ia.irandom.random_sample(shape, store=store, dtype=dtype)
     b = np.random.rand(size).reshape(shape).astype(dtype)
-    c = ia.numpy2iarray(b, storage=storage)
+    c = ia.numpy2iarray(b, store=store)
 
     assert ia.irandom.kstest(a, c)
 
@@ -44,12 +44,12 @@ def test_rand(shape, chunkshape, blockshape, dtype, plainbuffer):
     ],
 )
 def test_randn(shape, chunkshape, blockshape, dtype, plainbuffer):
-    storage = ia.Storage(chunkshape, blockshape, plainbuffer=plainbuffer)
+    store = ia.Store(chunkshape, blockshape, plainbuffer=plainbuffer)
 
     size = int(np.prod(shape))
-    a = ia.irandom.standard_normal(ia.DTShape(shape, dtype), storage=storage)
+    a = ia.irandom.standard_normal(shape, store=store, dtype=dtype)
     b = np.random.standard_normal(size).reshape(shape).astype(dtype)
-    c = ia.numpy2iarray(b, storage=storage)
+    c = ia.numpy2iarray(b, store=store)
 
     assert ia.irandom.kstest(a, c)
 
@@ -67,12 +67,12 @@ def test_randn(shape, chunkshape, blockshape, dtype, plainbuffer):
     ],
 )
 def test_beta(alpha, beta, shape, chunkshape, blockshape, dtype, plainbuffer):
-    storage = ia.Storage(chunkshape, blockshape, plainbuffer=plainbuffer)
+    store = ia.Store(chunkshape, blockshape, plainbuffer=plainbuffer)
 
     size = int(np.prod(shape))
-    a = ia.irandom.beta(ia.DTShape(shape, dtype), alpha, beta, storage=storage)
+    a = ia.irandom.beta(shape, alpha, beta, store=store, dtype=dtype)
     b = np.random.beta(alpha, beta, size).reshape(shape).astype(dtype)
-    c = ia.numpy2iarray(b, storage=storage)
+    c = ia.numpy2iarray(b, store=store)
 
     assert ia.irandom.kstest(a, c)
 
@@ -90,12 +90,12 @@ def test_beta(alpha, beta, shape, chunkshape, blockshape, dtype, plainbuffer):
     ],
 )
 def test_lognormal(mu, sigma, shape, chunkshape, blockshape, dtype, plainbuffer):
-    storage = ia.Storage(chunkshape, blockshape, plainbuffer=plainbuffer)
+    store = ia.Store(chunkshape, blockshape, plainbuffer=plainbuffer)
 
     size = int(np.prod(shape))
-    a = ia.irandom.lognormal(ia.DTShape(shape, dtype), mu, sigma, storage=storage)
+    a = ia.irandom.lognormal(shape, mu, sigma, store=store, dtype=dtype)
     b = np.random.lognormal(mu, sigma, size).reshape(shape).astype(dtype)
-    c = ia.numpy2iarray(b, storage=storage)
+    c = ia.numpy2iarray(b, store=store)
 
     assert ia.irandom.kstest(a, c)
 
@@ -113,12 +113,12 @@ def test_lognormal(mu, sigma, shape, chunkshape, blockshape, dtype, plainbuffer)
     ],
 )
 def test_exponential(beta, shape, chunkshape, blockshape, dtype, plainbuffer):
-    storage = ia.Storage(chunkshape, blockshape, plainbuffer=plainbuffer)
+    store = ia.Store(chunkshape, blockshape, plainbuffer=plainbuffer)
 
     size = int(np.prod(shape))
-    a = ia.irandom.exponential(ia.DTShape(shape, dtype), beta, storage=storage)
+    a = ia.irandom.exponential(shape, beta, store=store, dtype=dtype)
     b = np.random.exponential(beta, size).reshape(shape).astype(dtype)
-    c = ia.numpy2iarray(b, storage=storage)
+    c = ia.numpy2iarray(b, store=store)
 
     assert ia.irandom.kstest(a, c)
 
@@ -136,12 +136,12 @@ def test_exponential(beta, shape, chunkshape, blockshape, dtype, plainbuffer):
     ],
 )
 def test_uniform(a_, b_, shape, chunkshape, blockshape, dtype, plainbuffer):
-    storage = ia.Storage(chunkshape, blockshape, plainbuffer=plainbuffer)
+    store = ia.Store(chunkshape, blockshape, plainbuffer=plainbuffer)
 
     size = int(np.prod(shape))
-    a = ia.irandom.uniform(ia.DTShape(shape, dtype), a_, b_, storage=storage)
+    a = ia.irandom.uniform(shape, a_, b_, store=store, dtype=dtype)
     b = np.random.uniform(a_, b_, size).reshape(shape).astype(dtype)
-    c = ia.numpy2iarray(b, storage=storage)
+    c = ia.numpy2iarray(b, store=store)
 
     assert ia.irandom.kstest(a, c)
 
@@ -159,12 +159,12 @@ def test_uniform(a_, b_, shape, chunkshape, blockshape, dtype, plainbuffer):
     ],
 )
 def test_normal(mu, sigma, shape, chunkshape, blockshape, dtype, plainbuffer):
-    storage = ia.Storage(chunkshape, blockshape, plainbuffer=plainbuffer)
+    store = ia.Store(chunkshape, blockshape, plainbuffer=plainbuffer)
 
     size = int(np.prod(shape))
-    a = ia.irandom.normal(ia.DTShape(shape, dtype), mu, sigma, storage=storage)
+    a = ia.irandom.normal(shape, mu, sigma, store=store, dtype=dtype)
     b = np.random.normal(mu, sigma, size).reshape(shape).astype(dtype)
-    c = ia.numpy2iarray(b, storage=storage)
+    c = ia.numpy2iarray(b, store=store)
 
     assert ia.irandom.kstest(a, c)
 
@@ -182,12 +182,12 @@ def test_normal(mu, sigma, shape, chunkshape, blockshape, dtype, plainbuffer):
     ],
 )
 def test_bernoulli(p, shape, chunkshape, blockshape, dtype, plainbuffer):
-    storage = ia.Storage(chunkshape, blockshape, plainbuffer=plainbuffer)
+    store = ia.Store(chunkshape, blockshape, plainbuffer=plainbuffer)
 
     size = int(np.prod(shape))
-    a = ia.irandom.bernoulli(ia.DTShape(shape, dtype), p, storage=storage)
+    a = ia.irandom.bernoulli(shape, p, store=store, dtype=dtype)
     b = np.random.binomial(1, p, size).reshape(shape).astype(dtype)
-    c = ia.numpy2iarray(b, storage=storage)
+    c = ia.numpy2iarray(b, store=store)
 
     assert ia.irandom.kstest(a, c)
 
@@ -205,14 +205,14 @@ def test_bernoulli(p, shape, chunkshape, blockshape, dtype, plainbuffer):
     ],
 )
 def test_binomial(n, p, shape, chunkshape, blockshape, dtype, plainbuffer):
-    storage = ia.Storage(chunkshape, blockshape, plainbuffer=plainbuffer)
+    store = ia.Store(chunkshape, blockshape, plainbuffer=plainbuffer)
 
     size = int(np.prod(shape))
     a = ia.irandom.binomial(
-        ia.DTShape(shape, dtype), n, p, storage=storage, random_gen=ia.RandomGen.MERSENNE_TWISTER
+        shape, n, p, store=store, random_gen=ia.RandomGen.MERSENNE_TWISTER, dtype=dtype
     )
     b = np.random.binomial(n, p, size).reshape(shape).astype(dtype)
-    c = ia.numpy2iarray(b, storage=storage)
+    c = ia.numpy2iarray(b, store=store)
 
     assert ia.irandom.kstest(a, c)
 
@@ -230,13 +230,11 @@ def test_binomial(n, p, shape, chunkshape, blockshape, dtype, plainbuffer):
     ],
 )
 def test_poisson(lamb, shape, chunkshape, blockshape, dtype, plainbuffer):
-    storage = ia.Storage(chunkshape, blockshape, plainbuffer=plainbuffer)
+    store = ia.Store(chunkshape, blockshape, plainbuffer=plainbuffer)
 
     size = int(np.prod(shape))
-    a = ia.irandom.poisson(
-        ia.DTShape(shape, dtype), lamb, storage=storage, random_gen=ia.RandomGen.SOBOL
-    )
+    a = ia.irandom.poisson(shape, lamb, store=store, random_gen=ia.RandomGen.SOBOL, dtype=dtype)
     b = np.random.poisson(lamb, size).reshape(shape).astype(dtype)
-    c = ia.numpy2iarray(b, storage=storage)
+    c = ia.numpy2iarray(b, store=store)
 
     assert ia.irandom.kstest(a, c)

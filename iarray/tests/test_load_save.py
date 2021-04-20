@@ -17,8 +17,8 @@ import numpy as np
 @pytest.mark.parametrize("func", [ia.load, ia.open])
 def test_load_save(shape, chunkshape, blockshape, dtype, func):
 
-    storage = ia.Storage(chunkshape, blockshape)
-    a = ia.linspace(shape, -10, 10, dtype=dtype, storage=storage)
+    store = ia.Store(chunkshape, blockshape)
+    a = ia.linspace(shape, -10, 10, dtype=dtype, store=store)
     an = ia.iarray2numpy(a)
 
     ia.save("test_load_save.iarray", a)

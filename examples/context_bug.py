@@ -5,10 +5,10 @@ chunkshape = ()
 blockshape = ()
 
 try:
-    storage = ia.Storage(chunkshape, blockshape)
+    storage = ia.Store(chunkshape, blockshape)
     dtshape = ia.DTShape(shape)
     with ia.config(dtshape=dtshape, storage=storage) as cfg:
-        storage2 = cfg.storage
+        storage2 = cfg.store
         if chunkshape is not None:
             assert storage2.chunkshape == chunkshape
             assert storage2.blockshape == blockshape
@@ -29,7 +29,7 @@ try:
         blockshape=blockshape,
         enforce_frame=True,
     ) as cfg:
-        storage2 = cfg.storage
+        storage2 = cfg.store
         if chunkshape is not None:
             assert storage2.chunkshape == chunkshape
             assert storage2.blockshape == blockshape

@@ -22,18 +22,17 @@ expr3 = "(x - 1.35) * (y - 4.45) * (z - 8.5)"
 
 # Define array params
 shape = [20_000_000]
-#chunkshape, blockshape = [2_000_000], [20_000]
-#chunkshape, blockshape = [2**24], [2**16]
-chunkshape, blockshape = None, None   # uncomment for automatic partitioning
+# chunkshape, blockshape = [2_000_000], [20_000]
+# chunkshape, blockshape = [2**24], [2**16]
+chunkshape, blockshape = None, None  # uncomment for automatic partitioning
 dtype = np.float64
 nthreads = 8
 dtshape = ia.DTShape(shape=shape, dtype=dtype)
 
 # Set global defaults
-ia.set_config(chunkshape=chunkshape, blockshape=blockshape,
-              favor=ia.Favors.SPEED)
+ia.set_config(chunkshape=chunkshape, blockshape=blockshape, favor=ia.Favors.SPEED)
 # Output required precision (in significant bits for the mantissa)
-#out_prec = 0
+# out_prec = 0
 out_prec = 30
 
 
@@ -64,7 +63,7 @@ if PROFILE:
     a1_fname = "a1.iarray"
     if not os.path.isfile(a1_fname):
         print(f"Creating {a1_fname}")
-        a1_storage = ia.Storage(urlpath=a1_fname)
+        a1_storage = ia.Store(urlpath=a1_fname)
         a1 = ia.linspace(dtshape, 0, 10, storage=a1_storage)
     else:
         print(f"Reading {a1_fname}")

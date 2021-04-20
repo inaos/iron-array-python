@@ -32,14 +32,14 @@ def cmp_udf_np(f, start_stop, shape, partitions, dtype, cparams, f_np=None):
 
     if partitions is not None:
         chunkshape, blockshape = partitions
-        storage = ia.Storage(chunkshape, blockshape)
+        store = ia.Store(chunkshape, blockshape)
     else:
-        storage = ia.Storage(plainbuffer=True)
-    dtshape = ia.DTShape(shape, dtype)
+        store = ia.Store(plainbuffer=True)
     inputs = [
-        ia.linspace(dtshape, start, stop, storage=storage, **cparams) for start, stop in start_stop
+        ia.linspace(shape, start, stop, store=store, dtype=dtype, **cparams)
+        for start, stop in start_stop
     ]
-    expr = ia.expr_from_udf(f, inputs, dtshape=dtshape, storage=storage, **cparams)
+    expr = ia.expr_from_udf(f, inputs, store=store, **cparams)
     out = expr.eval()
 
     num = functools.reduce(lambda x, y: x * y, shape)
@@ -67,13 +67,12 @@ def cmp_udf_np_strict(f, start, stop, shape, partitions, dtype, cparams):
     chunkshape, blockshape = partitions
     assert len(chunkshape) == 1
     assert len(blockshape) == 1
-    storage = ia.Storage(chunkshape, blockshape)
+    store = ia.Store(chunkshape, blockshape)
 
-    dtshape = ia.DTShape(shape, dtype)
-    x = ia.linspace(dtshape, start, stop, storage=storage, **cparams)
+    x = ia.linspace(shape, start, stop, store=store, dtype=dtype, **cparams)
     # Both functions should work, but we are encouraging ia.expr_from_udf()
-    # expr = f.create_expr([x], dtshape, storage=storage, **cparams)
-    expr = ia.expr_from_udf(f, [x], storage=storage, **cparams)
+    # expr = f.create_expr([x], dtshape, store=store, **cparams)
+    expr = ia.expr_from_udf(f, [x], store=store, **cparams)
 
     out = expr.eval()
 
@@ -142,12 +141,12 @@ def f_math(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
     for i in range(n):
         if x[i] > 0.0:
             out[i] = (
-                math.log(x[i]) +
-                math.log10(x[i]) +
-                math.sqrt(x[i]) +
-                math.floor(x[i]) +
-                math.ceil(x[i]) +
-                math.fabs(x[i])
+                math.log(x[i])
+                + math.log10(x[i])
+                + math.sqrt(x[i])
+                + math.floor(x[i])
+                + math.ceil(x[i])
+                + math.fabs(x[i])
             )
         else:
             out[i] = x[i]
@@ -155,7 +154,9 @@ def f_math(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
     return 0
 
 
-@pytest.mark.parametrize("f,dtype", [(f_1dim, np.float64), (f_1dim_f32, np.float32), (f_math, np.float64)])
+@pytest.mark.parametrize(
+    "f,dtype", [(f_1dim, np.float64), (f_1dim_f32, np.float32), (f_math, np.float64)]
+)
 def test_1dim_plain(f, dtype):
     shape = [10 * 1000]
     cparams = dict(clevel=5, nthreads=16)
@@ -327,10 +328,9 @@ def test_error(f):
     cparams = dict(nthreads=1)
     start, stop = 0, 10
 
-    storage = ia.Storage(chunkshape, blockshape)
-    dtshape = ia.DTShape(shape, dtype)
-    x = ia.linspace(dtshape, start, stop, storage=storage, **cparams)
-    expr = f.create_expr([x], storage=storage, **cparams)
+    store = ia.Store(chunkshape, blockshape)
+    x = ia.linspace(shape, start, stop, store=store, dtype=dtype, **cparams)
+    expr = f.create_expr([x], store=store, **cparams)
 
     try:
         expr.eval()

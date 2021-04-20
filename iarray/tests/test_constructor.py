@@ -16,11 +16,11 @@ import iarray as ia
 )
 def test_linspace(start, stop, shape, chunkshape, blockshape, dtype):
     if blockshape is None or chunkshape is None:
-        storage = ia.Storage(plainbuffer=True)
+        store = ia.Store(plainbuffer=True)
     else:
-        storage = ia.Storage(chunkshape, blockshape)
+        store = ia.Store(chunkshape, blockshape)
     size = int(np.prod(shape))
-    a = ia.linspace(shape, start, stop, dtype=dtype, storage=storage)
+    a = ia.linspace(shape, start, stop, dtype=dtype, store=store)
     b = ia.iarray2numpy(a)
     npdtype = np.float64 if dtype == np.float64 else np.float32
     c = np.linspace(start, stop, size, dtype=npdtype).reshape(shape)
@@ -39,12 +39,12 @@ def test_linspace(start, stop, shape, chunkshape, blockshape, dtype):
 )
 def test_arange(start, stop, shape, chunkshape, blockshape, dtype):
     if blockshape is None or chunkshape is None:
-        storage = ia.Storage(plainbuffer=True)
+        store = ia.Store(plainbuffer=True)
     else:
-        storage = ia.Storage(chunkshape, blockshape)
+        store = ia.Store(chunkshape, blockshape)
     size = int(np.prod(shape))
     step = (stop - start) / size
-    a = ia.arange(shape, start, stop, step, dtype=dtype, storage=storage)
+    a = ia.arange(shape, start, stop, step, dtype=dtype, store=store)
     b = ia.iarray2numpy(a)
     npdtype = np.float64 if dtype == np.float64 else np.float32
     c = np.arange(start, stop, step, dtype=npdtype).reshape(shape)
@@ -71,8 +71,8 @@ def test_from_file(start, stop, shape, chunkshape, blockshape, dtype, urlpath):
     size = int(np.prod(shape))
     npdtype = np.float64 if dtype == np.float64 else np.float32
     a = np.linspace(start, stop, size, dtype=npdtype).reshape(shape)
-    storage = ia.Storage(chunkshape, blockshape, urlpath, enforce_frame=True)
-    ia.numpy2iarray(a, storage=storage)
+    store = ia.Store(chunkshape, blockshape, urlpath, enforce_frame=True)
+    ia.numpy2iarray(a, store=store)
     c = ia.load(urlpath)
     d = ia.iarray2numpy(c)
     np.testing.assert_almost_equal(a, d)
@@ -99,12 +99,12 @@ def test_from_file(start, stop, shape, chunkshape, blockshape, dtype, urlpath):
 )
 def test_slice(start, stop, slice, shape, chunkshape, blockshape, dtype):
     if blockshape is None or chunkshape is None:
-        storage = ia.Storage(plainbuffer=True)
+        store = ia.Store(plainbuffer=True)
     else:
-        storage = ia.Storage(chunkshape, blockshape)
+        store = ia.Store(chunkshape, blockshape)
     size = int(np.prod(shape))
     step = (stop - start) / size
-    a = ia.arange(shape, start, stop, step, dtype=dtype, storage=storage)
+    a = ia.arange(shape, start, stop, step, dtype=dtype, store=store)
     b = a[slice]
     c = ia.iarray2numpy(b)
     npdtype = np.float64 if dtype == np.float64 else np.float32
@@ -122,10 +122,10 @@ def test_slice(start, stop, slice, shape, chunkshape, blockshape, dtype):
 )
 def test_empty(shape, chunkshape, blockshape, dtype):
     if blockshape is None or chunkshape is None:
-        storage = ia.Storage(plainbuffer=True)
+        store = ia.Store(plainbuffer=True)
     else:
-        storage = ia.Storage(chunkshape, blockshape)
-    with ia.config(storage=storage):
+        store = ia.Store(chunkshape, blockshape)
+    with ia.config(store=store):
         a = ia.empty(shape, dtype=dtype)
     b = ia.iarray2numpy(a)
     npdtype = np.float64 if dtype == np.float64 else np.float32
@@ -145,10 +145,10 @@ def test_empty(shape, chunkshape, blockshape, dtype):
 )
 def test_zeros(shape, chunkshape, blockshape, dtype):
     if blockshape is None or chunkshape is None:
-        storage = ia.Storage(plainbuffer=True)
+        store = ia.Store(plainbuffer=True)
     else:
-        storage = ia.Storage(chunkshape, blockshape)
-    a = ia.zeros(shape, dtype=dtype, storage=storage)
+        store = ia.Store(chunkshape, blockshape)
+    a = ia.zeros(shape, dtype=dtype, store=store)
     b = ia.iarray2numpy(a)
     npdtype = np.float64 if dtype == np.float64 else np.float32
     c = np.zeros(shape, dtype=npdtype)
@@ -167,10 +167,10 @@ def test_zeros(shape, chunkshape, blockshape, dtype):
 )
 def test_ones(shape, chunkshape, blockshape, dtype):
     if blockshape is None:
-        storage = ia.Storage(plainbuffer=True)
+        store = ia.Store(plainbuffer=True)
     else:
-        storage = ia.Storage(chunkshape, blockshape, enforce_frame=True)
-    a = ia.ones(shape, dtype=dtype, storage=storage)
+        store = ia.Store(chunkshape, blockshape, enforce_frame=True)
+    a = ia.ones(shape, dtype=dtype, store=store)
     b = ia.iarray2numpy(a)
     npdtype = np.float64 if dtype == np.float64 else np.float32
     c = np.ones(shape, dtype=npdtype)
@@ -189,10 +189,10 @@ def test_ones(shape, chunkshape, blockshape, dtype):
 )
 def test_full(fill_value, shape, chunkshape, blockshape, dtype):
     if blockshape is None:
-        storage = ia.Storage(plainbuffer=True)
+        store = ia.Store(plainbuffer=True)
     else:
-        storage = ia.Storage(chunkshape, blockshape)
-    a = ia.full(shape, fill_value, dtype=dtype, storage=storage)
+        store = ia.Store(chunkshape, blockshape)
+    a = ia.full(shape, fill_value, dtype=dtype, store=store)
     b = ia.iarray2numpy(a)
     npdtype = np.float64 if dtype == np.float64 else np.float32
     c = np.full(shape, fill_value, dtype=npdtype)

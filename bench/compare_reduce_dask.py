@@ -42,7 +42,7 @@ acompressor = Blosc(
 
 ia.set_config(codec=CODEC, clevel=CLEVEL, nthreads=NTHREADS)
 
-astorage = ia.Storage(achunkshape, ablockshape)
+astorage = ia.Store(achunkshape, ablockshape)
 dtshape = ia.DTShape(ashape, dtype=DTYPE)
 aia = ia.irandom.normal(dtshape, 0, 1, storage=astorage)
 print(f"iarray cratio: {aia.cratio}")

@@ -44,7 +44,7 @@ compressor = Blosc(
 )
 ia.set_config(codec=CODEC, clevel=CLEVEL, nthreads=NTHREADS)
 
-astorage = ia.Storage(achunkshape, ablockshape)
+astorage = ia.Store(achunkshape, ablockshape)
 dtshape = ia.DTShape(ashape, dtype=DTYPE)
 lia = ia.linspace(dtshape, 0, 1, storage=astorage)
 nia = ia.irandom.normal(
@@ -55,7 +55,7 @@ nia = ia.irandom.normal(
 )
 aia = (lia + nia).eval(storage=astorage)
 
-cstorage = ia.Storage(cchunkshape, cblockshape)
+cstorage = ia.Store(cchunkshape, cblockshape)
 
 def ia_transpose(aia):
     return aia.T.copy(storage=cstorage)

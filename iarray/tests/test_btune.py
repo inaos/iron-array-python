@@ -15,13 +15,13 @@ import iarray as ia
 def test_btune(start, stop, shape, chunkshape, blockshape, dtype):
 
     with ia.config(favor=ia.Favors.SPEED, btune=True):
-        storage = ia.Storage(chunkshape, blockshape)
-        a = ia.linspace(shape, start, stop, dtype=dtype, storage=storage)
+        store = ia.Store(chunkshape, blockshape)
+        a = ia.linspace(shape, start, stop, dtype=dtype, store=store)
         c1 = a.cratio
 
     with ia.config(favor=ia.Favors.CRATIO, btune=True):
-        storage = ia.Storage(chunkshape, blockshape)
-        a = ia.linspace(shape, start, stop, dtype=dtype, storage=storage)
+        store = ia.Store(chunkshape, blockshape)
+        a = ia.linspace(shape, start, stop, dtype=dtype, store=store)
         c2 = a.cratio
 
     assert c1 < c2

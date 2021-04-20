@@ -27,9 +27,9 @@ def poly_llvm(out: udf.Array(float64, 1), x: udf.Array(float64, 1)) -> int64:
 
 
 if plainbuffer:
-    storage = ia.Storage(plainbuffer=True)
+    storage = ia.Store(plainbuffer=True)
 else:
-    storage = ia.Storage(chunkshape, blockshape)
+    storage = ia.Store(chunkshape, blockshape)
 ia.set_config(codec=codec, clevel=clevel, nthreads=nthreads, storage=storage)
 
 print(f"plainbuffer: {storage.plainbuffer}, engine: {engine}")

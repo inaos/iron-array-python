@@ -33,7 +33,7 @@ for i, shape in enumerate(shapes):
     shape = (shape,)
     print("Using vector of length:", shape[0])
     dtshape = ia.DTShape(shape, dtype)
-    storage = ia.Storage(chunkshape, blockshape)
+    storage = ia.Store(chunkshape, blockshape)
     data = ia.linspace(dtshape, 0, 1, storage=storage)
 
     t0 = time()

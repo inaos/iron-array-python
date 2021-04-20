@@ -33,9 +33,9 @@ else:
 
 dtshape = ia.DTShape(shape, np.float64)
 
-astorage = ia.Storage(chunkshape, blockshape, urlpath=aurlpath)
-bstorage = ia.Storage(chunkshape, blockshape, urlpath=burlpath)
-cstorage = ia.Storage(chunkshape, blockshape, urlpath=curlpath)
+astorage = ia.Store(chunkshape, blockshape, urlpath=aurlpath)
+bstorage = ia.Store(chunkshape, blockshape, urlpath=burlpath)
+cstorage = ia.Store(chunkshape, blockshape, urlpath=curlpath)
 
 ia.set_config(codec=codec, clevel=clevel, nthreads=nthreads)
 cfg = ia.get_config()

@@ -19,8 +19,8 @@ params_data = [
 @pytest.mark.parametrize("urlpath", [None, "test_reduce.iarray"])
 def test_reduce(shape, chunkshape, blockshape, axis, dtype, rfunc, urlpath):
 
-    storage = ia.Storage(chunkshape, blockshape)
-    a1 = ia.linspace(shape, -1, 0, dtype=dtype, storage=storage)
+    store = ia.Store(chunkshape, blockshape)
+    a1 = ia.linspace(shape, -1, 0, dtype=dtype, store=store)
     a2 = a1.data
 
     b2 = getattr(np, rfunc)(a2, axis=axis)
