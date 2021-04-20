@@ -179,6 +179,7 @@ from .utils import (
 from . import irandom
 
 from .expression import (
+    Expr,
     expr_from_string,
     expr_from_udf,
 )

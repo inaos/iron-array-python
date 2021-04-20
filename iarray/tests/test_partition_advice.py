@@ -4,7 +4,7 @@ import numpy as np
 
 
 @pytest.mark.parametrize(
-    "shape, chunkshape, blockshape, dtype",
+    "shape, chunks, blocks, dtype",
     [
         ((1,), (1,), (1,), np.float32),
         ((1000 * 1000,), (256 * 1024,), (16 * 1024,), np.float32),
@@ -22,13 +22,13 @@ import numpy as np
         ((2, 3, 4, 5, 6, 7, 8, 9), (2, 2, 4, 4, 4, 4, 8, 8), (1, 1, 2, 2, 4, 4, 8, 8), np.float64),
     ],
 )
-def test_partition_advice(shape, chunkshape, blockshape, dtype):
+def test_partition_advice(shape, chunks, blocks, dtype):
     # We want to specify max for chunskize, blocksize explicitly, because L2/L3 size is CPU-dependent
 
     ia.set_config(dtype=dtype)
-    chunkshape_, blockshape_ = ia.partition_advice(
+    chunks_, blocks_ = ia.partition_advice(
         shape, max_chunksize=1024 * 1024, max_blocksize=64 * 1024
     )
 
-    assert chunkshape_ == chunkshape
-    assert blockshape_ == blockshape
+    assert chunks_ == chunks
+    assert blocks_ == blocks

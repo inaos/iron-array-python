@@ -43,9 +43,9 @@ cdef set_storage(storage, ciarray.iarray_storage_t *cstore):
         cstore.backend = ciarray.IARRAY_STORAGE_PLAINBUFFER
     else:
         cstore.backend = ciarray.IARRAY_STORAGE_BLOSC
-        for i in range(len(storage.chunkshape)):
-            cstore.chunkshape[i] = storage.chunkshape[i]
-            cstore.blockshape[i] = storage.blockshape[i]
+        for i in range(len(storage.chunks)):
+            cstore.chunkshape[i] = storage.chunks[i]
+            cstore.blockshape[i] = storage.blocks[i]
 
     if storage.urlpath is not None:
         urlpath = storage.urlpath.encode("utf-8") if isinstance(storage.urlpath, str) else storage.urlpath
@@ -66,7 +66,7 @@ cdef class ReadBlockIter:
         self.container = container
         cdef ciarray.int64_t block_[ciarray.IARRAY_DIMENSION_MAX]
         if block is None:
-            block = container.chunkshape
+            block = container.chunks
         for i in range(len(block)):
             block_[i] = block[i]
 
@@ -119,7 +119,7 @@ cdef class WriteBlockIter:
         cdef ciarray.int64_t block_[ciarray.IARRAY_DIMENSION_MAX]
         if block is None:
             # The block for iteration has always be provided
-            block = c.chunkshape
+            block = c.chunks
         for i in range(len(block)):
             block_[i] = block[i]
         iarray_check(ciarray.iarray_iter_write_block_new(self.container.context.ia_ctx,
@@ -327,24 +327,24 @@ cdef class Container:
             return False
 
     @property
-    def chunkshape(self):
+    def chunks(self):
         """Tuple of chunk dimensions."""
         cdef ciarray.iarray_storage_t storage
         iarray_check(ciarray.iarray_get_storage(self.context.ia_ctx, self.ia_container, &storage))
         if storage.backend == ciarray.IARRAY_STORAGE_PLAINBUFFER or self.is_view():
             return None
-        chunkshape = [storage.chunkshape[i] for i in range(self.ndim)]
-        return tuple(chunkshape)
+        chunks = [storage.chunkshape[i] for i in range(self.ndim)]
+        return tuple(chunks)
 
     @property
-    def blockshape(self):
+    def blocks(self):
         """Tuple of block dimensions."""
         cdef ciarray.iarray_storage_t storage
         iarray_check(ciarray.iarray_get_storage(self.context.ia_ctx, self.ia_container, &storage))
         if storage.backend == ciarray.IARRAY_STORAGE_PLAINBUFFER or self.is_view():
             return None
-        blockshape = [storage.blockshape[i] for i in range(self.ndim)]
-        return tuple(blockshape)
+        blocks = [storage.blockshape[i] for i in range(self.ndim)]
+        return tuple(blocks)
 
     @property
     def dtype(self):
@@ -1090,9 +1090,9 @@ def partition_advice(dtshape, min_chunksize, max_chunksize, min_blocksize, max_b
         return None, None
 
     # Extract the shapes and return them as tuples
-    chunkshape = tuple(store.chunkshape[i] for i in range(len(dtshape.shape)))
-    blockshape = tuple(store.blockshape[i] for i in range(len(dtshape.shape)))
-    return chunkshape, blockshape
+    chunks = tuple(store.chunkshape[i] for i in range(len(dtshape.shape)))
+    blocks = tuple(store.blockshape[i] for i in range(len(dtshape.shape)))
+    return chunks, blocks
 
 #
 # TODO: the next functions are just for benchmarking purposes and should be moved to its own extension

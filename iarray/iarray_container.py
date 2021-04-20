@@ -45,8 +45,8 @@ class IArray(ext.Container):
         return f"""
 {'type':{padding}}: {self.__class__.__name__}
 {'shape':{padding}}: {self.shape}
-{'chunkshape':{padding}}: {self.chunkshape}
-{'blockshape':{padding}}: {self.blockshape}
+{'chunks':{padding}}: {self.chunks}
+{'blocks':{padding}}: {self.blocks}
 {'cratio':{padding}}: {self.cratio:.2f}
 """
 
@@ -103,18 +103,18 @@ class IArray(ext.Container):
 
     def iter_read_block(self, iterblock: tuple = None):
         if iterblock is None:
-            if self.chunkshape is not None:
-                iterblock = self.chunkshape
+            if self.chunks is not None:
+                iterblock = self.chunks
             else:
-                iterblock, _ = ia.partition_advice(self.dtshape)
+                iterblock, _ = ia.partition_advice(self.shape)
         return ext.ReadBlockIter(self, iterblock)
 
     def iter_write_block(self, iterblock=None):
         if iterblock is None:
-            if self.chunkshape:
-                iterblock = self.chunkshape
+            if self.chunks:
+                iterblock = self.chunks
             else:
-                iterblock, _ = ia.partition_advice(self.dtshape)
+                iterblock, _ = ia.partition_advice(self.shape)
         return ext.WriteBlockIter(self, iterblock)
 
     def __getitem__(self, key):

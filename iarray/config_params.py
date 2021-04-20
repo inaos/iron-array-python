@@ -70,7 +70,7 @@ def partition_advice(
     Returns
     -------
     tuple
-        If success, a (chunkshape, blockshape) containing the advice is returned.
+        If success, a (chunks, blocks) containing the advice is returned.
         In case of error, a (None, None) is returned and a warning is issued.
     """
     if cfg is None:
@@ -79,16 +79,16 @@ def partition_advice(
     dtshape = ia.DTShape(shape, cfg.dtype)
     if dtshape.shape == ():
         return (), ()
-    chunkshape, blockshape = ext.partition_advice(
+    chunks, blocks = ext.partition_advice(
         dtshape, min_chunksize, max_chunksize, min_blocksize, max_blocksize, cfg
     )
-    if chunkshape is None:
+    if chunks is None:
         warnings.warn(
             "Error in providing partition advice (please report this)."
-            "  Please do not trust on the chunkshape and blockshape in `storage`!",
+            "  Please do not trust on the chunks and blocks in `storage`!",
             UserWarning,
         )
-    return chunkshape, blockshape
+    return chunks, blocks
 
 
 @dataclass
@@ -110,8 +110,8 @@ class DefaultConfig:
 
 @dataclass
 class DefaultStore:
-    chunkshape: Any
-    blockshape: Any
+    chunks: Any
+    blocks: Any
     urlpath: Any
     enforce_frame: Any
     plainbuffer: Any
@@ -141,8 +141,8 @@ class Defaults(object):
 
     # Store
     _store = None
-    chunkshape: Sequence = None
-    blockshape: Sequence = None
+    chunks: Sequence = None
+    blocks: Sequence = None
     urlpath: str = None
     enforce_frame: bool = False
     plainbuffer: bool = False
@@ -230,11 +230,11 @@ class Defaults(object):
         if self._store is not None:
             self.set_store(self._store)
 
-    def _chunkshape(self):
-        return self.chunkshape
+    def _chunks(self):
+        return self.chunks
 
-    def _blockshape(self):
-        return self.blockshape
+    def _blocks(self):
+        return self.blocks
 
     def _urlpath(self):
         return self.urlpath
@@ -250,8 +250,8 @@ class Defaults(object):
         if self._store is None:
             # Bootstrap the defaults
             return DefaultStore(
-                chunkshape=self.chunkshape,
-                blockshape=self.blockshape,
+                chunks=self.chunks,
+                blocks=self.blocks,
                 urlpath=self.urlpath,
                 enforce_frame=self.enforce_frame,
                 plainbuffer=self.plainbuffer,
@@ -259,10 +259,10 @@ class Defaults(object):
         return self._store
 
     def set_store(self, value):
-        if not hasattr(value, "chunkshape"):
+        if not hasattr(value, "chunks"):
             raise ValueError(f"You need to use a `Store` instance")
-        self.chunkshape = value.chunkshape
-        self.blockshape = value.blockshape
+        self.chunks = value.chunks
+        self.blocks = value.blocks
         self.urlpath = value.urlpath
         self.enforce_frame = value.enforce_frame
         self.plainbuffer = value.plainbuffer
@@ -293,12 +293,12 @@ class Store:
 
     Parameters
     ----------
-    chunkshape : list, tuple
-        The chunkshape for the output array.  If None (the default), a sensible default
+    chunks : list, tuple
+        The chunks for the output array.  If None (the default), a sensible default
         will be used based on the shape of the array and the size of caches in the current
         processor.
-    blockshape : list, tuple
-        The blockshape for the output array.  If None (the default), a sensible default
+    blocks : list, tuple
+        The blocks for the output array.  If None (the default), a sensible default
         will be used based on the shape of the array and the size of caches in the current
         processor.
     urlpath : str
@@ -316,8 +316,8 @@ class Store:
         container, which can be compressed (the default).
     """
 
-    chunkshape: Union[Sequence, None] = field(default_factory=defaults._chunkshape)
-    blockshape: Union[Sequence, None] = field(default_factory=defaults._blockshape)
+    chunks: Union[Sequence, None] = field(default_factory=defaults._chunks)
+    blocks: Union[Sequence, None] = field(default_factory=defaults._blocks)
     urlpath: bytes or str = field(default_factory=defaults._urlpath)
     enforce_frame: bool = field(default_factory=defaults._enforce_frame)
     plainbuffer: bool = field(default_factory=defaults._plainbuffer)
@@ -328,26 +328,22 @@ class Store:
         )
         self.enforce_frame = True if self.urlpath else self.enforce_frame
         if self.plainbuffer:
-            if self.chunkshape is not None or self.blockshape is not None:
-                raise ValueError(
-                    "plainbuffer array does not support neither a chunkshape nor blockshape"
-                )
+            if self.chunks is not None or self.blocks is not None:
+                raise ValueError("plainbuffer array does not support neither a chunks nor blocks")
 
     def _get_shape_advice(self, shape, cfg=None):
         if self.plainbuffer:
             return
-        chunkshape, blockshape = self.chunkshape, self.blockshape
-        if chunkshape is not None and blockshape is not None:
+        chunks, blocks = self.chunks, self.blocks
+        if chunks is not None and blocks is not None:
             return
-        if chunkshape is None and blockshape is None:
-            chunkshape_, blockshape_ = partition_advice(shape, cfg=cfg)
-            self.chunkshape = chunkshape_
-            self.blockshape = blockshape_
+        if chunks is None and blocks is None:
+            chunks_, blocks_ = partition_advice(shape, cfg=cfg)
+            self.chunks = chunks_
+            self.blocks = blocks_
             return
         else:
-            raise ValueError(
-                "You can either specify both chunkshape and blockshape or none of them."
-            )
+            raise ValueError("You can either specify both chunks and blocks or none of them.")
 
 
 @dataclass
@@ -421,8 +417,8 @@ class Config(ext.Config):
     store: Store = None  # delayed initialization
 
     # These belong to Store, but we accept them in top level too
-    chunkshape: Union[Sequence, None] = field(default_factory=defaults._chunkshape)
-    blockshape: Union[Sequence, None] = field(default_factory=defaults._blockshape)
+    chunks: Union[Sequence, None] = field(default_factory=defaults._chunks)
+    blocks: Union[Sequence, None] = field(default_factory=defaults._blocks)
     urlpath: bytes or str = field(default_factory=defaults._urlpath)
     enforce_frame: bool = field(default_factory=defaults._enforce_frame)
     plainbuffer: bool = field(default_factory=defaults._plainbuffer)
@@ -438,8 +434,8 @@ class Config(ext.Config):
             self.seed = RANDOM_SEED
         if self.store is None:
             self.store = Store(
-                chunkshape=self.chunkshape,
-                blockshape=self.blockshape,
+                chunks=self.chunks,
+                blocks=self.blocks,
                 urlpath=self.urlpath,
                 enforce_frame=self.enforce_frame,
                 plainbuffer=self.plainbuffer,
@@ -502,7 +498,7 @@ def set_config(cfg: Config = None, shape=None, **kwargs):
     shape : Sequence
         This is not part of the global configuration as such, but if passed,
         it will be used so as to compute sensible defaults for store properties
-        like chunkshape and blockshape.  This is mainly meant for internal use.
+        like chunks and blocks.  This is mainly meant for internal use.
     kwargs : dict
         A dictionary for setting some or all of the fields in the ia.Config
         dataclass that should override the current configuration.

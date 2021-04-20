@@ -6,7 +6,7 @@ import numpy as np
 
 # Expression
 @pytest.mark.parametrize(
-    "method, shape, chunkshape, blockshape, dtype, expression",
+    "method, shape, chunks, blocks, dtype, expression",
     [
         (
             ia.Eval.ITERBLOSC,
@@ -111,12 +111,12 @@ import numpy as np
         ),
     ],
 )
-def test_expression(method, shape, chunkshape, blockshape, dtype, expression):
+def test_expression(method, shape, chunks, blocks, dtype, expression):
     # The ranges below are important for not overflowing operations
-    if chunkshape is None:
+    if chunks is None:
         store = ia.Store(plainbuffer=True)
     else:
-        store = ia.Store(chunkshape=chunkshape, blockshape=blockshape)
+        store = ia.Store(chunks=chunks, blocks=blocks)
 
     x = ia.linspace(shape, 0.1, 0.2, dtype=dtype, store=store)
     y = ia.linspace(shape, 0, 1, dtype=dtype, store=store)
@@ -180,10 +180,10 @@ def test_expression(method, shape, chunkshape, blockshape, dtype, expression):
 )
 def test_ufuncs(ufunc, ia_expr):
     shape = [200, 300]
-    chunkshape = [40, 40]
+    chunks = [40, 40]
     bshape = [10, 17]
 
-    store = ia.Store(chunkshape=chunkshape, blockshape=bshape)
+    store = ia.Store(chunks=chunks, blocks=bshape)
 
     for dtype in np.float64, np.float32:
         # The ranges below are important for not overflowing operations
@@ -250,7 +250,7 @@ def test_expr_ufuncs(ufunc):
     shape = [200, 300]
     cshape = [40, 50]
     bshape = [20, 20]
-    store = ia.Store(chunkshape=cshape, blockshape=bshape)
+    store = ia.Store(chunks=cshape, blocks=bshape)
 
     for dtype in np.float64, np.float32:
         # The ranges below are important for not overflowing operations
@@ -307,9 +307,9 @@ def test_expr_ufuncs(ufunc):
 )
 def test_expr_fusion(expr, np_expr):
     shape = [200, 300]
-    chunkshape = [40, 50]
+    chunks = [40, 50]
     bshape = [20, 20]
-    store = ia.Store(chunkshape=chunkshape, blockshape=bshape)
+    store = ia.Store(chunks=chunks, blocks=bshape)
 
     for dtype in np.float64, np.float32:
         # The ranges below are important for not overflowing operations

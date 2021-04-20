@@ -41,10 +41,10 @@ t = time() - t0
 print("open time ->", round(t, 3))
 
 print("2 -->", precip1.info)
-chunkshape = precip1.chunkshape
-blockshape = precip1.blockshape
+chunkshape = precip1.chunks
+blockshape = precip1.blocks
 
-storage = ia.Store(chunkshape=precip1.chunkshape, blockshape=precip1.blockshape)
+storage = ia.Store(chunkshape=precip1.chunks, blockshape=precip1.blocks)
 # cfg = ia.Config(nthreads=14, storage=storage, clevel=1, codec=ia.Codecs.ZSTD, filters=[ia.Filters.BITSHUFFLE])
 cfg = ia.Config(storage=storage)
 

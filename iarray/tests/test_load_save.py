@@ -6,7 +6,7 @@ import numpy as np
 # Test load, open and save
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
 @pytest.mark.parametrize(
-    "shape, chunkshape, blockshape",
+    "shape, chunks, blocks",
     [
         ([123], [44], [20]),
         ([100, 123], [12, 21], [10, 10]),
@@ -15,9 +15,9 @@ import numpy as np
     ],
 )
 @pytest.mark.parametrize("func", [ia.load, ia.open])
-def test_load_save(shape, chunkshape, blockshape, dtype, func):
+def test_load_save(shape, chunks, blocks, dtype, func):
 
-    store = ia.Store(chunkshape, blockshape)
+    store = ia.Store(chunks, blocks)
     a = ia.linspace(shape, -10, 10, dtype=dtype, store=store)
     an = ia.iarray2numpy(a)
 

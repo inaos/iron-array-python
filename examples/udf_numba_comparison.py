@@ -17,14 +17,13 @@ str_expr = "sin(x) * arctan(x)"
 
 # Define array params
 shape = [10_000_000]
-dtshape = ia.DTShape(shape)
 nthreads = 8
 clevel = 9
 nrep = 5
 ia.set_config(nthreads=nthreads, clevel=clevel)
 
 # Create the iarray object
-a1 = ia.linspace(dtshape, 0, 10)
+a1 = ia.linspace(shape, 0, 10)
 np_a1 = np.linspace(0, 10, shape[0])
 
 

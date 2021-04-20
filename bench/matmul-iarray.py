@@ -46,11 +46,7 @@ if persistent:
         aia = ia.linspace(dtshape, -1, 1, storage=astorage)
     else:
         aia = ia.open("a.iarray")
-        if (
-            aia.dtshape.shape != shape
-            or aia.chunkshape != chunkshape
-            or aia.blockshape != blockshape
-        ):
+        if aia.dtshape.shape != shape or aia.chunks != chunkshape or aia.blocks != blockshape:
             # Ooops, we cannot use the array on-disk.  Regenerate it.
             os.remove(aurlpath)
             aia = ia.linspace(dtshape, -1, 1, storage=astorage)
@@ -63,11 +59,7 @@ if persistent:
         bia = ia.linspace(dtshape, -1, 1, storage=bstorage)
     else:
         bia = ia.open("b.iarray")
-        if (
-            bia.dtshape.shape != shape
-            or bia.chunkshape != chunkshape
-            or bia.blockshape != blockshape
-        ):
+        if bia.dtshape.shape != shape or bia.chunks != chunkshape or bia.blocks != blockshape:
             # Ooops, we cannot use the array on-disk.  Regenerate it.
             os.remove(burlpath)
             bia = ia.linspace(dtshape, -1, 1, storage=bstorage)

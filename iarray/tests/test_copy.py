@@ -5,7 +5,7 @@ import os
 
 
 @pytest.mark.parametrize(
-    "shape, chunkshape, blockshape",
+    "shape, chunks, blocks",
     [
         ([100, 100], [50, 50], [20, 20]),
         ([20, 100, 30, 50], [10, 40, 10, 11], [4, 5, 3, 7]),
@@ -22,7 +22,7 @@ import os
         (False, True, "test_copy.iarr", "test_copy2.iarr"),
     ],
 )
-def test_copy(shape, chunkshape, blockshape, dtype, plainbuffer, sequential, urlpath, urlpath2):
+def test_copy(shape, chunks, blocks, dtype, plainbuffer, sequential, urlpath, urlpath2):
     if urlpath and os.path.exists(urlpath):
         os.remove(urlpath)
     if urlpath2 and os.path.exists(urlpath2):
@@ -31,7 +31,7 @@ def test_copy(shape, chunkshape, blockshape, dtype, plainbuffer, sequential, url
     if plainbuffer:
         store = ia.Store(plainbuffer=True)
     else:
-        store = ia.Store(chunkshape, blockshape, enforce_frame=sequential, urlpath=urlpath)
+        store = ia.Store(chunks, blocks, enforce_frame=sequential, urlpath=urlpath)
     a_ = ia.linspace(shape, -10, 10, dtype=dtype, store=store)
     sl = tuple([slice(0, s - 1) for s in shape])
     a = a_[sl]

@@ -8,8 +8,10 @@ ashape, astart, astop = [100, 100], [20, 40], [70, 90]
 bshape, bstart, bstop = [100, 100], [10, 20], [60, 70]
 dtype = np.float64
 
+ia.set_config(dtype=dtype)
+
 asize = int(np.prod(ashape))
-a = ia.linspace(ia.DTShape(ashape, dtype), -10, 10)
+a = ia.linspace(ashape, -10, 10)
 
 an = ia.iarray2numpy(a)
 aslices = tuple(slice(astart[i], astop[i]) for i in range(len(astart)))
@@ -19,7 +21,7 @@ asl = a[aslices]
 print(ia.iarray2numpy(asl))
 
 bsize = int(np.prod(bshape))
-b = ia.linspace(ia.DTShape(bshape, dtype), -10, 10)
+b = ia.linspace(bshape, -10, 10)
 bn = ia.iarray2numpy(b)
 bslices = tuple(slice(bstart[i], bstop[i]) for i in range(len(bstart)))
 if len(bstart) == 1:

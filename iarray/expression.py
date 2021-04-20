@@ -26,11 +26,12 @@ class Expr(ext.Expression):
     expr_from_udf
     """
 
-    def __init__(self, dtshape, cfg=None, **kwargs):
+    def __init__(self, shape, cfg=None, **kwargs):
         if cfg is None:
             cfg = ia.get_config()
 
-        with ia.config(cfg=cfg, shape=dtshape.shape, **kwargs) as cfg:
+        with ia.config(cfg=cfg, shape=shape, **kwargs) as cfg:
+            dtshape = ia.DTShape(shape, cfg.dtype)
             self.cfg = cfg
             super().__init__(self.cfg)
             super().bind_out_properties(dtshape, cfg.store)
@@ -53,7 +54,7 @@ def check_inputs(inputs: list):
             raise ValueError("Inputs should have the same shape")
         if first_input.dtype != input_.dtype:
             raise TypeError("Inputs should have the same dtype")
-    return ia.DTShape(first_input.shape, first_input.dtype)
+    return first_input.shape, first_input.dtype
 
 
 def expr_from_string(sexpr: str, inputs: dict, cfg: ia.Config = None, **kwargs) -> Expr:
@@ -77,8 +78,9 @@ def expr_from_string(sexpr: str, inputs: dict, cfg: ia.Config = None, **kwargs) 
     Expr
         An expression ready to be evaluated via :func:`Expr.eval`.
     """
-    dtshape = check_inputs(list(inputs.values()))
-    expr = Expr(dtshape=dtshape, cfg=cfg, **kwargs)
+    shape, dtype = check_inputs(list(inputs.values()))
+    kwargs["dtype"] = dtype
+    expr = Expr(shape=shape, cfg=cfg, **kwargs)
     for i in inputs:
         expr.bind(i, inputs[i])
     expr.compile(sexpr)
@@ -107,10 +109,9 @@ def expr_from_udf(udf: py2llvm.Function, inputs: list, cfg=None, dtshape=None, *
     Expr
         An expression ready to be evaluated via :func:`Expr.eval`.
     """
-    if dtshape is None:
-        dtshape = check_inputs(inputs)
-
-    expr = Expr(dtshape=dtshape, cfg=cfg, **kwargs)
+    shape, dtype = check_inputs(inputs)
+    kwargs["dtype"] = dtype
+    expr = Expr(shape=shape, cfg=cfg, **kwargs)
     for i in inputs:
         expr.bind("", i)
     expr.compile_udf(udf)

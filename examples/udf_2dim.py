@@ -17,10 +17,10 @@ NITER = 5
 # Define array params
 shape = [1000, 10_000]
 dtype = np.float64
-dtshape = ia.DTShape(shape, dtype)
 
 # Let's favor speed during computations
-ia.set_config(favor=ia.Favors.SPEED)
+ia.set_config(favor=ia.Favors.SPEED, dtype=dtype)
+
 
 @jit(verbose=0)
 def f(out: Array(float64, 2), x: Array(float64, 2)) -> int64:
@@ -34,7 +34,7 @@ def f(out: Array(float64, 2), x: Array(float64, 2)) -> int64:
 
 
 # Create input arrays
-ia_in = ia.arange(dtshape, 0, np.prod(shape), 1)
+ia_in = ia.arange(shape, 0, np.prod(shape), 1)
 np_in = np.arange(0, reduce(lambda x, y: x * y, shape), 1, dtype=dtype).reshape(shape)
 ia.cmp_arrays(np_in, ia_in)
 

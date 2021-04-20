@@ -11,7 +11,7 @@ a = np.arange(size, dtype=np.float64).reshape(shape)
 
 print(f"Creating {urlpath}")
 store = ia.Store(urlpath=urlpath)
-b = ia.numpy2iarray(a, storage=store)
+b = ia.numpy2iarray(a, store=store)
 
 print(f"Reading {urlpath}")
 c = ia.open(urlpath)

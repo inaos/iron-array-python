@@ -9,13 +9,12 @@ import numexpr as ne
 # Define array params
 dtype = np.float64
 shape = [10000, 8000]
-cshape = [1000, 800]
-bshape = [100, 100]
-ia.set_config(chunkshape=cshape, blockshape=bshape)
-dtshape = ia.DTShape(shape, dtype)
+chunks = [1000, 800]
+blocks = [100, 100]
+ia.set_config(chunks=chunks, blocks=blocks, dtype=dtype)
 
 # Create initial arrays
-ia1 = ia.linspace(dtshape, 0, 10)
+ia1 = ia.linspace(shape, 0, 10)
 np1 = ia.iarray2numpy(ia1)
 
 t0 = time()
@@ -38,7 +37,7 @@ np3 = ia.iarray2numpy(ia2)
 ia.cmp_arrays(np3, np2, "OK.  Results are the same.")
 
 t0 = time()
-ia3 = ia.cos(ia1).eval()
+ia3 = ia.cos(ia1).eval(favor=ia.Favors.SPEED)
 t1 = time()
 print("Time for iarray via lazy evaluation: %.3f (cratio: %.2fx)" % ((t1 - t0), ia3.cratio))
 

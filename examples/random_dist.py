@@ -6,19 +6,18 @@ import numpy as np
 size = 10000
 shape = [size]
 
-dtshape = ia.DTShape(shape, dtype=np.float32)
-a1 = ia.irandom.uniform(dtshape, 0, 1)
+a1 = ia.irandom.uniform(shape, 0, 1)
 a2 = ia.iarray2numpy(a1)
 print(a2[:10])
 
-a1 = ia.irandom.uniform(dtshape, 0, 1)
+a1 = ia.irandom.uniform(shape, 0, 1)
 a2 = ia.iarray2numpy(a1)
 print(a2[:10])
 
 b1 = np.random.uniform(0, 1, size).astype(np.float32)
 
-storage = ia.Store(urlpath="random_dist.iarray")
-b2 = ia.numpy2iarray(b1, storage=storage)
+store = ia.Store(urlpath="random_dist.iarray")
+b2 = ia.numpy2iarray(b1, store=store)
 
 # Check that distributions are equal
 print(ia.irandom.kstest(a1, b2))

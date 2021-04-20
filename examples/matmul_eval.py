@@ -10,15 +10,14 @@ mkl_set_num_threads = mkl_rt.MKL_Set_Num_Threads
 mkl_get_max_threads = mkl_rt.MKL_Get_Max_Threads
 
 nthreads = 8
+dtype = np.float64
+shape = [2000, 2000]
+ia.set_config(nthreads=nthreads, dtype=dtype)
 
-dtshape_a = ia.DTShape([2000, 2000], np.float64)
-dtshape_b = ia.DTShape([2000, 2000], np.float64)
-ia.set_config(nthreads=nthreads)
-
-a = ia.arange(dtshape_a)
+a = ia.arange(shape)
 an = ia.iarray2numpy(a)
 
-b = ia.arange(dtshape_b)
+b = ia.arange(shape)
 bn = ia.iarray2numpy(b)
 
 nrep = 10

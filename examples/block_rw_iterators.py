@@ -10,10 +10,9 @@ from itertools import zip_longest
 # Create an empty container for filling it with another one
 # Note how dtypes can be different.
 shape = (10, 100)
-dtshape1 = ia.DTShape(shape=shape, dtype=np.float64)
-dtshape2 = ia.DTShape(shape=shape, dtype=np.float32)
-c1 = ia.arange(dtshape1)
-c2 = ia.empty(dtshape2, plainbuffer=True)
+
+c1 = ia.arange(shape, dtype=np.float64)
+c2 = ia.empty(shape, dtype=np.float32, plainbuffer=True)
 
 for i, ((_, p1), (_, p2)) in enumerate(zip_longest(c1.iter_read_block(), c2.iter_write_block())):
     p2[:] = p1
