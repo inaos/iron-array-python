@@ -7,12 +7,16 @@ try:
 except ImportError:
     np = None
 
-try:
-    from numba.core.cgutils import printf
-except ImportError:
-
-    def printf(builder, fmt, *args):
-        pass
+DEBUG = False
+# Debugging with numba's printf requires numba installed, but
+# it might happen that numba issues some warnings during the
+# importing process, and we don't want that for regular users
+if DEBUG:
+    try:
+        from numba.core.cgutils import printf
+    except ImportError:
+        def printf(builder, fmt, *args):
+            pass
 
 
 #
@@ -196,7 +200,8 @@ class ArrayType(ComplexType):
             idx = slice[dim]
             idx = value_to_ir_value(builder, idx)
             offset = builder.mul(idx, stride)
-            # printf(builder, "%d * %d = %d\n", idx, stride, offset)
+            if DEBUG:
+                printf(builder, "%d * %d = %d\n", idx, stride, offset)
             ptr = builder.gep(ptr, [offset])
 
         # Return the value
