@@ -31,7 +31,7 @@ t_ratio = []
 
 for i, shape in enumerate(shapes):
     shape = (shape,)
-    print(shape)
+    print("Using vector of length:", shape[0])
     dtshape = ia.DTShape(shape, dtype)
     storage = ia.Storage(chunkshape, blockshape)
     data = ia.linspace(dtshape, 0, 1, storage=storage)

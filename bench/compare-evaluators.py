@@ -1,7 +1,9 @@
 # Comparison of different array evaluators (numpy, numexpr, numba, iarray...)
+# It looks like you need to set envvar KMP_DUPLICATE_LIB_OK=TRUE manually in order to run this.
 
 from itertools import zip_longest
 from time import time
+import os
 
 import numba as nb
 import numexpr as ne
@@ -11,12 +13,16 @@ import iarray as ia
 from iarray import udf
 from iarray.udf import float64, int64
 
+# Numba uses OpemMP, and this collides with the libraries in ironArray.
+# Using the next envvar seems to fix the issue (bar a small printed info line).
+os.environ['KMP_DUPLICATE_LIB_OK'] = "TRUE"
+
 
 # Number of iterations per benchmark
 NITER = 10
 
 # Vector sizes and chunking
-shape = [20 * 1000 * 1000]
+shape = [2 * 1000 * 1000]
 N = int(np.prod(shape))
 chunkshape, blockshape = None, None  # use automatic partition advice
 # chunkshape, blockshape = [400 * 1000], [16 * 1000]  # user-defined partitions

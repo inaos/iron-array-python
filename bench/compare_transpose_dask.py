@@ -1,3 +1,5 @@
+# This executes
+
 from time import time
 from functools import reduce
 import ctypes
@@ -55,9 +57,8 @@ aia = (lia + nia).eval(storage=astorage)
 
 cstorage = ia.Storage(cchunkshape, cblockshape)
 
-
 def ia_transpose(aia):
-    return aia.T.copy(cstorage)
+    return aia.T.copy(storage=cstorage)
 
 
 mkl_set_num_threads(1)

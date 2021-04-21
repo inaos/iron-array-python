@@ -1,3 +1,5 @@
+# Compare reduction performance against dask-zarr
+
 from time import time
 from functools import reduce
 import dask
@@ -42,7 +44,8 @@ acompressor = Blosc(
     blocksize=reduce(lambda x, y: x * y, ablockshape) * 8,
 )
 
-ia.set_config(codec=CODEC, clevel=CLEVEL, nthreads=NTHREADS, fp_mantissa_bits=20)
+ia.set_config(codec=CODEC, clevel=CLEVEL, nthreads=NTHREADS)
+print("iA config: ", ia.get_config())
 
 if os.path.exists("iarray_reduce.iarray"):
     aia = ia.open("iarray_reduce.iarray")
@@ -75,13 +78,17 @@ if not os.path.exists("zarr_reduce.zarr"):
 else:
     azarr = zarr.open("zarr_reduce.zarr", "r")
 
-
 np.testing.assert_equal(ashape, azarr.shape)
 print(f"zarr cratio: {azarr.nbytes / azarr.nbytes_stored}")
 
-
-ia.set_config(fp_mantissa_bits=0)
 scheduler = "single-threaded" if NTHREADS == 1 else "threads"
+
+MEMPROF = True
+if MEMPROF:
+    from memory_profiler import profile
+else:
+    def profile(f):
+        return f
 
 
 @profile

@@ -21,7 +21,6 @@ MEMPROF = True
 if MEMPROF:
     from memory_profiler import profile
 else:
-
     def profile(f):
         return f
 

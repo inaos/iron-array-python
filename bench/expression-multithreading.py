@@ -1,14 +1,15 @@
 import iarray as ia
 import numpy as np
 from time import time
-import ctypes
 import numexpr as ne
 from iarray import udf
 from iarray.py2llvm import float64
 import numba as nb
+import os
 
-# omp = ctypes.CDLL('libiomp5.so')
-# omp_set_num_threads = omp.omp_set_num_threads
+# Numba uses OpemMP, and this collides with the libraries in ironArray.
+# Using the next envvar seems to fix the issue (bar a small printed info line).
+os.environ['KMP_DUPLICATE_LIB_OK'] = "TRUE"
 
 max_num_threads = 4
 nrep = 3
@@ -22,8 +23,6 @@ def poly_numba(x):
     return y
 
 
-# config.THREADING_LAYER = 'omp'
-
 
 @udf.jit
 def poly_udf(x: udf.Array(float64, 1), y: udf.Array(float64, 1)):
@@ -34,14 +33,14 @@ def poly_udf(x: udf.Array(float64, 1), y: udf.Array(float64, 1)):
 
 
 # Define array params
-shape = [32 * 512 * 1024]
+shape = [2 * 512 * 1024]
 chunkshape = [32 * 1024]
 blockshape = [16 * 1024]
 dtshape = ia.DTShape(shape)
 size = int(np.prod(shape))
+sizeMB = int(np.prod(shape)) * 8 / 2 ** 20
 
 bstorage = ia.Storage(chunkshape, blockshape)
-pstorage = ia.Storage(plainbuffer=True)
 
 
 def time_expr(expr, result):
@@ -50,7 +49,7 @@ def time_expr(expr, result):
         t0 = time()
         expr.eval()
         t1 = time()
-        t.append(round(size / 8 / 2 ** 20 / (t1 - t0), 2))
+        t.append(round(sizeMB / (t1 - t0), 2))
     t.remove(max(t))
     result.append(np.mean(t))
 
@@ -68,7 +67,7 @@ for num_threads in range(1, max_num_threads + 1):
         t0 = time()
         eval("(x - 1.35) * (x - 4.45) * (x - 8.5)", {"x": a1})
         t1 = time()
-        t.append(round(size / 8 / 2 ** 20 / (t1 - t0), 2))
+        t.append(round(sizeMB / (t1 - t0), 2))
     t.remove(max(t))
     res_i.append(np.mean(t))
 
@@ -78,7 +77,7 @@ for num_threads in range(1, max_num_threads + 1):
         t0 = time()
         poly_numba(a1)
         t1 = time()
-        t.append(round(size / 8 / 2 ** 20 / (t1 - t0), 2))
+        t.append(round(sizeMB / (t1 - t0), 2))
     t.remove(max(t))
     res_i.append(np.mean(t))
 
@@ -89,27 +88,9 @@ for num_threads in range(1, max_num_threads + 1):
         t0 = time()
         ne.evaluate("(x - 1.35) * (x - 4.45) * (x - 8.5)", local_dict={"x": a1})
         t1 = time()
-        t.append(round(size / 8 / 2 ** 20 / (t1 - t0), 2))
+        t.append(round(sizeMB / (t1 - t0), 2))
     t.remove(max(t))
     res_i.append(np.mean(t))
-
-    # Plainbuffer
-    with ia.config(storage=pstorage, nthreads=num_threads) as cfg:
-        a1 = ia.linspace(dtshape, 0, 10, cfg=cfg)
-        expr = ia.expr_from_string("(x - 1.35) * (x - 4.45) * (x - 8.5)", {"x": a1}, cfg=cfg)
-        time_expr(expr, res_i)
-
-    # Superchunk without compression
-    with ia.config(storage=bstorage, nthreads=num_threads, clevel=0) as cfg:
-        a1 = ia.linspace(dtshape, 0, 10, cfg=cfg)
-        expr = ia.expr_from_string("(x - 1.35) * (x - 4.45) * (x - 8.5)", {"x": a1}, cfg=cfg)
-        time_expr(expr, res_i)
-
-    # Superchunk with compression
-    with ia.config(storage=bstorage, nthreads=num_threads, clevel=9) as cfg:
-        a1 = ia.linspace(dtshape, 0, 10, cfg=cfg)
-        expr = ia.expr_from_string("(x - 1.35) * (x - 4.45) * (x - 8.5)", {"x": a1}, cfg=cfg)
-        time_expr(expr, res_i)
 
     # Superchunk with compression and UDF
     with ia.config(storage=bstorage, nthreads=num_threads, clevel=9) as cfg:
@@ -119,4 +100,6 @@ for num_threads in range(1, max_num_threads + 1):
 
     res.append(res_i)
 
-print(res)
+print("Speed in MB/s (NumPy, Numba, numexpr, ironArray)")
+import pprint
+pprint.pprint(res)

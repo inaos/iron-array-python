@@ -1,3 +1,5 @@
+# Compare expression evaluation performance against dask+zarr
+
 from time import time
 import numpy as np
 
@@ -30,7 +32,7 @@ t_ratio = []
 for i, shape in enumerate(shapes):
     shape = (shape,)
     dtshape = ia.DTShape(shape, dtype)
-    print(shape, chunkshape)
+    print("Using vector of length:", shape[0])
 
     storage_in = ia.Storage(chunkshape, blockshape, "iarray_infile.iarray")
     ia.arange(dtshape, storage=storage_in)

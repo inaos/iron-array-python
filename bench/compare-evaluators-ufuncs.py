@@ -17,7 +17,7 @@ from iarray.udf import float64, int64
 NITER = 10
 
 # Vector and sizes and chunking
-shape = [20 * 1000 * 1000]
+shape = [2 * 1000 * 1000]
 N = int(np.prod(shape))
 
 chunkshape, blockshape = None, None  # use automatic partition advice

@@ -1,3 +1,5 @@
+# Excercise in-memory reductions and compare against dask.  You need at least 4 GB of RAM for running this.
+
 from time import time
 from functools import reduce
 import dask
@@ -16,11 +18,11 @@ NTHREADS = 10
 CODEC = ia.Codecs.LZ4
 CLEVEL = 6
 
-ashape = (27918, 25560)
+ashape = (16791, 8556)
 # These chunkshape/blockshape has been chosen as a balance performance
 # between iarray and dask.  In general reducing these values improves
 # performance when in memory, but degrades performance when on-disk.
-achunkshape = (2000, 2000)
+achunkshape = (200, 2000)
 ablockshape = (200, 200)
 
 axis = 0
@@ -38,7 +40,7 @@ acompressor = Blosc(
     blocksize=reduce(lambda x, y: x * y, ablockshape) * 8,
 )
 
-ia.set_config(codec=CODEC, clevel=CLEVEL, nthreads=NTHREADS, fp_mantissa_bits=20)
+ia.set_config(codec=CODEC, clevel=CLEVEL, nthreads=NTHREADS)
 
 astorage = ia.Storage(achunkshape, ablockshape)
 dtshape = ia.DTShape(ashape, dtype=DTYPE)
@@ -61,8 +63,14 @@ print(f"zarr cratio: {azarr.nbytes / azarr.nbytes_stored}")
 anp = ia.iarray2numpy(aia)
 print(f"numpy cratio: 1")
 
-ia.set_config(fp_mantissa_bits=0)
 scheduler = "single-threaded" if NTHREADS == 1 else "threads"
+
+MEMPROF = True
+if MEMPROF:
+    from memory_profiler import profile
+else:
+    def profile(f):
+        return f
 
 
 @profile
