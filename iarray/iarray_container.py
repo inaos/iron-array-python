@@ -16,7 +16,7 @@ import numpy as np
 from typing import Union
 import ndindex
 import sys
-from ._info import InfoReporter
+from .info import InfoReporter
 
 
 def is_documented_by(original):

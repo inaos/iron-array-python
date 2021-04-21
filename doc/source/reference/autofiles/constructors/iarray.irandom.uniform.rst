@@ -1,6 +1,6 @@
-﻿iarray.irandom.uniform
+﻿iarray.random.uniform
 ======================
 
-.. currentmodule:: iarray.irandom
+.. currentmodule:: iarray.random
 
 .. autofunction:: uniform

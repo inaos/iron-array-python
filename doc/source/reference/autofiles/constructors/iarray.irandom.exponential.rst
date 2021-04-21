@@ -1,6 +1,6 @@
-﻿iarray.irandom.exponential
+﻿iarray.random.exponential
 ==========================
 
-.. currentmodule:: iarray.irandom
+.. currentmodule:: iarray.random
 
 .. autofunction:: exponential

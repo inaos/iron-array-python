@@ -52,7 +52,7 @@ if os.path.exists("iarray_reduce.iarray"):
 else:
     astorage = ia.Store(achunkshape, ablockshape, urlpath="iarray_reduce.iarray")
     dtshape = ia.DTShape(ashape, dtype=DTYPE)
-    aia = ia.irandom.normal(dtshape, 0, 1, storage=astorage)
+    aia = ia.random.normal(dtshape, 0, 1, storage=astorage)
 
 print(f"iarray cratio: {aia.cratio}")
 

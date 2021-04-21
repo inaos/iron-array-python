@@ -1,6 +1,6 @@
-﻿iarray.irandom.poisson
+﻿iarray.random.poisson
 ======================
 
-.. currentmodule:: iarray.irandom
+.. currentmodule:: iarray.random
 
 .. autofunction:: poisson

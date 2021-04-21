@@ -47,14 +47,20 @@ class Expr(ext.Expression):
         return super().eval()
 
 
-def check_inputs(inputs: list):
-    first_input = inputs[0]
-    for input_ in inputs[1:]:
-        if first_input.shape != input_.shape:
-            raise ValueError("Inputs should have the same shape")
-        if first_input.dtype != input_.dtype:
-            raise TypeError("Inputs should have the same dtype")
-    return first_input.shape, first_input.dtype
+def check_inputs(inputs: list, shape):
+    if inputs:
+        first_input = inputs[0]
+        for input_ in inputs[1:]:
+            if first_input.shape != input_.shape:
+                raise ValueError("Inputs should have the same shape")
+            if first_input.dtype != input_.dtype:
+                raise TypeError("Inputs should have the same dtype")
+        return first_input.shape, first_input.dtype
+    else:
+        cfg = ia.get_config()
+        if shape is None:
+            raise AttributeError("A shape is needed")
+        return shape, cfg.dtype
 
 
 def expr_from_string(sexpr: str, inputs: dict, cfg: ia.Config = None, **kwargs) -> Expr:
@@ -78,7 +84,8 @@ def expr_from_string(sexpr: str, inputs: dict, cfg: ia.Config = None, **kwargs) 
     Expr
         An expression ready to be evaluated via :func:`Expr.eval`.
     """
-    shape, dtype = check_inputs(list(inputs.values()))
+    with ia.config(cfg, **kwargs):
+        shape, dtype = check_inputs(list(inputs.values()), None)
     kwargs["dtype"] = dtype
     expr = Expr(shape=shape, cfg=cfg, **kwargs)
     for i in inputs:
@@ -87,7 +94,7 @@ def expr_from_string(sexpr: str, inputs: dict, cfg: ia.Config = None, **kwargs) 
     return expr
 
 
-def expr_from_udf(udf: py2llvm.Function, inputs: list, cfg=None, dtshape=None, **kwargs) -> Expr:
+def expr_from_udf(udf: py2llvm.Function, inputs: list, shape=None, cfg=None, **kwargs) -> Expr:
     """Create an `Expr` instance from an UDF function.
 
     Parameters
@@ -109,7 +116,8 @@ def expr_from_udf(udf: py2llvm.Function, inputs: list, cfg=None, dtshape=None, *
     Expr
         An expression ready to be evaluated via :func:`Expr.eval`.
     """
-    shape, dtype = check_inputs(inputs)
+    with ia.config(cfg, shape=shape, **kwargs):
+        shape, dtype = check_inputs(inputs, shape)
     kwargs["dtype"] = dtype
     expr = Expr(shape=shape, cfg=cfg, **kwargs)
     for i in inputs:

@@ -176,7 +176,7 @@ from .utils import (
 )
 
 # random constructors (follow NumPy convention)
-from . import irandom
+from . import random
 
 from .expression import (
     Expr,

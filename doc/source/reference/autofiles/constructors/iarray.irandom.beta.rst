@@ -1,6 +1,6 @@
-﻿iarray.irandom.beta
+﻿iarray.random.beta
 ===================
 
-.. currentmodule:: iarray.irandom
+.. currentmodule:: iarray.random
 
 .. autofunction:: beta

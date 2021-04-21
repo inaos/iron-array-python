@@ -24,12 +24,12 @@ def test_rand(shape, chunks, blocks, dtype, seed):
     else:
         store = ia.Store(chunks, blocks)
 
-    a = ia.irandom.random_sample(shape, store=store, seed=seed, dtype=dtype)
-    b = ia.irandom.random_sample(shape, store=store, seed=seed, dtype=dtype)
+    a = ia.random.random_sample(shape, store=store, seed=seed, dtype=dtype)
+    b = ia.random.random_sample(shape, store=store, seed=seed, dtype=dtype)
     np.testing.assert_array_equal(ia.iarray2numpy(a), ia.iarray2numpy(b))
 
     # Check that the default seed is None
-    c = ia.irandom.random_sample(shape, store=store, dtype=dtype)
+    c = ia.random.random_sample(shape, store=store, dtype=dtype)
     assert np.alltrue(ia.iarray2numpy(b) != ia.iarray2numpy(c))
 
 
@@ -49,8 +49,8 @@ def test_randn(shape, chunks, blocks, dtype, seed):
     else:
         store = ia.Store(chunks, blocks)
 
-    a = ia.irandom.standard_normal(shape, store=store, seed=seed, dtype=dtype)
-    b = ia.irandom.standard_normal(shape, store=store, seed=seed, dtype=dtype)
+    a = ia.random.standard_normal(shape, store=store, seed=seed, dtype=dtype)
+    b = ia.random.standard_normal(shape, store=store, seed=seed, dtype=dtype)
     np.testing.assert_array_equal(ia.iarray2numpy(a), ia.iarray2numpy(b))
 
 
@@ -70,8 +70,8 @@ def test_beta(alpha, beta, shape, chunks, blocks, dtype, seed):
     else:
         store = ia.Store(chunks, blocks)
 
-    a = ia.irandom.beta(shape, alpha, beta, store=store, seed=seed, dtype=dtype)
-    b = ia.irandom.beta(shape, alpha, beta, store=store, seed=seed, dtype=dtype)
+    a = ia.random.beta(shape, alpha, beta, store=store, seed=seed, dtype=dtype)
+    b = ia.random.beta(shape, alpha, beta, store=store, seed=seed, dtype=dtype)
     np.testing.assert_array_equal(ia.iarray2numpy(a), ia.iarray2numpy(b))
 
 
@@ -91,8 +91,8 @@ def test_lognormal(mu, sigma, shape, chunks, blocks, dtype, seed):
     else:
         store = ia.Store(chunks, blocks)
 
-    a = ia.irandom.lognormal(shape, mu, sigma, store=store, seed=seed, dtype=dtype)
-    b = ia.irandom.lognormal(shape, mu, sigma, store=store, seed=seed, dtype=dtype)
+    a = ia.random.lognormal(shape, mu, sigma, store=store, seed=seed, dtype=dtype)
+    b = ia.random.lognormal(shape, mu, sigma, store=store, seed=seed, dtype=dtype)
     np.testing.assert_array_equal(ia.iarray2numpy(a), ia.iarray2numpy(b))
 
 
@@ -112,8 +112,8 @@ def test_exponential(beta, shape, chunks, blocks, dtype, seed):
     else:
         store = ia.Store(chunks, blocks)
 
-    a = ia.irandom.exponential(shape, beta, store=store, seed=seed, dtype=dtype)
-    b = ia.irandom.exponential(shape, beta, store=store, seed=seed, dtype=dtype)
+    a = ia.random.exponential(shape, beta, store=store, seed=seed, dtype=dtype)
+    b = ia.random.exponential(shape, beta, store=store, seed=seed, dtype=dtype)
     np.testing.assert_array_equal(ia.iarray2numpy(a), ia.iarray2numpy(b))
 
 
@@ -133,8 +133,8 @@ def test_uniform(a_, b_, shape, chunks, blocks, dtype, seed):
     else:
         store = ia.Store(chunks, blocks)
 
-    a = ia.irandom.uniform(shape, a_, b_, store=store, seed=seed, dtype=dtype)
-    b = ia.irandom.uniform(shape, a_, b_, store=store, seed=seed, dtype=dtype)
+    a = ia.random.uniform(shape, a_, b_, store=store, seed=seed, dtype=dtype)
+    b = ia.random.uniform(shape, a_, b_, store=store, seed=seed, dtype=dtype)
     np.testing.assert_array_equal(ia.iarray2numpy(a), ia.iarray2numpy(b))
 
 
@@ -154,8 +154,8 @@ def test_normal(mu, sigma, shape, chunks, blocks, dtype, seed):
     else:
         store = ia.Store(chunks, blocks)
 
-    a = ia.irandom.normal(shape, mu, sigma, store=store, seed=seed, dtype=dtype)
-    b = ia.irandom.normal(shape, mu, sigma, store=store, seed=seed, dtype=dtype)
+    a = ia.random.normal(shape, mu, sigma, store=store, seed=seed, dtype=dtype)
+    b = ia.random.normal(shape, mu, sigma, store=store, seed=seed, dtype=dtype)
 
     np.testing.assert_array_equal(ia.iarray2numpy(a), ia.iarray2numpy(b))
 
@@ -176,8 +176,8 @@ def test_bernoulli(p, shape, chunks, blocks, dtype, seed):
     else:
         store = ia.Store(chunks, blocks)
 
-    a = ia.irandom.bernoulli(shape, p, store=store, seed=seed, dtype=dtype)
-    b = ia.irandom.bernoulli(shape, p, store=store, seed=seed, dtype=dtype)
+    a = ia.random.bernoulli(shape, p, store=store, seed=seed, dtype=dtype)
+    b = ia.random.bernoulli(shape, p, store=store, seed=seed, dtype=dtype)
     np.testing.assert_array_equal(ia.iarray2numpy(a), ia.iarray2numpy(b))
 
 
@@ -197,8 +197,8 @@ def test_binomial(n, p, shape, chunks, blocks, dtype, seed):
     else:
         store = ia.Store(chunks, blocks)
 
-    a = ia.irandom.binomial(shape, n, p, store=store, seed=seed, dtype=dtype)
-    b = ia.irandom.binomial(shape, n, p, store=store, seed=seed, dtype=dtype)
+    a = ia.random.binomial(shape, n, p, store=store, seed=seed, dtype=dtype)
+    b = ia.random.binomial(shape, n, p, store=store, seed=seed, dtype=dtype)
     np.testing.assert_array_equal(ia.iarray2numpy(a), ia.iarray2numpy(b))
 
 
@@ -218,6 +218,6 @@ def test_poisson(lamb, shape, chunks, blocks, dtype, seed):
     else:
         store = ia.Store(chunks, blocks)
 
-    a = ia.irandom.poisson(shape, lamb, store=store, seed=seed, dtype=dtype)
-    b = ia.irandom.poisson(shape, lamb, store=store, seed=seed, dtype=dtype)
+    a = ia.random.poisson(shape, lamb, store=store, seed=seed, dtype=dtype)
+    b = ia.random.poisson(shape, lamb, store=store, seed=seed, dtype=dtype)
     np.testing.assert_array_equal(ia.iarray2numpy(a), ia.iarray2numpy(b))

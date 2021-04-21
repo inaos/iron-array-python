@@ -47,7 +47,7 @@ ia.set_config(codec=CODEC, clevel=CLEVEL, nthreads=NTHREADS)
 astorage = ia.Store(achunkshape, ablockshape)
 dtshape = ia.DTShape(ashape, dtype=DTYPE)
 lia = ia.linspace(dtshape, 0, 1, storage=astorage)
-nia = ia.irandom.normal(
+nia = ia.random.normal(
     dtshape,
     0,
     0.0000001,

@@ -1,6 +1,6 @@
-﻿iarray.irandom.standard\_normal
+﻿iarray.random.standard\_normal
 ===============================
 
-.. currentmodule:: iarray.irandom
+.. currentmodule:: iarray.random
 
 .. autofunction:: standard_normal

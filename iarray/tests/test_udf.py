@@ -39,7 +39,7 @@ def cmp_udf_np(f, start_stop, shape, partitions, dtype, cparams, f_np=None):
         ia.linspace(shape, start, stop, store=store, dtype=dtype, **cparams)
         for start, stop in start_stop
     ]
-    expr = ia.expr_from_udf(f, inputs, store=store, **cparams)
+    expr = ia.expr_from_udf(f, inputs, shape=shape, store=store, **cparams)
     out = expr.eval()
 
     num = functools.reduce(lambda x, y: x * y, shape)
@@ -229,9 +229,10 @@ def f_ifexp(out: udf.Array(udf.float64, 2)):
     start_m = out.window_start[1]
     for i in range(n):
         for j in range(m):
-            out[i, j] = 1. if i + start_n == j + start_m else 0.
+            out[i, j] = 1.0 if i + start_n == j + start_m else 0.0
 
     return 0
+
 
 # NumPy counterpart of the above
 def f_ifexp_np(out):
@@ -239,7 +240,7 @@ def f_ifexp_np(out):
     m = out.shape[1]
     for i in range(n):
         for j in range(m):
-            out[i, j] = 1. if i == j else 0.
+            out[i, j] = 1.0 if i == j else 0.0
 
     return 0
 
@@ -254,6 +255,7 @@ def test_ifexp(f, f_np):
 
     cmp_udf_np(f, [], shape, (chunkshape, blockshape), dtype, cparams, f_np=f_np)
 
+
 @udf.jit
 def f_ifexp2(out: udf.Array(udf.float64, 2)):
     n = out.shape[0]
@@ -264,11 +266,12 @@ def f_ifexp2(out: udf.Array(udf.float64, 2)):
     for i in range(n):
         for j in range(m):
             if UDFJIT:
-                out[i, j] = 1. if i + start_n == j + start_m else 0.
+                out[i, j] = 1.0 if i + start_n == j + start_m else 0.0
             else:
-                out[i, j] = 1. if i == j else 0.
+                out[i, j] = 1.0 if i == j else 0.0
 
     return 0
+
 
 @pytest.mark.parametrize("f", [f_ifexp2])
 def test_ifexp2(f):

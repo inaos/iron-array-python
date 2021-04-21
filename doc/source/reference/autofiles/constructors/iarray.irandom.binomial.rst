@@ -1,6 +1,6 @@
-﻿iarray.irandom.binomial
+﻿iarray.random.binomial
 =======================
 
-.. currentmodule:: iarray.irandom
+.. currentmodule:: iarray.random
 
 .. autofunction:: binomial

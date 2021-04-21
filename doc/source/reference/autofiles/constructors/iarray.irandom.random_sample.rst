@@ -1,6 +1,6 @@
-﻿iarray.irandom.random\_sample
+﻿iarray.random.random\_sample
 =============================
 
-.. currentmodule:: iarray.irandom
+.. currentmodule:: iarray.random
 
 .. autofunction:: random_sample

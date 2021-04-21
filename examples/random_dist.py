@@ -6,11 +6,11 @@ import numpy as np
 size = 10000
 shape = [size]
 
-a1 = ia.irandom.uniform(shape, 0, 1)
+a1 = ia.random.uniform(shape, 0, 1)
 a2 = ia.iarray2numpy(a1)
 print(a2[:10])
 
-a1 = ia.irandom.uniform(shape, 0, 1)
+a1 = ia.random.uniform(shape, 0, 1)
 a2 = ia.iarray2numpy(a1)
 print(a2[:10])
 
@@ -20,4 +20,4 @@ store = ia.Store(urlpath="random_dist.iarray")
 b2 = ia.numpy2iarray(b1, store=store)
 
 # Check that distributions are equal
-print(ia.irandom.kstest(a1, b2))
+print(ia.random.kstest(a1, b2))

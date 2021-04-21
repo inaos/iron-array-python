@@ -1,6 +1,6 @@
-﻿iarray.irandom.bernoulli
+﻿iarray.random.bernoulli
 ========================
 
-.. currentmodule:: iarray.irandom
+.. currentmodule:: iarray.random
 
 .. autofunction:: bernoulli
