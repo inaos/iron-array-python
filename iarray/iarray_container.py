@@ -16,6 +16,7 @@ import numpy as np
 from typing import Union
 import ndindex
 import sys
+from ._info import InfoReporter
 
 
 def is_documented_by(original):
@@ -41,14 +42,17 @@ class IArray(ext.Container):
         """
         Print information about this array.
         """
-        padding = 15
-        return f"""
-{'type':{padding}}: {self.__class__.__name__}
-{'shape':{padding}}: {self.shape}
-{'chunks':{padding}}: {self.chunks}
-{'blocks':{padding}}: {self.blocks}
-{'cratio':{padding}}: {self.cratio:.2f}
-"""
+        return InfoReporter(self)
+
+    @property
+    def info_items(self):
+        items = []
+        items += [("type", self.__class__.__name__)]
+        items += [("shape", self.shape)]
+        items += [("chunks", self.chunks)]
+        items += [("blocks", self.blocks)]
+        items += [("cratio", f"{self.cratio:.2f}")]
+        return items
 
     @property
     def data(self):
