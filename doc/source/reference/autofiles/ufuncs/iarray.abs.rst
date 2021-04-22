@@ -1,4 +1,4 @@
-iarray.abs
+﻿iarray.abs
 ==========
 
 .. currentmodule:: iarray

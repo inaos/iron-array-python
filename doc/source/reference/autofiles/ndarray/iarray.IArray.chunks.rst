@@ -1,4 +1,4 @@
-iarray.IArray.chunks
+﻿iarray.IArray.chunks
 ====================
 
 .. currentmodule:: iarray

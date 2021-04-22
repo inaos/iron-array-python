@@ -1,7 +1,28 @@
-iarray.Config
+﻿iarray.Config
 =============
 
 .. currentmodule:: iarray
 
 .. autoclass:: Config
-   :exclude-members: storage
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~Config.__init__
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~Config.store
+   
+   

@@ -1,4 +1,4 @@
-iarray.random.normal
+﻿iarray.random.normal
 ====================
 
 .. currentmodule:: iarray.random

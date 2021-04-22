@@ -1,4 +1,4 @@
-iarray.reset\_config\_defaults
+﻿iarray.reset\_config\_defaults
 ==============================
 
 .. currentmodule:: iarray

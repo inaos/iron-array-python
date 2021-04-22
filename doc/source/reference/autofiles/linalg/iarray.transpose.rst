@@ -1,4 +1,4 @@
-iarray.transpose
+﻿iarray.transpose
 ================
 
 .. currentmodule:: iarray

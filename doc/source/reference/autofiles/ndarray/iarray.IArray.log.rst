@@ -1,4 +1,4 @@
-iarray.IArray.log
+﻿iarray.IArray.log
 =================
 
 .. currentmodule:: iarray

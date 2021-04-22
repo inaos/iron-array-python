@@ -1,4 +1,4 @@
-iarray.random.binomial
+﻿iarray.random.binomial
 ======================
 
 .. currentmodule:: iarray.random

@@ -1,4 +1,4 @@
-iarray.IArray.cos
+﻿iarray.IArray.cos
 =================
 
 .. currentmodule:: iarray

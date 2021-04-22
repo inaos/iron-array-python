@@ -1,4 +1,4 @@
-iarray.get\_config
+﻿iarray.get\_config
 ==================
 
 .. currentmodule:: iarray

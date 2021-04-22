@@ -1,4 +1,4 @@
-iarray.get\_ncores
+﻿iarray.get\_ncores
 ==================
 
 .. currentmodule:: iarray

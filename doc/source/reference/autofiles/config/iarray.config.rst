@@ -1,4 +1,4 @@
-iarray.config
+﻿iarray.config
 =============
 
 .. currentmodule:: iarray

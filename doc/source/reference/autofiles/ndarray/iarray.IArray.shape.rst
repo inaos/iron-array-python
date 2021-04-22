@@ -1,4 +1,4 @@
-iarray.IArray.shape
+﻿iarray.IArray.shape
 ===================
 
 .. currentmodule:: iarray

@@ -1,4 +1,4 @@
-iarray.power
+﻿iarray.power
 ============
 
 .. currentmodule:: iarray

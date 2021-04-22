@@ -1,4 +1,4 @@
-iarray.IArray.data
+﻿iarray.IArray.data
 ==================
 
 .. currentmodule:: iarray

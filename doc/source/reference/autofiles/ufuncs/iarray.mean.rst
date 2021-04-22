@@ -1,4 +1,4 @@
-iarray.mean
+﻿iarray.mean
 ===========
 
 .. currentmodule:: iarray

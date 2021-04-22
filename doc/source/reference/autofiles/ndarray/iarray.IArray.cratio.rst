@@ -1,4 +1,4 @@
-iarray.IArray.cratio
+﻿iarray.IArray.cratio
 ====================
 
 .. currentmodule:: iarray

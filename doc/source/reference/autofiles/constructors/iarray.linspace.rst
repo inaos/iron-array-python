@@ -1,4 +1,4 @@
-iarray.linspace
+﻿iarray.linspace
 ===============
 
 .. currentmodule:: iarray

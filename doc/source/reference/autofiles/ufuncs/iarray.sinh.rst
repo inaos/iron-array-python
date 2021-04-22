@@ -1,4 +1,4 @@
-iarray.sinh
+﻿iarray.sinh
 ===========
 
 .. currentmodule:: iarray

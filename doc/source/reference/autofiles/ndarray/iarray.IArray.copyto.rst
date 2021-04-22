@@ -1,4 +1,4 @@
-iarray.IArray.copyto
+﻿iarray.IArray.copyto
 ====================
 
 .. currentmodule:: iarray

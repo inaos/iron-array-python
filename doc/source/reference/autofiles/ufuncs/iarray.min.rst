@@ -1,4 +1,4 @@
-iarray.min
+﻿iarray.min
 ==========
 
 .. currentmodule:: iarray

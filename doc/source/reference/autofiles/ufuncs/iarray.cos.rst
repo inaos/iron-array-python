@@ -1,4 +1,4 @@
-iarray.cos
+﻿iarray.cos
 ==========
 
 .. currentmodule:: iarray

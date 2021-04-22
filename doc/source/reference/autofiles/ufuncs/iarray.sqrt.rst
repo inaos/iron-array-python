@@ -1,4 +1,4 @@
-iarray.sqrt
+﻿iarray.sqrt
 ===========
 
 .. currentmodule:: iarray
