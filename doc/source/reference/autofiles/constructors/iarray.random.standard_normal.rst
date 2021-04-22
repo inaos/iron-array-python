@@ -1,5 +1,5 @@
-﻿iarray.random.standard\_normal
-===============================
+iarray.random.standard\_normal
+==============================
 
 .. currentmodule:: iarray.random
 

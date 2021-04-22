@@ -1,5 +1,5 @@
-﻿iarray.random.poisson
-======================
+iarray.random.poisson
+=====================
 
 .. currentmodule:: iarray.random
 

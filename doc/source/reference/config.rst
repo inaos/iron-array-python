@@ -12,7 +12,7 @@ Storage properties
    :toctree: autofiles/config/
    :nosignatures:
 
-   Storage
+   Store
 
 Configuration object
 ====================

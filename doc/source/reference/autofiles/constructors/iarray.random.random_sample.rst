@@ -1,5 +1,5 @@
-﻿iarray.random.random\_sample
-=============================
+iarray.random.random\_sample
+============================
 
 .. currentmodule:: iarray.random
 

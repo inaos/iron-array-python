@@ -4,15 +4,6 @@ N-Dimensional Array
 
 .. currentmodule:: iarray
 
-Dealing with array shapes and data types
-========================================
-
-.. autosummary::
-   :toctree: autofiles/ndarray
-   :nosignatures:
-
-   DTShape
-
 
 Attributes
 ==========
@@ -22,15 +13,15 @@ Attributes
    :toctree: autofiles/ndarray
    :nosignatures:
 
-   IArray.blockshape
-   IArray.chunkshape
+   IArray.blocks
+   IArray.chunks
    IArray.cratio
    IArray.data
-   IArray.dtshape
    IArray.dtype
    IArray.is_plainbuffer
    IArray.ndim
    IArray.shape
+   IArray.info
 
 
 Methods

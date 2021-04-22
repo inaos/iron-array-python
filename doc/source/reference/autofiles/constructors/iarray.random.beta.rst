@@ -1,5 +1,5 @@
-﻿iarray.random.beta
-===================
+iarray.random.beta
+==================
 
 .. currentmodule:: iarray.random
 

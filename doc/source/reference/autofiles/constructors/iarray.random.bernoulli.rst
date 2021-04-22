@@ -1,6 +1,6 @@
-﻿iarray.random.binomial
+iarray.random.bernoulli
 =======================
 
 .. currentmodule:: iarray.random
 
-.. autofunction:: binomial
+.. autofunction:: bernoulli
