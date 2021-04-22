@@ -15,10 +15,10 @@ nthreads = 8  # maximum number of threads to use
 
 sexpr = "(cos(x) - sin(y)) * (x - 1.35) * (y - 4.45)"
 
-# Create initial arrays.  You may opt to use automatic chunkshape and blockshape,
+# Create initial arrays.  You may opt to use automatic chunks and blocks,
 # but you typically get optimal results when you fine-tune them.
-storage = ia.Storage(chunkshape=[1000, 800], blockshape=[100, 100])
-ia.set_config(storage=storage, fp_mantissa_bits=24, nthreads=nthreads)
+store = ia.Store(chunks=[1000, 800], blocks=[100, 100])
+ia.set_config(store=store, fp_mantissa_bits=24, nthreads=nthreads)
 
 size = shape[0] * shape[1]
 np0 = np.linspace(0, 10, size, dtype=dtype).reshape(shape)

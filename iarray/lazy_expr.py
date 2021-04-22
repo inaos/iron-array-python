@@ -44,13 +44,13 @@ def fuse_expressions(expr, new_base, dup_op):
                 continue
             # This is a variable.  Find the end of it.
             j = i + 1
-            for k in range(len(expr[j :])):
-                  if expr[j + k] == " ":
-                      j = k
-                      break
-                  if expr[j + k] == ")":
-                      j = k
-                      break
+            for k in range(len(expr[j:])):
+                if expr[j + k] == " ":
+                    j = k
+                    break
+                if expr[j + k] == ")":
+                    j = k
+                    break
             if expr[i + j] == ")":
                 j -= 1
             old_pos = int(expr[i + 1 : i + j + 1])
@@ -199,6 +199,9 @@ class LazyExpr:
         IArray
             The output array.
         """
+        if cfg is None:
+            cfg = ia.get_config()
+
         with ia.config(cfg=cfg, **kwargs) as cfg:
             expr = ia.expr_from_string(self.expression, self.operands, cfg=cfg)
             out = expr.eval()
@@ -224,7 +227,7 @@ if __name__ == "__main__":
     a4 = ia.linspace(dtshape_, 0, 10)
 
     # Evaluate with different methods
-    #a3 = a1.tan() * (a2.sin() * a2.sin() + a3.cos()) + (a4.sqrt() * 2)
+    # a3 = a1.tan() * (a2.sin() * a2.sin() + a3.cos()) + (a4.sqrt() * 2)
     ia_expr = a1.sin() + 2 * a1 + 1
     ia_expr += 2
     print(ia_expr)

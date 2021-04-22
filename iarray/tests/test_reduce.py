@@ -4,7 +4,7 @@ import numpy as np
 from math import isclose
 import os
 
-params_names = "shape, chunkshape, blockshape, axis, dtype"
+params_names = "shape, chunks, blocks, axis, dtype"
 params_data = [
     ([100, 100], [50, 50], [20, 20], 0, np.float32),
     ([20, 100, 30, 50], [10, 40, 10, 11], [4, 5, 3, 7], 1, np.float64),
@@ -17,10 +17,10 @@ params_data = [
 @pytest.mark.parametrize(params_names, params_data)
 @pytest.mark.parametrize("rfunc", ["mean", "sum", "prod", "max", "min"])
 @pytest.mark.parametrize("urlpath", [None, "test_reduce.iarray"])
-def test_reduce(shape, chunkshape, blockshape, axis, dtype, rfunc, urlpath):
+def test_reduce(shape, chunks, blocks, axis, dtype, rfunc, urlpath):
 
-    storage = ia.Storage(chunkshape, blockshape)
-    a1 = ia.linspace(ia.DTShape(shape, dtype), -1, 0, storage=storage)
+    store = ia.Store(chunks, blocks)
+    a1 = ia.linspace(shape, -1, 0, dtype=dtype, store=store)
     a2 = a1.data
 
     b2 = getattr(np, rfunc)(a2, axis=axis)

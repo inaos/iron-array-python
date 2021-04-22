@@ -16,6 +16,7 @@ import numpy as np
 from typing import Union
 import ndindex
 import sys
+from .info import InfoReporter
 
 
 def is_documented_by(original):
@@ -41,14 +42,18 @@ class IArray(ext.Container):
         """
         Print information about this array.
         """
-        padding = 15
-        return f"""
-{'type':{padding}}: {self.__class__.__name__}
-{'shape':{padding}}: {self.shape}
-{'chunkshape':{padding}}: {self.chunkshape}
-{'blockshape':{padding}}: {self.blockshape}
-{'cratio':{padding}}: {self.cratio:.2f}
-"""
+        return InfoReporter(self)
+
+    @property
+    def info_items(self):
+        items = []
+        items += [("type", self.__class__.__name__)]
+        items += [("shape", self.shape)]
+        items += [("chunks", self.chunks)]
+        items += [("blocks", self.blocks)]
+        items += [("cratio", f"{self.cratio:.2f}")]
+        return items
+
     @property
     def data(self):
         """
@@ -79,7 +84,10 @@ class IArray(ext.Container):
         IArray
             The copy.
         """
-        with ia.config(dtshape=self.dtshape, cfg=cfg, **kwargs) as cfg:
+        if cfg is None:
+            cfg = ia.get_config()
+
+        with ia.config(shape=self.shape, cfg=cfg, **kwargs) as cfg:
             return ext.copy(cfg, self, view)
 
     def copyto(self, dest):
@@ -99,18 +107,18 @@ class IArray(ext.Container):
 
     def iter_read_block(self, iterblock: tuple = None):
         if iterblock is None:
-            if self.chunkshape is not None:
-                iterblock = self.chunkshape
+            if self.chunks is not None:
+                iterblock = self.chunks
             else:
-                iterblock, _ = ia.partition_advice(self.dtshape)
+                iterblock, _ = ia.partition_advice(self.shape)
         return ext.ReadBlockIter(self, iterblock)
 
     def iter_write_block(self, iterblock=None):
         if iterblock is None:
-            if self.chunkshape:
-                iterblock = self.chunkshape
+            if self.chunks:
+                iterblock = self.chunks
             else:
-                iterblock, _ = ia.partition_advice(self.dtshape)
+                iterblock, _ = ia.partition_advice(self.shape)
         return ext.WriteBlockIter(self, iterblock)
 
     def __getitem__(self, key):
@@ -736,8 +744,11 @@ def reduce(
         axis = (axis,)
 
     shape = tuple([s for i, s in enumerate(a.shape) if i not in axis])
-    dtshape = ia.DTShape(shape, a.dtype)
-    with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
+
+    if cfg is None:
+        cfg = ia.get_config()
+
+    with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
         c = ext.reduce_multi(cfg, a, method, axis)
         if c.ndim == 0:
             c = float(ia.iarray2numpy(c))
@@ -911,8 +922,11 @@ def matmul(a: IArray, b: IArray, cfg=None, **kwargs):
 
     """
     shape = (a.shape[0], b.shape[1]) if b.ndim == 2 else (a.shape[0],)
-    dtshape = ia.DTShape(shape, a.dtype)
-    with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
+
+    if cfg is None:
+        cfg = ia.get_config()
+
+    with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
         return ext.matmul(cfg, a, b)
 
 
@@ -938,6 +952,9 @@ def transpose(a: IArray, cfg=None, **kwargs):
     """
     if a.ndim != 2:
         raise AttributeError("Array dimension must be 2")
+
+    if cfg is None:
+        cfg = ia.get_config()
 
     with ia.config(cfg=cfg, **kwargs) as cfg:
         return ext.transpose(cfg, a)

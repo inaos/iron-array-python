@@ -29,36 +29,36 @@ t_dask = []
 t_ratio = []
 
 ashape = (10000, 10000)
-achunkshape = (500, 500)
-ablockshape = (128, 128)
+achunks = (500, 500)
+ablocks = (128, 128)
 
-cchunkshape = (1000, 1000)
-cblockshape = (128, 128)
+cchunks = (1000, 1000)
+cblocks = (128, 128)
 
 
 compressor = Blosc(
     cname="lz4",
     clevel=CLEVEL,
     shuffle=Blosc.SHUFFLE,
-    blocksize=reduce(lambda x, y: x * y, ablockshape),
+    blocksize=reduce(lambda x, y: x * y, ablocks),
 )
-ia.set_config(codec=CODEC, clevel=CLEVEL, nthreads=NTHREADS)
+ia.set_config(codec=CODEC, clevel=CLEVEL, nthreads=NTHREADS, dtype=DTYPE)
 
-astorage = ia.Storage(achunkshape, ablockshape)
-dtshape = ia.DTShape(ashape, dtype=DTYPE)
-lia = ia.linspace(dtshape, 0, 1, storage=astorage)
-nia = ia.irandom.normal(
-    dtshape,
+astore = ia.Store(achunks, ablocks)
+lia = ia.linspace(ashape, 0, 1, store=astore)
+nia = ia.random.normal(
+    ashape,
     0,
     0.0000001,
-    storage=astorage,
+    store=astore,
 )
-aia = (lia + nia).eval(storage=astorage)
+aia = (lia + nia).eval(store=astore)
 
-cstorage = ia.Storage(cchunkshape, cblockshape)
+cstore = ia.Store(cchunks, cblocks)
+
 
 def ia_transpose(aia):
-    return aia.T.copy(storage=cstorage)
+    return aia.T.copy(store=cstore)
 
 
 mkl_set_num_threads(1)
@@ -70,8 +70,8 @@ print("Time for computing matmul (via iarray): %.3f" % tia)
 print(f"a cratio: {aia.cratio}")
 print(f"trans cratio: {cia.cratio}")
 
-azarr = zarr.empty(shape=ashape, chunks=achunkshape, dtype=DTYPE, compressor=compressor)
-for info, block in aia.iter_read_block(achunkshape):
+azarr = zarr.empty(shape=ashape, chunks=achunks, dtype=DTYPE, compressor=compressor)
+for info, block in aia.iter_read_block(achunks):
     sl = tuple([slice(i, i + s) for i, s in zip(info.elemindex, info.shape)])
     azarr[sl] = block[:]
 
@@ -87,7 +87,7 @@ def dask_transpose(azarr):
             (ashape[1], ashape[0]),
             dtype=DTYPE,
             compressor=compressor,
-            chunks=cchunkshape,
+            chunks=cchunks,
         )
         da.to_zarr(cd, czarr)
         return czarr

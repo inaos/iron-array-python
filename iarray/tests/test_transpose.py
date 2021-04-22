@@ -4,7 +4,7 @@ import numpy as np
 
 
 @pytest.mark.parametrize(
-    "shape, chunkshape, blockshape, dtype",
+    "shape, chunks, blocks, dtype",
     [
         ([100, 100], [50, 50], [20, 20], np.float32),
         ([100, 100], None, None, np.float64),
@@ -12,12 +12,12 @@ import numpy as np
         ([1453, 266], [100, 200], [30, 20], np.float64),
     ],
 )
-def test_transpose(shape, chunkshape, blockshape, dtype):
-    if chunkshape is None:
-        storage = ia.Storage(plainbuffer=True)
+def test_transpose(shape, chunks, blocks, dtype):
+    if chunks is None:
+        store = ia.Store(plainbuffer=True)
     else:
-        storage = ia.Storage(chunkshape, blockshape)
-    a = ia.linspace(ia.DTShape(shape, dtype), -10, 10, storage=storage)
+        store = ia.Store(chunks, blocks)
+    a = ia.linspace(shape, -10, 10, store=store, dtype=dtype)
 
     b = ia.iarray2numpy(a)
     bn = b.T

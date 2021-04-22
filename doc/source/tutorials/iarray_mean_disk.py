@@ -2,9 +2,8 @@ from time import time
 
 t0 = time()
 import iarray as ia
-import zarr
 
-zarr.save_array()
+
 t = time() - t0
 print("iarray import time ->", round(t, 3))
 
@@ -42,18 +41,18 @@ t = time() - t0
 print("open time ->", round(t, 3))
 
 print("2 -->", precip1.info)
-chunkshape = precip1.chunkshape
-blockshape = precip1.blockshape
+chunkshape = precip1.chunks
+blockshape = precip1.blocks
 
-storage = ia.Storage(chunkshape=precip1.chunkshape, blockshape=precip1.blockshape)
+storage = ia.Store(chunkshape=precip1.chunks, blockshape=precip1.blocks)
 # cfg = ia.Config(nthreads=14, storage=storage, clevel=1, codec=ia.Codecs.ZSTD, filters=[ia.Filters.BITSHUFFLE])
 cfg = ia.Config(storage=storage)
 
 
 @profile
 def iarray_mean_disk(expr):
-    with ia.config(urlpath="mean-3m.iarr", cfg=cfg) as cfg2:
-        expr_val = expr.eval(cfg=cfg2)
+    with ia.config(urlpath="mean-3m.iarr", cfg=cfg):
+        expr_val = expr.eval()
     return expr_val
 
 
@@ -71,8 +70,8 @@ mean_disk.info
 
 @profile
 def iarray_trans_disk(expr):
-    with ia.config(urlpath="trans-3m.iarr", cfg=cfg) as cfg2:
-        expr_val = expr.eval(cfg=cfg2)
+    with ia.config(urlpath="trans-3m.iarr", cfg=cfg):
+        expr_val = expr.eval()
     return expr_val
 
 

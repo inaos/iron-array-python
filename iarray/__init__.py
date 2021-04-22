@@ -115,7 +115,7 @@ UFUNC_LIST = (
 
 from .config_params import (
     Config,
-    Storage,
+    Store,
     set_config,
     get_config,
     config,
@@ -176,7 +176,7 @@ from .utils import (
 )
 
 # random constructors (follow NumPy convention)
-from . import irandom
+from . import random
 
 from .expression import (
     Expr,

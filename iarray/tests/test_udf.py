@@ -23,7 +23,7 @@ def cmp_udf_np(f, start_stop, shape, partitions, dtype, cparams, f_np=None):
         cparams    : Configuration parameters for ironArray.
         f_np       : An equivalent function for NumPy (for incompatible UDFs).
 
-    Function results must not depend on chunkshape/blockshape, otherwise the
+    Function results must not depend on chunks/blocks, otherwise the
     comparison with numpy will fail.
     """
 
@@ -31,15 +31,15 @@ def cmp_udf_np(f, start_stop, shape, partitions, dtype, cparams, f_np=None):
         start_stop = [start_stop]
 
     if partitions is not None:
-        chunkshape, blockshape = partitions
-        storage = ia.Storage(chunkshape, blockshape)
+        chunks, blocks = partitions
+        store = ia.Store(chunks, blocks)
     else:
-        storage = ia.Storage(plainbuffer=True)
-    dtshape = ia.DTShape(shape, dtype)
+        store = ia.Store(plainbuffer=True)
     inputs = [
-        ia.linspace(dtshape, start, stop, storage=storage, **cparams) for start, stop in start_stop
+        ia.linspace(shape, start, stop, store=store, dtype=dtype, **cparams)
+        for start, stop in start_stop
     ]
-    expr = ia.expr_from_udf(f, inputs, dtshape=dtshape, storage=storage, **cparams)
+    expr = ia.expr_from_udf(f, inputs, shape=shape, store=store, **cparams)
     out = expr.eval()
 
     num = functools.reduce(lambda x, y: x * y, shape)
@@ -64,23 +64,22 @@ def cmp_udf_np_strict(f, start, stop, shape, partitions, dtype, cparams):
     - Input is always 1 linspace array, defined by start and stop
     - Only works for 1 dimension arrays
     """
-    chunkshape, blockshape = partitions
-    assert len(chunkshape) == 1
-    assert len(blockshape) == 1
-    storage = ia.Storage(chunkshape, blockshape)
+    chunks, blocks = partitions
+    assert len(chunks) == 1
+    assert len(blocks) == 1
+    store = ia.Store(chunks, blocks)
 
-    dtshape = ia.DTShape(shape, dtype)
-    x = ia.linspace(dtshape, start, stop, storage=storage, **cparams)
+    x = ia.linspace(shape, start, stop, store=store, dtype=dtype, **cparams)
     # Both functions should work, but we are encouraging ia.expr_from_udf()
-    # expr = f.create_expr([x], dtshape, storage=storage, **cparams)
-    expr = ia.expr_from_udf(f, [x], storage=storage, **cparams)
+    # expr = f.create_expr([x], dtshape, store=store, **cparams)
+    expr = ia.expr_from_udf(f, [x], store=store, **cparams)
 
     out = expr.eval()
 
     num = functools.reduce(lambda x, y: x * y, shape)
     x_ref = np.linspace(start, stop, num, dtype=dtype).reshape(shape)
     out_ref = np.empty(num, dtype=dtype).reshape(shape)
-    indices = range(0, num, blockshape[0])
+    indices = range(0, num, blocks[0])
     for out_ref_slice, x_ref_slice in zip(
         np.array_split(out_ref, indices), np.array_split(x_ref, indices)
     ):
@@ -106,20 +105,20 @@ def f_1dim(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
 @pytest.mark.parametrize("f", [f_1dim])
 def test_1dim(f):
     shape = [10 * 1000]
-    chunkshape = [3 * 1000]
-    blockshape = [3 * 100]
+    chunks = [3 * 1000]
+    blocks = [3 * 100]
     dtype = np.float64
     cparams = dict(nthreads=16)
     start, stop = 0, 10
 
-    cmp_udf_np(f, (start, stop), shape, (chunkshape, blockshape), dtype, cparams)
+    cmp_udf_np(f, (start, stop), shape, (chunks, blocks), dtype, cparams)
 
     # For the test function to return the same output as the Python function
     # the partition size must be multiple of 3. This is just an example of
     # how the result is not always the same as in the Python function.
-    blockshape = [4 * 100]
+    blocks = [4 * 100]
     with pytest.raises(AssertionError):
-        cmp_udf_np(f, (start, stop), shape, (chunkshape, blockshape), dtype, cparams)
+        cmp_udf_np(f, (start, stop), shape, (chunks, blocks), dtype, cparams)
 
 
 @udf.jit
@@ -142,12 +141,12 @@ def f_math(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
     for i in range(n):
         if x[i] > 0.0:
             out[i] = (
-                math.log(x[i]) +
-                math.log10(x[i]) +
-                math.sqrt(x[i]) +
-                math.floor(x[i]) +
-                math.ceil(x[i]) +
-                math.fabs(x[i])
+                math.log(x[i])
+                + math.log10(x[i])
+                + math.sqrt(x[i])
+                + math.floor(x[i])
+                + math.ceil(x[i])
+                + math.fabs(x[i])
             )
         else:
             out[i] = x[i]
@@ -155,7 +154,9 @@ def f_math(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
     return 0
 
 
-@pytest.mark.parametrize("f,dtype", [(f_1dim, np.float64), (f_1dim_f32, np.float32), (f_math, np.float64)])
+@pytest.mark.parametrize(
+    "f,dtype", [(f_1dim, np.float64), (f_1dim_f32, np.float32), (f_math, np.float64)]
+)
 def test_1dim_plain(f, dtype):
     shape = [10 * 1000]
     cparams = dict(clevel=5, nthreads=16)
@@ -178,13 +179,13 @@ def f_2dim(out: udf.Array(udf.float64, 2), x: udf.Array(udf.float64, 2)):
 @pytest.mark.parametrize("f", [f_2dim])
 def test_2dim(f):
     shape = [400, 800]
-    chunkshape = [60, 200]
-    blockshape = [11, 200]
+    chunks = [60, 200]
+    blocks = [11, 200]
     dtype = np.float64
     cparams = dict()
     start, stop = 0, 10
 
-    cmp_udf_np(f, (start, stop), shape, (chunkshape, blockshape), dtype, cparams)
+    cmp_udf_np(f, (start, stop), shape, (chunks, blocks), dtype, cparams)
 
 
 @pytest.mark.parametrize("f", [f_2dim])
@@ -211,13 +212,13 @@ def f_while(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
 @pytest.mark.parametrize("f", [f_while])
 def test_while(f):
     shape = [2000]
-    chunkshape = [1000]
-    blockshape = [300]
+    chunks = [1000]
+    blocks = [300]
     dtype = np.float64
     cparams = dict()
     start, stop = 0, 10
 
-    cmp_udf_np(f, (start, stop), shape, (chunkshape, blockshape), dtype, cparams)
+    cmp_udf_np(f, (start, stop), shape, (chunks, blocks), dtype, cparams)
 
 
 @udf.jit
@@ -228,9 +229,10 @@ def f_ifexp(out: udf.Array(udf.float64, 2)):
     start_m = out.window_start[1]
     for i in range(n):
         for j in range(m):
-            out[i, j] = 1. if i + start_n == j + start_m else 0.
+            out[i, j] = 1.0 if i + start_n == j + start_m else 0.0
 
     return 0
+
 
 # NumPy counterpart of the above
 def f_ifexp_np(out):
@@ -238,7 +240,7 @@ def f_ifexp_np(out):
     m = out.shape[1]
     for i in range(n):
         for j in range(m):
-            out[i, j] = 1. if i == j else 0.
+            out[i, j] = 1.0 if i == j else 0.0
 
     return 0
 
@@ -253,6 +255,7 @@ def test_ifexp(f, f_np):
 
     cmp_udf_np(f, [], shape, (chunkshape, blockshape), dtype, cparams, f_np=f_np)
 
+
 @udf.jit
 def f_ifexp2(out: udf.Array(udf.float64, 2)):
     n = out.shape[0]
@@ -263,11 +266,12 @@ def f_ifexp2(out: udf.Array(udf.float64, 2)):
     for i in range(n):
         for j in range(m):
             if UDFJIT:
-                out[i, j] = 1. if i + start_n == j + start_m else 0.
+                out[i, j] = 1.0 if i + start_n == j + start_m else 0.0
             else:
-                out[i, j] = 1. if i == j else 0.
+                out[i, j] = 1.0 if i == j else 0.0
 
     return 0
+
 
 @pytest.mark.parametrize("f", [f_ifexp2])
 def test_ifexp2(f):
@@ -295,13 +299,13 @@ def f_avg(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
 @pytest.mark.parametrize("f", [f_avg])
 def test_avg(f):
     shape = [1000]
-    chunkshape = [300]
-    blockshape = [100]
+    chunks = [300]
+    blocks = [100]
     dtype = np.float64
     cparams = dict()
     start, stop = 0, 10
 
-    cmp_udf_np_strict(f, start, stop, shape, (chunkshape, blockshape), dtype, cparams)
+    cmp_udf_np_strict(f, start, stop, shape, (chunks, blocks), dtype, cparams)
 
 
 @udf.jit
@@ -321,16 +325,15 @@ def f_error_user(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
 @pytest.mark.parametrize("f", [f_error_bug, f_error_user])
 def test_error(f):
     shape = [20 * 1000]
-    chunkshape = [4 * 1000]
-    blockshape = [1 * 1000]
+    chunks = [4 * 1000]
+    blocks = [1 * 1000]
     dtype = np.float64
     cparams = dict(nthreads=1)
     start, stop = 0, 10
 
-    storage = ia.Storage(chunkshape, blockshape)
-    dtshape = ia.DTShape(shape, dtype)
-    x = ia.linspace(dtshape, start, stop, storage=storage, **cparams)
-    expr = f.create_expr([x], storage=storage, **cparams)
+    store = ia.Store(chunks, blocks)
+    x = ia.linspace(shape, start, stop, store=store, dtype=dtype, **cparams)
+    expr = f.create_expr([x], store=store, **cparams)
 
     try:
         expr.eval()
@@ -372,10 +375,10 @@ def f_math2(
 @pytest.mark.parametrize("f", [f_math2])
 def test_math2(f):
     shape = [10 * 1000]
-    chunkshape = [3 * 1000]
-    blockshape = [3 * 100]
+    chunks = [3 * 1000]
+    blocks = [3 * 100]
     dtype = np.float64
     cparams = dict(nthreads=16)
     start, stop = 0, 10
 
-    cmp_udf_np(f, [(start, stop), (start, stop)], shape, (chunkshape, blockshape), dtype, cparams)
+    cmp_udf_np(f, [(start, stop), (start, stop)], shape, (chunks, blocks), dtype, cparams)

@@ -1,54 +1,52 @@
 import iarray as ia
 
 shape = ()
-chunkshape = ()
-blockshape = ()
+chunks = ()
+blocks = ()
 
 try:
-    storage = ia.Storage(chunkshape, blockshape)
-    dtshape = ia.DTShape(shape)
-    with ia.config(dtshape=dtshape, storage=storage) as cfg:
-        storage2 = cfg.storage
-        if chunkshape is not None:
-            assert storage2.chunkshape == chunkshape
-            assert storage2.blockshape == blockshape
+    store = ia.Store(chunks, blocks)
+    with ia.config(shape=shape, store=store) as cfg:
+        store2 = cfg.store
+        if chunks is not None:
+            assert store2.chunks == chunks
+            assert store2.blocks == blocks
         else:
             # automatic partitioning
-            assert storage2.chunkshape <= shape
-            assert storage2.blockshape <= storage2.chunkshape
+            assert store2.chunks <= shape
+            assert store2.blocks <= store2.chunks
 except ValueError:
-    # chunkshape cannot be set when a plainbuffer is used
+    # chunks cannot be set when a plainbuffer is used
     assert shape == ()
 
-# One can pass storage parameters straight to config() dataclass too
+# One can pass store parameters straight to config() dataclass too
 try:
-    dtshape = ia.DTShape(shape)
     with ia.config(
-        dtshape=dtshape,
-        chunkshape=chunkshape,
-        blockshape=blockshape,
+        shape=shape,
+        chunks=chunks,
+        blocks=blocks,
         enforce_frame=True,
     ) as cfg:
-        storage2 = cfg.storage
-        if chunkshape is not None:
-            assert storage2.chunkshape == chunkshape
-            assert storage2.blockshape == blockshape
+        store2 = cfg.store
+        if chunks is not None:
+            assert store2.chunks == chunks
+            assert store2.blocks == blocks
         else:
             # automatic partitioning
-            assert storage2.chunkshape <= shape
-            assert storage2.blockshape <= storage2.chunkshape
-        assert storage2.enforce_frame == True
+            assert store2.chunks <= shape
+            assert store2.blocks <= store2.chunks
+        assert store2.enforce_frame == True
 except ValueError:
-    # chunkshape cannot be set when a plainbuffer is used
+    # chunks cannot be set when a plainbuffer is used
     assert shape == ()
 
 
 def test_nested_contexts():
     # Set the default to enable compression
     ia.set_config(clevel=5)
-    a = ia.ones(ia.DTShape((100, 100)))
+    a = ia.ones((100, 100))
 
 
 ia.set_config(clevel=5)
 
-a = ia.ones(ia.DTShape((100, 100)))
+a = ia.ones((100, 100))

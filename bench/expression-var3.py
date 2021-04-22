@@ -22,18 +22,16 @@ expr3 = "(x - 1.35) * (y - 4.45) * (z - 8.5)"
 
 # Define array params
 shape = [20_000_000]
-#chunkshape, blockshape = [2_000_000], [20_000]
-#chunkshape, blockshape = [2**24], [2**16]
-chunkshape, blockshape = None, None   # uncomment for automatic partitioning
+# chunks, blocks = [2_000_000], [20_000]
+# chunks, blocks = [2**24], [2**16]
+chunks, blocks = None, None  # uncomment for automatic partitioning
 dtype = np.float64
 nthreads = 8
-dtshape = ia.DTShape(shape=shape, dtype=dtype)
 
 # Set global defaults
-ia.set_config(chunkshape=chunkshape, blockshape=blockshape,
-              favor=ia.Favors.SPEED)
+ia.set_config(chunks=chunks, blocks=blocks, favor=ia.Favors.SPEED, dtype=dtype)
 # Output required precision (in significant bits for the mantissa)
-#out_prec = 0
+# out_prec = 0
 out_prec = 30
 
 
@@ -60,17 +58,17 @@ def f3(
 
 # Create initial containers
 if PROFILE:
-    a1_storage = None  # avoid a warning
+    a1_store = None  # avoid a warning
     a1_fname = "a1.iarray"
     if not os.path.isfile(a1_fname):
         print(f"Creating {a1_fname}")
-        a1_storage = ia.Storage(urlpath=a1_fname)
-        a1 = ia.linspace(dtshape, 0, 10, storage=a1_storage)
+        a1_store = ia.Store(urlpath=a1_fname)
+        a1 = ia.linspace(shape, 0, 10, store=a1_store)
     else:
         print(f"Reading {a1_fname}")
         a1 = ia.load(a1_fname)
 else:
-    a1 = ia.linspace(dtshape, 0, 10)
+    a1 = ia.linspace(shape, 0, 10)
 
 
 a2 = np.linspace(0, 10, shape[0], dtype=dtype).reshape(shape)

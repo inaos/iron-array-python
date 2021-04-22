@@ -43,9 +43,9 @@ cdef set_storage(storage, ciarray.iarray_storage_t *cstore):
         cstore.backend = ciarray.IARRAY_STORAGE_PLAINBUFFER
     else:
         cstore.backend = ciarray.IARRAY_STORAGE_BLOSC
-        for i in range(len(storage.chunkshape)):
-            cstore.chunkshape[i] = storage.chunkshape[i]
-            cstore.blockshape[i] = storage.blockshape[i]
+        for i in range(len(storage.chunks)):
+            cstore.chunkshape[i] = storage.chunks[i]
+            cstore.blockshape[i] = storage.blocks[i]
 
     if storage.urlpath is not None:
         urlpath = storage.urlpath.encode("utf-8") if isinstance(storage.urlpath, str) else storage.urlpath
@@ -66,7 +66,7 @@ cdef class ReadBlockIter:
         self.container = container
         cdef ciarray.int64_t block_[ciarray.IARRAY_DIMENSION_MAX]
         if block is None:
-            block = container.chunkshape
+            block = container.chunks
         for i in range(len(block)):
             block_[i] = block[i]
 
@@ -119,7 +119,7 @@ cdef class WriteBlockIter:
         cdef ciarray.int64_t block_[ciarray.IARRAY_DIMENSION_MAX]
         if block is None:
             # The block for iteration has always be provided
-            block = c.chunkshape
+            block = c.chunks
         for i in range(len(block)):
             block_[i] = block[i]
         iarray_check(ciarray.iarray_iter_write_block_new(self.container.context.ia_ctx,
@@ -327,24 +327,24 @@ cdef class Container:
             return False
 
     @property
-    def chunkshape(self):
+    def chunks(self):
         """Tuple of chunk dimensions."""
         cdef ciarray.iarray_storage_t storage
         iarray_check(ciarray.iarray_get_storage(self.context.ia_ctx, self.ia_container, &storage))
         if storage.backend == ciarray.IARRAY_STORAGE_PLAINBUFFER or self.is_view():
             return None
-        chunkshape = [storage.chunkshape[i] for i in range(self.ndim)]
-        return tuple(chunkshape)
+        chunks = [storage.chunkshape[i] for i in range(self.ndim)]
+        return tuple(chunks)
 
     @property
-    def blockshape(self):
+    def blocks(self):
         """Tuple of block dimensions."""
         cdef ciarray.iarray_storage_t storage
         iarray_check(ciarray.iarray_get_storage(self.context.ia_ctx, self.ia_container, &storage))
         if storage.backend == ciarray.IARRAY_STORAGE_PLAINBUFFER or self.is_view():
             return None
-        blockshape = [storage.blockshape[i] for i in range(self.ndim)]
-        return tuple(blockshape)
+        blocks = [storage.blockshape[i] for i in range(self.ndim)]
+        return tuple(blocks)
 
     @property
     def dtype(self):
@@ -454,9 +454,9 @@ def copy(cfg, src, view=False):
         ctx.to_capsule(), "iarray_context_t*")
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(cfg.storage, &store_)
+    set_storage(cfg.store, &store_)
 
-    cdef int flags = 0 if cfg.storage.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
+    cdef int flags = 0 if cfg.store.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     cdef ciarray.iarray_container_t *c
     cdef ciarray.iarray_container_t *src_ = <ciarray.iarray_container_t *> PyCapsule_GetPointer(
@@ -480,9 +480,9 @@ def empty(cfg, dtshape):
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(cfg.storage, &store_)
+    set_storage(cfg.store, &store_)
 
-    flags = 0 if cfg.storage.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg.store.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     cdef ciarray.iarray_container_t *c
     iarray_check(ciarray.iarray_container_new(ctx_, &dtshape_, &store_, flags, &c))
@@ -502,9 +502,9 @@ def arange(cfg, slice_, dtshape):
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(cfg.storage, &store_)
+    set_storage(cfg.store, &store_)
 
-    flags = 0 if cfg.storage.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg.store.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     cdef ciarray.iarray_container_t *c
     iarray_check(ciarray.iarray_arange(ctx_, &dtshape_, start, stop, step, &store_, flags, &c))
@@ -522,9 +522,9 @@ def linspace(cfg, start, stop, dtshape):
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(cfg.storage, &store_)
+    set_storage(cfg.store, &store_)
 
-    flags = 0 if cfg.storage.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg.store.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     cdef ciarray.iarray_container_t *c
     iarray_check(ciarray.iarray_linspace(ctx_, &dtshape_, start, stop, &store_, flags, &c))
@@ -542,9 +542,9 @@ def zeros(cfg, dtshape):
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(cfg.storage, &store_)
+    set_storage(cfg.store, &store_)
 
-    flags = 0 if cfg.storage.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg.store.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     cdef ciarray.iarray_container_t *c
     iarray_check(ciarray.iarray_zeros(ctx_, &dtshape_, &store_, flags, &c))
@@ -562,9 +562,9 @@ def ones(cfg, dtshape):
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(cfg.storage, &store_)
+    set_storage(cfg.store, &store_)
 
-    flags = 0 if cfg.storage.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg.store.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     cdef ciarray.iarray_container_t *c
     iarray_check(ciarray.iarray_ones(ctx_, &dtshape_, &store_, flags, &c))
@@ -582,9 +582,9 @@ def full(cfg, fill_value, dtshape):
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(cfg.storage, &store_)
+    set_storage(cfg.store, &store_)
 
-    flags = 0 if cfg.storage.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg.store.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     cdef ciarray.iarray_container_t *c
     if dtshape["dtype"] == ciarray.IARRAY_DATA_TYPE_DOUBLE:
@@ -674,9 +674,9 @@ def numpy2iarray(cfg, a, dtshape):
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(cfg.storage, &store_)
+    set_storage(cfg.store, &store_)
 
-    flags = 0 if cfg.storage.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg.store.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     buffer_size = a.size * np.dtype(a.dtype).itemsize
 
@@ -726,9 +726,9 @@ def random_rand(cfg, dtshape):
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(cfg.storage, &store_)
+    set_storage(cfg.store, &store_)
 
-    flags = 0 if cfg.storage.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg.store.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     cdef ciarray.iarray_container_t *c
     iarray_check(ciarray.iarray_random_rand(ctx_, &dtshape_, r_ctx_, &store_, flags, &c))
@@ -747,9 +747,9 @@ def random_randn(cfg, dtshape):
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(cfg.storage, &store_)
+    set_storage(cfg.store, &store_)
 
-    flags = 0 if cfg.storage.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg.store.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     cdef ciarray.iarray_container_t *c
     iarray_check(ciarray.iarray_random_randn(ctx_, &dtshape_, r_ctx_, &store_, flags, &c))
@@ -775,9 +775,9 @@ def random_beta(cfg, alpha, beta, dtshape):
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(cfg.storage, &store_)
+    set_storage(cfg.store, &store_)
 
-    flags = 0 if cfg.storage.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg.store.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     cdef ciarray.iarray_container_t *c
     iarray_check(ciarray.iarray_random_beta(ctx_, &dtshape_, r_ctx_, &store_, flags, &c))
@@ -803,9 +803,9 @@ def random_lognormal(cfg, mu, sigma, dtshape):
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(cfg.storage, &store_)
+    set_storage(cfg.store, &store_)
 
-    flags = 0 if cfg.storage.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg.store.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     cdef ciarray.iarray_container_t *c
     iarray_check(ciarray.iarray_random_lognormal(ctx_, &dtshape_, r_ctx_, &store_, flags, &c))
@@ -829,9 +829,9 @@ def random_exponential(cfg, beta, dtshape):
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(cfg.storage, &store_)
+    set_storage(cfg.store, &store_)
 
-    flags = 0 if cfg.storage.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg.store.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     cdef ciarray.iarray_container_t *c
     iarray_check(ciarray.iarray_random_exponential(ctx_, &dtshape_, r_ctx_, &store_, flags, &c))
@@ -857,9 +857,9 @@ def random_uniform(cfg, a, b, dtshape):
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(cfg.storage, &store_)
+    set_storage(cfg.store, &store_)
 
-    flags = 0 if cfg.storage.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg.store.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     cdef ciarray.iarray_container_t *c
     iarray_check(ciarray.iarray_random_uniform(ctx_, &dtshape_, r_ctx_, &store_, flags, &c))
@@ -885,9 +885,9 @@ def random_normal(cfg, mu, sigma, dtshape):
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(cfg.storage, &store_)
+    set_storage(cfg.store, &store_)
 
-    flags = 0 if cfg.storage.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg.store.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     cdef ciarray.iarray_container_t *c
     iarray_check(ciarray.iarray_random_normal(ctx_, &dtshape_, r_ctx_, &store_, flags, &c))
@@ -911,9 +911,9 @@ def random_bernoulli(cfg, p, dtshape):
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(cfg.storage, &store_)
+    set_storage(cfg.store, &store_)
 
-    flags = 0 if cfg.storage.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg.store.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     cdef ciarray.iarray_container_t *c
     iarray_check(ciarray.iarray_random_bernoulli(ctx_, &dtshape_, r_ctx_, &store_, flags, &c))
@@ -939,9 +939,9 @@ def random_binomial(cfg, m, p, dtshape):
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(cfg.storage, &store_)
+    set_storage(cfg.store, &store_)
 
-    flags = 0 if cfg.storage.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg.store.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     cdef ciarray.iarray_container_t *c
     iarray_check(ciarray.iarray_random_binomial(ctx_, &dtshape_, r_ctx_, &store_, flags, &c))
@@ -965,9 +965,9 @@ def random_poisson(cfg, l, dtshape):
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(cfg.storage, &store_)
+    set_storage(cfg.store, &store_)
 
-    flags = 0 if cfg.storage.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg.store.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     cdef ciarray.iarray_container_t *c
     iarray_check(ciarray.iarray_random_poisson(ctx_, &dtshape_, r_ctx_, &store_, flags, &c))
@@ -994,7 +994,7 @@ def matmul(cfg, a, b):
     cdef ciarray.iarray_container_t *c
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(cfg.storage, &store_)
+    set_storage(cfg.store, &store_)
 
     iarray_check(ciarray.iarray_linalg_matmul(ctx_, a_, b_, &store_, &c))
 
@@ -1033,7 +1033,7 @@ def reduce(cfg, a, method, axis):
     cdef ciarray.iarray_container_t *c
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(cfg.storage, &store_)
+    set_storage(cfg.store, &store_)
 
     iarray_check(ciarray.iarray_reduce(ctx_, a_, func, axis, &store_, &c))
 
@@ -1054,7 +1054,7 @@ def reduce_multi(cfg, a, method, axis):
         axis_[i] = ax
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(cfg.storage, &store_)
+    set_storage(cfg.store, &store_)
     iarray_check(ciarray.iarray_reduce_multi(ctx_, a_, func, len(axis), axis_, &store_, &c))
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
@@ -1090,9 +1090,9 @@ def partition_advice(dtshape, min_chunksize, max_chunksize, min_blocksize, max_b
         return None, None
 
     # Extract the shapes and return them as tuples
-    chunkshape = tuple(store.chunkshape[i] for i in range(len(dtshape.shape)))
-    blockshape = tuple(store.blockshape[i] for i in range(len(dtshape.shape)))
-    return chunkshape, blockshape
+    chunks = tuple(store.chunkshape[i] for i in range(len(dtshape.shape)))
+    blocks = tuple(store.blockshape[i] for i in range(len(dtshape.shape)))
+    return chunks, blocks
 
 #
 # TODO: the next functions are just for benchmarking purposes and should be moved to its own extension

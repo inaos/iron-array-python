@@ -20,8 +20,8 @@ compressor = Blosc(cname="lz4", clevel=CLEVEL, shuffle=Blosc.SHUFFLE)
 
 dtype = np.float64
 shapes = np.logspace(6, 8, 10, dtype=np.int64)
-# chunkshape, blockshape = (100_000,), (8_000,)
-chunkshape, blockshape = None, None  # use automatic partitioning
+# chunks, blocks = (100_000,), (8_000,)
+chunks, blocks = None, None  # use automatic partitioning
 
 sexpr = "(x - 1.35) * (x - 4.45) * (x - 8.5)"
 
@@ -31,11 +31,10 @@ t_ratio = []
 
 for i, shape in enumerate(shapes):
     shape = (shape,)
-    dtshape = ia.DTShape(shape, dtype)
     print("Using vector of length:", shape[0])
 
-    storage_in = ia.Storage(chunkshape, blockshape, "iarray_infile.iarray")
-    ia.arange(dtshape, storage=storage_in)
+    store_in = ia.Store(chunks, blocks, "iarray_infile.iarray")
+    ia.arange(shape, store=store_in, dtype=dtype)
 
     t0 = time()
     data = ia.open("iarray_infile.iarray")
@@ -46,7 +45,7 @@ for i, shape in enumerate(shapes):
     print("Time for computing '%s' expression (via ia.Expr()): %.3f" % (sexpr, (t1 - t0)))
 
     data2 = zarr.open(
-        "zarr_infile.zarr", "w", shape=shape, chunks=chunkshape, dtype=dtype, compressor=compressor
+        "zarr_infile.zarr", "w", shape=shape, chunks=chunks, dtype=dtype, compressor=compressor
     )
     for info, block in data.iter_read_block():
         sl = tuple([slice(i, i + s) for i, s in zip(info.elemindex, info.shape)])
@@ -65,7 +64,7 @@ for i, shape in enumerate(shapes):
             "zarr_outfile.zarr",
             "w",
             shape=shape,
-            chunks=chunkshape,
+            chunks=chunks,
             dtype=dtype,
             compressor=compressor,
         )

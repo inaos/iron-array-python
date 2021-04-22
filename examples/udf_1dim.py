@@ -15,10 +15,9 @@ NITER = 5
 
 # Define array params
 shape = [20_000_000]
-dtshape = ia.DTShape(shape, np.float64)
-
+dtype = np.float64
 # Let's favor speed during computations
-ia.set_config(favor=ia.Favors.SPEED)
+ia.set_config(favor=ia.Favors.SPEED, dtype=dtype)
 
 
 @jit(verbose=0)
@@ -31,8 +30,8 @@ def f(out: Array(float64, 1), x: Array(float64, 1)) -> int64:
 
 
 # Create initial containers
-a1 = ia.linspace(dtshape, 0, 10)
-a2 = np.linspace(0, 10, shape[0], dtshape.dtype).reshape(shape)
+a1 = ia.linspace(shape, 0, 10)
+a2 = np.linspace(0, 10, shape[0], dtype=dtype).reshape(shape)
 
 print("numpy evaluation...")
 bn = None

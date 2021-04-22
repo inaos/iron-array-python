@@ -6,7 +6,7 @@ from itertools import zip_longest as izip
 
 # Expression
 @pytest.mark.parametrize(
-    "shape, chunkshape, blockshape, itershape, dtype",
+    "shape, chunks, blocks, itershape, dtype",
     [
         ([100, 100], [20, 20], [10, 10], [20, 20], np.float64),
         ([100, 100], [15, 15], [7, 8], [15, 15], np.float32),
@@ -18,15 +18,15 @@ from itertools import zip_longest as izip
         ([10, 10, 10, 10], None, None, [3, 4, 3, 4], np.float32),
     ],
 )
-def test_iterator(shape, chunkshape, blockshape, itershape, dtype):
-    if chunkshape is None:
-        storage = ia.Storage(plainbuffer=True)
+def test_iterator(shape, chunks, blocks, itershape, dtype):
+    if chunks is None:
+        store = ia.Store(plainbuffer=True)
     else:
-        storage = ia.Storage(chunkshape, blockshape)
-    a = ia.linspace(ia.DTShape(shape, dtype), -10, 10, storage=storage)
+        store = ia.Store(chunks, blocks)
+    a = ia.linspace(shape, -10, 10, dtype=dtype, store=store)
     an = ia.iarray2numpy(a)
 
-    b = ia.empty(ia.DTShape(shape, dtype), storage=storage)
+    b = ia.empty(shape, dtype=dtype, store=store)
 
     zip = izip(a.iter_read_block(itershape), b.iter_write_block(itershape))
     for i, ((ainfo, aslice), (_, bslice)) in enumerate(zip):

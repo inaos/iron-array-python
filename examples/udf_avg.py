@@ -16,9 +16,9 @@ NITER = 1
 # Define array params
 shape = [20_000_000]
 dtype = np.float64
-dtshape = ia.DTShape(shape, dtype)
+
 # Most of modern computers can reach 8 threads
-ia.set_config(nthreads=8)
+ia.set_config(nthreads=8, dtype=dtype)
 
 
 @jit(verbose=0)
@@ -36,7 +36,7 @@ def f(out: Array(float64, 1), x: Array(float64, 1)) -> int64:
 
 
 # Create input arrays
-ia_in = ia.linspace(dtshape, 0, 10)
+ia_in = ia.linspace(shape, 0, 10)
 np_in = np.linspace(0, 10, reduce(lambda x, y: x * y, shape), dtype=dtype).reshape(shape)
 ia.cmp_arrays(np_in, ia_in)
 # print(np_in)

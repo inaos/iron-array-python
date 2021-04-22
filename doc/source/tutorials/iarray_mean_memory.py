@@ -15,7 +15,7 @@ blockshape = (45, 4, 180)
 
 
 # storage = ia.Storage(enforce_frame=enforce_frame, chunkshape=chunkshape, blockshape=blockshape)
-storage = ia.Storage(enforce_frame=enforce_frame)
+storage = ia.Store(enforce_frame=enforce_frame)
 # cfg = ia.Config(nthreads=nthreads, storage=storage, clevel=1, codec=ia.Codecs.ZSTD, filters=[ia.Filters.BITSHUFFLE])
 # cfg = ia.Config(storage=storage, clevel=1, codec=ia.Codecs.ZSTD, filters=[ia.Filters.BITSHUFFLE])
 # cfg = ia.Config(nthreads=0, storage=storage, clevel=1, codec=ia.Codecs.ZSTD, filters=[ia.Filters.BITSHUFFLE])

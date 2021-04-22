@@ -15,6 +15,7 @@ from dataclasses import dataclass, field, fields, replace
 from typing import List, Sequence, Any, Union
 import warnings
 from contextlib import contextmanager
+import numpy as np
 
 # Global variable for random seed
 RANDOM_SEED = 0
@@ -47,14 +48,14 @@ def get_ncores(max_ncores=0):
 
 
 def partition_advice(
-    dtshape, min_chunksize=0, max_chunksize=0, min_blocksize=0, max_blocksize=0, cfg=None
+    shape, min_chunksize=0, max_chunksize=0, min_blocksize=0, max_blocksize=0, cfg=None
 ):
     """Provide advice for the chunk and block shapes for a certain `dtshape`.
 
     Parameters
     ----------
-    dtshape : ia.DTShape
-        The shape and dtype of the array.
+    shape : Sequence
+        The shape of the array.
     min_chunksize : int
         Minimum value for chunksize (in bytes).  If 0 (default), a sensible value is chosen.
     max_chunksize : int
@@ -69,23 +70,25 @@ def partition_advice(
     Returns
     -------
     tuple
-        If success, a (chunkshape, blockshape) containing the advice is returned.
+        If success, a (chunks, blocks) containing the advice is returned.
         In case of error, a (None, None) is returned and a warning is issued.
     """
     if cfg is None:
         cfg = get_config()
+
+    dtshape = ia.DTShape(shape, cfg.dtype)
     if dtshape.shape == ():
         return (), ()
-    chunkshape, blockshape = ext.partition_advice(
+    chunks, blocks = ext.partition_advice(
         dtshape, min_chunksize, max_chunksize, min_blocksize, max_blocksize, cfg
     )
-    if chunkshape is None:
+    if chunks is None:
         warnings.warn(
             "Error in providing partition advice (please report this)."
-            "  Please do not trust on the chunkshape and blockshape in `storage`!",
+            "  Please do not trust on the chunks and blocks in `storage`!",
             UserWarning,
         )
-    return chunkshape, blockshape
+    return chunks, blocks
 
 
 @dataclass
@@ -97,17 +100,18 @@ class DefaultConfig:
     filters: Any
     nthreads: Any
     fp_mantissa_bits: Any
-    storage: Any
+    store: Any
     eval_method: Any
     seed: Any
     random_gen: Any
     btune: Any
+    dtype: Any
 
 
 @dataclass
-class DefaultStorage:
-    chunkshape: Any
-    blockshape: Any
+class DefaultStore:
+    chunks: Any
+    blocks: Any
     urlpath: Any
     enforce_frame: Any
     plainbuffer: Any
@@ -133,17 +137,18 @@ class Defaults(object):
     seed: int = None
     random_gen: ia.RandomGen = ia.RandomGen.MERSENNE_TWISTER
     btune: bool = True
+    dtype: (np.float32, np.float64) = np.float64
 
-    # Storage
-    _storage = None
-    chunkshape: Sequence = None
-    blockshape: Sequence = None
+    # Store
+    _store = None
+    chunks: Sequence = None
+    blocks: Sequence = None
     urlpath: str = None
     enforce_frame: bool = False
     plainbuffer: bool = False
 
     def __post_init__(self):
-        # Initialize config and storage with its getters and setters
+        # Initialize config and store with its getters and setters
         self.config = self.config
 
     # Accessors only meant to serve as default_factory
@@ -180,6 +185,9 @@ class Defaults(object):
     def _btune(self):
         return self.btune
 
+    def _dtype(self):
+        return self.dtype
+
     @property
     def config(self):
         if self._config is None:
@@ -192,11 +200,12 @@ class Defaults(object):
                 filters=self.filters,
                 nthreads=self.nthreads,
                 fp_mantissa_bits=self.fp_mantissa_bits,
-                storage=self.storage,
+                store=self.store,
                 eval_method=self.eval_method,
                 seed=self.seed,
                 random_gen=self.random_gen,
                 btune=self.btune,
+                dtype=self.dtype,
             )
         return self._config
 
@@ -215,16 +224,17 @@ class Defaults(object):
         self.seed = value.seed
         self.random_gen = value.random_gen
         self.btune = value.btune
-        self._storage = value.storage
+        self.dtype = value.dtype
+        self._store = value.store
         self._config = value
-        if self._storage is not None:
-            self.set_storage(self._storage)
+        if self._store is not None:
+            self.set_store(self._store)
 
-    def _chunkshape(self):
-        return self.chunkshape
+    def _chunks(self):
+        return self.chunks
 
-    def _blockshape(self):
-        return self.blockshape
+    def _blocks(self):
+        return self.blocks
 
     def _urlpath(self):
         return self.urlpath
@@ -236,59 +246,59 @@ class Defaults(object):
         return self.plainbuffer
 
     @property
-    def storage(self):
-        if self._storage is None:
+    def store(self):
+        if self._store is None:
             # Bootstrap the defaults
-            return DefaultStorage(
-                chunkshape=self.chunkshape,
-                blockshape=self.blockshape,
+            return DefaultStore(
+                chunks=self.chunks,
+                blocks=self.blocks,
                 urlpath=self.urlpath,
                 enforce_frame=self.enforce_frame,
                 plainbuffer=self.plainbuffer,
             )
-        return self._storage
+        return self._store
 
-    def set_storage(self, value):
-        if not hasattr(value, "chunkshape"):
-            raise ValueError(f"You need to use a `Storage` instance")
-        self.chunkshape = value.chunkshape
-        self.blockshape = value.blockshape
+    def set_store(self, value):
+        if not hasattr(value, "chunks"):
+            raise ValueError(f"You need to use a `Store` instance")
+        self.chunks = value.chunks
+        self.blocks = value.blocks
         self.urlpath = value.urlpath
         self.enforce_frame = value.enforce_frame
         self.plainbuffer = value.plainbuffer
-        self._storage = value
+        self._store = value
 
 
 # Global variable where the defaults for config params are stored
 defaults = Defaults()
 # Global config
-global_config = None
+global_config = []
 
 
 def reset_config_defaults():
     """Reset the defaults of the configuration parameters."""
     global global_config
     defaults.config = Defaults()
-    global_config = None
+    global_config = []
     set_config()
     return global_config
 
 
 @dataclass
-class Storage:
-    """Dataclass for hosting different storage properties.
+class Store:
+    """Dataclass for hosting different store properties.
 
     All the parameters below are optional.  In case you don't specify one, a
     sensible default (see below) is used.
 
     Parameters
     ----------
-    chunkshape : list, tuple
-        The chunkshape for the output array.  If None (the default), a sensible default
+    chunks : list, tuple
+        The chunks for the output array.  If None (the default), a sensible default
         will be used based on the shape of the array and the size of caches in the current
         processor.
-    blockshape : list, tuple
-        The blockshape for the output array.  If None (the default), a sensible default
+    blocks : list, tuple
+        The blocks for the output array.  If None (the default), a sensible default
         will be used based on the shape of the array and the size of caches in the current
         processor.
     urlpath : str
@@ -296,7 +306,7 @@ class Storage:
         the output array will be stored in-memory.
     enforce_frame : bool
         If True, the output array will be stored as a frame, even when in-memory.  If False
-        (the default), the storage will be sparse.  Currently, persistent storage only supports
+        (the default), the store will be sparse.  Currently, persistent store only supports
         the frame format. When in-memory, the array can be in sparse (the default)
         or contiguous form (frame), depending on this flag.
     plainbuffer : bool
@@ -306,8 +316,8 @@ class Storage:
         container, which can be compressed (the default).
     """
 
-    chunkshape: Union[Sequence, None] = field(default_factory=defaults._chunkshape)
-    blockshape: Union[Sequence, None] = field(default_factory=defaults._blockshape)
+    chunks: Union[Sequence, None] = field(default_factory=defaults._chunks)
+    blocks: Union[Sequence, None] = field(default_factory=defaults._blocks)
     urlpath: bytes or str = field(default_factory=defaults._urlpath)
     enforce_frame: bool = field(default_factory=defaults._enforce_frame)
     plainbuffer: bool = field(default_factory=defaults._plainbuffer)
@@ -318,26 +328,22 @@ class Storage:
         )
         self.enforce_frame = True if self.urlpath else self.enforce_frame
         if self.plainbuffer:
-            if self.chunkshape is not None or self.blockshape is not None:
-                raise ValueError(
-                    "plainbuffer array does not support neither a chunkshape nor blockshape"
-                )
+            if self.chunks is not None or self.blocks is not None:
+                raise ValueError("plainbuffer array does not support neither a chunks nor blocks")
 
-    def _get_shape_advice(self, dtshape, cfg=None):
+    def _get_shape_advice(self, shape, cfg=None):
         if self.plainbuffer:
             return
-        chunkshape, blockshape = self.chunkshape, self.blockshape
-        if chunkshape is not None and blockshape is not None:
+        chunks, blocks = self.chunks, self.blocks
+        if chunks is not None and blocks is not None:
             return
-        if chunkshape is None and blockshape is None:
-            chunkshape_, blockshape_ = partition_advice(dtshape, cfg=cfg)
-            self.chunkshape = chunkshape_
-            self.blockshape = blockshape_
+        if chunks is None and blocks is None:
+            chunks_, blocks_ = partition_advice(shape, cfg=cfg)
+            self.chunks = chunks_
+            self.blocks = blocks_
             return
         else:
-            raise ValueError(
-                "You can either specify both chunkshape and blockshape or none of them."
-            )
+            raise ValueError("You can either specify both chunks and blocks or none of them.")
 
 
 @dataclass
@@ -364,7 +370,7 @@ class Config(ext.Config):
         The number of bits to be kept in the mantissa in output arrays.  If 0 (the default),
         no precision is capped.  FYI, double precision have 52 bit in mantissa, whereas
         single precision has 23 bit.  For example, if you set this to 23 for doubles,
-        you will be using a compressed storage very close as if you were using singles.
+        you will be using a compressed store very close as if you were using singles.
     use_dict : bool
         Whether Blosc should use a dictionary for enhanced compression (currently only
         supported by :py:obj:`Codecs.ZSTD <Codecs>`).  Default is False.
@@ -381,10 +387,14 @@ class Config(ext.Config):
     random_gen : RandomGen
         The random generator to be used.  The default is
         :py:obj:`RandomGen.MERSENNE_TWISTER <RandomGen>`.
-    storage : Storage
-        Storage instance where you can specify different properties of the output
-        storage.  See :py:obj:`Storage` docs for details.  For convenience, you can also
-        pass all the Storage parameters directly in this constructor too.
+    btune: bool
+        Enable btune machinery. The default is True.
+    dtype: (np.float32, np.float64)
+        The data type to use. The default is np.float64.
+    store : Store
+        Store instance where you can specify different properties of the output
+        store.  See :py:obj:`Store` docs for details.  For convenience, you can also
+        pass all the Store parameters directly in this constructor too.
 
     See Also
     --------
@@ -403,11 +413,12 @@ class Config(ext.Config):
     seed: int = field(default_factory=defaults._seed)
     random_gen: ia.RandomGen = field(default_factory=defaults._random_gen)
     btune: bool = field(default_factory=defaults._btune)
-    storage: Storage = None  # delayed initialization
+    dtype: (np.float32, np.float64) = field(default_factory=defaults._dtype)
+    store: Store = None  # delayed initialization
 
-    # These belong to Storage, but we accept them in top level too
-    chunkshape: Union[Sequence, None] = field(default_factory=defaults._chunkshape)
-    blockshape: Union[Sequence, None] = field(default_factory=defaults._blockshape)
+    # These belong to Store, but we accept them in top level too
+    chunks: Union[Sequence, None] = field(default_factory=defaults._chunks)
+    blocks: Union[Sequence, None] = field(default_factory=defaults._blocks)
     urlpath: bytes or str = field(default_factory=defaults._urlpath)
     enforce_frame: bool = field(default_factory=defaults._enforce_frame)
     plainbuffer: bool = field(default_factory=defaults._plainbuffer)
@@ -421,10 +432,10 @@ class Config(ext.Config):
                 RANDOM_SEED = 0
             RANDOM_SEED += 1
             self.seed = RANDOM_SEED
-        if self.storage is None:
-            self.storage = Storage(
-                chunkshape=self.chunkshape,
-                blockshape=self.blockshape,
+        if self.store is None:
+            self.store = Store(
+                chunks=self.chunks,
+                blocks=self.blocks,
                 urlpath=self.urlpath,
                 enforce_frame=self.enforce_frame,
                 plainbuffer=self.plainbuffer,
@@ -464,19 +475,19 @@ class Config(ext.Config):
 
     def _replace(self, **kwargs):
         cfg_ = replace(self, **kwargs)
-        if "storage" in kwargs:
-            store = kwargs["storage"]
+        if "store" in kwargs:
+            store = kwargs["store"]
             if store is not None:
-                for field in fields(Storage):
+                for field in fields(Store):
                     setattr(cfg_, field.name, getattr(store, field.name))
         store_args = dict(
-            (field.name, kwargs[field.name]) for field in fields(Storage) if field.name in kwargs
+            (field.name, kwargs[field.name]) for field in fields(Store) if field.name in kwargs
         )
-        cfg_.storage = replace(cfg_.storage, **store_args)
+        cfg_.store = replace(cfg_.store, **store_args)
         return cfg_
 
 
-def set_config(cfg: Config = None, dtshape=None, **kwargs):
+def set_config(cfg: Config = None, shape=None, **kwargs):
     """Set the global defaults for iarray operations.
 
     Parameters
@@ -484,10 +495,10 @@ def set_config(cfg: Config = None, dtshape=None, **kwargs):
     cfg : ia.Config
         The configuration that will become the default for iarray operations.
         If None, the defaults are not changed.
-    dtshape : ia.DTShape
+    shape : Sequence
         This is not part of the global configuration as such, but if passed,
-        it will be used so as to compute sensible defaults for storage properties
-        like chunkshape and blockshape.  This is mainly meant for internal use.
+        it will be used so as to compute sensible defaults for store properties
+        like chunks and blocks.  This is mainly meant for internal use.
     kwargs : dict
         A dictionary for setting some or all of the fields in the ia.Config
         dataclass that should override the current configuration.
@@ -504,21 +515,21 @@ def set_config(cfg: Config = None, dtshape=None, **kwargs):
     """
     global global_config
     if cfg is None:
-        if global_config is None:
+        if not global_config:
             cfg = Config()
         else:
-            cfg = global_config
+            cfg = global_config.pop()
 
     if kwargs != {}:
         cfg = cfg._replace(**kwargs)
-    if dtshape is not None:
-        cfg.storage._get_shape_advice(dtshape, cfg=cfg)
+    if shape is not None:
+        cfg.store._get_shape_advice(shape, cfg=cfg)
 
-    global_config = cfg
-    # Set the defaults for Config() constructor and other nested configs (Storage...)
+    global_config.append(cfg)
+    # Set the defaults for Config() constructor and other nested configs (Store...)
     defaults.config = cfg
 
-    return global_config
+    return global_config[-1]
 
 
 # Initialize the configuration
@@ -537,11 +548,13 @@ def get_config():
     --------
     ia.set_config
     """
-    return global_config
+    global global_config
+
+    return global_config[-1]
 
 
 @contextmanager
-def config(cfg: Config = None, dtshape=None, **kwargs):
+def config(cfg: Config = None, shape=None, **kwargs):
     """Create a context with some specific configuration parameters.
 
     All parameters are the same than in `ia.set_config()`.
@@ -552,37 +565,45 @@ def config(cfg: Config = None, dtshape=None, **kwargs):
     ia.set_config
     ia.Config
     """
+    global global_config
+
     if cfg is None:
         cfg = Config()
     cfg_ = cfg._replace(**kwargs)
-    if dtshape is not None:
-        cfg_.storage._get_shape_advice(dtshape)
-    yield cfg_
+    if shape is not None:
+        cfg_.store._get_shape_advice(shape)
+    global_config.append(cfg_)
+
+    try:
+        yield cfg_
+    finally:
+        global_config.pop()
 
 
 if __name__ == "__main__":
     cfg_ = get_config()
     print("Defaults:", cfg_)
-    assert cfg_.storage.enforce_frame == False
+    assert cfg_.store.enforce_frame is False
 
-    set_config(storage=Storage(enforce_frame=True))
+    set_config(store=Store(enforce_frame=True))
     cfg = get_config()
     print("1st form:", cfg)
-    assert cfg.storage.enforce_frame == True
+    assert cfg.store.enforce_frame is True
 
     set_config(enforce_frame=False)
     cfg = get_config()
     print("2nd form:", cfg)
-    assert cfg.storage.enforce_frame == False
+    assert cfg.store.enforce_frame is False
 
-    set_config(Config(clevel=1))
+    set_config(Config(clevel=5))
     cfg = get_config()
     print("3rd form:", cfg)
-    assert cfg.clevel == 1
+    assert cfg.clevel == 5
 
     with config(clevel=0, enforce_frame=True) as cfg_new:
         print("Context form:", cfg_new)
-        assert cfg_new.storage.enforce_frame is True
+        assert cfg_new.store.enforce_frame is True
+        assert get_config().clevel == 0
 
     cfg = ia.Config(codec=ia.Codecs.BLOSCLZ)
     cfg2 = ia.set_config(cfg=cfg, codec=ia.Codecs.LIZARD)

@@ -19,17 +19,17 @@ CODEC = ia.Codecs.LZ4
 CLEVEL = 6
 
 ashape = (16791, 8556)
-# These chunkshape/blockshape has been chosen as a balance performance
+# These chunks/blocks has been chosen as a balance performance
 # between iarray and dask.  In general reducing these values improves
 # performance when in memory, but degrades performance when on-disk.
-achunkshape = (200, 2000)
-ablockshape = (200, 200)
+achunks = (200, 2000)
+ablocks = (200, 200)
 
 axis = 0
 
 cshape = tuple([s for i, s in enumerate(ashape) if i != axis])
-cchunkshape = tuple([s for i, s in enumerate(achunkshape) if i != axis])
-cblockshape = tuple([s for i, s in enumerate(ablockshape) if i != axis])
+cchunks = tuple([s for i, s in enumerate(achunks) if i != axis])
+cblocks = tuple([s for i, s in enumerate(ablocks) if i != axis])
 
 
 blosc.use_threads = False
@@ -37,24 +37,23 @@ acompressor = Blosc(
     cname="lz4",
     clevel=CLEVEL,
     shuffle=Blosc.SHUFFLE,
-    blocksize=reduce(lambda x, y: x * y, ablockshape) * 8,
+    blocksize=reduce(lambda x, y: x * y, ablocks) * 8,
 )
 
-ia.set_config(codec=CODEC, clevel=CLEVEL, nthreads=NTHREADS)
+ia.set_config(codec=CODEC, clevel=CLEVEL, nthreads=NTHREADS, dtype=DTYPE)
 
-astorage = ia.Storage(achunkshape, ablockshape)
-dtshape = ia.DTShape(ashape, dtype=DTYPE)
-aia = ia.irandom.normal(dtshape, 0, 1, storage=astorage)
+astore = ia.Store(achunks, ablocks)
+aia = ia.random.normal(ashape, 0, 1, store=astore)
 print(f"iarray cratio: {aia.cratio}")
 
 ccompressor = Blosc(
     cname="lz4",
     clevel=CLEVEL,
     shuffle=Blosc.SHUFFLE,
-    blocksize=reduce(lambda x, y: x * y, cblockshape) * 8,
+    blocksize=reduce(lambda x, y: x * y, cblocks) * 8,
 )
 
-azarr = zarr.empty(shape=ashape, chunks=achunkshape, dtype=DTYPE, compressor=acompressor)
+azarr = zarr.empty(shape=ashape, chunks=achunks, dtype=DTYPE, compressor=acompressor)
 for info, block in aia:
     azarr[info.slice] = block[:]
 
@@ -69,6 +68,7 @@ MEMPROF = True
 if MEMPROF:
     from memory_profiler import profile
 else:
+
     def profile(f):
         return f
 
@@ -87,7 +87,7 @@ def dask_reduce(azarr, func):
             cshape,
             dtype=DTYPE,
             compressor=ccompressor,
-            chunks=cchunkshape,
+            chunks=cchunks,
         )
         da.to_zarr(cd, czarr)
         return czarr

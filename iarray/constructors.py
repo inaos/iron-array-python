@@ -37,15 +37,15 @@ class DTShape:
             raise ValueError("shape must be non-empty")
 
 
-def empty(dtshape: DTShape, cfg: ia.Config = None, **kwargs) -> ia.IArray:
+def empty(shape: Sequence, cfg: ia.Config = None, **kwargs) -> ia.IArray:
     """Return an empty array.
 
     An empty array has no data and needs to be filled via a write iterator.
 
     Parameters
     ----------
-    dtshape : DTShape
-        The shape and data type of the array to be created.
+    shape : tuple, list
+        The shape of the array to be created.
     cfg : Config
         The configuration for running the expression.
         If None (default), global defaults are used.
@@ -62,16 +62,21 @@ def empty(dtshape: DTShape, cfg: ia.Config = None, **kwargs) -> ia.IArray:
     --------
     IArray.iter_write_block : Iterator for filling an empty array.
     """
-    with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
+
+    if cfg is None:
+        cfg = ia.get_config()
+
+    with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
+        dtshape = ia.DTShape(shape, cfg.dtype)
         return ext.empty(cfg, dtshape)
 
 
 def arange(
-    dtshape: DTShape, start=None, stop=None, step=None, cfg: ia.Config = None, **kwargs
+    shape: Sequence, start=None, stop=None, step=None, cfg: ia.Config = None, **kwargs
 ) -> ia.IArray:
     """Return evenly spaced values within a given interval.
 
-    `dtshape`, `cfg` and `kwargs` are the same than for :func:`empty`.
+    `shape`, `cfg` and `kwargs` are the same than for :func:`empty`.
 
     `start`, `stop`, `step` are the same as in np.arange.
 
@@ -84,8 +89,9 @@ def arange(
     --------
     empty : Create an empty array.
     """
+
     if (start, stop, step) == (None, None, None):
-        stop = np.prod(dtshape.shape)
+        stop = np.prod(shape)
         start = 0
         step = 1
     elif (stop, step) == (None, None):
@@ -95,22 +101,27 @@ def arange(
     elif step is None:
         stop = stop
         start = start
-        if dtshape.shape is None:
+        if shape is None:
             step = 1
         else:
-            step = (stop - start) / np.prod(dtshape.shape)
+            step = (stop - start) / np.prod(shape)
     slice_ = slice(start, stop, step)
 
-    with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
+    if cfg is None:
+        cfg = ia.get_config()
+
+    with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
+        dtshape = ia.DTShape(shape, cfg.dtype)
         return ext.arange(cfg, slice_, dtshape)
 
 
 def linspace(
-    dtshape: DTShape, start: float, stop: float, cfg: ia.Config = None, **kwargs
+    shape: Sequence, start: float, stop: float, cfg: ia.Config = None, **kwargs
 ) -> ia.IArray:
+
     """Return evenly spaced numbers over a specified interval.
 
-    `dtshape`, `cfg` and `kwargs` are the same than for :func:`empty`.
+    `shape`, `cfg` and `kwargs` are the same than for :func:`empty`.
 
     `start`, `stop` are the same as in np.linspace.
 
@@ -123,14 +134,18 @@ def linspace(
     --------
     empty : Create an empty array.
     """
-    with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
+    if cfg is None:
+        cfg = ia.get_config()
+
+    with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
+        dtshape = ia.DTShape(shape, cfg.dtype)
         return ext.linspace(cfg, start, stop, dtshape)
 
 
-def zeros(dtshape: DTShape, cfg: ia.Config = None, **kwargs) -> ia.IArray:
+def zeros(shape: Sequence, cfg: ia.Config = None, **kwargs) -> ia.IArray:
     """Return a new array of given shape and type, filled with zeros.
 
-    `dtshape`, `cfg` and `kwargs` are the same than for :func:`empty`.
+    `shape`, `cfg` and `kwargs` are the same than for :func:`empty`.
 
     Returns
     -------
@@ -142,15 +157,18 @@ def zeros(dtshape: DTShape, cfg: ia.Config = None, **kwargs) -> ia.IArray:
     empty : Create an empty array.
     ones : Create an array filled with ones.
     """
-    with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
+    if cfg is None:
+        cfg = ia.get_config()
+
+    with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
+        dtshape = ia.DTShape(shape, cfg.dtype)
         return ext.zeros(cfg, dtshape)
 
 
-def ones(dtshape: DTShape, cfg: ia.Config = None, **kwargs) -> ia.IArray:
+def ones(shape: Sequence, cfg: ia.Config = None, **kwargs) -> ia.IArray:
     """Return a new array of given shape and type, filled with ones.
 
-    `dtshape`, `cfg` and `kwargs` are the same than for :func:`empty`.
-
+    `shape`, `cfg` and `kwargs` are the same than for :func:`empty`.
     Returns
     -------
     IArray
@@ -161,14 +179,18 @@ def ones(dtshape: DTShape, cfg: ia.Config = None, **kwargs) -> ia.IArray:
     empty : Create an empty array.
     zeros : Create an array filled with zeros.
     """
-    with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
+    if cfg is None:
+        cfg = ia.get_config()
+
+    with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
+        dtshape = ia.DTShape(shape, cfg.dtype)
         return ext.ones(cfg, dtshape)
 
 
-def full(dtshape: DTShape, fill_value: float, cfg: ia.Config = None, **kwargs) -> ia.IArray:
+def full(shape: Sequence, fill_value: float, cfg: ia.Config = None, **kwargs) -> ia.IArray:
     """Return a new array of given shape and type, filled with `fill_value`.
 
-    `dtshape`, `cfg` and `kwargs` are the same than for :func:`empty`.
+    `shape`, `cfg` and `kwargs` are the same than for :func:`empty`.
 
     Returns
     -------
@@ -180,5 +202,9 @@ def full(dtshape: DTShape, fill_value: float, cfg: ia.Config = None, **kwargs) -
     empty : Create an empty array.
     zeros : Create an array filled with zeros.
     """
-    with ia.config(dtshape=dtshape, cfg=cfg, **kwargs) as cfg:
+    if cfg is None:
+        cfg = ia.get_config()
+
+    with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
+        dtshape = ia.DTShape(shape, cfg.dtype)
         return ext.full(cfg, fill_value, dtshape)

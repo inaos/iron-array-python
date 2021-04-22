@@ -21,7 +21,7 @@ from math import isclose
 )
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
 @pytest.mark.parametrize(
-    "shape, chunkshape, blockshape",
+    "shape, chunks, blocks",
     [
         ([100, 100], [20, 20], [10, 13]),
         ([100, 130], None, None),
@@ -29,13 +29,13 @@ from math import isclose
         ([100, 100], None, None),
     ],
 )
-def test_slice(slices, shape, chunkshape, blockshape, dtype):
-    if chunkshape is None:
-        storage = ia.Storage(plainbuffer=True)
+def test_slice(slices, shape, chunks, blocks, dtype):
+    if chunks is None:
+        store = ia.Store(plainbuffer=True)
     else:
-        storage = ia.Storage(chunkshape, blockshape, enforce_frame=True)
+        store = ia.Store(chunks, blocks, enforce_frame=True)
 
-    a = ia.linspace(ia.DTShape(shape, dtype), -10, 10, storage=storage)
+    a = ia.linspace(shape, -10, 10, store=store, dtype=dtype)
     an = ia.iarray2numpy(a)
 
     b = a[slices]
