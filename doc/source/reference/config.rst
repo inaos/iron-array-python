@@ -5,8 +5,8 @@ Configuration
 .. currentmodule:: iarray
 
 
-Storage properties
-==================
+Store properties
+================
 
 .. autosummary::
    :toctree: autofiles/config/
