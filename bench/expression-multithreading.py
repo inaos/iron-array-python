@@ -9,10 +9,10 @@ import os
 
 # Numba uses OpemMP, and this collides with the libraries in ironArray.
 # Using the next envvar seems to fix the issue (bar a small printed info line).
-os.environ['KMP_DUPLICATE_LIB_OK'] = "TRUE"
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 max_num_threads = 4
-nrep = 3
+nrep = 5
 
 
 @nb.jit(nopython=True, cache=True, parallel=True)
@@ -21,7 +21,6 @@ def poly_numba(x):
     for i in nb.prange(len(x)):
         y[i] = (x[i] - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
     return y
-
 
 
 @udf.jit
@@ -33,14 +32,14 @@ def poly_udf(x: udf.Array(float64, 1), y: udf.Array(float64, 1)):
 
 
 # Define array params
-shape = [2 * 512 * 1024]
-chunkshape = [32 * 1024]
-blockshape = [16 * 1024]
-dtshape = ia.DTShape(shape)
+shape = [32 * 1024 * 1024]
+chunks = [4 * 1024 * 1024]
+blocks = [16 * 1024]
 size = int(np.prod(shape))
 sizeMB = int(np.prod(shape)) * 8 / 2 ** 20
 
-bstorage = ia.Store(chunkshape, blockshape)
+bstore = ia.Store(chunks, blocks)
+
 
 def time_expr(expr, result):
     t = []
@@ -92,13 +91,15 @@ for num_threads in range(1, max_num_threads + 1):
     res_i.append(np.mean(t))
 
     # Superchunk with compression and UDF
-    with ia.config(store=bstorage, nthreads=num_threads, clevel=9):
-        a1 = ia.linspace(shape, 0, 10, dtype=dtype)
+    with ia.config(store=bstore, nthreads=num_threads):
+        a1 = ia.linspace(shape, 0, 10)
         expr = ia.expr_from_udf(poly_udf, [a1])
         time_expr(expr, res_i)
 
     res.append(res_i)
 
-print("Speed in MB/s (NumPy, Numba, numexpr, ironArray)")
-import pprint
-pprint.pprint(res)
+print("Speed in MB/s")
+np.set_printoptions(formatter={"numpystr": lambda x: "{:>15}".format(x)})
+print(np.array([["NumPy", "Numba", "numexpr", "ironArray"]]))
+np.set_printoptions(formatter={"float": lambda x: "{0:15.1f}".format(x)})
+print(np.array(res))

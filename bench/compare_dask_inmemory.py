@@ -20,8 +20,8 @@ compressor = Blosc(cname="lz4", clevel=CLEVEL, shuffle=Blosc.SHUFFLE)
 
 dtype = np.float64
 shapes = np.logspace(6, 8, 10, dtype=np.int64)
-# chunkshape, blockshape = (100_000,), (8_000,)
-chunkshape, blockshape = None, None
+# chunks, blocks = (100_000,), (8_000,)
+chunks, blocks = None, None
 
 sexpr = "(x - 1.35) * (x - 4.45) * (x - 8.5)"
 
@@ -32,9 +32,8 @@ t_ratio = []
 for i, shape in enumerate(shapes):
     shape = (shape,)
     print("Using vector of length:", shape[0])
-    dtshape = ia.DTShape(shape, dtype)
-    storage = ia.Store(chunkshape, blockshape)
-    data = ia.linspace(dtshape, 0, 1, storage=storage)
+    store = ia.Store(chunks, blocks)
+    data = ia.linspace(shape, 0, 1, store=store, dtype=dtype)
 
     t0 = time()
     expr = ia.expr_from_string(sexpr, {"x": data})
@@ -44,8 +43,8 @@ for i, shape in enumerate(shapes):
 
     print("Time for computing '%s' expression (via ia.Expr()): %.3f" % (sexpr, (t1 - t0)))
 
-    data2 = zarr.empty(shape=shape, chunks=chunkshape, dtype=dtype, compressor=compressor)
-    for info, block in data.iter_read_block(chunkshape):
+    data2 = zarr.empty(shape=shape, chunks=chunks, dtype=dtype, compressor=compressor)
+    for info, block in data.iter_read_block(chunks):
         sl = tuple([slice(i, i + s) for i, s in zip(info.elemindex, info.shape)])
         data2[sl] = block[:]
 
@@ -54,7 +53,7 @@ for i, shape in enumerate(shapes):
     with dask.config.set(scheduler=scheduler, pool=ThreadPool(NTHREADS)):
         d = da.from_zarr(data2)
         res = (d - 1.35) * (d - 4.45) * (d - 8.5)
-        z2 = zarr.empty(shape, dtype=dtype, compressor=compressor, chunks=chunkshape)
+        z2 = zarr.empty(shape, dtype=dtype, compressor=compressor, chunks=chunks)
         da.to_zarr(res, z2)
     t1 = time()
     t_dask.append(t1 - t0)

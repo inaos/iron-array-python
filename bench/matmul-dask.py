@@ -9,17 +9,17 @@ import shutil
 import ctypes
 from time import time
 
-mkl_rt = ctypes.CDLL("libmkl_rt.so")
+mkl_rt = ctypes.CDLL("libmkl_rt.dylib")
 mkl_set_num_threads = mkl_rt.MKL_Set_Num_Threads
 mkl_set_num_threads(1)
 
 persistent = True
 
-shape = (16384, 16384)
-chunkshape = (4096, 4096)
+shape = (1000, 1000)
+chunks = (500, 500)
 
 # shape = (1000, 1000)
-# chunkshape = (500, 500)
+# chunks = (500, 500)
 
 if len(sys.argv) == 1:
     nthreads = 8
@@ -43,7 +43,7 @@ if persistent:
             aurlpath,
             mode="w",
             shape=shape,
-            chunks=chunkshape,
+            chunks=chunks,
             dtype=np.float64,
             compressor=compressor,
         )
@@ -51,7 +51,7 @@ if persistent:
         azarr[:] = tmp
     else:
         azarr = zarr.open("a.zarr")
-        if azarr.shape != shape or azarr.chunks != chunkshape:
+        if azarr.shape != shape or azarr.chunks != chunks:
             # Ooops, we cannot use the array on-disk.  Regenerate it.
             if os.path.exists(aurlpath):
                 shutil.rmtree(aurlpath)
@@ -59,7 +59,7 @@ if persistent:
                 aurlpath,
                 mode="w",
                 shape=shape,
-                chunks=chunkshape,
+                chunks=chunks,
                 dtype=np.float64,
                 compressor=compressor,
             )
@@ -72,7 +72,7 @@ if persistent:
             burlpath,
             mode="w",
             shape=shape,
-            chunks=chunkshape,
+            chunks=chunks,
             dtype=np.float64,
             compressor=compressor,
         )
@@ -81,7 +81,7 @@ if persistent:
     else:
         print("(Re-)Generating operand B")
         bzarr = zarr.open("b.zarr")
-        if bzarr.shape != shape or bzarr.chunks != chunkshape:
+        if bzarr.shape != shape or bzarr.chunks != chunks:
             # Ooops, we cannot use the array on-disk.  Regenerate it.
             if os.path.exists(burlpath):
                 shutil.rmtree(burlpath)
@@ -89,15 +89,15 @@ if persistent:
                 burlpath,
                 mode="w",
                 shape=shape,
-                chunks=chunkshape,
+                chunks=chunks,
                 dtype=np.float64,
                 compressor=compressor,
             )
             tmp = np.linspace(-1, 1, int(np.prod(shape))).reshape(shape)
             bzarr[:] = tmp
 else:
-    azarr = zarr.empty(shape=shape, chunks=chunkshape, dtype=np.float64, compressor=compressor)
-    bzarr = zarr.empty(shape=shape, chunks=chunkshape, dtype=np.float64, compressor=compressor)
+    azarr = zarr.empty(shape=shape, chunks=chunks, dtype=np.float64, compressor=compressor)
+    bzarr = zarr.empty(shape=shape, chunks=chunks, dtype=np.float64, compressor=compressor)
 
 if persistent:
     if os.path.exists(curlpath):
@@ -110,12 +110,12 @@ with dask.config.set(scheduler=scheduler, num_workers=nthreads):
             curlpath,
             mode="w",
             shape=shape,
-            chunks=chunkshape,
+            chunks=chunks,
             dtype=np.float64,
             compressor=compressor,
         )
     else:
-        czarr = zarr.empty(shape=shape, chunks=chunkshape, dtype=np.float64, compressor=compressor)
+        czarr = zarr.empty(shape=shape, chunks=chunks, dtype=np.float64, compressor=compressor)
 
     print(f"Start actual matmul with nthreads = {nthreads}")
     t0 = time()

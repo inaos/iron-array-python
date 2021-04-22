@@ -23,17 +23,17 @@ CLEVEL = 6
 FUNCS = ["max", "min", "sum", "prod", "mean"]
 
 ashape = (27918, 25560)
-# These chunkshape/blockshape has been chosen as a balance performance
+# These chunks/blocks has been chosen as a balance performance
 # between iarray and dask.  In general reducing these values improves
 # performance when in memory, but degrades performance when on-disk.
-achunkshape = (2000, 2000)
-ablockshape = (200, 200)
+achunks = (2000, 2000)
+ablocks = (200, 200)
 
 axis = 0
 
 cshape = tuple([s for i, s in enumerate(ashape) if i != axis])
-cchunkshape = tuple([s for i, s in enumerate(achunkshape) if i != axis])
-cblockshape = tuple([s for i, s in enumerate(ablockshape) if i != axis])
+cchunks = tuple([s for i, s in enumerate(achunks) if i != axis])
+cblocks = tuple([s for i, s in enumerate(ablocks) if i != axis])
 
 
 blosc.use_threads = False
@@ -41,7 +41,7 @@ acompressor = Blosc(
     cname="lz4",
     clevel=CLEVEL,
     shuffle=Blosc.SHUFFLE,
-    blocksize=reduce(lambda x, y: x * y, ablockshape) * 8,
+    blocksize=reduce(lambda x, y: x * y, ablocks) * 8,
 )
 
 ia.set_config(codec=CODEC, clevel=CLEVEL, nthreads=NTHREADS)
@@ -50,9 +50,8 @@ print("iA config: ", ia.get_config())
 if os.path.exists("iarray_reduce.iarray"):
     aia = ia.open("iarray_reduce.iarray")
 else:
-    astorage = ia.Store(achunkshape, ablockshape, urlpath="iarray_reduce.iarray")
-    dtshape = ia.DTShape(ashape, dtype=DTYPE)
-    aia = ia.random.normal(dtshape, 0, 1, storage=astorage)
+    astore = ia.Store(achunks, ablocks, urlpath="iarray_reduce.iarray")
+    aia = ia.random.normal(ashape, 0, 1, store=astore, dtype=DTYPE)
 
 print(f"iarray cratio: {aia.cratio}")
 
@@ -61,7 +60,7 @@ ccompressor = Blosc(
     cname="lz4",
     clevel=CLEVEL,
     shuffle=Blosc.SHUFFLE,
-    blocksize=reduce(lambda x, y: x * y, cblockshape) * 8,
+    blocksize=reduce(lambda x, y: x * y, cblocks) * 8,
 )
 
 if not os.path.exists("zarr_reduce.zarr"):
@@ -69,7 +68,7 @@ if not os.path.exists("zarr_reduce.zarr"):
         "zarr_reduce.zarr",
         "w",
         shape=ashape,
-        chunks=achunkshape,
+        chunks=achunks,
         dtype=DTYPE,
         compressor=acompressor,
     )
@@ -87,6 +86,7 @@ MEMPROF = True
 if MEMPROF:
     from memory_profiler import profile
 else:
+
     def profile(f):
         return f
 
@@ -105,7 +105,7 @@ def dask_reduce(azarr, func):
             cshape,
             dtype=DTYPE,
             compressor=ccompressor,
-            chunks=cchunkshape,
+            chunks=cchunks,
         )
         da.to_zarr(cd, czarr)
         return czarr

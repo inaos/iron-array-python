@@ -21,6 +21,7 @@ MEMPROF = True
 if MEMPROF:
     from memory_profiler import profile
 else:
+
     def profile(f):
         return f
 
@@ -35,48 +36,46 @@ t_dask = []
 t_ratio = []
 
 ashape = (10000, 10000)
-achunkshape = (500, 500)
-ablockshape = (128, 128)
+achunks = (500, 500)
+ablocks = (128, 128)
 
 bshape = (10000, 8000)
-bchunkshape = (250, 500)
-bblockshape = (128, 128)
+bchunks = (250, 500)
+bblocks = (128, 128)
 
-cchunkshape = (500, 500)
-cblockshape = (128, 128)
+cchunks = (500, 500)
+cblocks = (128, 128)
 
 
 compressor = Blosc(
     cname="lz4",
     clevel=CLEVEL,
     shuffle=Blosc.SHUFFLE,
-    blocksize=reduce(lambda x, y: x * y, ablockshape),
+    blocksize=reduce(lambda x, y: x * y, ablocks),
 )
-ia.set_config(codec=CODEC, clevel=CLEVEL, nthreads=NTHREADS)
+ia.set_config(codec=CODEC, clevel=CLEVEL, nthreads=NTHREADS, dtype=DTYPE)
 
-astorage = ia.Store(achunkshape, ablockshape)
-dtshape = ia.DTShape(ashape, dtype=DTYPE)
-lia = ia.linspace(dtshape, 0, 1, storage=astorage)
+astore = ia.Store(achunks, ablocks)
+lia = ia.linspace(ashape, 0, 1, store=astore)
 nia = ia.random.normal(
-    dtshape,
+    ashape,
     0,
     0.0000001,
-    storage=astorage,
+    store=astore,
 )
-aia = (lia + nia).eval(storage=astorage)
+aia = (lia + nia).eval(store=astore)
 
-bstorage = ia.Store(bchunkshape, bblockshape)
-dtshape = ia.DTShape(bshape, dtype=DTYPE)
-lia = ia.linspace(dtshape, 0, 1, storage=bstorage)
-nia = ia.random.normal(dtshape, 0, 0.0000001, storage=bstorage)
-bia = (lia + nia).eval(storage=bstorage)
+bstore = ia.Store(bchunks, bblocks)
+lia = ia.linspace(bshape, 0, 1, store=bstore)
+nia = ia.random.normal(bshape, 0, 0.0000001, store=bstore)
+bia = (lia + nia).eval(store=bstore)
 
-cstorage = ia.Store(cchunkshape, cblockshape)
+cstore = ia.Store(cchunks, cblocks)
 
 
 @profile
 def ia_matmul(aia, bia):
-    return ia.matmul(aia, bia, storage=cstorage)
+    return ia.matmul(aia, bia, store=cstore)
 
 
 mkl_set_num_threads(1)
@@ -89,14 +88,14 @@ print(f"a cratio: {aia.cratio}")
 print(f"b cratio: {bia.cratio}")
 print(f"out cratio: {cia.cratio}")
 
-azarr = zarr.empty(shape=ashape, chunks=achunkshape, dtype=DTYPE, compressor=compressor)
-for info, block in aia.iter_read_block(achunkshape):
+azarr = zarr.empty(shape=ashape, chunks=achunks, dtype=DTYPE, compressor=compressor)
+for info, block in aia.iter_read_block(achunks):
     sl = tuple([slice(i, i + s) for i, s in zip(info.elemindex, info.shape)])
     azarr[sl] = block[:]
 
 
-bzarr = zarr.empty(shape=bshape, chunks=bchunkshape, dtype=DTYPE, compressor=compressor)
-for info, block in bia.iter_read_block(bchunkshape):
+bzarr = zarr.empty(shape=bshape, chunks=bchunks, dtype=DTYPE, compressor=compressor)
+for info, block in bia.iter_read_block(bchunks):
     sl = tuple([slice(i, i + s) for i, s in zip(info.elemindex, info.shape)])
     bzarr[sl] = block[:]
 
@@ -113,7 +112,7 @@ def dask_matmul(azarr, bzarr):
             (ashape[0], bshape[1]),
             dtype=DTYPE,
             compressor=compressor,
-            chunks=cchunkshape,
+            chunks=cchunks,
         )
         da.to_zarr(cd, czarr)
         return czarr

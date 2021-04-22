@@ -20,8 +20,8 @@ NITER = 10
 shape = [2 * 1000 * 1000]
 N = int(np.prod(shape))
 
-chunkshape, blockshape = None, None  # use automatic partition advice
-# chunkshape, blockshape = [400 * 1000], [16 * 1000]  # user-defined partitions
+chunks, blocks = None, None  # use automatic partition advice
+# chunks, blocks = [400 * 1000], [16 * 1000]  # user-defined partitions
 
 expression = "(cos(x) - 1.35) * (x - 4.45) * (sin(x) - 8.5)"
 lazy_expression = "(ia.cos(x) - 1.35) * (x - 4.45) * (ia.sin(x) - 8.5)"
@@ -120,25 +120,24 @@ def do_regular_evaluation():
 def do_block_evaluation(plainbuffer):
     print(f"Block evaluation (plainbuffer={plainbuffer})")
     if plainbuffer:
-        storage = ia.Store(plainbuffer=True)
+        store = ia.Store(plainbuffer=True)
     else:
-        storage = ia.Store(chunkshape, blockshape, plainbuffer=False)
-    ia.set_config(clevel=clevel, nthreads=nthreads, storage=storage)
+        store = ia.Store(chunks, blocks, plainbuffer=False)
+    ia.set_config(clevel=clevel, nthreads=nthreads, store=store)
 
     x = np.linspace(0, 10, N, dtype=np.double).reshape(shape)
-    dtshape = ia.DTShape(shape)
-    xa = ia.linspace(dtshape, 0.0, 10.0)
+    xa = ia.linspace(shape, 0.0, 10.0)
 
     if not plainbuffer:
         print("Operand cratio:", round(xa.cratio, 2))
 
     # Reference to compare to
     y0 = eval(numpy_expression)
-    ya = ia.empty(dtshape)
+    ya = ia.empty(shape)
 
     t0 = time()
     for i in range(NITER):
-        ya = ia.empty(dtshape)
+        ya = ia.empty(shape)
         for ((j, x), (k, y)) in zip_longest(xa.iter_read_block(), ya.iter_write_block()):
             y[:] = eval(numpy_expression)
     print("Block evaluate via numpy:", round((time() - t0) / NITER, 4))
@@ -149,7 +148,7 @@ def do_block_evaluation(plainbuffer):
     ne.set_num_threads(1)
     t0 = time()
     for i in range(NITER):
-        ya = ia.empty(dtshape)
+        ya = ia.empty(shape)
         for ((j, x), (k, y)) in zip_longest(xa.iter_read_block(), ya.iter_write_block()):
             ne.evaluate(expression, local_dict={"x": x}, out=y)
     print("Block evaluate via numexpr:", round((time() - t0) / NITER, 4))
@@ -159,7 +158,7 @@ def do_block_evaluation(plainbuffer):
     ne.set_num_threads(nthreads)
     t0 = time()
     for i in range(NITER):
-        ya = ia.empty(dtshape)
+        ya = ia.empty(shape)
         for ((j, x), (k, y)) in zip_longest(xa.iter_read_block(), ya.iter_write_block()):
             ne.evaluate(expression, local_dict={"x": x}, out=y)
     print("Block evaluate via numexpr (multi-thread):", round((time() - t0) / NITER, 4))
@@ -169,7 +168,7 @@ def do_block_evaluation(plainbuffer):
     nb.set_num_threads(1)
     t0 = time()
     for i in range(NITER):
-        ya = ia.empty(dtshape)
+        ya = ia.empty(shape)
         for ((j, x), (k, y)) in zip_longest(xa.iter_read_block(), ya.iter_write_block()):
             # y[:] = poly_numba(x)
             poly_numba2(x, y)
@@ -180,7 +179,7 @@ def do_block_evaluation(plainbuffer):
     nb.set_num_threads(nthreads)
     t0 = time()
     for i in range(NITER):
-        ya = ia.empty(dtshape)
+        ya = ia.empty(shape)
         for ((j, x), (k, y)) in zip_longest(xa.iter_read_block(), ya.iter_write_block()):
             # y[:] = poly_numba(x)
             poly_numba2(x, y)
