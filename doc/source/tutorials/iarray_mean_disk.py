@@ -8,14 +8,14 @@ t = time() - t0
 print("iarray import time ->", round(t, 3))
 
 # ia_precip = ia.open("precip-3m.iarr")
-# chunkshape = ia_precip.chunkshape[1:]
-# blockshape = ia_precip.blockshape[1:]
+# chunks = ia_precip.chunks[1:]
+# blocks = ia_precip.blocks[1:]
 
 # print("-->", ia_precip.info)
 
-# precip1 = ia_precip[0].copy(chunkshape=chunkshape, blockshape=blockshape)
-# precip2 = ia_precip[1].copy(chunkshape=chunkshape, blockshape=blockshape)
-# precip3 = ia_precip[2].copy(chunkshape=chunkshape, blockshape=blockshape)
+# precip1 = ia_precip[0].copy(chunks=chunks, blocks=blocks)
+# precip2 = ia_precip[1].copy(chunks=chunks, blocks=blocks)
+# precip3 = ia_precip[2].copy(chunks=chunks, blocks=blocks)
 # print("1 -->", precip1.info)
 
 # precip1 = ia_precip[0].copy()
@@ -41,12 +41,12 @@ t = time() - t0
 print("open time ->", round(t, 3))
 
 print("2 -->", precip1.info)
-chunkshape = precip1.chunks
-blockshape = precip1.blocks
+chunks = precip1.chunks
+blocks = precip1.blocks
 
-storage = ia.Store(chunkshape=precip1.chunks, blockshape=precip1.blocks)
-# cfg = ia.Config(nthreads=14, storage=storage, clevel=1, codec=ia.Codecs.ZSTD, filters=[ia.Filters.BITSHUFFLE])
-cfg = ia.Config(storage=storage)
+store = ia.Store(chunks=precip1.chunks, blocks=precip1.blocks)
+# cfg = ia.Config(nthreads=14, store=store, clevel=1, codec=ia.Codecs.ZSTD, filters=[ia.Filters.BITSHUFFLE])
+cfg = ia.Config(store=store)
 
 
 @profile
