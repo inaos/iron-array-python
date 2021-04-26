@@ -1,4 +1,4 @@
-iarray.arange
+﻿iarray.arange
 =============
 
 .. currentmodule:: iarray

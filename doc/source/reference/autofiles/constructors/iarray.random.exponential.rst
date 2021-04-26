@@ -1,4 +1,4 @@
-iarray.random.exponential
+﻿iarray.random.exponential
 =========================
 
 .. currentmodule:: iarray.random

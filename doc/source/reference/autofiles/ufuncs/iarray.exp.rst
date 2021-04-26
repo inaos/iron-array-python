@@ -1,4 +1,4 @@
-iarray.exp
+﻿iarray.exp
 ==========
 
 .. currentmodule:: iarray

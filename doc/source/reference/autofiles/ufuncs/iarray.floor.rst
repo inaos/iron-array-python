@@ -1,4 +1,4 @@
-iarray.floor
+﻿iarray.floor
 ============
 
 .. currentmodule:: iarray

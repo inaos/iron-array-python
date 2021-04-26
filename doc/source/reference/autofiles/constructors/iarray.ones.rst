@@ -1,4 +1,4 @@
-iarray.ones
+﻿iarray.ones
 ===========
 
 .. currentmodule:: iarray

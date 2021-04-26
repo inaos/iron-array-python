@@ -1,4 +1,4 @@
-iarray.IArray.arcsin
+﻿iarray.IArray.arcsin
 ====================
 
 .. currentmodule:: iarray

@@ -1,4 +1,4 @@
-iarray.tanh
+﻿iarray.tanh
 ===========
 
 .. currentmodule:: iarray

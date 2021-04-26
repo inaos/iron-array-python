@@ -1,4 +1,4 @@
-iarray.IArray.is\_plainbuffer
+﻿iarray.IArray.is\_plainbuffer
 =============================
 
 .. currentmodule:: iarray

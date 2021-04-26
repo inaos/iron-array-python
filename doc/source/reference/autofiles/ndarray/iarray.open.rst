@@ -1,4 +1,4 @@
-iarray.open
+﻿iarray.open
 ===========
 
 .. currentmodule:: iarray

@@ -1,4 +1,4 @@
-iarray.random.bernoulli
+﻿iarray.random.bernoulli
 =======================
 
 .. currentmodule:: iarray.random

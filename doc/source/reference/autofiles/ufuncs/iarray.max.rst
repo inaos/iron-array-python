@@ -1,4 +1,4 @@
-iarray.max
+﻿iarray.max
 ==========
 
 .. currentmodule:: iarray

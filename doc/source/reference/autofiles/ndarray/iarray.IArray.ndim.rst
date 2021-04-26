@@ -1,4 +1,4 @@
-iarray.IArray.ndim
+﻿iarray.IArray.ndim
 ==================
 
 .. currentmodule:: iarray

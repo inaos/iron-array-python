@@ -1,4 +1,4 @@
-iarray.IArray.sqrt
+﻿iarray.IArray.sqrt
 ==================
 
 .. currentmodule:: iarray

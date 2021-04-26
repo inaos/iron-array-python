@@ -1,4 +1,4 @@
-iarray.zeros
+﻿iarray.zeros
 ============
 
 .. currentmodule:: iarray

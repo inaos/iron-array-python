@@ -1,4 +1,4 @@
-iarray.matmul
+﻿iarray.matmul
 =============
 
 .. currentmodule:: iarray

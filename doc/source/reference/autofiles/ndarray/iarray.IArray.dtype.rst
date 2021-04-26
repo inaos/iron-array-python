@@ -1,4 +1,4 @@
-iarray.IArray.dtype
+﻿iarray.IArray.dtype
 ===================
 
 .. currentmodule:: iarray

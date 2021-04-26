@@ -1,4 +1,4 @@
-iarray.Store
+﻿iarray.Store
 ============
 
 .. currentmodule:: iarray

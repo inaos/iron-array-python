@@ -1,4 +1,4 @@
-iarray.cosh
+﻿iarray.cosh
 ===========
 
 .. currentmodule:: iarray

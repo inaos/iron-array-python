@@ -1,4 +1,4 @@
-iarray.expr\_from\_string
+﻿iarray.expr\_from\_string
 =========================
 
 .. currentmodule:: iarray

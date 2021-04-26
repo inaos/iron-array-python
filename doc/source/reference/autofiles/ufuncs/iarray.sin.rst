@@ -1,4 +1,4 @@
-iarray.sin
+﻿iarray.sin
 ==========
 
 .. currentmodule:: iarray

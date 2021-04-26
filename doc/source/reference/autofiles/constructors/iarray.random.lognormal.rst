@@ -1,4 +1,4 @@
-iarray.random.lognormal
+﻿iarray.random.lognormal
 =======================
 
 .. currentmodule:: iarray.random
