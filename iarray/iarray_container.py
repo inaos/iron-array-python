@@ -87,7 +87,8 @@ class IArray(ext.Container):
         if cfg is None:
             cfg = ia.get_config()
 
-        with ia.config(shape=self.shape, cfg=cfg, **kwargs) as cfg:
+        with ia.config(shape=self.shape,  chunks=self.chunks, blocks=self.blocks,
+                       cfg=cfg, **kwargs) as cfg:
             return ext.copy(cfg, self, view)
 
     def copyto(self, dest):
