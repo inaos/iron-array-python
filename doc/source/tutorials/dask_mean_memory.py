@@ -16,7 +16,7 @@ compressor = zarr.Blosc(clevel=1, cname="zstd", shuffle=zarr.Blosc.BITSHUFFLE)
 #zprecip1 = precip_disk[0]
 #zprecip2 = precip_disk[1]
 #zprecip3 = precip_disk[2]
-#chunks = precip_disk.chunkshape[1:]
+#chunks = precip_disk.chunks[1:]
 
 zprecip1 = zarr.open("precip1.zarr")
 zprecip2 = zarr.open("precip2.zarr")

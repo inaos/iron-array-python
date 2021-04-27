@@ -6,20 +6,20 @@ enforce_frame = False
 nthreads = 21
 
 # Some experiments lead to these chunk and block shapes
-# chunkshape = (128, 256, 1440)
-# blockshape = (16, 16, 180)
-# chunkshape = (180, 256, 1440)
-# blockshape = (12, 16, 180)
-chunkshape = (45, 721, 1440)
-blockshape = (45, 4, 180)
+# chunks = (128, 256, 1440)
+# blocks = (16, 16, 180)
+# chunks = (180, 256, 1440)
+# blocks = (12, 16, 180)
+chunks = (45, 721, 1440)
+blocks = (45, 4, 180)
 
 
-# storage = ia.Storage(enforce_frame=enforce_frame, chunkshape=chunkshape, blockshape=blockshape)
-storage = ia.Store(enforce_frame=enforce_frame)
-# cfg = ia.Config(nthreads=nthreads, storage=storage, clevel=1, codec=ia.Codecs.ZSTD, filters=[ia.Filters.BITSHUFFLE])
-# cfg = ia.Config(storage=storage, clevel=1, codec=ia.Codecs.ZSTD, filters=[ia.Filters.BITSHUFFLE])
-# cfg = ia.Config(nthreads=0, storage=storage, clevel=1, codec=ia.Codecs.ZSTD, filters=[ia.Filters.BITSHUFFLE])
-cfg = ia.Config(storage=storage)
+# store = ia.Storage(enforce_frame=enforce_frame, chunks=chunks, blocks=blocks)
+store = ia.Store(enforce_frame=enforce_frame)
+# cfg = ia.Config(nthreads=nthreads, store=store, clevel=1, codec=ia.Codecs.ZSTD, filters=[ia.Filters.BITSHUFFLE])
+# cfg = ia.Config(store=store, clevel=1, codec=ia.Codecs.ZSTD, filters=[ia.Filters.BITSHUFFLE])
+# cfg = ia.Config(nthreads=0, store=store, clevel=1, codec=ia.Codecs.ZSTD, filters=[ia.Filters.BITSHUFFLE])
+cfg = ia.Config(store=store)
 print("cfg:", cfg)
 
 # t0 = time()
