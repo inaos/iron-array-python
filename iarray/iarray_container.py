@@ -87,7 +87,10 @@ class IArray(ext.Container):
         if cfg is None:
             cfg = ia.get_config()
 
-        with ia.config(shape=self.shape,  chunks=self.chunks, blocks=self.blocks,
+        # Workaround until https://github.com/inaos/iron-array/issues/418 is fixed
+        chunks = self.chunks if cfg.chunks is None else cfg.chunks
+        blocks = self.blocks if cfg.blocks is None else cfg.blocks
+        with ia.config(shape=self.shape,  chunks=chunks, blocks=blocks,
                        cfg=cfg, **kwargs) as cfg:
             return ext.copy(cfg, self, view)
 
