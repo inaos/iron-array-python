@@ -11,11 +11,12 @@
 
 import iarray as ia
 from iarray import iarray_ext as ext
-from dataclasses import dataclass, field, fields, replace
+from dataclasses import dataclass, field, fields, replace, asdict
 from typing import List, Sequence, Any, Union
 import warnings
 from contextlib import contextmanager
 import numpy as np
+import copy
 
 # Global variable for random seed
 RANDOM_SEED = 0
@@ -271,17 +272,6 @@ class Defaults(object):
 
 # Global variable where the defaults for config params are stored
 defaults = Defaults()
-# Global config
-global_config = []
-
-
-def reset_config_defaults():
-    """Reset the defaults of the configuration parameters."""
-    global global_config
-    defaults.config = Defaults()
-    global_config = []
-    set_config()
-    return global_config
 
 
 @dataclass
@@ -316,6 +306,7 @@ class Store:
         container, which can be compressed (the default).
     """
 
+    global defaults
     chunks: Union[Sequence, None] = field(default_factory=defaults._chunks)
     blocks: Union[Sequence, None] = field(default_factory=defaults._blocks)
     urlpath: bytes or str = field(default_factory=defaults._urlpath)
@@ -480,11 +471,62 @@ class Config(ext.Config):
             if store is not None:
                 for field in fields(Store):
                     setattr(cfg_, field.name, getattr(store, field.name))
-        store_args = dict(
-            (field.name, kwargs[field.name]) for field in fields(Store) if field.name in kwargs
-        )
-        cfg_.store = replace(cfg_.store, **store_args)
+        else:
+            store_args = dict(
+                (field.name, kwargs[field.name]) for field in fields(Store) if field.name in kwargs
+            )
+            cfg_.store = replace(cfg_.store, **store_args)
         return cfg_
+
+    def __deepcopy__(self, memodict={}):
+        kwargs = asdict(self)
+        kwargs["store"] = Store(**kwargs["store"])
+        cfg = Config(**kwargs)
+        return cfg
+
+
+# Global config
+global_config = Config()
+global_diff = []
+
+
+def reset_config_defaults():
+    """Reset the defaults of the configuration parameters."""
+    global global_config
+    global global_diff
+    global_config = Config()
+    global_diff = []
+
+
+def get_config(cfg=None):
+    """Get the global defaults for iarray operations.
+
+    Parameters
+    ----------
+    cfg
+        The base configuration to which the changes will apply.
+
+    Returns
+    -------
+    ia.Config
+        The existing global configuration.
+
+    See Also
+    --------
+    ia.set_config
+    """
+    global global_config
+    global global_diff
+
+    if not cfg:
+        cfg = global_config
+    else:
+        cfg = copy.deepcopy(cfg)
+
+    for diff in global_diff:
+        cfg = cfg._replace(**diff)
+
+    return cfg
 
 
 def set_config(cfg: Config = None, shape=None, **kwargs):
@@ -514,43 +556,36 @@ def set_config(cfg: Config = None, shape=None, **kwargs):
     ia.get_config
     """
     global global_config
+    global global_diff
+    global defaults
+
+    cfg_old = get_config()
+    d_old = asdict(cfg_old)
+
     if cfg is None:
-        if not global_config:
-            cfg = Config()
-        else:
-            cfg = global_config.pop()
+        cfg = copy.deepcopy(cfg_old)
+    else:
+        cfg = copy.deepcopy(cfg)
 
     if kwargs != {}:
         cfg = cfg._replace(**kwargs)
     if shape is not None:
         cfg.store._get_shape_advice(shape, cfg=cfg)
+        cfg._replace(**{"store": cfg.store})
 
-    global_config.append(cfg)
-    # Set the defaults for Config() constructor and other nested configs (Store...)
+    d = asdict(cfg)
+
+    diff = {k: d[k] for k in d.keys() if d_old[k] != d[k]}
+    if "store" in diff:
+        diff["store"] = Store(**diff["store"])
+
+    global_diff.append(diff)
     defaults.config = cfg
 
-    return global_config[-1]
+    return get_config()
 
 
 # Initialize the configuration
-set_config()
-
-
-def get_config():
-    """Get the global defaults for iarray operations.
-
-    Returns
-    -------
-    ia.Config
-        The existing global configuration.
-
-    See Also
-    --------
-    ia.set_config
-    """
-    global global_config
-
-    return global_config[-1]
 
 
 @contextmanager
@@ -566,18 +601,32 @@ def config(cfg: Config = None, shape=None, **kwargs):
     ia.Config
     """
     global global_config
+    global global_diff
+    global defaults
 
-    if cfg is None:
-        cfg = Config()
-    cfg_ = cfg._replace(**kwargs)
-    if shape is not None:
-        cfg_.store._get_shape_advice(shape)
-    global_config.append(cfg_)
+    cfg = set_config(cfg, shape, **kwargs)
 
     try:
-        yield cfg_
+        yield cfg
     finally:
-        global_config.pop()
+        global_diff.pop()
+
+        cfg_old = copy.deepcopy(global_config)
+        for diff in global_diff:
+            cfg_old = cfg_old._replace(**diff)
+        defaults.config = cfg_old
+
+
+def reset_config_defaults():
+    """Reset the defaults of the configuration parameters."""
+    global global_config
+    global global_diff
+    global defaults
+
+    defaults.config = Defaults()
+    global_config = Config()
+    global_diff = []
+    return global_config
 
 
 if __name__ == "__main__":

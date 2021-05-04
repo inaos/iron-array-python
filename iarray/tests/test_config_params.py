@@ -34,6 +34,7 @@ def test_global_config(clevel, codec, filters, chunks, blocks, enforce_frame):
         enforce_frame=False,
     )
     config = ia.get_config()
+    print(config)
     assert config.clevel == clevel
     assert config.codec == codec
     assert config.filters == filters
@@ -70,6 +71,7 @@ def test_global_config(clevel, codec, filters, chunks, blocks, enforce_frame):
     )
     ia.set_config(cfg, filters=filters, chunks=chunks)
     config = ia.get_config()
+
     assert config.clevel == clevel
     assert config.codec == codec
     assert config.filters == filters
@@ -101,10 +103,10 @@ def test_global_favor(favor, filters, chunks, blocks):
     "chunks, blocks, shape",
     [
         (None, None, (100, 100)),
-        ((50, 50), (20, 20), (100, 100)),
-        ((50, 50), (20, 20), [10, 100]),
-        ((100, 50), (50, 20), [100, 10]),
-        (None, None, ()),
+        # ((50, 50), (20, 20), (100, 100)),
+        # ((50, 50), (20, 20), [10, 100]),
+        # ((100, 50), (50, 20), [100, 10]),
+        # (None, None, ()),
     ],
 )
 def test_global_config_dtype(chunks, blocks, shape):
@@ -112,6 +114,7 @@ def test_global_config_dtype(chunks, blocks, shape):
         store = ia.Store(chunks, blocks)
         cfg = ia.set_config(shape=shape, store=store)
         store2 = cfg.store
+
         if chunks is not None:
             assert store2.chunks == chunks
             assert store2.blocks == blocks
@@ -132,6 +135,7 @@ def test_global_config_dtype(chunks, blocks, shape):
             enforce_frame=True,
         )
         store2 = cfg.store
+
         if chunks is not None:
             assert store2.chunks == chunks
             assert store2.blocks == blocks

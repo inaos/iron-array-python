@@ -65,13 +65,11 @@ class IArray(ext.Container):
         """
         return ia.iarray2numpy(self)
 
-    def copy(self, view=False, cfg=None, **kwargs) -> IArray:
+    def copy(self, cfg=None, **kwargs) -> IArray:
         """Return a copy of the array.
 
         Parameters
         ----------
-        view : bool
-            If True, return a view; else an actual copy.  Default is False.
         cfg : Config
             The configuration for this operation.  If None (default), the current
             configuration will be used.
@@ -85,10 +83,14 @@ class IArray(ext.Container):
             The copy.
         """
         if cfg is None:
-            cfg = ia.get_config()
+            cfg = ia.get_config(self.cfg)
+
+            # the urlpath should not be copied
+            cfg.store.urlpath = None
+            cfg.urlpath = None
 
         with ia.config(shape=self.shape, cfg=cfg, **kwargs) as cfg:
-            return ext.copy(cfg, self, view)
+            return ext.copy(cfg, self)
 
     def copyto(self, dest):
         """Copy array contents to `dest`.

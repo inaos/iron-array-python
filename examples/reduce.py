@@ -4,7 +4,7 @@ import iarray as ia
 import numpy as np
 import os
 
-a = ia.arange(ia.DTShape([10, 20, 10, 14], np.float32), clevel=9)
+a = ia.arange([10, 20, 10, 14], clevel=9)
 
 b = a[0]
 
