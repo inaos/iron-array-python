@@ -471,7 +471,7 @@ class Config(ext.Config):
             if store is not None:
                 for field in fields(Store):
                     setattr(cfg_, field.name, getattr(store, field.name))
-        else:
+        else:  # avoid overwriting the store
             store_args = dict(
                 (field.name, kwargs[field.name]) for field in fields(Store) if field.name in kwargs
             )
@@ -480,6 +480,7 @@ class Config(ext.Config):
 
     def __deepcopy__(self, memodict={}):
         kwargs = asdict(self)
+        # asdict is recursive, but we need the store kwarg as a Store object
         kwargs["store"] = Store(**kwargs["store"])
         cfg = Config(**kwargs)
         return cfg
@@ -488,14 +489,6 @@ class Config(ext.Config):
 # Global config
 global_config = Config()
 global_diff = []
-
-
-def reset_config_defaults():
-    """Reset the defaults of the configuration parameters."""
-    global global_config
-    global global_diff
-    global_config = Config()
-    global_diff = []
 
 
 def get_config(cfg=None):
