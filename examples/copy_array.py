@@ -29,8 +29,6 @@ print(f"- Chunks: {c.chunks}")
 
 # Get a slice (view)
 v = a[100:1100, 200:1200]
-print(v.chunks)
-print(v.cfg)
 t0 = time()
 d = v.copy()
 t1 = time()
