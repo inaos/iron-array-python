@@ -21,7 +21,7 @@ from math import ceil
 from libc.stdlib cimport malloc, free
 import iarray as ia
 from collections import namedtuple
-
+from time import time
 
 class IArrayError(Exception):
     pass
@@ -208,10 +208,12 @@ cdef class Config:
 
 cdef class Context:
     cdef ciarray.iarray_context_t *ia_ctx
+    cdef public object cfg
 
     def __init__(self, cfg):
         cdef ciarray.iarray_config_t cfg_ = cfg._to_dict()
         iarray_check(ciarray.iarray_context_new(&cfg_, &self.ia_ctx))
+        self.cfg = cfg
 
     def __dealloc__(self):
         ciarray.iarray_context_free(&self.ia_ctx)
@@ -366,9 +368,14 @@ cdef class Container:
         iarray_check(ciarray.iarray_container_info(self.ia_container, &nbytes, &cbytes))
         return <double>nbytes / <double>cbytes
 
+    @property
+    def cfg(self):
+        return self.context.cfg
+
     def __getitem__(self, key):
         # key has been massaged already
         start, stop, squeeze_mask = key
+
         return get_slice(self.context, self, start, stop, squeeze_mask, True, None)
 
     def is_view(self):
@@ -448,7 +455,7 @@ cdef class Expression:
 # Iarray container constructors
 #
 
-def copy(cfg, src, view=False):
+def copy(cfg, src):
     ctx = Context(cfg)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
         ctx.to_capsule(), "iarray_context_t*")
@@ -462,9 +469,8 @@ def copy(cfg, src, view=False):
     cdef ciarray.iarray_container_t *src_ = <ciarray.iarray_container_t *> PyCapsule_GetPointer(
         src.to_capsule(), "iarray_container_t*")
 
-    cdef int view_ = view
     with nogil:
-        error = ciarray.iarray_copy(ctx_, src_, view_, &store_, flags, &c)
+        error = ciarray.iarray_copy(ctx_, src_, False, &store_, flags, &c)
     iarray_check(error)
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
@@ -644,7 +650,17 @@ def get_slice(ctx, data, start, stop, squeeze_mask, view, storage):
 
     cdef ciarray.iarray_storage_t store_
     cdef ciarray.iarray_container_t *c
+    cfg = ctx.cfg
     if view:
+        if cfg.blocks and cfg.chunks:
+            shape = tuple(sp - st for sp, st in zip(stop, start))
+            for i, s in enumerate(shape):
+                if s < cfg.chunks[i]:
+                    cfg.chunks[i] = s
+                if cfg.chunks[i] < cfg.blocks[i]:
+                    cfg.blocks[i] = cfg.chunks[i]
+            cfg.store.chunks = cfg.chunks
+            cfg.store.blocks = cfg.blocks
         iarray_check(ciarray.iarray_get_slice(ctx_, data_, start_, stop_, view, NULL, flags, &c))
     else:
         set_storage(storage, &store_)

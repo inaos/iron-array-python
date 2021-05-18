@@ -58,7 +58,7 @@ def save(urlpath: str, iarr: ia.IArray, cfg: ia.Config = None, **kwargs) -> None
     load : Load an array from disk.
     open : Open an array from disk.
     """
-    iarr.copy(view=False, cfg=cfg, urlpath=urlpath, **kwargs)
+    iarr.copy(cfg=cfg, urlpath=urlpath, **kwargs)
 
 
 def load(filename: str, cfg: ia.Config = None, **kwargs) -> ia.IArray:
