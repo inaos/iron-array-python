@@ -491,7 +491,7 @@ def empty(cfg, dtshape):
     flags = 0 if cfg.store.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     cdef ciarray.iarray_container_t *c
-    iarray_check(ciarray.iarray_container_new(ctx_, &dtshape_, &store_, flags, &c))
+    iarray_check(ciarray.iarray_empty(ctx_, &dtshape_, &store_, flags, &c))
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     return ia.IArray(ctx, c_c)

@@ -245,23 +245,25 @@ def test_nested_contexts():
     # Set the default to enable compression
     ia.set_config(clevel=5, btune=False)
     a = ia.ones((100, 100))
+    b = a.data
+
     assert a.cratio > 1
 
     # Now play with contexts and params in calls
     # Disable compression in contexts
     with ia.config(clevel=0):
-        a = ia.ones((100, 100))
+        a = ia.numpy2iarray(b)
         assert a.cratio < 1
         # Enable compression in call
-        a = ia.ones((100, 100), clevel=1)
+        a = ia.numpy2iarray(b, clevel=1)
         assert a.cratio > 1
         # Enable compression in nested context
         with ia.config(clevel=1):
-            a = ia.ones((100, 100))
+            a = ia.numpy2iarray(b)
             assert a.cratio > 1
             # Disable compression in double nested context
             with ia.config(clevel=0):
-                a = ia.ones((100, 100))
+                a = ia.numpy2iarray(b)
                 assert a.cratio < 1
 
     # Finally, the default should be enabling compression again

@@ -1,6 +1,7 @@
 import pytest
 import iarray as ia
 import numpy as np
+import os
 
 
 # Test load, open and save
@@ -16,14 +17,21 @@ import numpy as np
 )
 @pytest.mark.parametrize("func", [ia.load, ia.open])
 def test_load_save(shape, chunks, blocks, dtype, func):
+    urlpath = "test_load_save.iarray"
+
+    if os.path.exists(urlpath):
+        os.remove(urlpath)
 
     store = ia.Store(chunks, blocks)
     a = ia.linspace(shape, -10, 10, dtype=dtype, store=store)
     an = ia.iarray2numpy(a)
 
-    ia.save("test_load_save.iarray", a)
+    ia.save(urlpath, a)
 
-    b = func("test_load_save.iarray")
+    b = func(urlpath)
     bn = ia.iarray2numpy(b)
 
     np.testing.assert_almost_equal(an, bn)
+
+    if os.path.exists(urlpath):
+        os.remove(urlpath)
