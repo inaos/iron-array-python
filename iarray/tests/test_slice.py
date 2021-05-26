@@ -29,7 +29,7 @@ from math import isclose
         ([100, 100], None, None),
     ],
 )
-def test_slice(slices, shape, chunks, blocks, dtype):
+def deqtest_slice(slices, shape, chunks, blocks, dtype):
     if chunks is None:
         store = ia.Store(plainbuffer=True)
     else:
@@ -42,8 +42,10 @@ def test_slice(slices, shape, chunks, blocks, dtype):
     an[slices] = 0
     np.testing.assert_almost_equal(a.data, an)
 
-    a[slices] = np.ones(shape, dtype=dtype)[slices].copy()
-    an[slices] = np.ones(shape, dtype=dtype)[slices].copy()
+    data = ia.arange(shape, dtype=dtype)[slices]
+
+    a[slices] = data
+    an[slices] = data.data
     np.testing.assert_almost_equal(a.data, an)
 
     b = a[slices]

@@ -686,11 +686,15 @@ def get_slice(ctx, data, start, stop, squeeze_mask, view, storage):
     if view:
         if cfg.blocks and cfg.chunks:
             shape = tuple(sp - st for sp, st in zip(stop, start))
+            chunks = list(cfg.chunks)
+            blocks = list(cfg.blocks)
             for i, s in enumerate(shape):
                 if s < cfg.chunks[i]:
-                    cfg.chunks[i] = s
+                    chunks[i] = s
                 if cfg.chunks[i] < cfg.blocks[i]:
-                    cfg.blocks[i] = cfg.chunks[i]
+                    blocks[i] = cfg.chunks[i]
+            cfg.chunks = chunks
+            cfg.blocks = blocks
             cfg.store.chunks = cfg.chunks
             cfg.store.blocks = cfg.blocks
         iarray_check(ciarray.iarray_get_slice(ctx_, data_, start_, stop_, view, NULL, flags, &c))
@@ -707,6 +711,7 @@ def get_slice(ctx, data, start, stop, squeeze_mask, view, storage):
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
 
     b =  ia.IArray(ctx, c_c)
+    b.view_ref = data  # Keep a reference of the parent container
     if b.ndim == 0:
         return float(ia.iarray2numpy(b))
 

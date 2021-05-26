@@ -146,6 +146,8 @@ class IArray(ext.Container):
         shape = [sp - st for sp, st in zip(stop, start)]
         if isinstance(value, (float, int)):
             value = np.full(shape, value, dtype=self.dtype)
+        elif isinstance(value, ia.IArray):
+            value = value.data
 
         return ext.set_slice(self.context, self, start, stop, value)
 
