@@ -37,8 +37,14 @@ def test_slice(slices, shape, chunks, blocks, dtype):
 
     a = ia.linspace(shape, -10, 10, store=store, dtype=dtype)
     an = ia.iarray2numpy(a)
+
     a[slices] = 0
     an[slices] = 0
+    np.testing.assert_almost_equal(a.data, an)
+
+    a[slices] = np.ones(shape, dtype=dtype)[slices].copy()
+    an[slices] = np.ones(shape, dtype=dtype)[slices].copy()
+    np.testing.assert_almost_equal(a.data, an)
 
     b = a[slices]
     an2 = an[slices]
