@@ -215,6 +215,13 @@ cdef extern from "libiarray/iarray.h":
                                    int flags,
                                    iarray_container_t **container)
 
+    ina_rc_t iarray_set_slice_buffer(iarray_context_t *ctx,
+                                     iarray_container_t *container,
+                                     const int64_t *start,
+                                     const int64_t *stop,
+                                     void *buffer,
+                                     int64_t buflen)
+
     ina_rc_t iarray_to_buffer(iarray_context_t *ctx,
                                    iarray_container_t *container,
                                    void *buffer,

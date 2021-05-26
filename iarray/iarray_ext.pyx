@@ -22,6 +22,11 @@ from libc.stdlib cimport malloc, free
 import iarray as ia
 from collections import namedtuple
 from time import time
+from cpython cimport (
+    PyObject_GetBuffer, PyBuffer_Release,
+    PyBUF_SIMPLE, PyBUF_WRITABLE, Py_buffer,
+    PyBytes_FromStringAndSize
+)
 
 class IArrayError(Exception):
     pass
@@ -369,6 +374,10 @@ cdef class Container:
         return <double>nbytes / <double>cbytes
 
     @property
+    def context(self):
+        return self.context
+
+    @property
     def cfg(self):
         return self.context.cfg
 
@@ -628,6 +637,29 @@ def open(cfg, urlpath):
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     return ia.IArray(ctx, c_c)
+
+
+
+def set_slice(ctx, data, start, stop, buffer):
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
+        ctx.to_capsule(), "iarray_context_t*")
+    cdef ciarray.iarray_container_t *data_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(
+        data.to_capsule(), "iarray_container_t*")
+
+    cdef Py_buffer *buf = <Py_buffer *> malloc(sizeof(Py_buffer))
+    PyObject_GetBuffer(buffer, buf, PyBUF_SIMPLE)
+
+    cdef ciarray.int64_t start_[ciarray.IARRAY_DIMENSION_MAX]
+    cdef ciarray.int64_t stop_[ciarray.IARRAY_DIMENSION_MAX]
+
+    for i in range(len(start)):
+        start_[i] = start[i]
+        stop_[i] = stop[i]
+
+    iarray_check(ciarray.iarray_set_slice_buffer(ctx_, data_, start_, stop_, buf.buf, buf.len))
+    PyBuffer_Release(buf)
+
+    return data
 
 
 def get_slice(ctx, data, start, stop, squeeze_mask, view, storage):

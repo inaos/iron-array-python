@@ -37,6 +37,8 @@ def test_slice(slices, shape, chunks, blocks, dtype):
 
     a = ia.linspace(shape, -10, 10, store=store, dtype=dtype)
     an = ia.iarray2numpy(a)
+    a[slices] = 0
+    an[slices] = 0
 
     b = a[slices]
     an2 = an[slices]
