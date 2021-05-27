@@ -11,12 +11,18 @@
 
 import iarray as ia
 from iarray import iarray_ext as ext
-from itertools import zip_longest
 import numpy as np
 from typing import Union
 import ndindex
 import sys
 from .info import InfoReporter
+
+
+def process_key(key, shape):
+    key = ndindex.ndindex(key).expand(shape).raw
+    mask = tuple(True if isinstance(k, int) else False for k in key)
+    key = tuple(k if isinstance(k, slice) else slice(k, k + 1, None) for k in key)
+    return key, mask
 
 
 def is_documented_by(original):
@@ -125,23 +131,24 @@ class IArray(ext.Container):
 
     def __getitem__(self, key):
         # Massage the key a bit so that it is compatible with self.shape
-        key = list(ndindex.ndindex(key).expand(self.shape).raw)
-        squeeze_mask = tuple(True if isinstance(k, int) else False for k in key)
-
-        for i, k in enumerate(key):
-            if isinstance(k, np.ndarray):
-                raise AttributeError("Advance indexing is not supported yet")
-            elif isinstance(k, int):
-                key[i] = slice(k, k + 1, None)
-            elif isinstance(k, slice):
-                if k.step is not None and k.step != 1:
-                    raise AttributeError("Step indexing is not supported yet")
-            else:
-                raise AttributeError(f"Type {type(k)} is not supported")
-
+        key, mask = process_key(key, self.shape)
         start = [sl.start for sl in key]
         stop = [sl.stop for sl in key]
-        return super().__getitem__([start, stop, squeeze_mask])
+
+        return super().__getitem__([start, stop, mask])
+
+    def __setitem__(self, key, value):
+        key, mask = process_key(key, self.shape)
+        start = [sl.start for sl in key]
+        stop = [sl.stop for sl in key]
+
+        shape = [sp - st for sp, st in zip(stop, start)]
+        if isinstance(value, (float, int)):
+            value = np.full(shape, value, dtype=self.dtype)
+        elif isinstance(value, ia.IArray):
+            value = value.data
+
+        return ext.set_slice(self.context, self, start, stop, value)
 
     def __iter__(self):
         return self.iter_read_block()

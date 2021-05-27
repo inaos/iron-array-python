@@ -17,11 +17,19 @@ import numpy as np
 cimport numpy as np
 import cython
 from cpython.pycapsule cimport PyCapsule_New, PyCapsule_GetPointer
-from math import ceil
 from libc.stdlib cimport malloc, free
 import iarray as ia
 from collections import namedtuple
 from time import time
+from cpython cimport (
+    PyObject_GetBuffer, PyBuffer_Release,
+    PyBUF_SIMPLE, PyBUF_WRITABLE, Py_buffer,
+    PyBytes_FromStringAndSize
+)
+
+def compress_squeeze(data, selectors):
+    return tuple(d for d, s in zip(data, selectors) if not s)
+
 
 class IArrayError(Exception):
     pass
@@ -369,6 +377,10 @@ cdef class Container:
         return <double>nbytes / <double>cbytes
 
     @property
+    def context(self):
+        return self.context
+
+    @property
     def cfg(self):
         return self.context.cfg
 
@@ -491,7 +503,7 @@ def empty(cfg, dtshape):
     flags = 0 if cfg.store.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     cdef ciarray.iarray_container_t *c
-    iarray_check(ciarray.iarray_container_new(ctx_, &dtshape_, &store_, flags, &c))
+    iarray_check(ciarray.iarray_empty(ctx_, &dtshape_, &store_, flags, &c))
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     return ia.IArray(ctx, c_c)
@@ -630,6 +642,29 @@ def open(cfg, urlpath):
     return ia.IArray(ctx, c_c)
 
 
+
+def set_slice(ctx, data, start, stop, buffer):
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
+        ctx.to_capsule(), "iarray_context_t*")
+    cdef ciarray.iarray_container_t *data_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(
+        data.to_capsule(), "iarray_container_t*")
+
+    cdef Py_buffer *buf = <Py_buffer *> malloc(sizeof(Py_buffer))
+    PyObject_GetBuffer(buffer, buf, PyBUF_SIMPLE)
+
+    cdef ciarray.int64_t start_[ciarray.IARRAY_DIMENSION_MAX]
+    cdef ciarray.int64_t stop_[ciarray.IARRAY_DIMENSION_MAX]
+
+    for i in range(len(start)):
+        start_[i] = start[i]
+        stop_[i] = stop[i]
+
+    iarray_check(ciarray.iarray_set_slice_buffer(ctx_, data_, start_, stop_, buf.buf, buf.len))
+    PyBuffer_Release(buf)
+
+    return data
+
+
 def get_slice(ctx, data, start, stop, squeeze_mask, view, storage):
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
         ctx.to_capsule(), "iarray_context_t*")
@@ -654,13 +689,18 @@ def get_slice(ctx, data, start, stop, squeeze_mask, view, storage):
     if view:
         if cfg.blocks and cfg.chunks:
             shape = tuple(sp - st for sp, st in zip(stop, start))
+            chunks = list(cfg.chunks)
+            blocks = list(cfg.blocks)
             for i, s in enumerate(shape):
                 if s < cfg.chunks[i]:
-                    cfg.chunks[i] = s
-                if cfg.chunks[i] < cfg.blocks[i]:
-                    cfg.blocks[i] = cfg.chunks[i]
+                    chunks[i] = s
+                if chunks[i] < cfg.blocks[i]:
+                    blocks[i] = chunks[i]
+            cfg.chunks = compress_squeeze(chunks, squeeze_mask)
+            cfg.blocks = compress_squeeze(chunks, squeeze_mask)
             cfg.store.chunks = cfg.chunks
             cfg.store.blocks = cfg.blocks
+
         iarray_check(ciarray.iarray_get_slice(ctx_, data_, start_, stop_, view, NULL, flags, &c))
     else:
         set_storage(storage, &store_)
@@ -675,6 +715,7 @@ def get_slice(ctx, data, start, stop, squeeze_mask, view, storage):
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
 
     b =  ia.IArray(ctx, c_c)
+    b.view_ref = data  # Keep a reference of the parent container
     if b.ndim == 0:
         return float(ia.iarray2numpy(b))
 
