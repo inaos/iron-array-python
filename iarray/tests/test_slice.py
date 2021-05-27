@@ -29,7 +29,7 @@ from math import isclose
         ([100, 100], None, None),
     ],
 )
-def deqtest_slice(slices, shape, chunks, blocks, dtype):
+def test_slice(slices, shape, chunks, blocks, dtype):
     if chunks is None:
         store = ia.Store(plainbuffer=True)
     else:

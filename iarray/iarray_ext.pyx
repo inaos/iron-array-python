@@ -17,7 +17,6 @@ import numpy as np
 cimport numpy as np
 import cython
 from cpython.pycapsule cimport PyCapsule_New, PyCapsule_GetPointer
-from math import ceil
 from libc.stdlib cimport malloc, free
 import iarray as ia
 from collections import namedtuple
@@ -27,6 +26,10 @@ from cpython cimport (
     PyBUF_SIMPLE, PyBUF_WRITABLE, Py_buffer,
     PyBytes_FromStringAndSize
 )
+
+def compress_squeeze(data, selectors):
+    return tuple(d for d, s in zip(data, selectors) if not s)
+
 
 class IArrayError(Exception):
     pass
@@ -691,12 +694,13 @@ def get_slice(ctx, data, start, stop, squeeze_mask, view, storage):
             for i, s in enumerate(shape):
                 if s < cfg.chunks[i]:
                     chunks[i] = s
-                if cfg.chunks[i] < cfg.blocks[i]:
-                    blocks[i] = cfg.chunks[i]
-            cfg.chunks = chunks
-            cfg.blocks = blocks
+                if chunks[i] < cfg.blocks[i]:
+                    blocks[i] = chunks[i]
+            cfg.chunks = compress_squeeze(chunks, squeeze_mask)
+            cfg.blocks = compress_squeeze(chunks, squeeze_mask)
             cfg.store.chunks = cfg.chunks
             cfg.store.blocks = cfg.blocks
+
         iarray_check(ciarray.iarray_get_slice(ctx_, data_, start_, stop_, view, NULL, flags, &c))
     else:
         set_storage(storage, &store_)

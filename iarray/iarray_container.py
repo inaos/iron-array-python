@@ -11,7 +11,6 @@
 
 import iarray as ia
 from iarray import iarray_ext as ext
-from itertools import zip_longest
 import numpy as np
 from typing import Union
 import ndindex
@@ -147,7 +146,7 @@ class IArray(ext.Container):
         if isinstance(value, (float, int)):
             value = np.full(shape, value, dtype=self.dtype)
         elif isinstance(value, ia.IArray):
-            value = value.data
+            value = value.copy().data
 
         return ext.set_slice(self.context, self, start, stop, value)
 
