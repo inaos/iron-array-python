@@ -5,8 +5,6 @@ cmake
 cython
 ninja
 numpy
-icc-rt
-llvmdev<11
 llvmlite
 pytest
 ndindex

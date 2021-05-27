@@ -6,5 +6,6 @@ xarray
 dask
 s3fs
 numexpr
+numba
 memprofiler
 ipython_memwatcher
