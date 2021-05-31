@@ -22,13 +22,19 @@ import numpy as np
 )
 def test_rand(shape, chunks, blocks, dtype, plainbuffer):
     store = ia.Store(chunks, blocks, plainbuffer=plainbuffer)
-
     size = int(np.prod(shape))
-    a = ia.random.random_sample(shape, store=store, dtype=dtype)
-    b = np.random.rand(size).reshape(shape).astype(dtype)
-    c = ia.numpy2iarray(b, store=store)
 
-    assert ia.random.kstest(a, c)
+    i = 0
+    while i < 5:
+        a = ia.random.random_sample(shape, store=store, dtype=dtype)
+        b = np.random.rand(size).reshape(shape).astype(dtype)
+        c = ia.numpy2iarray(b, store=store)
+
+        if not ia.random.kstest(a, c):
+            i += 1
+        else:
+            return
+    assert False
 
 
 # Randn
@@ -45,13 +51,19 @@ def test_rand(shape, chunks, blocks, dtype, plainbuffer):
 )
 def test_randn(shape, chunks, blocks, dtype, plainbuffer):
     store = ia.Store(chunks, blocks, plainbuffer=plainbuffer)
-
     size = int(np.prod(shape))
-    a = ia.random.standard_normal(shape, store=store, dtype=dtype)
-    b = np.random.standard_normal(size).reshape(shape).astype(dtype)
-    c = ia.numpy2iarray(b, store=store)
 
-    assert ia.random.kstest(a, c)
+    i = 0
+    while i < 5:
+        a = ia.random.standard_normal(shape, store=store, dtype=dtype)
+        b = np.random.standard_normal(size).reshape(shape).astype(dtype)
+        c = ia.numpy2iarray(b, store=store)
+
+        if not ia.random.kstest(a, c):
+            i += 1
+        else:
+            return
+    assert False
 
 
 # Beta
@@ -68,13 +80,19 @@ def test_randn(shape, chunks, blocks, dtype, plainbuffer):
 )
 def test_beta(alpha, beta, shape, chunks, blocks, dtype, plainbuffer):
     store = ia.Store(chunks, blocks, plainbuffer=plainbuffer)
-
     size = int(np.prod(shape))
-    a = ia.random.beta(shape, alpha, beta, store=store, dtype=dtype)
-    b = np.random.beta(alpha, beta, size).reshape(shape).astype(dtype)
-    c = ia.numpy2iarray(b, store=store)
 
-    assert ia.random.kstest(a, c)
+    i = 0
+    while i < 5:
+        a = ia.random.beta(shape, alpha, beta, store=store, dtype=dtype)
+        b = np.random.beta(alpha, beta, size).reshape(shape).astype(dtype)
+        c = ia.numpy2iarray(b, store=store)
+
+        if not ia.random.kstest(a, c):
+            i += 1
+        else:
+            return
+    assert False
 
 
 # Lognormal
@@ -91,13 +109,19 @@ def test_beta(alpha, beta, shape, chunks, blocks, dtype, plainbuffer):
 )
 def test_lognormal(mu, sigma, shape, chunks, blocks, dtype, plainbuffer):
     store = ia.Store(chunks, blocks, plainbuffer=plainbuffer)
-
     size = int(np.prod(shape))
-    a = ia.random.lognormal(shape, mu, sigma, store=store, dtype=dtype)
-    b = np.random.lognormal(mu, sigma, size).reshape(shape).astype(dtype)
-    c = ia.numpy2iarray(b, store=store)
 
-    assert ia.random.kstest(a, c)
+    i = 0
+    while i < 5:
+        a = ia.random.lognormal(shape, mu, sigma, store=store, dtype=dtype)
+        b = np.random.lognormal(mu, sigma, size).reshape(shape).astype(dtype)
+        c = ia.numpy2iarray(b, store=store)
+
+        if not ia.random.kstest(a, c):
+            i += 1
+        else:
+            return
+    assert False
 
 
 # Exponential
@@ -114,13 +138,19 @@ def test_lognormal(mu, sigma, shape, chunks, blocks, dtype, plainbuffer):
 )
 def test_exponential(beta, shape, chunks, blocks, dtype, plainbuffer):
     store = ia.Store(chunks, blocks, plainbuffer=plainbuffer)
-
     size = int(np.prod(shape))
-    a = ia.random.exponential(shape, beta, store=store, dtype=dtype)
-    b = np.random.exponential(beta, size).reshape(shape).astype(dtype)
-    c = ia.numpy2iarray(b, store=store)
 
-    assert ia.random.kstest(a, c)
+    i = 0
+    while i < 5:
+        a = ia.random.exponential(shape, beta, store=store, dtype=dtype)
+        b = np.random.exponential(beta, size).reshape(shape).astype(dtype)
+        c = ia.numpy2iarray(b, store=store)
+
+        if not ia.random.kstest(a, c):
+            i += 1
+        else:
+            return
+    assert False
 
 
 # Uniform
@@ -137,13 +167,19 @@ def test_exponential(beta, shape, chunks, blocks, dtype, plainbuffer):
 )
 def test_uniform(a_, b_, shape, chunks, blocks, dtype, plainbuffer):
     store = ia.Store(chunks, blocks, plainbuffer=plainbuffer)
-
     size = int(np.prod(shape))
-    a = ia.random.uniform(shape, a_, b_, store=store, dtype=dtype)
-    b = np.random.uniform(a_, b_, size).reshape(shape).astype(dtype)
-    c = ia.numpy2iarray(b, store=store)
 
-    assert ia.random.kstest(a, c)
+    i = 0
+    while i < 5:
+        a = ia.random.uniform(shape, a_, b_, store=store, dtype=dtype)
+        b = np.random.uniform(a_, b_, size).reshape(shape).astype(dtype)
+        c = ia.numpy2iarray(b, store=store)
+
+        if not ia.random.kstest(a, c):
+            i += 1
+        else:
+            return
+    assert False
 
 
 # Normal
@@ -160,13 +196,19 @@ def test_uniform(a_, b_, shape, chunks, blocks, dtype, plainbuffer):
 )
 def test_normal(mu, sigma, shape, chunks, blocks, dtype, plainbuffer):
     store = ia.Store(chunks, blocks, plainbuffer=plainbuffer)
-
     size = int(np.prod(shape))
-    a = ia.random.normal(shape, mu, sigma, store=store, dtype=dtype)
-    b = np.random.normal(mu, sigma, size).reshape(shape).astype(dtype)
-    c = ia.numpy2iarray(b, store=store)
 
-    assert ia.random.kstest(a, c)
+    i = 0
+    while i < 5:
+        a = ia.random.normal(shape, mu, sigma, store=store, dtype=dtype)
+        b = np.random.normal(mu, sigma, size).reshape(shape).astype(dtype)
+        c = ia.numpy2iarray(b, store=store)
+
+        if not ia.random.kstest(a, c):
+            i += 1
+        else:
+            return
+    assert False
 
 
 # Bernoulli (compare against np.random.binomial)
@@ -183,13 +225,19 @@ def test_normal(mu, sigma, shape, chunks, blocks, dtype, plainbuffer):
 )
 def test_bernoulli(p, shape, chunks, blocks, dtype, plainbuffer):
     store = ia.Store(chunks, blocks, plainbuffer=plainbuffer)
-
     size = int(np.prod(shape))
-    a = ia.random.bernoulli(shape, p, store=store, dtype=dtype)
-    b = np.random.binomial(1, p, size).reshape(shape).astype(dtype)
-    c = ia.numpy2iarray(b, store=store)
 
-    assert ia.random.kstest(a, c)
+    i = 0
+    while i < 5:
+        a = ia.random.bernoulli(shape, p, store=store, dtype=dtype)
+        b = np.random.binomial(1, p, size).reshape(shape).astype(dtype)
+        c = ia.numpy2iarray(b, store=store)
+
+        if not ia.random.kstest(a, c):
+            i += 1
+        else:
+            return
+    assert False
 
 
 # Binomial
@@ -206,15 +254,21 @@ def test_bernoulli(p, shape, chunks, blocks, dtype, plainbuffer):
 )
 def test_binomial(n, p, shape, chunks, blocks, dtype, plainbuffer):
     store = ia.Store(chunks, blocks, plainbuffer=plainbuffer)
-
     size = int(np.prod(shape))
-    a = ia.random.binomial(
-        shape, n, p, store=store, random_gen=ia.RandomGen.MERSENNE_TWISTER, dtype=dtype
-    )
-    b = np.random.binomial(n, p, size).reshape(shape).astype(dtype)
-    c = ia.numpy2iarray(b, store=store)
 
-    assert ia.random.kstest(a, c)
+    i = 0
+    while i < 5:
+        a = ia.random.binomial(
+            shape, n, p, store=store, random_gen=ia.RandomGen.MERSENNE_TWISTER, dtype=dtype
+        )
+        b = np.random.binomial(n, p, size).reshape(shape).astype(dtype)
+        c = ia.numpy2iarray(b, store=store)
+
+        if not ia.random.kstest(a, c):
+            i += 1
+        else:
+            return
+    assert False
 
 
 # Poisson
@@ -231,10 +285,16 @@ def test_binomial(n, p, shape, chunks, blocks, dtype, plainbuffer):
 )
 def test_poisson(lamb, shape, chunks, blocks, dtype, plainbuffer):
     store = ia.Store(chunks, blocks, plainbuffer=plainbuffer)
-
     size = int(np.prod(shape))
-    a = ia.random.poisson(shape, lamb, store=store, random_gen=ia.RandomGen.SOBOL, dtype=dtype)
-    b = np.random.poisson(lamb, size).reshape(shape).astype(dtype)
-    c = ia.numpy2iarray(b, store=store)
 
-    assert ia.random.kstest(a, c)
+    i = 0
+    while i < 5:
+        a = ia.random.poisson(shape, lamb, store=store, random_gen=ia.RandomGen.SOBOL, dtype=dtype)
+        b = np.random.poisson(lamb, size).reshape(shape).astype(dtype)
+        c = ia.numpy2iarray(b, store=store)
+
+        if not ia.random.kstest(a, c):
+            i += 1
+        else:
+            return
+    assert False
