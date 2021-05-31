@@ -19,13 +19,14 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 
 # Number of iterations per benchmark
-NITER = 10
+NITER = 4
 
 # Vector sizes and chunking
-shape = [2 * 1000 * 1000]
+shape = [20 * 1000 * 1000]
 N = int(np.prod(shape))
-chunks, blocks = None, None  # use automatic partition advice
-# chunks, blocks = [400 * 1000], [16 * 1000]  # user-defined partitions
+#chunks, blocks = None, None  # use automatic partition advice
+#chunks, blocks = [400 * 1000], [16 * 1000]  # user-defined partitions
+chunks, blocks = [10 * 1000 * 1000], [20 * 1000]  # user-defined partitions
 
 expression = "(x - 1.35) * (x - 4.45) * (x - 8.5)"
 clevel = 9  # compression level
@@ -138,7 +139,7 @@ def do_block_evaluation(plainbuffer):
     else:
         store = ia.Store(chunks, blocks, plainbuffer=False)
 
-    ia.set_config(clevel=clevel, nthreads=nthreads, store=store)
+    ia.set_config(codec=ia.Codecs.LZ4, clevel=clevel, nthreads=nthreads, store=store)
     print(ia.get_config())
 
     x = np.linspace(0, 10, N).reshape(shape)

@@ -14,14 +14,15 @@ from iarray.udf import float64, int64
 
 
 # Number of iterations per benchmark
-NITER = 10
+NITER = 4
 
 # Vector and sizes and chunking
-shape = [2 * 1000 * 1000]
+shape = [20 * 1000 * 1000]
 N = int(np.prod(shape))
 
-chunks, blocks = None, None  # use automatic partition advice
+# chunks, blocks = None, None  # use automatic partition advice
 # chunks, blocks = [400 * 1000], [16 * 1000]  # user-defined partitions
+chunks, blocks = [10 * 1000 * 1000], [20 * 1000]  # user-defined partitions
 
 expression = "(cos(x) - 1.35) * (x - 4.45) * (sin(x) - 8.5)"
 lazy_expression = "(ia.cos(x) - 1.35) * (x - 4.45) * (ia.sin(x) - 8.5)"
@@ -123,7 +124,7 @@ def do_block_evaluation(plainbuffer):
         store = ia.Store(plainbuffer=True)
     else:
         store = ia.Store(chunks, blocks, plainbuffer=False)
-    ia.set_config(clevel=clevel, nthreads=nthreads, store=store)
+    ia.set_config(codec=ia.Codecs.LZ4, clevel=clevel, nthreads=nthreads, store=store)
 
     x = np.linspace(0, 10, N, dtype=np.double).reshape(shape)
     xa = ia.linspace(shape, 0.0, 10.0)
