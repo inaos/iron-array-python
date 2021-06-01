@@ -119,7 +119,7 @@ class DefaultStore:
 
 
 def default_filters():
-    return [ia.Filters.BITSHUFFLE]
+    return [ia.Filters.SHUFFLE]
 
 
 @dataclass
@@ -127,8 +127,8 @@ class Defaults(object):
     # Config params
     # Keep in sync the defaults below with Config.__doc__ docstring.
     _config = None
-    codec: ia.Codecs = ia.Codecs.ZSTD
-    clevel: int = 1
+    codec: ia.Codecs = ia.Codecs.LZ4
+    clevel: int = 9
     favor: ia.Favors = ia.Favors.BALANCE
     use_dict: bool = False
     filters: List[ia.Filters] = field(default_factory=default_filters)
