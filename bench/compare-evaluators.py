@@ -139,7 +139,9 @@ def do_block_evaluation(plainbuffer):
     else:
         store = ia.Store(chunks, blocks, plainbuffer=False)
 
-    ia.set_config(codec=ia.Codecs.LZ4, clevel=clevel, nthreads=nthreads, store=store)
+    # ia.set_config(codec=ia.Codecs.LZ4, clevel=clevel, nthreads=nthreads, store=store)
+    # The latest versions of BTune work much better for 1-dim arrays
+    ia.set_config(favor=ia.Favors.SPEED)
     print(ia.get_config())
 
     x = np.linspace(0, 10, N).reshape(shape)
