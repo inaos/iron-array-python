@@ -90,7 +90,7 @@ def test_global_config(clevel, codec, filters, chunks, blocks, enforce_frame):
 )
 def test_global_favor(favor, filters, chunks, blocks):
     store = ia.Store(chunks, blocks)
-    ia.set_config(favor=favor, store=store)
+    ia.set_config(favor=favor, filters=filters, store=store)
     config = ia.get_config()
     assert config.favor == favor
     assert config.filters == filters
