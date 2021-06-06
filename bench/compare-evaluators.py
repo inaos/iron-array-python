@@ -22,11 +22,11 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 NITER = 4
 
 # Vector sizes and chunking
-shape = [20 * 1000 * 1000]
+shape = [100 * 1000 * 1000]
 N = int(np.prod(shape))
 #chunks, blocks = None, None  # use automatic partition advice
 #chunks, blocks = [400 * 1000], [16 * 1000]  # user-defined partitions
-chunks, blocks = [10 * 1000 * 1000], [20 * 1000]  # user-defined partitions
+chunks, blocks = [1 * 1000 * 1000], [20 * 1000]  # user-defined partitions
 
 expression = "(x - 1.35) * (x - 4.45) * (x - 8.5)"
 clevel = 9  # compression level
@@ -83,53 +83,53 @@ def do_regular_evaluation():
     for i in range(NITER):
         y1 = eval(expression)
     print("Regular evaluate via numpy:", round((time() - t0) / NITER, 4))
-    np.testing.assert_almost_equal(y0, y1)
+    #np.testing.assert_almost_equal(y0, y1)
 
-    t0 = time()
-    ne.set_num_threads(1)
-    for i in range(NITER):
-        y1 = ne.evaluate(expression, local_dict={"x": x})
-    print("Regular evaluate via numexpr:", round((time() - t0) / NITER, 4))
-    np.testing.assert_almost_equal(y0, y1)
+    # t0 = time()
+    # ne.set_num_threads(1)
+    # for i in range(NITER):
+    #     y1 = ne.evaluate(expression, local_dict={"x": x})
+    # print("Regular evaluate via numexpr:", round((time() - t0) / NITER, 4))
+    # np.testing.assert_almost_equal(y0, y1)
 
     t0 = time()
     ne.set_num_threads(nthreads)
     for i in range(NITER):
         y1 = ne.evaluate(expression, local_dict={"x": x})
     print("Regular evaluate via numexpr (multi-thread):", round((time() - t0) / NITER, 4))
-    np.testing.assert_almost_equal(y0, y1)
+    #np.testing.assert_almost_equal(y0, y1)
 
-    nb.set_num_threads(1)
-    t0 = time()
-    for i in range(NITER):
-        y1 = poly_numba(x)
-    print("Regular evaluate via numba:", round((time() - t0) / NITER, 4))
-    np.testing.assert_almost_equal(y0, y1)
+    # nb.set_num_threads(1)
+    # t0 = time()
+    # for i in range(NITER):
+    #     y1 = poly_numba(x)
+    # print("Regular evaluate via numba:", round((time() - t0) / NITER, 4))
+    # np.testing.assert_almost_equal(y0, y1)
 
-    t0 = time()
-    for i in range(NITER):
-        y1 = poly_numba(x)
-    print("Regular evaluate via numba (II):", round((time() - t0) / NITER, 4))
-    np.testing.assert_almost_equal(y0, y1)
+    # t0 = time()
+    # for i in range(NITER):
+    #     y1 = poly_numba(x)
+    # print("Regular evaluate via numba (II):", round((time() - t0) / NITER, 4))
+    # np.testing.assert_almost_equal(y0, y1)
 
     nb.set_num_threads(nthreads)
     t0 = time()
     for i in range(NITER):
         y1 = poly_numba(x)
-    print("Regular evaluate via numba (II, multi-thread):", round((time() - t0) / NITER, 4))
-    np.testing.assert_almost_equal(y0, y1)
+    print("Regular evaluate via numba (multi-thread):", round((time() - t0) / NITER, 4))
+    #np.testing.assert_almost_equal(y0, y1)
 
-    t0 = time()
-    for i in range(NITER):
-        y1 = ia.ext.poly_cython(x)
-    print("Regular evaluate via cython:", round((time() - t0) / NITER, 4))
-    np.testing.assert_almost_equal(y0, y1)
-
-    t0 = time()
-    for i in range(NITER):
-        y1 = ia.ext.poly_cython_nogil(x)
-    print("Regular evaluate via cython (nogil):", round((time() - t0) / NITER, 4))
-    np.testing.assert_almost_equal(y0, y1)
+    # t0 = time()
+    # for i in range(NITER):
+    #     y1 = ia.ext.poly_cython(x)
+    # print("Regular evaluate via cython:", round((time() - t0) / NITER, 4))
+    # np.testing.assert_almost_equal(y0, y1)
+    #
+    # t0 = time()
+    # for i in range(NITER):
+    #     y1 = ia.ext.poly_cython_nogil(x)
+    # print("Regular evaluate via cython (nogil):", round((time() - t0) / NITER, 4))
+    # np.testing.assert_almost_equal(y0, y1)
 
 
 def do_block_evaluation(plainbuffer):
@@ -141,89 +141,89 @@ def do_block_evaluation(plainbuffer):
 
     # ia.set_config(codec=ia.Codecs.LZ4, clevel=clevel, nthreads=nthreads, store=store)
     # The latest versions of BTune work much better for 1-dim arrays
-    ia.set_config(favor=ia.Favors.SPEED)
+    ia.set_config(favor=ia.Favors.SPEED, store=None, btune=True)
     print(ia.get_config())
 
-    x = np.linspace(0, 10, N).reshape(shape)
     xa = ia.linspace(shape, 0.0, 10.0)
-
-    if not plainbuffer:
-        print("Operand cratio:", round(xa.cratio, 2))
-
-    # Reference to compare to
-    y0 = eval(expression)
-
-    ya = ia.empty(shape)
-
-    t0 = time()
-    for i in range(NITER):
-        ya = ia.empty(shape)
-        for ((j, x), (k, y)) in zip_longest(xa.iter_read_block(), ya.iter_write_block()):
-            y[:] = eval(expression)
-    print("Block evaluate via numpy:", round((time() - t0) / NITER, 4))
-
-    y1 = ia.iarray2numpy(ya)
-    np.testing.assert_almost_equal(y0, y1)
-
-    ne.set_num_threads(1)
-    t0 = time()
-    for i in range(NITER):
-        ya = ia.empty(shape)
-        for ((j, x), (k, y)) in zip_longest(xa.iter_read_block(), ya.iter_write_block()):
-            ne.evaluate(expression, local_dict={"x": x}, out=y)
-    print("Block evaluate via numexpr:", round((time() - t0) / NITER, 4))
-    y1 = ia.iarray2numpy(ya)
-    np.testing.assert_almost_equal(y0, y1)
-
-    ne.set_num_threads(nthreads)
-    t0 = time()
-    for i in range(NITER):
-        ya = ia.empty(shape)
-        for ((j, x), (k, y)) in zip_longest(xa.iter_read_block(), ya.iter_write_block()):
-            ne.evaluate(expression, local_dict={"x": x}, out=y)
-    print("Block evaluate via numexpr (multi-thread):", round((time() - t0) / NITER, 4))
-    y1 = ia.iarray2numpy(ya)
-    np.testing.assert_almost_equal(y0, y1)
-
-    nb.set_num_threads(1)
-    t0 = time()
-    for i in range(NITER):
-        ya = ia.empty(shape)
-        for ((j, x), (k, y)) in zip_longest(xa.iter_read_block(), ya.iter_write_block()):
-            # y[:] = poly_numba(x)
-            poly_numba2(x, y)
-    print("Block evaluate via numba (II):", round((time() - t0) / NITER, 4))
-    y1 = ia.iarray2numpy(ya)
-    np.testing.assert_almost_equal(y0, y1)
-
-    nb.set_num_threads(nthreads)
-    t0 = time()
-    for i in range(NITER):
-        ya = ia.empty(shape)
-        for ((j, x), (k, y)) in zip_longest(xa.iter_read_block(), ya.iter_write_block()):
-            # y[:] = poly_numba(x)
-            poly_numba2(x, y)
-    print("Block evaluate via numba (II, multi-thread):", round((time() - t0) / NITER, 4))
-    y1 = ia.iarray2numpy(ya)
-    np.testing.assert_almost_equal(y0, y1)
-
-    t0 = time()
-    for i in range(NITER):
-        ya = ia.empty(shape)
-        for ((j, x), (k, y)) in zip_longest(xa.iter_read_block(), ya.iter_write_block()):
-            y[:] = ia.ext.poly_cython(x)
-    print("Block evaluate via cython:", round((time() - t0) / NITER, 4))
-    y1 = ia.iarray2numpy(ya)
-    np.testing.assert_almost_equal(y0, y1)
-
-    t0 = time()
-    for i in range(NITER):
-        ya = ia.empty(shape)
-        for ((j, x), (k, y)) in zip_longest(xa.iter_read_block(), ya.iter_write_block()):
-            y[:] = ia.ext.poly_cython_nogil(x)
-    print("Block evaluate via cython (nogil):", round((time() - t0) / NITER, 4))
-    y1 = ia.iarray2numpy(ya)
-    np.testing.assert_almost_equal(y0, y1)
+    # x = np.linspace(0, 10, N).reshape(shape)
+    #
+    # if not plainbuffer:
+    #     print("Operand cratio:", round(xa.cratio, 2))
+    #
+    # # Reference to compare to
+    # y0 = eval(expression)
+    #
+    # ya = ia.empty(shape)
+    #
+    # t0 = time()
+    # for i in range(NITER):
+    #     ya = ia.empty(shape)
+    #     for ((j, x), (k, y)) in zip_longest(xa.iter_read_block(), ya.iter_write_block()):
+    #         y[:] = eval(expression)
+    # print("Block evaluate via numpy:", round((time() - t0) / NITER, 4))
+    #
+    # y1 = ia.iarray2numpy(ya)
+    # np.testing.assert_almost_equal(y0, y1)
+    #
+    # ne.set_num_threads(1)
+    # t0 = time()
+    # for i in range(NITER):
+    #     ya = ia.empty(shape)
+    #     for ((j, x), (k, y)) in zip_longest(xa.iter_read_block(), ya.iter_write_block()):
+    #         ne.evaluate(expression, local_dict={"x": x}, out=y)
+    # print("Block evaluate via numexpr:", round((time() - t0) / NITER, 4))
+    # y1 = ia.iarray2numpy(ya)
+    # np.testing.assert_almost_equal(y0, y1)
+    #
+    # ne.set_num_threads(nthreads)
+    # t0 = time()
+    # for i in range(NITER):
+    #     ya = ia.empty(shape)
+    #     for ((j, x), (k, y)) in zip_longest(xa.iter_read_block(), ya.iter_write_block()):
+    #         ne.evaluate(expression, local_dict={"x": x}, out=y)
+    # print("Block evaluate via numexpr (multi-thread):", round((time() - t0) / NITER, 4))
+    # y1 = ia.iarray2numpy(ya)
+    # np.testing.assert_almost_equal(y0, y1)
+    #
+    # nb.set_num_threads(1)
+    # t0 = time()
+    # for i in range(NITER):
+    #     ya = ia.empty(shape)
+    #     for ((j, x), (k, y)) in zip_longest(xa.iter_read_block(), ya.iter_write_block()):
+    #         # y[:] = poly_numba(x)
+    #         poly_numba2(x, y)
+    # print("Block evaluate via numba (II):", round((time() - t0) / NITER, 4))
+    # y1 = ia.iarray2numpy(ya)
+    # np.testing.assert_almost_equal(y0, y1)
+    #
+    # nb.set_num_threads(nthreads)
+    # t0 = time()
+    # for i in range(NITER):
+    #     ya = ia.empty(shape)
+    #     for ((j, x), (k, y)) in zip_longest(xa.iter_read_block(), ya.iter_write_block()):
+    #         # y[:] = poly_numba(x)
+    #         poly_numba2(x, y)
+    # print("Block evaluate via numba (II, multi-thread):", round((time() - t0) / NITER, 4))
+    # y1 = ia.iarray2numpy(ya)
+    # np.testing.assert_almost_equal(y0, y1)
+    #
+    # t0 = time()
+    # for i in range(NITER):
+    #     ya = ia.empty(shape)
+    #     for ((j, x), (k, y)) in zip_longest(xa.iter_read_block(), ya.iter_write_block()):
+    #         y[:] = ia.ext.poly_cython(x)
+    # print("Block evaluate via cython:", round((time() - t0) / NITER, 4))
+    # y1 = ia.iarray2numpy(ya)
+    # np.testing.assert_almost_equal(y0, y1)
+    #
+    # t0 = time()
+    # for i in range(NITER):
+    #     ya = ia.empty(shape)
+    #     for ((j, x), (k, y)) in zip_longest(xa.iter_read_block(), ya.iter_write_block()):
+    #         y[:] = ia.ext.poly_cython_nogil(x)
+    # print("Block evaluate via cython (nogil):", round((time() - t0) / NITER, 4))
+    # y1 = ia.iarray2numpy(ya)
+    # np.testing.assert_almost_equal(y0, y1)
 
     for engine in ("internal", "udf"):
         t0 = time()
@@ -236,7 +236,7 @@ def do_block_evaluation(plainbuffer):
         avg = round((time() - t0) / NITER, 4)
         print(f"Block evaluate via iarray.eval (engine: {engine}): {avg:.4f}")
         y1 = ia.iarray2numpy(ya)
-        np.testing.assert_almost_equal(y0, y1)
+        # np.testing.assert_almost_equal(y0, y1)
 
     t0 = time()
     x = xa
@@ -246,7 +246,7 @@ def do_block_evaluation(plainbuffer):
     avg = round((time() - t0) / NITER, 4)
     print(f"Block evaluate via iarray.LazyExpr.eval (engine: internal): {avg:.4f}")
     y1 = ia.iarray2numpy(ya)
-    np.testing.assert_almost_equal(y0, y1)
+    # np.testing.assert_almost_equal(y0, y1)
 
     if not plainbuffer:
         print("Result cratio:", round(ya.cratio, 2))
@@ -255,6 +255,6 @@ def do_block_evaluation(plainbuffer):
 if __name__ == "__main__":
     do_regular_evaluation()
     print("-*-" * 10)
-    do_block_evaluation(plainbuffer=True)
-    print("-*-" * 10)
+    #do_block_evaluation(plainbuffer=True)
+    #print("-*-" * 10)
     do_block_evaluation(plainbuffer=False)
