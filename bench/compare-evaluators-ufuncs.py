@@ -22,7 +22,7 @@ N = int(np.prod(shape))
 
 # chunks, blocks = None, None  # use automatic partition advice
 # chunks, blocks = [400 * 1000], [16 * 1000]  # user-defined partitions
-chunks, blocks = [10 * 1000 * 1000], [20 * 1000]  # user-defined partitions
+chunks, blocks = [1 * 1000 * 1000], [20 * 1000]  # user-defined partitions
 
 expression = "(cos(x) - 1.35) * (x - 4.45) * (sin(x) - 8.5)"
 lazy_expression = "(ia.cos(x) - 1.35) * (x - 4.45) * (ia.sin(x) - 8.5)"
