@@ -93,7 +93,7 @@ def do_regular_evaluation():
     # np.testing.assert_almost_equal(y0, y1)
 
     t0 = time()
-    ne.set_num_threads(nthreads)
+    #ne.set_num_threads(nthreads)
     for i in range(NITER):
         y1 = ne.evaluate(expression, local_dict={"x": x})
     print("Regular evaluate via numexpr (multi-thread):", round((time() - t0) / NITER, 4))
@@ -112,7 +112,7 @@ def do_regular_evaluation():
     # print("Regular evaluate via numba (II):", round((time() - t0) / NITER, 4))
     # np.testing.assert_almost_equal(y0, y1)
 
-    nb.set_num_threads(nthreads)
+    #nb.set_num_threads(nthreads)
     t0 = time()
     for i in range(NITER):
         y1 = poly_numba(x)
