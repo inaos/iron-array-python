@@ -21,7 +21,7 @@ expr1 = "(x - 1.35) * (x - 4.45) * (x - 8.5)"
 expr3 = "(x - 1.35) * (y - 4.45) * (z - 8.5)"
 
 # Define array params
-shape = [20_000_000]
+shape = [100_000_000]
 # chunks, blocks = [2_000_000], [20_000]
 # chunks, blocks = [2**24], [2**16]
 chunks, blocks = None, None  # uncomment for automatic partitioning
@@ -29,7 +29,8 @@ dtype = np.float64
 nthreads = 8
 
 # Set global defaults
-ia.set_config(chunks=chunks, blocks=blocks, favor=ia.Favors.SPEED, dtype=dtype)
+#ia.set_config(chunks=chunks, blocks=blocks, favor=ia.Favors.SPEED, dtype=dtype)
+ia.set_config()
 # Output required precision (in significant bits for the mantissa)
 # out_prec = 0
 out_prec = 30
@@ -85,7 +86,7 @@ for i in range(NITER):
 print("Time for numpy eval:", round((time() - t0) / NITER, 3))
 # print(bn)
 
-ne.set_num_threads(nthreads)
+#ne.set_num_threads(nthreads)
 t0 = time()
 for i in range(NITER):
     if NVARS == 1:

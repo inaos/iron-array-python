@@ -141,7 +141,7 @@ def do_block_evaluation(plainbuffer):
 
     # ia.set_config(codec=ia.Codecs.LZ4, clevel=clevel, nthreads=nthreads, store=store)
     # The latest versions of BTune work much better for 1-dim arrays
-    ia.set_config(favor=ia.Favors.SPEED, store=None, btune=True)
+    ia.set_config()
     print(ia.get_config())
 
     xa = ia.linspace(shape, 0.0, 10.0)

@@ -15,7 +15,8 @@ NTHREADS = 8
 CLEVEL = 5
 CODEC = ia.Codecs.LZ4
 
-ia.set_config(codec=CODEC, clevel=CLEVEL, nthreads=NTHREADS)
+#ia.set_config(codec=CODEC, clevel=CLEVEL, nthreads=NTHREADS)
+ia.set_config()
 compressor = Blosc(cname="lz4", clevel=CLEVEL, shuffle=Blosc.SHUFFLE)
 
 dtype = np.float64
@@ -50,7 +51,8 @@ for i, shape in enumerate(shapes):
 
     scheduler = "single-threaded" if NTHREADS == 1 else "threads"
     t0 = time()
-    with dask.config.set(scheduler=scheduler, pool=ThreadPool(NTHREADS)):
+    # with dask.config.set(scheduler=scheduler, pool=ThreadPool(NTHREADS)):
+    with dask.config.set(scheduler=scheduler):
         d = da.from_zarr(data2)
         res = (d - 1.35) * (d - 4.45) * (d - 8.5)
         z2 = zarr.empty(shape, dtype=dtype, compressor=compressor, chunks=chunks)
