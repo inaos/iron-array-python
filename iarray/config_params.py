@@ -129,7 +129,7 @@ class Defaults(object):
     _config = None
     codec: ia.Codecs = ia.Codecs.LZ4
     clevel: int = 9
-    favor: ia.Favors = ia.Favors.BALANCE
+    favor: ia.Favors = ia.Favors.SPEED
     use_dict: bool = False
     filters: List[ia.Filters] = field(default_factory=default_filters)
     nthreads: int = 0
