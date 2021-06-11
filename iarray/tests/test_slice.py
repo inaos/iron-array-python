@@ -26,7 +26,7 @@ from math import isclose
         ([100, 100], [20, 20], [10, 13]),
         ([100, 130], None, None),
         ([98, 78, 55, 21], None, None),
-        ([100, 100], None, None),
+        ([100, 100], [30, 44], [30, 2]),
     ],
 )
 def test_slice(slices, shape, chunks, blocks, dtype):
@@ -58,3 +58,25 @@ def test_slice(slices, shape, chunks, blocks, dtype):
         assert an2.shape == bn.shape
         assert an2.ndim == bn.ndim
         np.testing.assert_almost_equal(an[slices], bn)
+
+
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+@pytest.mark.parametrize(
+    "shape, chunks, blocks",
+    [
+        ([100, 100], [20, 20], [10, 13]),
+        ([100, 130], None, None),
+        ([98, 78, 55, 21], None, None),
+        ([100, 100], [30, 44], [30, 2]),
+    ],
+)
+def test_double_slice(shape, chunks, blocks, dtype):
+    if chunks is None:
+        store = ia.Store(plainbuffer=True)
+    else:
+        store = ia.Store(chunks, blocks, enforce_frame=True)
+
+    a = ia.linspace(shape, -10, 10, store=store, dtype=dtype)
+    b1 = a[4]
+    b2 = a[4]
+    np.testing.assert_almost_equal(b1.data, b2.data)
