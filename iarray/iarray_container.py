@@ -14,7 +14,6 @@ from iarray import iarray_ext as ext
 import numpy as np
 from typing import Union
 import ndindex
-import sys
 from .info import InfoReporter
 
 
@@ -147,8 +146,8 @@ class IArray(ext.Container):
             value = np.full(shape, value, dtype=self.dtype)
         elif isinstance(value, ia.IArray):
             value = value.data
-
-        return ext.set_slice(self.context, self, start, stop, value)
+        with ia.config(cfg=self.cfg) as cfg:
+            return ext.set_slice(cfg, self, start, stop, value)
 
     def __iter__(self):
         return self.iter_read_block()
