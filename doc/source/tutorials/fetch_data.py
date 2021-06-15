@@ -32,14 +32,15 @@ for path in ("precip1.iarr", "precip2.iarr", "precip3.iarr"):
     if os.path.exists(path):
         os.remove(path)
 
-ia.set_config(favor=ia.Favors.CRATIO)
+#ia.set_config(favor=ia.Favors.SPEED)
 m_shape = precip_m0.shape
 ia_precip0 = ia.empty(m_shape, dtype=np.float32, urlpath="precip1.iarr")
 ia_precip1 = ia.empty(m_shape, dtype=np.float32, urlpath="precip2.iarr")
 ia_precip2 = ia.empty(m_shape, dtype=np.float32, urlpath="precip3.iarr")
 ia_precip = ia.empty((3, ) + m_shape, dtype=np.float32, urlpath="precip-3m.iarr")
 
-compressor = Blosc(cname='zstd', clevel=3, shuffle=Blosc.BITSHUFFLE)
+#compressor = Blosc(cname='zstd', clevel=3, shuffle=Blosc.BITSHUFFLE)
+compressor = Blosc()
 za_precip0 = zarr.open('precip1.zarr', mode='w', shape=m_shape, dtype=np.float32, compressor=compressor)
 za_precip1 = zarr.open('precip2.zarr', mode='w', shape=m_shape, dtype=np.float32, compressor=compressor)
 za_precip2 = zarr.open('precip3.zarr', mode='w', shape=m_shape, dtype=np.float32, compressor=compressor)
