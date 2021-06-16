@@ -20,12 +20,12 @@ from cpython.pycapsule cimport PyCapsule_New, PyCapsule_GetPointer
 from libc.stdlib cimport malloc, free
 import iarray as ia
 from collections import namedtuple
-from time import time
 from cpython cimport (
     PyObject_GetBuffer, PyBuffer_Release,
     PyBUF_SIMPLE, PyBUF_WRITABLE, Py_buffer,
     PyBytes_FromStringAndSize
 )
+
 
 def compress_squeeze(data, selectors):
     return tuple(d for d, s in zip(data, selectors) if not s)
@@ -387,8 +387,8 @@ cdef class Container:
     def __getitem__(self, key):
         # key has been massaged already
         start, stop, squeeze_mask = key
-
-        return get_slice(self.context, self, start, stop, squeeze_mask, True, None)
+        with ia.config(cfg=self.cfg) as cfg:
+            return get_slice(cfg, self, start, stop, squeeze_mask, True, None)
 
     def is_view(self):
         cdef ciarray.bool view
@@ -643,7 +643,8 @@ def open(cfg, urlpath):
 
 
 
-def set_slice(ctx, data, start, stop, buffer):
+def set_slice(cfg, data, start, stop, buffer):
+    ctx = Context(cfg)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
         ctx.to_capsule(), "iarray_context_t*")
     cdef ciarray.iarray_container_t *data_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(
@@ -665,7 +666,8 @@ def set_slice(ctx, data, start, stop, buffer):
     return data
 
 
-def get_slice(ctx, data, start, stop, squeeze_mask, view, storage):
+def get_slice(cfg, data, start, stop, squeeze_mask, view, storage):
+    ctx = Context(cfg)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
         ctx.to_capsule(), "iarray_context_t*")
     cdef ciarray.iarray_container_t *data_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(
@@ -685,6 +687,7 @@ def get_slice(ctx, data, start, stop, squeeze_mask, view, storage):
 
     cdef ciarray.iarray_storage_t store_
     cdef ciarray.iarray_container_t *c
+
     cfg = ctx.cfg
     if view:
         if cfg.blocks and cfg.chunks:
