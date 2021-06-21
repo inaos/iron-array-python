@@ -29,6 +29,12 @@ cdef extern from "libiarray/iarray.h":
     # End of stuff from "libinac/ina.h"
 
     cdef enum:
+        IARRAY_COMP_SHUFFLE = 0x1,
+        IARRAY_COMP_BITSHUFFLE = 0x2,
+        IARRAY_COMP_DELTA = 0x4,
+        IARRAY_COMP_TRUNC_PREC = 0x8,
+
+    cdef enum:
         IARRAY_ES_CONTAINER = INA_ES_USER_DEFINED + 1
         IARRAY_ES_DTSHAPE
         IARRAY_ES_SHAPE
@@ -241,6 +247,10 @@ cdef extern from "libiarray/iarray.h":
     ina_rc_t iarray_get_storage(iarray_context_t *ctx,
                                 iarray_container_t *c,
                                 iarray_storage_t *storage)
+
+    ina_rc_t iarray_get_cfg(iarray_context_t *ctx,
+                            iarray_container_t *c,
+                            iarray_config_t *cfg)
 
     ina_rc_t iarray_is_view(iarray_context_t *ctx,
                             iarray_container_t *c,

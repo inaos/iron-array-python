@@ -387,6 +387,8 @@ cdef class Container:
     def __getitem__(self, key):
         # key has been massaged already
         start, stop, squeeze_mask = key
+        cfg = ia.get_config(self.cfg)
+
         with ia.config(cfg=self.cfg) as cfg:
             return get_slice(cfg, self, start, stop, squeeze_mask, True, None)
 
@@ -638,9 +640,60 @@ def open(cfg, urlpath):
     cdef ciarray.iarray_container_t *c
     iarray_check(ciarray.iarray_container_open(ctx_, urlpath, &c))
 
-    c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
-    return ia.IArray(ctx, c_c)
+    cdef ciarray.iarray_config_t cfg_
+    ciarray.iarray_get_cfg(ctx_, c, &cfg_)
 
+    clevel = cfg_.compression_level
+    codec = ia.Codecs(cfg_.compression_codec)
+    mantissa_bits = cfg_.fp_mantissa_bits
+
+    filters = []
+    if cfg_.filter_flags & ciarray.IARRAY_COMP_TRUNC_PREC:
+        filters.append(ia.Filters.TRUNC_PREC)
+    if cfg_.filter_flags & ciarray.IARRAY_COMP_DELTA:
+        filters.append(ia.Filters.DELTA)
+    if cfg_.filter_flags & ciarray.IARRAY_COMP_BITSHUFFLE:
+        filters.append(ia.Filters.BITSHUFFLE)
+    if cfg_.filter_flags & ciarray.IARRAY_COMP_SHUFFLE:
+        filters.append(ia.Filters.SHUFFLE)
+
+    cdef ciarray.iarray_dtshape_t dtshape;
+    ciarray.iarray_get_dtshape(ctx_, c, &dtshape)
+
+    dtype = np.float64 if dtshape.dtype == ciarray.IARRAY_DATA_TYPE_DOUBLE else np.float32
+
+    cdef ciarray.iarray_storage_t storage;
+    ciarray.iarray_get_storage(ctx_, c, &storage)
+
+    chunks = tuple(storage.chunkshape[i] for i in range(dtshape.ndim))
+    blocks = tuple(storage.blockshape[i] for i in range(dtshape.ndim))
+
+    urlpath = str(storage.urlpath)
+    enforce_frame = storage.enforce_frame
+    store = ia.Store(chunks, blocks, urlpath, enforce_frame)
+
+    c_cfg = ia.Config(
+        codec=codec,
+        clevel=clevel,
+        filters=filters,
+        fp_mantissa_bits = mantissa_bits,
+        use_dict=False,
+        favor=cfg.favor,
+        nthreads=cfg.nthreads,
+        eval_method=cfg.eval_method,
+        seed=cfg.seed,
+        random_gen=cfg.random_gen,
+        btune=cfg.btune,
+        dtype=dtype,
+        store=store,
+        chunks=chunks,
+        blocks=blocks,
+        urlpath=urlpath,
+        enforce_frame=enforce_frame,
+    )
+
+    c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
+    return ia.IArray(Context(c_cfg), c_c)
 
 
 def set_slice(cfg, data, start, stop, buffer):
@@ -700,7 +753,7 @@ def get_slice(cfg, data, start, stop, squeeze_mask, view, storage):
                 if chunks[i] < cfg.blocks[i]:
                     blocks[i] = chunks[i]
             cfg.chunks = compress_squeeze(chunks, squeeze_mask)
-            cfg.blocks = compress_squeeze(chunks, squeeze_mask)
+            cfg.blocks = compress_squeeze(blocks, squeeze_mask)
             cfg.store.chunks = cfg.chunks
             cfg.store.blocks = cfg.blocks
 
