@@ -28,7 +28,7 @@ print(f"Time to make a copy (cont -> cont): {t1 - t0:.5f}")
 print(f"- Chunks: {c.chunks}")
 
 # Get a slice (view)
-v = a[100:1100, 200:1200]
+v = a[0]
 t0 = time()
 d = v.copy()
 t1 = time()
