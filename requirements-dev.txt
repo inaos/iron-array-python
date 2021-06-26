@@ -9,3 +9,4 @@ numexpr
 numba
 memprofiler
 ipython_memwatcher
+jupyter
