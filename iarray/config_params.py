@@ -114,6 +114,7 @@ class DefaultStore:
     chunks: Any
     blocks: Any
     urlpath: Any
+    mode: Any
     enforce_frame: Any
     plainbuffer: Any
 
@@ -145,6 +146,8 @@ class Defaults(object):
     chunks: Sequence = None
     blocks: Sequence = None
     urlpath: str = None
+    mode: str = "r"
+
     enforce_frame: bool = False
     plainbuffer: bool = False
 
@@ -240,6 +243,9 @@ class Defaults(object):
     def _urlpath(self):
         return self.urlpath
 
+    def _mode(self):
+        return self.mode
+
     def _enforce_frame(self):
         return self.enforce_frame
 
@@ -254,6 +260,7 @@ class Defaults(object):
                 chunks=self.chunks,
                 blocks=self.blocks,
                 urlpath=self.urlpath,
+                mode=self.mode,
                 enforce_frame=self.enforce_frame,
                 plainbuffer=self.plainbuffer,
             )
@@ -265,6 +272,7 @@ class Defaults(object):
         self.chunks = value.chunks
         self.blocks = value.blocks
         self.urlpath = value.urlpath
+        self.mode = value.mode
         self.enforce_frame = value.enforce_frame
         self.plainbuffer = value.plainbuffer
         self._store = value
@@ -294,6 +302,10 @@ class Store:
     urlpath : str
         The name of the file for persistently storing the output array.  If None (the default),
         the output array will be stored in-memory.
+    mode : str
+        Persistence mode: 'r' means read only (must exist); 'r+' means read/write (must exist);
+        'a' means read/write (create if doesn’t exist); 'w' means create (overwrite if exists);
+        'w-' means create (fail if exists).  Default is 'r'.
     enforce_frame : bool
         If True, the output array will be stored as a frame, even when in-memory.  If False
         (the default), the store will be sparse.  Currently, persistent store only supports
@@ -310,12 +322,16 @@ class Store:
     chunks: Union[Sequence, None] = field(default_factory=defaults._chunks)
     blocks: Union[Sequence, None] = field(default_factory=defaults._blocks)
     urlpath: bytes or str = field(default_factory=defaults._urlpath)
+    mode: bytes or str = field(default_factory=defaults._mode)
     enforce_frame: bool = field(default_factory=defaults._enforce_frame)
     plainbuffer: bool = field(default_factory=defaults._plainbuffer)
 
     def __post_init__(self):
         self.urlpath = (
             self.urlpath.encode("utf-8") if isinstance(self.urlpath, str) else self.urlpath
+        )
+        self.mode = (
+            self.mode.encode("utf-8") if isinstance(self.mode, str) else self.mode
         )
         self.enforce_frame = True if self.urlpath else self.enforce_frame
         if self.plainbuffer:
@@ -411,6 +427,7 @@ class Config(ext.Config):
     chunks: Union[Sequence, None] = field(default_factory=defaults._chunks)
     blocks: Union[Sequence, None] = field(default_factory=defaults._blocks)
     urlpath: bytes or str = field(default_factory=defaults._urlpath)
+    mode: bytes or str = field(default_factory=defaults._mode)
     enforce_frame: bool = field(default_factory=defaults._enforce_frame)
     plainbuffer: bool = field(default_factory=defaults._plainbuffer)
 
@@ -428,6 +445,7 @@ class Config(ext.Config):
                 chunks=self.chunks,
                 blocks=self.blocks,
                 urlpath=self.urlpath,
+                mode=self.mode,
                 enforce_frame=self.enforce_frame,
                 plainbuffer=self.plainbuffer,
             )

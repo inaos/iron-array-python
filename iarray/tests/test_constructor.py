@@ -197,3 +197,19 @@ def test_full(fill_value, shape, chunks, blocks, dtype):
     npdtype = np.float64 if dtype == np.float64 else np.float32
     c = np.full(shape, fill_value, dtype=npdtype)
     np.testing.assert_almost_equal(b, c)
+
+
+# TODO: Update this when persistent sparse would be supported
+@pytest.mark.parametrize(
+    "sparse",
+    [
+        (True,),
+        (False,),
+    ],
+)
+def test_overwrite(sparse):
+    fname = "pepe.iarr"
+    if os.path.exists(fname):
+        os.remove(fname)
+    a = ia.arange([10, 20, 10, 14], clevel=9, urlpath=fname)
+    b = ia.arange([10, 20, 10, 14], clevel=9, urlpath=fname, mode="w")

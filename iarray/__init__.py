@@ -173,6 +173,7 @@ from .utils import (
     cmp_arrays,
     iarray2numpy,
     numpy2iarray,
+    _check_path_mode,
 )
 
 # random constructors (follow NumPy convention)
