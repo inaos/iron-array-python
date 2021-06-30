@@ -405,6 +405,7 @@ cdef class Expression:
     cdef Context context
 
     def __init__(self, cfg):
+        self.cfg = cfg
         self.context = Context(cfg)
         cdef ciarray.iarray_expression_t* e
         iarray_check(ciarray.iarray_expr_new(self.context.ia_ctx, &e))
@@ -461,6 +462,8 @@ cdef class Expression:
 
     def eval(self):
         cdef ciarray.iarray_container_t *c;
+        # Check that we are not unadvertently overwriting anything
+        ia._check_path_mode(self.cfg.store.urlpath, self.cfg.store.mode)
         with nogil:
             error = ciarray.iarray_eval(self.ia_expr, &c)
         iarray_check(error)
@@ -480,6 +483,9 @@ def copy(cfg, src):
     set_storage(cfg.store, &store_)
 
     cdef int flags = 0 if cfg.store.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
+
+    # Check that we are not unadvertently overwriting anything
+    ia._check_path_mode(cfg.store.urlpath, cfg.store.mode)
 
     cdef ciarray.iarray_container_t *c
     cdef ciarray.iarray_container_t *src_ = <ciarray.iarray_container_t *> PyCapsule_GetPointer(

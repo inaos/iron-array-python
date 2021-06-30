@@ -52,7 +52,7 @@ cfg = ia.Config(store=store)
 @profile
 def iarray_mean_disk(expr):
     with ia.config(urlpath="mean-3m.iarr", cfg=cfg):
-        expr_val = expr.eval()
+        expr_val = expr.eval(mode="w")
     return expr_val
 
 t0 = time()
@@ -71,7 +71,7 @@ mean_disk.info
 @profile
 def iarray_trans_disk(expr):
     with ia.config(urlpath="trans-3m.iarr", cfg=cfg):
-        expr_val = expr.eval()
+        expr_val = expr.eval(mode="w")
     return expr_val
 
 
