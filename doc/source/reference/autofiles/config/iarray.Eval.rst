@@ -1,13 +1,24 @@
-iarray.Eval
+﻿iarray.Eval
 ===========
 
 .. currentmodule:: iarray
 
 .. autoclass:: Eval
 
-   .. autosummary::
+   
+   .. automethod:: __init__
 
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
       ~Eval.AUTO
       ~Eval.ITERBLOSC
       ~Eval.ITERCHUNK
-
+   
+   

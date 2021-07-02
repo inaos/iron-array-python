@@ -1,4 +1,4 @@
-iarray.log10
+﻿iarray.log10
 ============
 
 .. currentmodule:: iarray

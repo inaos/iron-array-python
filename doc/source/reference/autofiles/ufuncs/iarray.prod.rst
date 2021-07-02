@@ -1,4 +1,4 @@
-iarray.prod
+﻿iarray.prod
 ===========
 
 .. currentmodule:: iarray

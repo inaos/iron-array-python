@@ -1,4 +1,4 @@
-iarray.IArray.atan
+﻿iarray.IArray.atan
 ==================
 
 .. currentmodule:: iarray

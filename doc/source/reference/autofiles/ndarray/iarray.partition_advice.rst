@@ -1,4 +1,4 @@
-iarray.partition\_advice
+﻿iarray.partition\_advice
 ========================
 
 .. currentmodule:: iarray

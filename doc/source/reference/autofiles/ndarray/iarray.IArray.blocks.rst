@@ -1,4 +1,4 @@
-iarray.IArray.blocks
+﻿iarray.IArray.blocks
 ====================
 
 .. currentmodule:: iarray

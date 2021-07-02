@@ -1,4 +1,4 @@
-iarray.IArray.tan
+﻿iarray.IArray.tan
 =================
 
 .. currentmodule:: iarray

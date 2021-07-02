@@ -1,4 +1,4 @@
-iarray.IArray.sin
+﻿iarray.IArray.sin
 =================
 
 .. currentmodule:: iarray

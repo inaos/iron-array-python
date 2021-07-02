@@ -1,4 +1,4 @@
-iarray.numpy2iarray
+﻿iarray.numpy2iarray
 ===================
 
 .. currentmodule:: iarray

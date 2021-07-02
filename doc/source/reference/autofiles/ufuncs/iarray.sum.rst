@@ -1,4 +1,4 @@
-iarray.sum
+﻿iarray.sum
 ==========
 
 .. currentmodule:: iarray

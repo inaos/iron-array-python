@@ -1,4 +1,4 @@
-iarray.ceil
+﻿iarray.ceil
 ===========
 
 .. currentmodule:: iarray

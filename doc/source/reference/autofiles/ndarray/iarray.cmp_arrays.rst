@@ -1,4 +1,4 @@
-iarray.cmp\_arrays
+﻿iarray.cmp\_arrays
 ==================
 
 .. currentmodule:: iarray

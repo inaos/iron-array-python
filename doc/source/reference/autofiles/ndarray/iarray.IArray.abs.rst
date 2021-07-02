@@ -1,4 +1,4 @@
-iarray.IArray.abs
+﻿iarray.IArray.abs
 =================
 
 .. currentmodule:: iarray

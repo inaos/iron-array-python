@@ -1,4 +1,4 @@
-iarray.IArray.arctan
+﻿iarray.IArray.arctan
 ====================
 
 .. currentmodule:: iarray

@@ -1,4 +1,4 @@
-iarray.load
+﻿iarray.load
 ===========
 
 .. currentmodule:: iarray

@@ -1,4 +1,4 @@
-iarray.negative
+﻿iarray.negative
 ===============
 
 .. currentmodule:: iarray

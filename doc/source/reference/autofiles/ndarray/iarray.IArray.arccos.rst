@@ -1,4 +1,4 @@
-iarray.IArray.arccos
+﻿iarray.IArray.arccos
 ====================
 
 .. currentmodule:: iarray
