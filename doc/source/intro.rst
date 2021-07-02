@@ -8,7 +8,7 @@ ironArray for Python at glance
 ironArray is a C library oriented to compute and handle large multidimensional arrays efficiently.
 ironArray for Python is the official wrapper to it.
 
-Among its main features, we can list:
+Among its main features you can find:
 
 * Multidimensional and arbitrarily large arrays of floating point data (float32 and float64).
 
@@ -16,9 +16,9 @@ Among its main features, we can list:
 
 * Advanced compute engine, based on LLVM, for evaluating expressions with arrays as operands, reductions and a subset of linear algebra.
 
-* Pervasive parallelism. All the operations are performed using a tuned number (see below) of the cores in the system.
+* Pervasive parallelism. All the operations are performed using an optimal amount of threads for the system.
 
-* Native persistency. The arrays can be stored on disk and loaded very efficiently. Arrays can even be operated with without the need to load them first in-memory (out-of-core operation).
+* Native persistency. The arrays can be stored on disk and loaded very efficiently. Arrays can even be operated with without the need to load them in-memory (aka out-of-core operation).
 
 * Automatic fine-tuning based on underlying hardware. Important parameters of your CPU, like the number of cores or cache sizes, are automatically detected and used for optimal execution times.
 
@@ -30,19 +30,113 @@ Among its main features, we can list:
 Basic operations
 ================
 
-TODO: one should use images so as to better illustrate the different operations.
 
 Array creation
 --------------
 
-So as to better feel how the interface looks like...
+Here it is how you create a persistent array::
+
+    import iarray as ia
+
+    ia.linspace((70, 130), -10, 10, urlpath="arange.iarr")
+
+After that you will have a "arange.iarr" on-disk.  Later you can load it easily with::
+
+    import iarray as ia
+
+    myarr = ia.load("arange.iarray")
+
+ironArray tries to mimic existing APIs in the PyData ecosystem, so chances are that most of standard
+functions out there can work with ironArray too.
+
+
+Array slicing
+-------------
+
+You can get and set whole areas of your array using the usual NumPy indexing notation::
+
+    # Getting slices
+    myarr = ia.load("arange.iarray")
+    print("Second row:", myarr[1])
+    print("Second column:", myarr[:, 1])
+
+    # Setting slices
+    myarr[0] = np.zeros(130)  # zero the first row
+    myarr[1, 30:60] = np.ones(30)  # zero a part of the second row
+
+Thanks to double partitioning, getting and setting slices are generally very fast operations.  However, getting or setting single (scalar) elements is generally slow, and not a good idea to use them intensively; it is better to group these changes on a NumPy array and then set the proper slice in one shot.
+
 
 Array computations
 ------------------
+
+One of the main features of ironArray is that it provides support for operating with compressed arrays efficiently and in a transparent way.  In the tutorials section you will see a lot of examples on how to deal with them, but here it is a simple example::
+
+    x = ia.load("arange.iarray")
+    y = ((x - 1.35) * (x - 4.45) * (x - 8.5)).eval()
+
+So, ironArray understands simple expressions with arrays as operands.  Then these are evaluated by calling the `eval()` method.  That's pretty easy, and very fast too as you will see in the tutorials.
 
 
 Reductions
 ----------
 
+ironArray implements a very fine-tuned algorithm for performing a variety of multidimensional reductions.  Here it is small taste of how you can use this machinery::
+
+    a = ia.arange([10, 20, 10, 14])
+    b = ia.mean(a)  # sum everything; results in an scalar
+    c = ia.mean(a, axis=(1, 2, 3))  # sum all axes except 0
+    d = ia.mean(a, axis=(2, 3, 1))  # sum all axes except 0; follow the order for performance
+
+As can be seen, you can reduce as many dimensions as you wish, like in NumPy.  However, for chunked arrays like ironArray ones, you need to specify the optimal sequence of axes for performing the reduction efficiently.  See the tutorial on reductions for details.
+
+
 Linear Algebra
 --------------
+
+Finally, you can perform linear algebra operations with ironArray too.  Here it is a small example::
+
+    shape = [2000, 2000]
+    a = ia.arange(shape)
+    b = ia.arange(shape)
+    c = ia.matmul(a, b)
+
+There is a dedicated tutorial for linear algebra and some examples of use too.
+
+
+Configuration settings
+----------------------
+
+ironArray comes with an advanced configuration system that allows to configure your operations locally for functions, or globally for a whole program; you can even use contexts for using configurations that are valid in just regions of code::
+
+    # Global configuration
+    ia.set_config(codec=ia.Codecs.ZSTD, clevel=1, btune=False)
+
+    # Local configuration
+    c = (x - y).eval(clevel=9, codec=ia.Codecs.LZ4)
+
+    # Context
+    with ia.config(clevel=9, codec=ia.Codecs.BLOSCLZ):
+        c = (x - y).eval()
+
+Use whatever version you prefer.  You can find more examples in the creation tutorial.
+
+
+Automatic tuning
+----------------
+
+ironArray comes with BTune, a sophisticated tuning tool for automatically choose the best codecs or filters that minimizes execution time, compression ratio or a balance among the two (the default).
+Let's suppose that you are doing some computation in a Python script that you want to see run as fast as possible; you can tell BTune to optimize things internally with::
+
+    ia.set_config(favor=ia.Favors.SPEED)
+
+Or, in case you may rather be interested in saving the maximum amount of memory (or disk)::
+
+    ia.set_config(favor=ia.Favors.CRATIO)
+
+Only with these small tweaks, you can make ironArray adapt to your needs very easily.  Look here at an example of BTune in action, and how it affects the speed of computation:
+
+.. image:: images/iA-BTune-mean.png
+  :alt: One level chunking
+
+As you can see, favoring `SPEED` maximizes speed at the cost of using more memory.  On the other hand, favoring `CRATIO` maximizes compression ratio, and hence, minimizes memory consumption.  The default (`BALANCE`) is a balance among these two.
