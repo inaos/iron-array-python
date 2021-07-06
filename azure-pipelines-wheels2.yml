@@ -25,6 +25,15 @@ jobs:
       git submodule update --init --recursive
     displayName: Clone repos
 
+  - bash: |
+      envsubst < iarray/__init__.py > iarray/__init__.tmp
+      rm iarray/__init__.py
+      mv iarray/__init__.tmp iarray/__init__.py
+      head -n20 iarray/__init__.py
+    displayName: Tokenize version
+    env:
+      IA_BUILD_VER: $(Build.BuildId)
+
   - script: |
       docker pull dockcross/manylinux2014-x64
       docker run dockcross/manylinux2014-x64 > ./dockcross-manylinux2014-x64
