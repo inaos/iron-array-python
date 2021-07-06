@@ -7,7 +7,7 @@ import platform
 
 # This is the source of truth for version
 # https://packaging.python.org/guides/single-sourcing-package-version/
-__version__ = "1.0.0-beta.1"
+__version__ = "1.0.0-$IA_BUILD_VER"
 
 binding.initialize()
 binding.initialize_native_target()
