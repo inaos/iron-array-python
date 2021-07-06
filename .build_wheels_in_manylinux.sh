@@ -12,11 +12,17 @@ echo "INAC_REPOSITORY_USRPWD=licensed:AKCp5bBraH7CasbsYCURsjzkbjXwVwdYcT7u39EiuL
 
 # Install pypirc
 echo "[distutils]" > $HOME/.pypirc
-echo "index-servers = jfrog" >> $HOME/.pypirc
+echo "index-servers = " >> $HOME/.pypirc
+echo "    jfrog" >> $HOME/.pypirc
+echo "    iarray" >> $HOME/.pypirc
 echo "[jfrog]" >> $HOME/.pypirc
 echo "repository: https://inaos.jfrog.io/artifactory/api/pypi/pypi-iron-array" >> $HOME/.pypirc
 echo "username: iarray-deploy" >> $HOME/.pypirc
 echo "password: M{wf5-Am^2)c8&vR" >> $HOME/.pypirc
+echo "[iarray]" >> $HOME/.pypirc
+echo "repository: https://ia-admin:g4W^UT_2kLtSU=MF@distribution.ironarray.io/" >> $HOME/.pypirc
+echo "username: ia-admin" >> $HOME/.pypirc
+echo "password: g4W^UT_2kLtSU=MF" >> $HOME/.pypirc
 
 # Activate the conda environment in this docker image
 # This is mainly to install llvmdev and intel packages which are python-agnostic
@@ -88,3 +94,4 @@ done
 
 /opt/python/cp37-cp37m/bin/python -m pip install twine
 /opt/python/cp37-cp37m/bin/python -m twine upload -r jfrog dist/*
+/opt/python/cp37-cp37m/bin/python -m twine upload -r iarray dist/*
