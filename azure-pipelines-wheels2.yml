@@ -105,7 +105,7 @@ jobs:
       conda install -y -c intel mkl-include
       conda install -y -c intel mkl-static
       conda install -y -c intel icc_rt
-      conda install -y -c numba 'llvmdev<11'
+      conda install -y 'llvmdev<11'
       python -m pip install --upgrade pip
       python -m pip install cython numpy ninja cmake scikit-build wheel delocate ndindex
     displayName: 'Install build dependencies'
@@ -220,7 +220,7 @@ jobs:
       conda install -y --name iArrayEnv -c intel mkl-include
       conda install -y --name iArrayEnv -c intel mkl-static
       conda install -y --name iArrayEnv -c intel icc_rt
-      conda install -y --name iArrayEnv -c numba 'llvmdev<11'
+      conda install -y --name iArrayEnv 'llvmdev<11'
     displayName: 'Install build dependencies'
 
   - script: |
