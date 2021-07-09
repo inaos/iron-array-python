@@ -105,13 +105,15 @@ jobs:
       conda install -y -c intel mkl-include
       conda install -y -c intel mkl-static
       conda install -y -c intel icc_rt
-      conda install -y 'llvmdev<11'
+      conda install -y -c numba llvmdev
+      python -V
       python -m pip install --upgrade pip
       python -m pip install cython numpy ninja cmake scikit-build wheel delocate ndindex
     displayName: 'Install build dependencies'
 
   - script: |
       export CONDA_PREFIX=$CONDA  # existing conda in azure seems a bit old and does not define this
+      python -V
       python setup.py clean
       python setup.py build --build-type RelWithDebInfo -G Ninja -- \
         -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=10.9 \
@@ -220,7 +222,7 @@ jobs:
       conda install -y --name iArrayEnv -c intel mkl-include
       conda install -y --name iArrayEnv -c intel mkl-static
       conda install -y --name iArrayEnv -c intel icc_rt
-      conda install -y --name iArrayEnv 'llvmdev<11'
+      conda install -y --name iArrayEnv -c numba llvmdev
     displayName: 'Install build dependencies'
 
   - script: |
