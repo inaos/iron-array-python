@@ -94,6 +94,10 @@ jobs:
     displayName: Install inaos license
 
   - bash: |
+      which python
+      python -V
+
+  - bash: |
       echo "##vso[task.prependpath]$CONDA/bin"  # Add conda to PATH
     displayName: Add conda to PATH
 
@@ -102,18 +106,21 @@ jobs:
     displayName: Take ownership of conda installation
 
   - script: |
-      conda install -y -c intel mkl-include
-      conda install -y -c intel mkl-static
-      conda install -y -c intel icc_rt
-      conda install -y -c numba llvmdev
+      conda create --yes --quiet --name iArrayEnv python=$(python.version)
+      source activate iArrayEnv
+      which python
       python -V
       python -m pip install --upgrade pip
       python -m pip install cython numpy ninja cmake scikit-build wheel delocate ndindex
+      conda install -y --name iArrayEnv -c intel mkl-include
+      conda install -y --name iArrayEnv -c intel mkl-static
+      conda install -y --name iArrayEnv -c intel icc_rt
+      conda install -y --name iArrayEnv -c numba llvmdev
     displayName: 'Install build dependencies'
 
   - script: |
+      source activate iArrayEnv
       export CONDA_PREFIX=$CONDA  # existing conda in azure seems a bit old and does not define this
-      python -V
       python setup.py clean
       python setup.py build --build-type RelWithDebInfo -G Ninja -- \
         -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=10.9 \
@@ -126,6 +133,7 @@ jobs:
     displayName: 'Build wheel'
 
   - script: |
+      source activate iArrayEnv
       python -m pip install pytest numexpr llvmlite
       python -m pip install iarray --force-reinstall --no-index --no-cache-dir -f ./dist/
       python -m pytest iarray/tests
