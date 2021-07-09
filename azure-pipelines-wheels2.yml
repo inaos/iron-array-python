@@ -126,8 +126,12 @@ jobs:
         -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=10.9 \
         -DCMAKE_OSX_ARCHITECTURES:STRING=x86_64 \
         -DDISABLE_LLVM_CONFIG=True \
-        -DLLVM_DIR=$CONDA_PREFIX/lib/cmake/llvm
-      python setup.py bdist_wheel --plat-name macosx-10.9-x86_64
+        -DLLVM_DIR=$CONDA_PREFIX/envs/iArrayEnv/lib/cmake/llvm
+      python setup.py bdist_wheel --plat-name macosx-10.9-x86_64 -- \
+        -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=10.9 \
+        -DCMAKE_OSX_ARCHITECTURES:STRING=x86_64 \
+        -DDISABLE_LLVM_CONFIG=True \
+        -DLLVM_DIR=$CONDA_PREFIX/envs/iArrayEnv/lib/cmake/llvm
       delocate-listdeps ./dist/*.whl
       delocate-wheel ./dist/*.whl
     displayName: 'Build wheel'
