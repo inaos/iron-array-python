@@ -6,45 +6,45 @@ variables: # This activates => BUILD_WHEELS: 1
 
 jobs:
 
-#- job: 'Linux'
-#  displayName: 'Linux'
-#
-#  pool:
-#    vmImage: 'ubuntu-latest'
-#
-#  steps:
-#  - task: UsePythonVersion@0
-#    inputs:
-#      versionSpec: '3.X'
-#      architecture: 'x64'
-#  - checkout: self
-#    submodules: recursive
-#    persistCredentials: true
-#
-#  - bash: |
-#      git submodule update --init --recursive
-#    displayName: Clone repos
-#
-#  - bash: |
-#      envsubst < iarray/__init__.py > iarray/__init__.tmp
-#      rm iarray/__init__.py
-#      mv iarray/__init__.tmp iarray/__init__.py
-#      head -n20 iarray/__init__.py
-#    displayName: Tokenize version
-#    env:
-#      IA_BUILD_VER: $(Build.BuildId)
-#
-#  - script: |
-#      docker pull dockcross/manylinux2014-x64
-#      docker run dockcross/manylinux2014-x64 > ./dockcross-manylinux2014-x64
-#      chmod +x ./dockcross-manylinux2014-x64
-#      ./dockcross-manylinux2014-x64 ./.build_wheels_in_manylinux.sh
-#    displayName: 'Build wheels'
-#
-#  - task: PublishPipelineArtifact@0
-#    inputs:
-#      artifactName: 'LinuxWheels'
-#      targetPath: './dist'
+- job: 'Linux'
+  displayName: 'Linux'
+
+  pool:
+    vmImage: 'ubuntu-latest'
+
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.X'
+      architecture: 'x64'
+  - checkout: self
+    submodules: recursive
+    persistCredentials: true
+
+  - bash: |
+      git submodule update --init --recursive
+    displayName: Clone repos
+
+  - bash: |
+      envsubst < iarray/__init__.py > iarray/__init__.tmp
+      rm iarray/__init__.py
+      mv iarray/__init__.tmp iarray/__init__.py
+      head -n20 iarray/__init__.py
+    displayName: Tokenize version
+    env:
+      IA_BUILD_VER: $(Build.BuildId)
+
+  - script: |
+      docker pull dockcross/manylinux2014-x64
+      docker run dockcross/manylinux2014-x64 > ./dockcross-manylinux2014-x64
+      chmod +x ./dockcross-manylinux2014-x64
+      ./dockcross-manylinux2014-x64 ./.build_wheels_in_manylinux.sh
+    displayName: 'Build wheels'
+
+  - task: PublishPipelineArtifact@0
+    inputs:
+      artifactName: 'LinuxWheels'
+      targetPath: './dist'
 
 - job: 'macOS'
   displayName: 'macOS'
@@ -169,112 +169,112 @@ jobs:
       artifactName: 'MacWheel$(python.version)'
       targetPath: './dist'
 
-#- job: 'Windows'
-#  displayName: 'Windows'
-#
-#  pool:
-#    vmImage: 'windows-2019'
-#
-#  strategy:
-#    matrix:
-#      Python37:
-#        python.version: '3.7'
-#      Python38:
-#        python.version: '3.8'
-#      # Activate 3.9 when Azure pipelines would support it
-#      # https://github.com/Azure/azure-functions-python-worker/issues/742
-#      Python39:
-#        python.version: '3.9'
-#
-#  steps:
-#  - task: UsePythonVersion@0
-#    inputs:
-#      versionSpec: '$(python.version)'
-#      architecture: 'x64'
-#  - checkout: self
-#    submodules: recursive
-#    persistCredentials: true
-#
+- job: 'Windows'
+  displayName: 'Windows'
+
+  pool:
+    vmImage: 'windows-2019'
+
+  strategy:
+    matrix:
+      Python37:
+        python.version: '3.7'
+      Python38:
+        python.version: '3.8'
+      # Activate 3.9 when Azure pipelines would support it
+      # https://github.com/Azure/azure-functions-python-worker/issues/742
+      Python39:
+        python.version: '3.9'
+
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '$(python.version)'
+      architecture: 'x64'
+  - checkout: self
+    submodules: recursive
+    persistCredentials: true
+
+  - bash: |
+      git submodule update --init --recursive
+    displayName: Clone repos
+
+  - bash: |
+      envsubst < iarray/__init__.py > iarray/__init__.tmp
+      rm iarray/__init__.py
+      mv iarray/__init__.tmp iarray/__init__.py
+      head -n20 iarray/__init__.py
+    displayName: Tokenize version
+    env:
+      IA_BUILD_VER: $(Build.BuildId)
+
+  - bash: |
+      mkdir -p $HOME/.inaos/cmake
+      mkdir -p $HOME/INAOS
+      echo "INAC_REPOSITORY_LOCAL=$HOME/INAOS" > $HOME/.inaos/cmake/repository.txt
+      echo "INAC_REPOSITORY_REMOTE=https://inaos.jfrog.io/inaos/libs-release-local/inaos" >> $HOME/.inaos/cmake/repository.txt
+      echo "INAC_REPOSITORY_USRPWD=licensed:AKCp5bBraH7CasbsYCURsjzkbjXwVwdYcT7u39EiuL6GjnK1VKfKQWCd1E2E64mHokU5YUHku" >> $HOME/.inaos/cmake/repository.txt
+    displayName: Install inaos license
+
+  - bash: |
+      echo "##vso[task.prependpath]$CONDA/Scripts" # Add conda to PATH
+    displayName: Add conda to PATH
+
 #  - bash: |
-#      git submodule update --init --recursive
-#    displayName: Clone repos
-#
-#  - bash: |
-#      envsubst < iarray/__init__.py > iarray/__init__.tmp
-#      rm iarray/__init__.py
-#      mv iarray/__init__.tmp iarray/__init__.py
-#      head -n20 iarray/__init__.py
-#    displayName: Tokenize version
-#    env:
-#      IA_BUILD_VER: $(Build.BuildId)
-#
-#  - bash: |
-#      mkdir -p $HOME/.inaos/cmake
-#      mkdir -p $HOME/INAOS
-#      echo "INAC_REPOSITORY_LOCAL=$HOME/INAOS" > $HOME/.inaos/cmake/repository.txt
-#      echo "INAC_REPOSITORY_REMOTE=https://inaos.jfrog.io/inaos/libs-release-local/inaos" >> $HOME/.inaos/cmake/repository.txt
-#      echo "INAC_REPOSITORY_USRPWD=licensed:AKCp5bBraH7CasbsYCURsjzkbjXwVwdYcT7u39EiuL6GjnK1VKfKQWCd1E2E64mHokU5YUHku" >> $HOME/.inaos/cmake/repository.txt
-#    displayName: Install inaos license
-#
-#  - bash: |
-#      echo "##vso[task.prependpath]$CONDA/Scripts" # Add conda to PATH
-#    displayName: Add conda to PATH
-#
-##  - bash: |
-##      conda install -y -c anaconda curl
-##      curl http://go.microsoft.com/fwlink/?LinkId=691126 --output visualcppbuildtools_full.exe
-##      ./visualcppbuildtools_full.exe /S /NoRestart
-##    displayName: 'Install Visual Studio 2015 Build-Tools'
-#
-#  - bash: |
-#      python -m pip install --upgrade pip
-#      python -m pip install cython numpy ninja cmake scikit-build wheel delocate ndindex
-#      conda create --yes --quiet --name iArrayEnv
-#      source activate iArrayEnv
-#      conda install -y --name iArrayEnv -c intel mkl-include
-#      conda install -y --name iArrayEnv -c intel mkl-static
-#      conda install -y --name iArrayEnv -c intel icc_rt
-#      conda install -y --name iArrayEnv -c numba llvmdev
-#    displayName: 'Install build dependencies'
-#
-#  - script: |
-#      call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" amd64
-#      python setup.py clean
-#      python setup.py build_ext -i --build-type RelWithDebInfo --generator "NMake Makefiles" -- -DINAC_TARGET_ARCH=x86_64 -DLLVM_DIR=%CONDA%/envs/iArrayEnv/Library/lib/cmake/llvm -DWINGEN="NMake Makefiles"
-#      rem copy the necesssary DLLs into iarray package
-#      copy iarray\iarray-c-develop\build\iarray.dll iarray
-#      copy iarray\iarray-c-develop\build\svml_dispmd.dll iarray
-#      python setup.py bdist_wheel --generator "NMake Makefiles" -DWINGEN="NMake Makefiles"
-#    displayName: 'Build wheel'
-#
-#  - task: PublishPipelineArtifact@0
-#    inputs:
-#      artifactName: 'Windows$(python.version)'
-#      targetPath: './dist'
-#
-#  - script: |
-#      python -m pip install pytest numexpr llvmlite
-#      python -m pip install iarray --force-reinstall --no-index --no-cache-dir -f ./dist/
-#      python -m pytest iarray/tests
-#    displayName: 'Test wheel'
-#
-#  - bash: |
-#      echo "[distutils]" > $HOME/.pypirc
-#      echo "index-servers = " >> $HOME/.pypirc
-#      echo "    jfrog" >> $HOME/.pypirc
-#      echo "    iarray" >> $HOME/.pypirc
-#      echo "[jfrog]" >> $HOME/.pypirc
-#      echo "repository: https://inaos.jfrog.io/artifactory/api/pypi/pypi-iron-array" >> $HOME/.pypirc
-#      echo "username: iarray-deploy" >> $HOME/.pypirc
-#      echo "password: M{wf5-Am^2)c8&vR" >> $HOME/.pypirc
-#      echo "[iarray]" >> $HOME/.pypirc
-#      echo "repository: https://ia-admin:g4W^UT_2kLtSU=MF@distribution.ironarray.io/" >> $HOME/.pypirc
-#      echo "username: ia-admin" >> $HOME/.pypirc
-#      echo "password: g4W^UT_2kLtSU=MF" >> $HOME/.pypirc
-#    displayName: Install pypirc
-#
-#  - bash: |
-#      python -m pip install twine
-#      python -m twine upload -r jfrog dist/*
-#      python -m twine upload -r iarray dist/*
-#    displayName: Deploy Wheel
+#      conda install -y -c anaconda curl
+#      curl http://go.microsoft.com/fwlink/?LinkId=691126 --output visualcppbuildtools_full.exe
+#      ./visualcppbuildtools_full.exe /S /NoRestart
+#    displayName: 'Install Visual Studio 2015 Build-Tools'
+
+  - bash: |
+      python -m pip install --upgrade pip
+      python -m pip install cython numpy ninja cmake scikit-build wheel delocate ndindex
+      conda create --yes --quiet --name iArrayEnv
+      source activate iArrayEnv
+      conda install -y --name iArrayEnv -c intel mkl-include
+      conda install -y --name iArrayEnv -c intel mkl-static
+      conda install -y --name iArrayEnv -c intel icc_rt
+      conda install -y --name iArrayEnv -c numba llvmdev
+    displayName: 'Install build dependencies'
+
+  - script: |
+      call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" amd64
+      python setup.py clean
+      python setup.py build_ext -i --build-type RelWithDebInfo --generator "NMake Makefiles" -- -DINAC_TARGET_ARCH=x86_64 -DLLVM_DIR=%CONDA%/envs/iArrayEnv/Library/lib/cmake/llvm -DWINGEN="NMake Makefiles"
+      rem copy the necesssary DLLs into iarray package
+      copy iarray\iarray-c-develop\build\iarray.dll iarray
+      copy iarray\iarray-c-develop\build\svml_dispmd.dll iarray
+      python setup.py bdist_wheel --generator "NMake Makefiles" -DWINGEN="NMake Makefiles"
+    displayName: 'Build wheel'
+
+  - task: PublishPipelineArtifact@0
+    inputs:
+      artifactName: 'Windows$(python.version)'
+      targetPath: './dist'
+
+  - script: |
+      python -m pip install pytest numexpr llvmlite
+      python -m pip install iarray --force-reinstall --no-index --no-cache-dir -f ./dist/
+      python -m pytest iarray/tests
+    displayName: 'Test wheel'
+
+  - bash: |
+      echo "[distutils]" > $HOME/.pypirc
+      echo "index-servers = " >> $HOME/.pypirc
+      echo "    jfrog" >> $HOME/.pypirc
+      echo "    iarray" >> $HOME/.pypirc
+      echo "[jfrog]" >> $HOME/.pypirc
+      echo "repository: https://inaos.jfrog.io/artifactory/api/pypi/pypi-iron-array" >> $HOME/.pypirc
+      echo "username: iarray-deploy" >> $HOME/.pypirc
+      echo "password: M{wf5-Am^2)c8&vR" >> $HOME/.pypirc
+      echo "[iarray]" >> $HOME/.pypirc
+      echo "repository: https://ia-admin:g4W^UT_2kLtSU=MF@distribution.ironarray.io/" >> $HOME/.pypirc
+      echo "username: ia-admin" >> $HOME/.pypirc
+      echo "password: g4W^UT_2kLtSU=MF" >> $HOME/.pypirc
+    displayName: Install pypirc
+
+  - bash: |
+      python -m pip install twine
+      python -m twine upload -r jfrog dist/*
+      python -m twine upload -r iarray dist/*
+    displayName: Deploy Wheel
