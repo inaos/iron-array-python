@@ -45,7 +45,7 @@ In addition, we need LLVM development and SVML packages that can be easily insta
 
 ```bash
 conda install -c intel mkl-static
-conda install -c numba 'llvmdev\<11'
+conda install -c numba 'llvmdev'
 conda install -c intel icc_rt   # SVML
 ```
 
