@@ -47,8 +47,8 @@ rm -rf dist
 touch BUILD_WHEELS
 
 ########### Python specific work begins here ###########################
-versions=(cp37-cp37m cp38-cp38 cp39-cp39)
-#versions=(cp37-cp37m)
+#versions=(cp37-cp37m cp38-cp38 cp39-cp39)
+versions=(cp39-cp39)
 
 for version in "${versions[@]}"; do
   /opt/python/${version}/bin/python -m pip install --upgrade pip
@@ -80,17 +80,18 @@ done
 # Test the installation of the wheel on a different conda environment
 # (not very complete because some binaries may remain, but anyway)
 # TODO: make this work
-#for version in "${versions[@]}"; do
-#  pybin=/opt/python/${version}/bin/python
-#  python_version=`${pybin} -c "import sys; print('%d.%d'%sys.version_info[0:2])"`
-#  conda create --yes -n test-wheels python=$python_version
-#  conda activate test-wheels
-#  cd /tmp/
-#  python -m pip install iarray --user --no-cache-dir --no-index -f /work/dist/
-#  cd /work/
-#  python -m pytest iarray/tests
-#  conda deactivate
-#done
+for version in "${versions[@]}"; do
+  pybin=/opt/python/${version}/bin/python
+  python_version=`${pybin} -c "import sys; print('%d.%d'%sys.version_info[0:2])"`
+  conda create --yes -n test-wheels python=$python_version
+  conda activate test-wheels
+  cd /tmp/
+  python -m pip install iarray --user --no-cache-dir --no-index -f /work/dist/
+  cd /work/
+  python -m pip install -r requirements-runtime.txt
+  python -m pytest iarray/tests
+  conda deactivate
+done
 
 /opt/python/cp37-cp37m/bin/python -m pip install twine
 /opt/python/cp37-cp37m/bin/python -m twine upload -r jfrog dist/*
