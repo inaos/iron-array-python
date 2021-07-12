@@ -26,6 +26,9 @@ def get_version(rel_path):
     for line in read(rel_path).splitlines():
         if line.startswith("__version__"):
             delim = '"' if '"' in line else "'"
+            if "IA_BUILD_VER" not in os.environ:
+                # We are not building wheels
+                line = line.split("-$IA_BUILD_VER")[0]
             return line.split(delim)[1]
     else:
         raise RuntimeError("Unable to find version string.")
