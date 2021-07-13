@@ -11,6 +11,7 @@ Tutorials
    tutorials/random
    tutorials/reductions
    tutorials/expressions-memory
+   tutorials/expressions-UDF
    tutorials/expressions-disk
    tutorials/error-handling
    tutorials/linear-algebra
