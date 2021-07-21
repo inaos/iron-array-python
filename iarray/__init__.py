@@ -3,6 +3,7 @@ from enum import Enum, auto
 from ctypes import cdll
 from llvmlite import binding
 import platform
+import pytest
 
 
 # This is the source of truth for version
@@ -193,3 +194,11 @@ from .lazy_expr import (
 from . import iarray_ext as ext
 
 ext.IArrayInit()
+
+
+from . import tests
+
+
+def test():
+    retcode = pytest.main(["-x", os.path.dirname(tests.__file__)])
+    return retcode
