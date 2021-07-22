@@ -7,6 +7,7 @@ Tutorials
    :maxdepth: 1
 
    tutorials/creation
+   tutorials/configuration
    tutorials/slicing
    tutorials/random
    tutorials/reductions
@@ -15,4 +16,3 @@ Tutorials
    tutorials/expressions-disk
    tutorials/error-handling
    tutorials/linear-algebra
-
