@@ -13,7 +13,7 @@ When implementing data containers supporting transparent compression, a common t
 Still, one of the drawbacks of chunking is that it stills requires to retrieve complete chunks even when we are requiring a thinner slice of data.  For example, if we require the plane of data where `dim0 == 140`, we should be reading (and decompressing) the next (rather big) slice:
 
 .. image:: images/one-level-chunking-slice.png
-  :width: 200
+  :width: 165
   :alt: Slice for one level chunking
 
 With a two level chunking, we are splitting the original chunking again, and we are getting another subdivision of chunks:
