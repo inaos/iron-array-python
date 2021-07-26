@@ -111,7 +111,8 @@ jobs:
       which python
       python -V
       python -m pip install --upgrade pip
-      python -m pip install cython numpy ninja cmake scikit-build wheel delocate ndindex
+      python -m pip install cython numpy ninja cmake scikit-build wheel ndindex
+      python -m pip install delocate==0.8.2
       conda install -y --name iArrayEnv -c intel mkl-include
       conda install -y --name iArrayEnv -c intel mkl-static
       conda install -y --name iArrayEnv -c intel icc_rt
