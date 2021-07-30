@@ -907,6 +907,16 @@ def mean(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwa
 # Linear Algebra
 
 
+def gemv(a: IArray, b: IArray, cfg=None, **kwargs):
+    shape = (a.shape[0], b.shape[1]) if b.ndim == 2 else (a.shape[0],)
+
+    if cfg is None:
+        cfg = ia.get_config()
+
+    with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
+        return ext.gemv(cfg, a, b)
+
+
 def matmul(a: IArray, b: IArray, cfg=None, **kwargs):
     """Multiply two matrices.
 

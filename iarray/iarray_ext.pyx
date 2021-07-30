@@ -1174,6 +1174,22 @@ def matmul(cfg, a, b):
     return ia.IArray(ctx, c_c)
 
 
+def gemv(cfg, a, b):
+    ctx = Context(cfg)
+    cdef ciarray.iarray_container_t *a_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(a.to_capsule(), "iarray_container_t*")
+    cdef ciarray.iarray_container_t *b_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(b.to_capsule(), "iarray_container_t*")
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), "iarray_context_t*")
+    cdef ciarray.iarray_container_t *c
+
+    cdef ciarray.iarray_storage_t store_
+    set_storage(cfg.store, &store_)
+
+    iarray_check(ciarray.iarray_gemv1(ctx_, a_, b_, &store_, &c))
+
+    c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
+    return ia.IArray(ctx, c_c)
+
+
 def transpose(cfg, a):
     ctx = Context(cfg)
     cdef ciarray.iarray_container_t *a_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(a.to_capsule(), "iarray_container_t*")
