@@ -127,6 +127,7 @@ from .config_params import (
 
 from .iarray_container import (
     IArray,
+    gemv,
     matmul,
     transpose,
     # reductions
