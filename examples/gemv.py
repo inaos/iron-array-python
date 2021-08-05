@@ -23,7 +23,7 @@ t1 = time()
 print(f"numpy: {t1 - t0:.5f} s")
 
 t0 = time()
-cia = ia.gemv(wia, bia, chunks=(wia.chunks[0],), blocks=(wia.blocks[0],))
+cia = ia.opt_gemv(wia, bia, use_mkl=False, chunks=(wia.chunks[0],), blocks=(wia.blocks[0],))
 t1 = time()
 
 print(f"iarray (gemv): {t1 - t0:.5f} s")
