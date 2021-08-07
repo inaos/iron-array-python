@@ -187,6 +187,10 @@ def numpy2iarray(arr: np.ndarray, cfg: ia.Config = None, **kwargs) -> ia.IArray:
     if cfg is None:
         cfg = ia.get_config()
 
+    if arr.base is not None:
+        # arr is a view, convert it into a real ndarray
+        arr = arr.copy()
+
     with ia.config(shape=arr.shape, cfg=cfg, **kwargs) as cfg:
         dtshape = ia.DTShape(arr.shape, cfg.dtype)
         return ext.numpy2iarray(cfg, arr, dtshape)

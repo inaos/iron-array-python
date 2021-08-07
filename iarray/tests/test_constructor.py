@@ -213,3 +213,24 @@ def test_overwrite(sparse):
         os.remove(fname)
     a = ia.arange([10, 20, 10, 14], clevel=9, urlpath=fname)
     b = ia.arange([10, 20, 10, 14], clevel=9, urlpath=fname, mode="w")
+
+
+# numpy views
+@pytest.mark.parametrize(
+    "shape, starts, stops, dtype",
+    [
+        ([55, 123, 72], [10, 12, 25], [12, 14, 26], np.float64),
+        ([10, 12, 5], [3, 9, 1], [4, 12, 3], np.float32),
+    ],
+)
+def test_view(shape, starts, stops, dtype):
+    nelems = np.prod(shape)
+    a = np.linspace(0, 1, nelems, dtype=dtype).reshape(shape)
+    slice_ = tuple(slice(i, j) for i, j in zip(starts, stops))
+    a_view = a[slice_]
+    b = ia.numpy2iarray(a_view)
+    npdtype = np.float64 if dtype == np.float64 else np.float32
+    assert b.dtype == npdtype
+    assert b.shape == a_view.shape
+    np.testing.assert_almost_equal(a_view, b.data)
+
