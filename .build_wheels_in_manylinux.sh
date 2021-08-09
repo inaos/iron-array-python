@@ -47,8 +47,8 @@ rm -rf dist
 touch BUILD_WHEELS
 
 ########### Python specific work begins here ###########################
-#versions=(cp37-cp37m cp38-cp38 cp39-cp39)
-versions=(cp39-cp39)
+versions=(cp37-cp37m cp38-cp38 cp39-cp39)
+#versions=(cp39-cp39)
 
 for version in "${versions[@]}"; do
   /opt/python/${version}/bin/python -m pip install --upgrade pip
