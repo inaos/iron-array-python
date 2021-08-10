@@ -187,9 +187,9 @@ def numpy2iarray(arr: np.ndarray, cfg: ia.Config = None, **kwargs) -> ia.IArray:
     if cfg is None:
         cfg = ia.get_config()
 
-    if arr.base is not None:
-        # arr is a view, convert it into a real ndarray
-        arr = arr.copy()
+    if not arr.flags['C_CONTIGUOUS']:
+        # For the conversion we need a *C* contiguous array
+        arr = arr.copy(order='C')
 
     with ia.config(shape=arr.shape, cfg=cfg, **kwargs) as cfg:
         dtshape = ia.DTShape(arr.shape, cfg.dtype)

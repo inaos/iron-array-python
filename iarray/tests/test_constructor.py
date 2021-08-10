@@ -234,3 +234,23 @@ def test_view(shape, starts, stops, dtype):
     assert b.shape == a_view.shape
     np.testing.assert_almost_equal(a_view, b.data)
 
+
+# numpy arrays stored in Fortran ordering
+@pytest.mark.parametrize(
+    "shape, dtype",
+    [
+        ([55, 13, 2], np.float64),
+        ([10, 12], np.float32),
+    ],
+)
+def test_fortran(shape, dtype):
+    nelems = np.prod(shape)
+    a = np.linspace(0, 1, nelems, dtype=dtype).reshape(shape)
+    a_fortran = a.copy(order="F")
+    b = ia.numpy2iarray(a_fortran)
+    npdtype = np.float64 if dtype == np.float64 else np.float32
+    assert b.dtype == npdtype
+    assert b.shape == a.shape
+    assert b.shape == a_fortran.shape
+    np.testing.assert_almost_equal(a_fortran, b.data)
+
