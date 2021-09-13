@@ -18,7 +18,7 @@ Among its main features you can find:
 
 * Pervasive parallelism. All the operations are performed using an optimal amount of threads for the system.
 
-* Native persistency. The arrays can be stored on disk and loaded very efficiently. Arrays can even be operated with without the need to load them in-memory (aka out-of-core operation).
+* Native persistency. The arrays can be stored on disk and loaded very efficiently. Arrays can even be operated without the need to load them in-memory (aka out-of-core operation).
 
 * Automatic fine-tuning based on underlying hardware. Important parameters of your CPU, like the number of cores or cache sizes, are automatically detected and used for optimal execution times.
 
@@ -38,9 +38,9 @@ Here it is how you create a persistent array::
 
     import iarray as ia
 
-    ia.linspace((70, 130), -10, 10, urlpath="arange.iarr")
+    ia.linspace(shape=(70, 130), start=-10, stop=10, urlpath="arange.iarray")
 
-After that you will have a "arange.iarr" on-disk.  Later you can load it easily with::
+After that you will have a "arange.iarray" on-disk.  Later you can load it in-memory easily with::
 
     import iarray as ia
 
@@ -61,34 +61,35 @@ You can get and set whole areas of your array using the usual NumPy indexing not
     print("Second column:", myarr[:, 1])
 
     # Setting slices
+    import numpy as np
     myarr[0] = np.zeros(130)  # zero the first row
     myarr[1, 30:60] = np.ones(30)  # zero a part of the second row
 
-Thanks to double partitioning, getting and setting slices are generally very fast operations.  However, getting or setting single (scalar) elements is generally slow, and not a good idea to use them intensively; it is better to group these changes on a NumPy array and then set the proper slice in one shot.
+Thanks to double partitioning, getting and setting slices are generally very fast operations.  However, getting or setting single (scalar) elements is generally slow, and not a good idea to use them intensively; it is better to group these changes on a NumPy array and then set the proper slice in one shot. You can get more information about array slicing and views in the `corresponding tutorial <https://ironarray.io/docs/html/tutorials/slicing.html>`_.
 
 
-Array computations
-------------------
+Expression evaluation
+---------------------
 
 One of the main features of ironArray is that it provides support for operating with compressed arrays efficiently and in a transparent way.  In the tutorials section you will see a lot of examples on how to deal with them, but here it is a simple example::
 
     x = ia.load("arange.iarray")
     y = ((x - 1.35) * (x - 4.45) * (x - 8.5)).eval()
 
-So, ironArray understands simple expressions with arrays as operands.  Then these are evaluated by calling the `eval()` method.  That's pretty easy, and very fast too as you will see in the tutorials.
+So, ironArray understands simple expressions with arrays as operands.  Then these are evaluated by calling the `eval()` method.  That's pretty easy, and very fast too as you will see in the `tutorials <https://ironarray.io/docs/html/tutorials.html>`_.
 
 
 Reductions
 ----------
 
-ironArray implements a very fine-tuned algorithm for performing a variety of multidimensional reductions.  Here it is small taste of how you can use this machinery::
+ironArray implements a very fine-tuned algorithm for performing a variety of multidimensional reductions.  Here it is a small taste of how you can use this machinery::
 
-    a = ia.arange([10, 20, 10, 14])
-    b = ia.mean(a)  # sum everything; results in an scalar
-    c = ia.mean(a, axis=(1, 2, 3))  # sum all axes except 0
-    d = ia.mean(a, axis=(2, 3, 1))  # sum all axes except 0; follow the order for performance
+    a = ia.arange([10, 20, 10, 14]) # creates an array of shape [10, 20, 10, 14]
+    b = ia.mean(a)  # compute the mean of everything; results in an scalar
+    c = ia.mean(a, axis=(1, 2, 3))  # compute the mean of all axes except 0
+    d = ia.mean(a, axis=(2, 3, 1))  # compute the mean of all axes except 0; follow the order for performance
 
-As can be seen, you can reduce as many dimensions as you wish, like in NumPy.  However, for chunked arrays like ironArray ones, you need to specify the optimal sequence of axes for performing the reduction efficiently.  See the tutorial on reductions for details.
+As can be seen, you can reduce as many dimensions as you wish, like in NumPy.  However, for chunked arrays like ironArray ones, you need to specify the optimal sequence of axes for performing the reduction efficiently.  See the `tutorial on reductions <https://ironarray.io/docs/html/tutorials/reductions.html>`_ for details.
 
 
 Linear Algebra
@@ -101,13 +102,13 @@ Finally, you can perform linear algebra operations with ironArray too.  Here it 
     b = ia.arange(shape)
     c = ia.matmul(a, b)
 
-There is a dedicated tutorial for linear algebra and some examples of use too.
+There is a dedicated `tutorial for linear algebra and some examples <https://ironarray.io/docs/html/tutorials/linear-algebra.html>`_ of use too.
 
 
 Configuration settings
 ----------------------
 
-ironArray comes with an advanced configuration system that allows to configure your operations locally for functions, or globally for a whole program; you can even use contexts for using configurations that are valid in just regions of code::
+ironArray comes with an advanced configuration system that allows to configure your operations globally for a whole program, or locally for functions; you can even use contexts for using configurations that are valid in just regions of code::
 
     # Global configuration
     ia.set_config(codec=ia.Codecs.ZSTD, clevel=1, btune=False)
@@ -119,14 +120,14 @@ ironArray comes with an advanced configuration system that allows to configure y
     with ia.config(clevel=9, codec=ia.Codecs.BLOSCLZ):
         c = (x - y).eval()
 
-Use whatever version you prefer.  You can find more examples in the creation tutorial.
+Use whatever version you prefer.  You can find more examples in the `Configuring ironArray tutorial <https://ironarray.io/docs/html/tutorials/configuration.html>`_.
 
 
 Automatic tuning
 ----------------
 
-ironArray comes with BTune, a sophisticated tuning tool for automatically choose the best codecs or filters that minimizes execution time, compression ratio or a balance among the two (the default).
-Let's suppose that you are doing some computation in a Python script that you want to see run as fast as possible; you can tell BTune to optimize things internally with::
+ironArray comes with BTune, a sophisticated tuning tool to automatically choose the best codecs or filters that minimizes execution time, compression ratio or a balance among the two (the default).
+Let's suppose that you are doing some computation in a Python script that you want to run as fast as possible; you can tell BTune to optimize things internally with::
 
     ia.set_config(favor=ia.Favors.SPEED)
 
