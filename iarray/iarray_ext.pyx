@@ -47,7 +47,7 @@ IARRAY_ERR_EVAL_ENGINE_OUT_OF_RANGE  = ciarray.IARRAY_ERR_EVAL_ENGINE_OUT_OF_RAN
 
 
 cdef set_storage(storage, ciarray.iarray_storage_t *cstore):
-    cstore.enforce_frame = storage.contiguous
+    cstore.contiguous = storage.contiguous
     if storage.plainbuffer:
         cstore.backend = ciarray.IARRAY_STORAGE_PLAINBUFFER
     else:
@@ -698,7 +698,7 @@ def open(cfg, urlpath):
     blocks = tuple(storage.blockshape[i] for i in range(dtshape.ndim))
 
     urlpath = str(storage.urlpath)
-    contiguous = storage.enforce_frame
+    contiguous = storage.contiguous
     store = ia.Store(chunks, blocks, urlpath, contiguous)
 
     c_cfg = ia.Config(
@@ -1269,7 +1269,7 @@ def partition_advice(dtshape, min_chunksize, max_chunksize, min_blocksize, max_b
     # Create a storage struct and initialize it.  Do we really need a store for this (maybe a frame info)?
     cdef ciarray.iarray_storage_t store
     store.backend = ciarray.IARRAY_STORAGE_BLOSC
-    store.enforce_frame = False
+    store.contiguous = False
     # Ask for the actual advice
     try:
         iarray_check(ciarray.iarray_partition_advice(ctx_, &dtshape_, &store,
