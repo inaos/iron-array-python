@@ -25,7 +25,7 @@ try:
         shape=shape,
         chunks=chunks,
         blocks=blocks,
-        enforce_frame=True,
+        contiguous=True,
     ) as cfg:
         store2 = cfg.store
         if chunks is not None:

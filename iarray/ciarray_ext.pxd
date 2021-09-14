@@ -115,7 +115,7 @@ cdef extern from "libiarray/iarray.h":
     ctypedef struct iarray_storage_t:
         iarray_storage_type_t backend
         const char *urlpath
-        bool enforce_frame
+        bool contiguous
         int64_t chunkshape[IARRAY_DIMENSION_MAX]
         int64_t blockshape[IARRAY_DIMENSION_MAX]
 
