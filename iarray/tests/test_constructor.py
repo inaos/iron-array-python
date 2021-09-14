@@ -71,7 +71,7 @@ def test_from_file(start, stop, shape, chunks, blocks, dtype, urlpath):
     size = int(np.prod(shape))
     npdtype = np.float64 if dtype == np.float64 else np.float32
     a = np.linspace(start, stop, size, dtype=npdtype).reshape(shape)
-    store = ia.Store(chunks, blocks, urlpath, enforce_frame=True)
+    store = ia.Store(chunks, blocks, urlpath, contiguous=True)
     ia.numpy2iarray(a, store=store)
     c = ia.load(urlpath)
     d = ia.iarray2numpy(c)
@@ -169,7 +169,7 @@ def test_ones(shape, chunks, blocks, dtype):
     if blocks is None:
         store = ia.Store(plainbuffer=True)
     else:
-        store = ia.Store(chunks, blocks, enforce_frame=True)
+        store = ia.Store(chunks, blocks, contiguous=True)
     a = ia.ones(shape, dtype=dtype, store=store)
     b = ia.iarray2numpy(a)
     npdtype = np.float64 if dtype == np.float64 else np.float32

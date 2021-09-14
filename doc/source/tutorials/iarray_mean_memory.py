@@ -2,7 +2,7 @@ import iarray as ia
 from time import time
 
 
-enforce_frame = False
+contiguous = False
 nthreads = 21
 
 # Some experiments lead to these chunk and block shapes
@@ -14,8 +14,8 @@ chunkshape = (45, 721, 1440)
 blockshape = (45, 4, 180)
 
 
-# store = ia.Storage(enforce_frame=enforce_frame, chunkshape=chunkshape, blockshape=blockshape)
-store = ia.Store(enforce_frame=enforce_frame)
+# store = ia.Storage(contiguous=contiguous, chunkshape=chunkshape, blockshape=blockshape)
+store = ia.Store(contiguous=contiguous)
 # cfg = ia.Config(nthreads=nthreads, store=store, clevel=1, codec=ia.Codecs.ZSTD, filters=[ia.Filters.BITSHUFFLE])
 # cfg = ia.Config(store=store, clevel=1, codec=ia.Codecs.ZSTD, filters=[ia.Filters.BITSHUFFLE])
 # cfg = ia.Config(nthreads=0, store=store, clevel=1, codec=ia.Codecs.ZSTD, filters=[ia.Filters.BITSHUFFLE])

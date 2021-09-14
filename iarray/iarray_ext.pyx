@@ -47,7 +47,7 @@ IARRAY_ERR_EVAL_ENGINE_OUT_OF_RANGE  = ciarray.IARRAY_ERR_EVAL_ENGINE_OUT_OF_RAN
 
 
 cdef set_storage(storage, ciarray.iarray_storage_t *cstore):
-    cstore.enforce_frame = storage.enforce_frame
+    cstore.enforce_frame = storage.contiguous
     if storage.plainbuffer:
         cstore.backend = ciarray.IARRAY_STORAGE_PLAINBUFFER
     else:
@@ -698,8 +698,8 @@ def open(cfg, urlpath):
     blocks = tuple(storage.blockshape[i] for i in range(dtshape.ndim))
 
     urlpath = str(storage.urlpath)
-    enforce_frame = storage.enforce_frame
-    store = ia.Store(chunks, blocks, urlpath, enforce_frame)
+    contiguous = storage.enforce_frame
+    store = ia.Store(chunks, blocks, urlpath, contiguous)
 
     c_cfg = ia.Config(
         codec=codec,
@@ -718,7 +718,7 @@ def open(cfg, urlpath):
         chunks=chunks,
         blocks=blocks,
         urlpath=urlpath,
-        enforce_frame=enforce_frame,
+        contiguous=contiguous,
     )
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)

@@ -33,7 +33,7 @@ def test_slice(slices, shape, chunks, blocks, dtype):
     if chunks is None:
         store = ia.Store(plainbuffer=True)
     else:
-        store = ia.Store(chunks, blocks, enforce_frame=True)
+        store = ia.Store(chunks, blocks, contiguous=True)
 
     a = ia.linspace(shape, -10, 10, store=store, dtype=dtype)
     an = ia.iarray2numpy(a)
@@ -74,7 +74,7 @@ def test_double_slice(shape, chunks, blocks, dtype):
     if chunks is None:
         store = ia.Store(plainbuffer=True)
     else:
-        store = ia.Store(chunks, blocks, enforce_frame=True)
+        store = ia.Store(chunks, blocks, contiguous=True)
 
     a = ia.linspace(shape, -10, 10, store=store, dtype=dtype)
     b1 = a[4]

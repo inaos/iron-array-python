@@ -115,7 +115,7 @@ class DefaultStore:
     blocks: Any
     urlpath: Any
     mode: Any
-    enforce_frame: Any
+    contiguous: Any
     plainbuffer: Any
 
 
@@ -148,7 +148,7 @@ class Defaults(object):
     urlpath: str = None
     mode: str = "r"
 
-    enforce_frame: bool = False
+    contiguous: bool = False
     plainbuffer: bool = False
 
     def __post_init__(self):
@@ -246,8 +246,8 @@ class Defaults(object):
     def _mode(self):
         return self.mode
 
-    def _enforce_frame(self):
-        return self.enforce_frame
+    def _contiguous(self):
+        return self.contiguous
 
     def _plainbuffer(self):
         return self.plainbuffer
@@ -261,7 +261,7 @@ class Defaults(object):
                 blocks=self.blocks,
                 urlpath=self.urlpath,
                 mode=self.mode,
-                enforce_frame=self.enforce_frame,
+                contiguous=self.contiguous,
                 plainbuffer=self.plainbuffer,
             )
         return self._store
@@ -273,7 +273,7 @@ class Defaults(object):
         self.blocks = value.blocks
         self.urlpath = value.urlpath
         self.mode = value.mode
-        self.enforce_frame = value.enforce_frame
+        self.contiguous = value.contiguous
         self.plainbuffer = value.plainbuffer
         self._store = value
 
@@ -306,7 +306,7 @@ class Store:
         Persistence mode: 'r' means read only (must exist); 'r+' means read/write (must exist);
         'a' means read/write (create if doesn’t exist); 'w' means create (overwrite if exists);
         'w-' means create (fail if exists).  Default is 'r'.
-    enforce_frame : bool
+    contiguous : bool
         If True, the output array will be stored as a frame, even when in-memory.  If False
         (the default), the store will be sparse.  Currently, persistent store only supports
         the frame format. When in-memory, the array can be in sparse (the default)
@@ -323,7 +323,7 @@ class Store:
     blocks: Union[Sequence, None] = field(default_factory=defaults._blocks)
     urlpath: bytes or str = field(default_factory=defaults._urlpath)
     mode: bytes or str = field(default_factory=defaults._mode)
-    enforce_frame: bool = field(default_factory=defaults._enforce_frame)
+    contiguous: bool = field(default_factory=defaults._contiguous)
     plainbuffer: bool = field(default_factory=defaults._plainbuffer)
 
     def __post_init__(self):
@@ -333,7 +333,7 @@ class Store:
         self.mode = (
             self.mode.encode("utf-8") if isinstance(self.mode, str) else self.mode
         )
-        self.enforce_frame = True if self.urlpath else self.enforce_frame
+        self.contiguous = True if self.urlpath else self.contiguous
         if self.plainbuffer:
             if self.chunks is not None or self.blocks is not None:
                 raise ValueError("plainbuffer array does not support neither a chunks nor blocks")
@@ -428,7 +428,7 @@ class Config(ext.Config):
     blocks: Union[Sequence, None] = field(default_factory=defaults._blocks)
     urlpath: bytes or str = field(default_factory=defaults._urlpath)
     mode: bytes or str = field(default_factory=defaults._mode)
-    enforce_frame: bool = field(default_factory=defaults._enforce_frame)
+    contiguous: bool = field(default_factory=defaults._contiguous)
     plainbuffer: bool = field(default_factory=defaults._plainbuffer)
 
     def __post_init__(self):
@@ -446,7 +446,7 @@ class Config(ext.Config):
                 blocks=self.blocks,
                 urlpath=self.urlpath,
                 mode=self.mode,
-                enforce_frame=self.enforce_frame,
+                contiguous=self.contiguous,
                 plainbuffer=self.plainbuffer,
             )
         # Once we have all the settings and hints from the user, we can proceed
@@ -643,26 +643,26 @@ def reset_config_defaults():
 if __name__ == "__main__":
     cfg_ = get_config()
     print("Defaults:", cfg_)
-    assert cfg_.store.enforce_frame is False
+    assert cfg_.store.contiguous is False
 
-    set_config(store=Store(enforce_frame=True))
+    set_config(store=Store(contiguous=True))
     cfg = get_config()
     print("1st form:", cfg)
-    assert cfg.store.enforce_frame is True
+    assert cfg.store.contiguous is True
 
-    set_config(enforce_frame=False)
+    set_config(contiguous=False)
     cfg = get_config()
     print("2nd form:", cfg)
-    assert cfg.store.enforce_frame is False
+    assert cfg.store.contiguous is False
 
     set_config(Config(clevel=5))
     cfg = get_config()
     print("3rd form:", cfg)
     assert cfg.clevel == 5
 
-    with config(clevel=0, enforce_frame=True) as cfg_new:
+    with config(clevel=0, contiguous=True) as cfg_new:
         print("Context form:", cfg_new)
-        assert cfg_new.store.enforce_frame is True
+        assert cfg_new.store.contiguous is True
         assert get_config().clevel == 0
 
     cfg = ia.Config(codec=ia.Codecs.BLOSCLZ)

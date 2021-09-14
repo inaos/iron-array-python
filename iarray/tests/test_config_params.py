@@ -3,7 +3,7 @@ import iarray as ia
 
 
 @pytest.mark.parametrize(
-    "clevel, codec, filters, chunks, blocks, enforce_frame",
+    "clevel, codec, filters, chunks, blocks, contiguous",
     [
         (0, ia.Codecs.ZSTD, [ia.Filters.SHUFFLE], None, None, False),
         (1, ia.Codecs.BLOSCLZ, [ia.Filters.SHUFFLE], [50, 50], [20, 20], True),
@@ -12,8 +12,8 @@ import iarray as ia
         (0, ia.Codecs.ZSTD, [ia.Filters.SHUFFLE], None, None, False),
     ],
 )
-def test_global_config(clevel, codec, filters, chunks, blocks, enforce_frame):
-    store = ia.Store(chunks, blocks, enforce_frame=enforce_frame)
+def test_global_config(clevel, codec, filters, chunks, blocks, contiguous):
+    store = ia.Store(chunks, blocks, contiguous=contiguous)
     ia.set_config(clevel=clevel, codec=codec, filters=filters, store=store)
     config = ia.get_config()
     assert config.clevel == clevel
@@ -22,7 +22,7 @@ def test_global_config(clevel, codec, filters, chunks, blocks, enforce_frame):
     store2 = config.store
     assert store2.chunks == chunks
     assert store2.blocks == blocks
-    assert store2.enforce_frame == enforce_frame
+    assert store2.contiguous == contiguous
 
     # One can pass store parameters straight to config() dataclass too
     ia.set_config(
@@ -31,7 +31,7 @@ def test_global_config(clevel, codec, filters, chunks, blocks, enforce_frame):
         filters=filters,
         chunks=chunks,
         blocks=blocks,
-        enforce_frame=False,
+        contiguous=False,
     )
     config = ia.get_config()
     assert config.clevel == clevel
@@ -40,7 +40,7 @@ def test_global_config(clevel, codec, filters, chunks, blocks, enforce_frame):
     store2 = ia.Store()
     assert store2.chunks == chunks
     assert store2.blocks == blocks
-    assert store2.enforce_frame == False
+    assert store2.contiguous == False
 
     # Or, we can set defaults via Config (for better auto-completion)
     cfg = ia.Config(
@@ -49,7 +49,7 @@ def test_global_config(clevel, codec, filters, chunks, blocks, enforce_frame):
         filters=filters,
         chunks=chunks,
         blocks=blocks,
-        enforce_frame=False,
+        contiguous=False,
     )
     ia.set_config(cfg)
     config = ia.get_config()
@@ -59,14 +59,14 @@ def test_global_config(clevel, codec, filters, chunks, blocks, enforce_frame):
     store2 = ia.Store()
     assert store2.chunks == chunks
     assert store2.blocks == blocks
-    assert store2.enforce_frame == False
+    assert store2.contiguous == False
 
     # Or, we can use a mix of Config and keyword args
     cfg = ia.Config(
         clevel=clevel,
         codec=codec,
         blocks=blocks,
-        enforce_frame=False,
+        contiguous=False,
     )
     ia.set_config(cfg, filters=filters, chunks=chunks)
     config = ia.get_config()
@@ -77,7 +77,7 @@ def test_global_config(clevel, codec, filters, chunks, blocks, enforce_frame):
     store2 = ia.Store()
     assert store2.chunks == chunks
     assert store2.blocks == blocks
-    assert store2.enforce_frame == False
+    assert store2.contiguous == False
 
 
 @pytest.mark.parametrize(
@@ -131,7 +131,7 @@ def test_global_config_dtype(chunks, blocks, shape):
             shape=shape,
             chunks=chunks,
             blocks=blocks,
-            enforce_frame=True,
+            contiguous=True,
         )
         store2 = cfg.store
 
@@ -142,7 +142,7 @@ def test_global_config_dtype(chunks, blocks, shape):
             # automatic partitioning
             assert store2.chunks <= shape
             assert store2.blocks <= store2.chunks
-        assert store2.enforce_frame == True
+        assert store2.contiguous == True
     except ValueError:
         # chunks cannot be set when a plainbuffer is used
         assert shape == ()
@@ -225,7 +225,7 @@ def test_config_ctx_dtype(chunks, blocks, shape):
             shape=shape,
             chunks=chunks,
             blocks=blocks,
-            enforce_frame=True,
+            contiguous=True,
         ) as cfg:
             store2 = cfg.store
             if chunks is not None:
@@ -235,7 +235,7 @@ def test_config_ctx_dtype(chunks, blocks, shape):
                 # automatic partitioning
                 assert store2.chunks <= shape
                 assert store2.blocks <= store2.chunks
-            assert store2.enforce_frame == True
+            assert store2.contiguous == True
     except ValueError:
         # chunks cannot be set when a plainbuffer is used
         assert shape == ()

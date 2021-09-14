@@ -7,7 +7,7 @@ import numpy as np
 _ = ia.set_config(clevel=1, codec=ia.Codecs.LZ4, btune=False, nthreads=8, dtype=np.float64, seed=0)
 
 shape = (25000, 13859)
-# wia = ia.random.normal(shape, 3, 2, chunks=(1024, 1024), blocks=(128, 128), enforce_frame=True, urlpath="dense.iarray", fp_mantissa_bits=3)
+# wia = ia.random.normal(shape, 3, 2, chunks=(1024, 1024), blocks=(128, 128), contiguous=True, urlpath="dense.iarray", fp_mantissa_bits=3)
 
 wia = ia.load("dense.iarray")
 print(wia.info)
