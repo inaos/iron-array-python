@@ -31,7 +31,7 @@ def test_copy(shape, chunks, blocks, dtype, plainbuffer, sequential, urlpath, ur
     if plainbuffer:
         store = ia.Store(plainbuffer=True)
     else:
-        store = ia.Store(chunks, blocks, enforce_frame=sequential, urlpath=urlpath)
+        store = ia.Store(chunks, blocks, contiguous=sequential, urlpath=urlpath)
     a_ = ia.linspace(shape, -10, 10, dtype=dtype, store=store)
     sl = tuple([slice(0, s - 1) for s in shape])
     a = a_[sl]

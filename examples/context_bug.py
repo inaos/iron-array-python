@@ -35,7 +35,7 @@ try:
             # automatic partitioning
             assert store2.chunks <= shape
             assert store2.blocks <= store2.chunks
-        assert store2.enforce_frame == True
+        assert store2.contiguous == True
 except ValueError:
     # chunks cannot be set when a plainbuffer is used
     assert shape == ()
