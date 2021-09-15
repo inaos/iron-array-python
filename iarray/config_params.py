@@ -292,11 +292,11 @@ class Store:
     Parameters
     ----------
     chunks : list, tuple
-        The chunks for the output array.  If None (the default), a sensible default
+        The chunk shape for the output array.  If None (the default), a sensible default
         will be used based on the shape of the array and the size of caches in the current
         processor.
     blocks : list, tuple
-        The blocks for the output array.  If None (the default), a sensible default
+        The block shape for the output array.  If None (the default), a sensible default
         will be used based on the shape of the array and the size of caches in the current
         processor.
     urlpath : str
@@ -551,7 +551,7 @@ def set_config(cfg: Config = None, shape=None, **kwargs):
     shape : Sequence
         This is not part of the global configuration as such, but if passed,
         it will be used so as to compute sensible defaults for store properties
-        like chunks and blocks.  This is mainly meant for internal use.
+        like chunk shape and block shape.  This is mainly meant for internal use.
     kwargs : dict
         A dictionary for setting some or all of the fields in the ia.Config
         dataclass that should override the current configuration.
