@@ -307,7 +307,7 @@ class Store:
         'a' means read/write (create if doesn’t exist); 'w' means create (overwrite if exists);
         'w-' means create (fail if exists).  Default is 'r'.
     contiguous : bool
-        If True, the output array will be stored as a frame, even when in-memory.  If False
+        If True, the output array will be stored contiguously (as a frame), even when in-memory.  If False
         (the default), the store will be sparse.  Currently, persistent store only supports
         the frame format. When in-memory, the array can be in sparse (the default)
         or contiguous form (frame), depending on this flag.
