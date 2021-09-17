@@ -1,10 +1,12 @@
 ------------
 Tutorials
 ------------
-You can find all the tutorials with their explanation in its `Jupyter notebook <https://notebook.ironarray.io/user/martaiborra/tree/tutorials>`_, from which they are meant to be executed.
+
+You can find an online version of the tutorials in `<https://notebook.ironarray.io>`_. After logging, a new environment for executing the tutorials will be automatically set for you; this is a very convenient way to get your feet wet with ironArray.
+The results shown here have been rendered on a specific server for your convenience, so that you can see the expected outcome.
 
 .. toctree::
-   :caption: Tutorials
+   :caption: Index
    :maxdepth: 1
 
    tutorials/01.Creating_arrays
