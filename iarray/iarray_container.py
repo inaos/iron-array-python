@@ -917,14 +917,24 @@ def opt_gemv(a: IArray, b: IArray, use_mkl: bool = True, cfg=None, **kwargs):
         return ext.opt_gemv(cfg, a, b, use_mkl)
 
 
-def opt_gemm(a: IArray, b: IArray, use_mkl: bool = True, cfg=None, **kwargs):
+def opt_gemm(a: IArray, b: IArray, cfg=None, **kwargs):
     shape = (a.shape[0], b.shape[1]) if b.ndim == 2 else (a.shape[0],)
 
     if cfg is None:
         cfg = ia.get_config()
 
     with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
-        return ext.opt_gemm(cfg, a, b, use_mkl)
+        return ext.opt_gemm(cfg, a, b)
+
+
+def opt_gemm2(a: IArray, b: IArray, cfg=None, **kwargs):
+    shape = (a.shape[0], b.shape[1]) if b.ndim == 2 else (a.shape[0],)
+
+    if cfg is None:
+        cfg = ia.get_config()
+
+    with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
+        return ext.opt_gemm2(cfg, a, b)
 
 
 def matmul(a: IArray, b: IArray, cfg=None, **kwargs):
