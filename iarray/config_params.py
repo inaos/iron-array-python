@@ -292,11 +292,11 @@ class Store:
     Parameters
     ----------
     chunks : list, tuple
-        The chunks for the output array.  If None (the default), a sensible default
+        The chunk shape for the output array.  If None (the default), a sensible default
         will be used based on the shape of the array and the size of caches in the current
         processor.
     blocks : list, tuple
-        The blocks for the output array.  If None (the default), a sensible default
+        The block shape for the output array.  If None (the default), a sensible default
         will be used based on the shape of the array and the size of caches in the current
         processor.
     urlpath : str
@@ -307,7 +307,7 @@ class Store:
         'a' means read/write (create if doesn’t exist); 'w' means create (overwrite if exists);
         'w-' means create (fail if exists).  Default is 'r'.
     contiguous : bool
-        If True, the output array will be stored as a frame, even when in-memory.  If False
+        If True, the output array will be stored contiguously (as a frame), even when in-memory.  If False
         (the default), the store will be sparse.  Currently, persistent store only supports
         the frame format. When in-memory, the array can be in sparse (the default)
         or contiguous form (frame), depending on this flag.
@@ -551,7 +551,7 @@ def set_config(cfg: Config = None, shape=None, **kwargs):
     shape : Sequence
         This is not part of the global configuration as such, but if passed,
         it will be used so as to compute sensible defaults for store properties
-        like chunks and blocks.  This is mainly meant for internal use.
+        like chunk shape and block shape.  This is mainly meant for internal use.
     kwargs : dict
         A dictionary for setting some or all of the fields in the ia.Config
         dataclass that should override the current configuration.
