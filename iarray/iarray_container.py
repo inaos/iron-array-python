@@ -927,12 +927,74 @@ def opt_gemm(a: IArray, b: IArray, cfg=None, **kwargs):
         return ext.opt_gemm(cfg, a, b)
 
 
-def opt_gemm2(a: IArray, b: IArray, cfg=None, **kwargs):
+def opt_gemm2_params(M, K, N, itemsize=8, l2_size=512 * 1024):
+    print("hola")
+    l2_size = l2_size // 2
+    block_nelem = l2_size // itemsize // 3
+    block_nelem_dim = int(np.sqrt(block_nelem))
+
+    m_block = block_nelem_dim
+
+    if M // m_block < (2 * ia.get_ncores()):
+        m_block = M // (2 * ia.get_ncores())
+        if m_block == 0:
+            m_block = 1
+
+    k_block = block_nelem // m_block
+    if k_block > K:
+        k_block = K
+
+    n_block = (l2_size - m_block * k_block) // (m_block + k_block)
+    if n_block > N:
+        n_block = N
+
+    k_chunk = K // k_block
+    if K % k_block != 0:
+        k_chunk += 1
+    k_chunk *= k_block
+
+    a_chunk_0 = m_block
+    a_chunk_1 = k_chunk
+
+    b_chunk_0 = k_chunk
+    b_chunk_1 = n_block
+
+    a_block_0 = a_chunk_0
+    a_block_1 = k_block
+
+    b_block_0 = k_block
+    b_block_1 = b_chunk_1
+
+    c_chunk_0 = M // a_chunk_0
+    if M % a_chunk_0 != 0:
+        c_chunk_0 += 1
+    c_chunk_0 *= a_chunk_0
+    c_chunk_1 = b_chunk_1
+
+    c_block_0 = a_chunk_0
+    c_block_1 = b_chunk_1
+
+    return dict(
+        a_chunks=(a_chunk_0, a_chunk_1),
+        b_chunks=(b_chunk_0, b_chunk_1),
+        c_chunks=(c_chunk_0, c_chunk_1),
+        a_blocks=(a_block_0, a_block_1),
+        b_blocks=(b_block_0, b_block_1),
+        c_blocks=(c_block_0, c_block_1),
+    )
+
+
+def opt_gemm2(a: IArray, b: IArray, l2_size=512 * 1024, cfg=None, **kwargs):
     shape = (a.shape[0], b.shape[1]) if b.ndim == 2 else (a.shape[0],)
 
     if cfg is None:
         cfg = ia.get_config()
 
+    params = opt_gemm2_params(
+        a.shape[0], a.shape[1], b.shape[1], np.dtype(a.dtype).itemsize, l2_size=l2_size
+    )
+    kwargs["chunks"] = params["c_chunks"]
+    kwargs["blocks"] = params["c_blocks"]
     with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
         return ext.opt_gemm2(cfg, a, b)
 
