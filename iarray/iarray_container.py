@@ -928,7 +928,6 @@ def opt_gemm(a: IArray, b: IArray, cfg=None, **kwargs):
 
 
 def opt_gemm2_params(M, K, N, itemsize=8, l2_size=512 * 1024):
-    print("hola")
     l2_size = l2_size // 2
     block_nelem = l2_size // itemsize // 3
     block_nelem_dim = int(np.sqrt(block_nelem))
@@ -993,8 +992,11 @@ def opt_gemm2(a: IArray, b: IArray, l2_size=512 * 1024, cfg=None, **kwargs):
     params = opt_gemm2_params(
         a.shape[0], a.shape[1], b.shape[1], np.dtype(a.dtype).itemsize, l2_size=l2_size
     )
-    kwargs["chunks"] = params["c_chunks"]
-    kwargs["blocks"] = params["c_blocks"]
+    if not "chunks" in kwargs:
+        kwargs["chunks"] = params["c_chunks"]
+    if not "blocks" in kwargs:
+        kwargs["blocks"] = params["c_blocks"]
+
     with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
         return ext.opt_gemm2(cfg, a, b)
 
