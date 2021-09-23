@@ -933,11 +933,8 @@ def opt_gemm2_params(M, K, N, itemsize=8, l2_size=512 * 1024):
     block_nelem_dim = int(np.sqrt(block_nelem))
 
     m_block = block_nelem_dim
-
-    if M // m_block < (2 * ia.get_ncores()):
-        m_block = M // (2 * ia.get_ncores())
-        if m_block == 0:
-            m_block = 1
+    if m_block > M:
+        m_block = M
 
     k_block = block_nelem // m_block
     if k_block > K:
