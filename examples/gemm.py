@@ -2,16 +2,16 @@ import iarray as ia
 from time import time
 import numpy as np
 
-M = 1
-K = 3
-N = 15_000
+M = 10
+K = 26_232
+N = 25_000
 
 dtype = np.dtype(np.float32)
 
-params = ia.opt_gemm2_params(M, K, N, itemsize=dtype.itemsize, l2_size=256 * 1024)
+params = ia.opt_gemm2_params(M, K, N, itemsize=dtype.itemsize, l2_size=512 * 1024)
 print(params)
 t = np.ones((M, K), dtype=dtype)
-t = np.tril(t)
+# t = np.tril(t)
 a = ia.numpy2iarray(t, chunks=params["a_chunks"], blocks=params["a_blocks"])
 # a = ia.random.random_sample(
 #     (M, K), dtype=dtype, chunks=params["a_chunks"], blocks=params["a_blocks"]
