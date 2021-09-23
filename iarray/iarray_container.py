@@ -933,7 +933,6 @@ def opt_gemm2_params(M, K, N, itemsize=8, l2_size=512 * 1024):
     block_nelem_dim = int(np.sqrt(block_nelem))
 
     m_block = block_nelem_dim
-    print(m_block)
 
     if M // m_block < (2 * ia.get_ncores()):
         m_block = M // (2 * ia.get_ncores())
@@ -984,20 +983,23 @@ def opt_gemm2_params(M, K, N, itemsize=8, l2_size=512 * 1024):
     )
 
 
-def opt_gemm2(a: IArray, b: IArray, l2_size=512 * 1024, cfg=None, **kwargs):
+def opt_gemm2(a: IArray, b: IArray, cfg=None, **kwargs):
     shape = (a.shape[0], b.shape[1]) if b.ndim == 2 else (a.shape[0],)
 
     if cfg is None:
         cfg = ia.get_config()
 
-    params = opt_gemm2_params(
-        a.shape[0], a.shape[1], b.shape[1], np.dtype(a.dtype).itemsize, l2_size=l2_size
-    )
+    c_chunk_0 = a.shape[0] // a.chunks[0]
+    if a.shape[0] % a.chunks[0] != 0:
+        c_chunk_0 += 1
+    c_chunk_0 *= a.chunks[0]
+    c_chunk_1 = b.chunks[1]
 
-    if not "chunks" in kwargs:
-        kwargs["chunks"] = params["c_chunks"]
-    if not "blocks" in kwargs:
-        kwargs["blocks"] = params["c_blocks"]
+    c_block_0 = a.chunks[0]
+    c_block_1 = b.chunks[1]
+
+    kwargs["chunks"] = (c_chunk_0, c_chunk_1)
+    kwargs["blocks"] = (c_block_0, c_block_1)
 
     with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
         return ext.opt_gemm2(cfg, a, b)
