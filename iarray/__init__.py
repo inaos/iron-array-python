@@ -129,10 +129,7 @@ from .iarray_container import (
     IArray,
     opt_gemv,
     opt_gemm,
-    opt_gemm2,
-    opt_gemm2_params,
-    opt_gemm3,
-    opt_gemm3_params,
+    opt_gemm_params,
     matmul,
     transpose,
     # reductions

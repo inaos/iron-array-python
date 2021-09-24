@@ -917,92 +917,7 @@ def opt_gemv(a: IArray, b: IArray, use_mkl: bool = True, cfg=None, **kwargs):
         return ext.opt_gemv(cfg, a, b, use_mkl)
 
 
-def opt_gemm(a: IArray, b: IArray, cfg=None, **kwargs):
-    shape = (a.shape[0], b.shape[1]) if b.ndim == 2 else (a.shape[0],)
-
-    if cfg is None:
-        cfg = ia.get_config()
-
-    with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
-        return ext.opt_gemm(cfg, a, b)
-
-
-def opt_gemm2_params(M, K, N, itemsize=8, l2_size=512 * 1024):
-    l2_nelem = l2_size // itemsize
-    block_nelem = l2_nelem // 3
-    block_nelem_dim = int(np.sqrt(block_nelem))
-
-    m_block = block_nelem_dim
-    if m_block > M:
-        m_block = M
-
-    n_block = block_nelem // m_block
-    if n_block > N:
-        n_block = N
-
-    k_block = (l2_nelem - m_block * n_block) // (m_block + n_block)
-    if k_block > K:
-        k_block = K
-
-    k_chunk = K // k_block
-    if K % k_block != 0:
-        k_chunk += 1
-    k_chunk *= k_block
-
-    a_chunk_0 = m_block
-    a_chunk_1 = k_chunk
-
-    b_chunk_0 = k_chunk
-    b_chunk_1 = n_block
-
-    a_block_0 = a_chunk_0
-    a_block_1 = k_block
-
-    b_block_0 = k_block
-    b_block_1 = b_chunk_1
-
-    c_chunk_0 = M // a_chunk_0
-    if M % a_chunk_0 != 0:
-        c_chunk_0 += 1
-    c_chunk_0 *= a_chunk_0
-    c_chunk_1 = b_chunk_1
-
-    c_block_0 = a_chunk_0
-    c_block_1 = b_chunk_1
-
-    return dict(
-        a_chunks=(a_chunk_0, a_chunk_1),
-        b_chunks=(b_chunk_0, b_chunk_1),
-        c_chunks=(c_chunk_0, c_chunk_1),
-        a_blocks=(a_block_0, a_block_1),
-        b_blocks=(b_block_0, b_block_1),
-        c_blocks=(c_block_0, c_block_1),
-    )
-
-
-def opt_gemm2(a: IArray, b: IArray, cfg=None, **kwargs):
-    shape = (a.shape[0], b.shape[1]) if b.ndim == 2 else (a.shape[0],)
-
-    if cfg is None:
-        cfg = ia.get_config()
-
-    c_chunk_0 = a.shape[0] // a.chunks[0]
-    if a.shape[0] % a.chunks[0] != 0:
-        c_chunk_0 += 1
-    c_chunk_0 *= a.chunks[0]
-    c_chunk_1 = b.chunks[1]
-
-    c_block_0 = a.chunks[0]
-    c_block_1 = b.chunks[1]
-
-    kwargs["chunks"] = (c_chunk_0, c_chunk_1)
-    kwargs["blocks"] = (c_block_0, c_block_1)
-
-    with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
-        return ext.opt_gemm2(cfg, a, b)
-
-
-def opt_gemm3_params(M, K, N, itemsize=8, l2_size=512 * 1024):
+def opt_gemm_params(M, K, N, itemsize=8, l2_size=512 * 1024):
     l2_nelem = l2_size // itemsize
     block_nelem = l2_nelem // 3
     block_nelem_dim = int(np.sqrt(block_nelem))
@@ -1036,45 +951,69 @@ def opt_gemm3_params(M, K, N, itemsize=8, l2_size=512 * 1024):
     b_block_0 = k_block
     b_block_1 = b_chunk_1
 
-    c_chunk_0 = a_chunk_0
-    c_chunk_1 = N // b_chunk_1
-    if N % b_chunk_1 != 0:
-        c_chunk_1 += 1
-    c_chunk_1 *= b_chunk_1
-
-    c_block_0 = a_chunk_0
-    c_block_1 = b_chunk_1
-
     return dict(
         a_chunks=(a_chunk_0, a_chunk_1),
         b_chunks=(b_chunk_0, b_chunk_1),
-        c_chunks=(c_chunk_0, c_chunk_1),
         a_blocks=(a_block_0, a_block_1),
         b_blocks=(b_block_0, b_block_1),
-        c_blocks=(c_block_0, c_block_1),
     )
 
 
-def opt_gemm3(a: IArray, b: IArray, cfg=None, **kwargs):
+def opt_gemm(a: IArray, b: IArray, ott_b=False, cfg=None, **kwargs):
     shape = (a.shape[0], b.shape[1]) if b.ndim == 2 else (a.shape[0],)
 
     if cfg is None:
         cfg = ia.get_config()
 
-    c_chunk_0 = a.chunks[0]
-    c_chunk_1 = b.shape[1] // b.chunks[1]
-    if b.shape[1] % b.chunks[1] != 0:
-        c_chunk_1 += 1
-    c_chunk_1 *= b.chunks[1]
+    if (
+        a.chunks[0] % a.blocks[0] == 0
+        and a.chunks[1] % a.blocks[1] == 0
+        and b.chunks[0] % b.blocks[0] == 0
+        and b.chunks[1] % b.blocks[1] == 0
+    ):
+        # Bypass Caterva
 
-    c_block_0 = a.chunks[0]
-    c_block_1 = b.chunks[1]
+        if (
+            a.chunks[0] == a.blocks[0]
+            and b.chunks[1] == b.blocks[1]
+            and a.shape[1] < a.chunks[1] == b.chunks[0] > b.shape[0]
+        ):
+            # Optimize data extraction
 
-    kwargs["chunks"] = (c_chunk_0, c_chunk_1)
-    kwargs["blocks"] = (c_block_0, c_block_1)
+            if not ott_b:
+                c_chunk_0 = a.chunks[0]
+                c_chunk_1 = b.shape[1] // b.chunks[1]
+                if b.shape[1] % b.chunks[1] != 0:
+                    c_chunk_1 += 1
+                c_chunk_1 *= b.chunks[1]
+            else:
+                c_chunk_0 = a.shape[0] // a.chunks[0]
+                if a.shape[0] % a.chunks[0] != 0:
+                    c_chunk_0 += 1
+                c_chunk_0 *= a.chunks[0]
+                c_chunk_1 = b.chunks[1]
 
-    with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
-        return ext.opt_gemm3(cfg, a, b)
+            c_block_0 = a.chunks[0]
+            c_block_1 = b.chunks[1]
+
+            kwargs["chunks"] = (c_chunk_0, c_chunk_1)
+            kwargs["blocks"] = (c_block_0, c_block_1)
+
+            with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
+                if not ott_b:
+                    print("optimized gemm (a)...")
+                    return ext.opt_gemm3(cfg, a, b)
+                else:
+                    print("optimized gemm (b)... ")
+                    return ext.opt_gemm2(cfg, a, b)
+        else:
+            print("optimized matmul...")
+            with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
+                return ext.opt_gemm(cfg, a, b)
+    else:
+        # Other cases
+        print("default matmul...")
+        return ia.matmul(a, b, cfg=cfg, **kwargs)
 
 
 def matmul(a: IArray, b: IArray, cfg=None, **kwargs):
