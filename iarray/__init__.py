@@ -130,6 +130,7 @@ from .iarray_container import (
     opt_gemv,
     opt_gemm,
     opt_gemm_params,
+    matmul_params,
     matmul,
     transpose,
     # reductions

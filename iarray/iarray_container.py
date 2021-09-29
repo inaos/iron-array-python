@@ -917,6 +917,61 @@ def opt_gemv(a: IArray, b: IArray, use_mkl: bool = True, cfg=None, **kwargs):
         return ext.opt_gemv(cfg, a, b, use_mkl)
 
 
+def matmul_params(M, K, N, itemsize=8, l2_size=512 * 1024, chunk_size=128 * 1024 * 1024):
+    l2_nelem = l2_size // itemsize
+    block_nelem = l2_nelem // 3
+    block_nelem_dim = int(np.sqrt(block_nelem))
+
+    n_block = block_nelem_dim
+    if n_block > N:
+        n_block = N
+
+    m_block = block_nelem_dim
+    if m_block > M:
+        m_block = M
+
+    k_block = block_nelem_dim
+    if k_block > K:
+        k_block = K
+
+    chunk_nelem = chunk_size // itemsize
+    chunk_nelem_dim = int(np.sqrt(chunk_nelem))
+
+    n_chunk = chunk_nelem_dim
+    if n_chunk % n_block != 0:
+        n_chunk = (n_chunk // n_block + 1) * n_block
+    if n_chunk > N:
+        if N % n_block == 0:
+            n_chunk = N
+        else:
+            n_chunk = (N // n_block + 1) * n_block
+
+    m_chunk = chunk_nelem_dim
+    if m_chunk % m_block != 0:
+        m_chunk = (m_chunk // m_block + 1) * m_block
+    if m_chunk > M:
+        if M % m_block == 0:
+            m_chunk = M
+        else:
+            m_chunk = (M // m_block + 1) * m_block
+
+    k_chunk = chunk_nelem_dim
+    if k_chunk % k_block != 0:
+        k_chunk = (k_chunk // k_block + 1) * k_block
+    if k_chunk > K:
+        if K % k_block == 0:
+            k_chunk = K
+        else:
+            k_chunk = (K // k_block + 1) * k_block
+
+    return dict(
+        a_chunks=(m_chunk, k_chunk),
+        b_chunks=(k_chunk, n_chunk),
+        a_blocks=(m_block, k_block),
+        b_blocks=(k_block, n_block),
+    )
+
+
 def opt_gemm_params(M, K, N, itemsize=8, l2_size=512 * 1024):
     l2_nelem = l2_size // itemsize
     block_nelem = l2_nelem // 3
@@ -1043,8 +1098,25 @@ def matmul(a: IArray, b: IArray, cfg=None, **kwargs):
     if cfg is None:
         cfg = ia.get_config()
 
-    with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
-        return ext.matmul(cfg, a, b)
+    if (
+        a.chunks[0] % a.blocks[0] == 0
+        and a.chunks[1] % a.blocks[1] == 0
+        and b.chunks[0] % b.blocks[0] == 0
+        and b.chunks[1] % b.blocks[1] == 0
+        and a.chunks[1] == b.chunks[0]
+        and a.blocks[1] == a.blocks[0]
+        and "chunks" not in kwargs
+        and "blocks" not in kwargs
+    ):
+        kwargs["chunks"] = (a.chunks[0], b.chunks[1])
+        kwargs["blocks"] = (a.blocks[0], b.blocks[1])
+
+        print("opt matmul")
+        with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
+            return ext.opt_gemm(cfg, a, b)
+    else:
+        with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
+            return ext.matmul(cfg, a, b)
 
 
 def transpose(a: IArray, cfg=None, **kwargs):
