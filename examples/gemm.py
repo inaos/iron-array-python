@@ -2,8 +2,8 @@ import iarray as ia
 from time import time
 import numpy as np
 
-M = 25_000
-K = 25_000
+M = 10_000
+K = 10_000
 N = 5_000
 
 nreps = 3
@@ -11,11 +11,8 @@ nreps = 3
 dtype = np.dtype(np.float32)
 
 params = ia.matmul_params(M, K, N, itemsize=dtype.itemsize, l2_size=512 * 1024)
-print(params)
-a_chunks = params["a_chunks"]
-a_blocks = params["a_blocks"]
-b_chunks = params["b_chunks"]
-b_blocks = params["b_blocks"]
+a_chunks, a_blocks, b_chunks, b_blocks = params
+
 
 # a_chunks = (1000, 1000)
 # b_chunks = (1000, 1000)
@@ -31,6 +28,9 @@ b = ia.random.random_sample(
     dtype=dtype,
     chunks=b_chunks,
     blocks=b_blocks,
+    urlpath="c.iarr",
+    mode="w",
+    contiguous=False,
 )
 
 
