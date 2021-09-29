@@ -235,3 +235,34 @@ def test_matmul_slice(
     rtol = 1e-6 if dtype == np.float32 else 1e-14
 
     np.testing.assert_allclose(cn, cn_2, rtol=rtol)
+
+
+@pytest.mark.parametrize(
+    "ashape, bshape",
+    [
+        ([20, 20], [20, 20]),
+        ([100, 100], [100, 100]),
+        ([500, 100], [100, 200]),
+    ],
+)
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+def test_matmul_opt(ashape, bshape, dtype):
+    params = ia.matmul_params(ashape[0], ashape[1], bshape[1], l2_size=1024, chunk_size=16 * 1024)
+    achunks, bchunks, ablocks, bblocks = params
+
+    astore = ia.Store(achunks, ablocks)
+    a = ia.linspace(ashape, -10, 1, dtype=dtype, store=astore)
+    an = ia.iarray2numpy(a)
+
+    bstore = ia.Store(bchunks, bblocks)
+    b = ia.linspace(bshape, -1, 10, dtype=dtype, store=bstore)
+    bn = ia.iarray2numpy(b)
+
+    c = ia.matmul(a, b)
+    cn_2 = ia.iarray2numpy(c)
+
+    cn = np.matmul(an, bn)
+
+    rtol = 1e-6 if dtype == np.float32 else 1e-14
+
+    np.testing.assert_allclose(cn, cn_2, rtol=rtol)

@@ -918,6 +918,33 @@ def opt_gemv(a: IArray, b: IArray, use_mkl: bool = True, cfg=None, **kwargs):
 
 
 def matmul_params(M, K, N, itemsize=8, l2_size=512 * 1024, chunk_size=128 * 1024 * 1024):
+    """
+    Given a matmul operation A * B = C, it computes the chunks and the blocks of the operands
+    (A and B) to use an optimized version of the matmul algorithm.
+
+    Parameters
+    ----------
+    M: int
+    Specifies the number of rows of the matrix A and of the matrix C. M must be at least zero.
+    K: int
+    Specifies the number of columns of the matrix A and the number of rows of the matrix B.
+    K must be at least zero.
+    N: int
+    Specifies the number of columns of the matrix B and the number of columns of the matrix C.
+    N must be at least zero.
+    itemsize: int
+    The size of each item.
+    l2_size: int
+    The size of the l2 cache. It is used to compute the size of the blocks.
+    chunk_size: int
+    The maximum chunksize allowed. It is used to compute the size of the chunks.
+
+    Returns
+    -------
+    params: tuple
+    A tuple specifying the chunks and the blocks of the matmul operands A and B
+    (A_chunks, A_blocks, B_chunks, B_blocks).
+    """
     l2_nelem = l2_size // itemsize
     block_nelem = l2_nelem // 3
     block_nelem_dim = int(np.sqrt(block_nelem))
@@ -964,12 +991,12 @@ def matmul_params(M, K, N, itemsize=8, l2_size=512 * 1024, chunk_size=128 * 1024
         else:
             k_chunk = (K // k_block + 1) * k_block
 
-    return dict(
-        a_chunks=(m_chunk, k_chunk),
-        b_chunks=(k_chunk, n_chunk),
-        a_blocks=(m_block, k_block),
-        b_blocks=(k_block, n_block),
-    )
+    a_chunks = (m_chunk, k_chunk)
+    b_chunks = (k_chunk, n_chunk)
+    a_blocks = (m_block, k_block)
+    b_blocks = (k_block, n_block)
+
+    return a_chunks, a_blocks, b_chunks, b_blocks
 
 
 def opt_gemm_params(M, K, N, itemsize=8, l2_size=512 * 1024):
@@ -1006,12 +1033,12 @@ def opt_gemm_params(M, K, N, itemsize=8, l2_size=512 * 1024):
     b_block_0 = k_block
     b_block_1 = b_chunk_1
 
-    return dict(
-        a_chunks=(a_chunk_0, a_chunk_1),
-        b_chunks=(b_chunk_0, b_chunk_1),
-        a_blocks=(a_block_0, a_block_1),
-        b_blocks=(b_block_0, b_block_1),
-    )
+    a_chunks = (a_chunk_0, a_chunk_1)
+    b_chunks = (b_chunk_0, b_chunk_1)
+    a_blocks = (a_block_0, a_block_1)
+    b_blocks = (b_block_0, b_block_1)
+
+    return a_chunks, a_blocks, b_chunks, b_blocks
 
 
 def opt_gemm(a: IArray, b: IArray, ott_b=False, cfg=None, **kwargs):
@@ -1099,7 +1126,9 @@ def matmul(a: IArray, b: IArray, cfg=None, **kwargs):
         cfg = ia.get_config()
 
     if (
-        a.chunks[0] % a.blocks[0] == 0
+        a.chunks
+        and b.chunks
+        and a.chunks[0] % a.blocks[0] == 0
         and a.chunks[1] % a.blocks[1] == 0
         and b.chunks[0] % b.blocks[0] == 0
         and b.chunks[1] % b.blocks[1] == 0
@@ -1111,7 +1140,6 @@ def matmul(a: IArray, b: IArray, cfg=None, **kwargs):
         kwargs["chunks"] = (a.chunks[0], b.chunks[1])
         kwargs["blocks"] = (a.blocks[0], b.blocks[1])
 
-        print("opt matmul")
         with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
             return ext.opt_gemm(cfg, a, b)
     else:
