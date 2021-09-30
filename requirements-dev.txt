@@ -5,6 +5,8 @@ zarr
 xarray
 dask
 s3fs
+h5py
+hdf5plugin
 numexpr
 numba
 memprofiler

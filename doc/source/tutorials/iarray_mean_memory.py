@@ -6,15 +6,15 @@ contiguous = False
 nthreads = 21
 
 # Some experiments lead to these chunk and block shapes
-# chunkshape = (128, 256, 1440)
-# blockshape = (16, 16, 180)
-# chunkshape = (180, 256, 1440)
-# blockshape = (12, 16, 180)
-chunkshape = (45, 721, 1440)
-blockshape = (45, 4, 180)
+# chunks = (128, 256, 1440)
+# blocks = (16, 16, 180)
+# chunks = (180, 256, 1440)
+# block = (12, 16, 180)
+chunks = (45, 721, 1440)
+blocks = (45, 4, 180)
 
 
-# store = ia.Storage(contiguous=contiguous, chunkshape=chunkshape, blockshape=blockshape)
+# store = ia.Store(contiguous=contiguous, chunks=chunks, blocks=blocks)
 store = ia.Store(contiguous=contiguous)
 # cfg = ia.Config(nthreads=nthreads, store=store, clevel=1, codec=ia.Codecs.ZSTD, filters=[ia.Filters.BITSHUFFLE])
 # cfg = ia.Config(store=store, clevel=1, codec=ia.Codecs.ZSTD, filters=[ia.Filters.BITSHUFFLE])
