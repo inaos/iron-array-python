@@ -243,12 +243,23 @@ def test_matmul_slice(
         ([20, 20], [20, 20]),
         ([100, 100], [100, 100]),
         ([500, 100], [100, 200]),
+        ([1230, 763], [763, 4]),
+        ([20, 20], [20]),
+        ([100, 100], [100]),
+        ([500, 100], [100]),
+        ([1000, 555], [555]),
     ],
 )
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
 def test_matmul_opt(ashape, bshape, dtype):
-    params = ia.matmul_params(ashape[0], ashape[1], bshape[1], l2_size=1024, chunk_size=16 * 1024)
-    achunks, bchunks, ablocks, bblocks = params
+    if len(bshape) == 1:
+        params = ia.matmul_gemv_params(ashape[0], ashape[1], l2_size=1024, chunk_size=16 * 1024)
+    else:
+        params = ia.matmul_gemm_params(
+            ashape[0], ashape[1], bshape[1], l2_size=1024, chunk_size=16 * 1024
+        )
+
+    achunks, ablocks, bchunks, bblocks = params
 
     astore = ia.Store(achunks, ablocks)
     a = ia.linspace(ashape, -10, 1, dtype=dtype, store=astore)
@@ -263,6 +274,6 @@ def test_matmul_opt(ashape, bshape, dtype):
 
     cn = np.matmul(an, bn)
 
-    rtol = 1e-6 if dtype == np.float32 else 1e-14
+    rtol = 1e-5 if dtype == np.float32 else 1e-12
 
     np.testing.assert_allclose(cn, cn_2, rtol=rtol)

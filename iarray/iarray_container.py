@@ -907,17 +907,80 @@ def mean(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwa
 # Linear Algebra
 
 
-def opt_gemv(a: IArray, b: IArray, use_mkl: bool = True, cfg=None, **kwargs):
+def opt_gemv(a: IArray, b: IArray, cfg=None, **kwargs):
     shape = (a.shape[0], b.shape[1]) if b.ndim == 2 else (a.shape[0],)
 
     if cfg is None:
         cfg = ia.get_config()
 
     with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
-        return ext.opt_gemv(cfg, a, b, use_mkl)
+        return ext.opt_gemv(cfg, a, b)
 
 
-def matmul_params(M, K, N, itemsize=8, l2_size=512 * 1024, chunk_size=128 * 1024 * 1024):
+def matmul_gemv_params(M, N, itemsize=8, l2_size=512 * 1024, chunk_size=128 * 1024 * 1024):
+    """
+    Given a matmul operation A * b = c, it computes the chunks and the blocks of the operands
+    (A and b) to use an optimized version of the matmul algorithm.
+
+    Parameters
+    ----------
+    M: int
+    Specifies the number of rows of the matrix A and of the matrix C. M must be at least zero.
+    N: int
+    Specifies the number of columns of the matrix A and the number of rows of the vector b.
+    The size of each item.
+    l2_size: int
+    The size of the l2 cache. It is used to compute the size of the blocks.
+    chunk_size: int
+    The maximum chunksize allowed. It is used to compute the size of the chunks.
+
+    Returns
+    -------
+    params: tuple
+    A tuple specifying the chunks and the blocks of the matmul operands A and b
+    (A_chunks, A_blocks, b_chunks, b_blocks).
+    """
+    l2_nelem = l2_size // itemsize
+    block_nelem_dim = int(-1 + np.sqrt(1 + l2_nelem))
+
+    n_block = block_nelem_dim
+    if n_block > N:
+        n_block = N
+
+    m_block = block_nelem_dim
+    if m_block > M:
+        m_block = M
+
+    chunk_nelem = chunk_size // itemsize
+    chunk_nelem_dim = int(np.sqrt(chunk_nelem))
+
+    n_chunk = chunk_nelem_dim
+    if n_chunk % n_block != 0:
+        n_chunk = (n_chunk // n_block + 1) * n_block
+    if n_chunk > N:
+        if N % n_block == 0:
+            n_chunk = N
+        else:
+            n_chunk = (N // n_block + 1) * n_block
+
+    m_chunk = chunk_nelem_dim
+    if m_chunk % m_block != 0:
+        m_chunk = (m_chunk // m_block + 1) * m_block
+    if m_chunk > M:
+        if M % m_block == 0:
+            m_chunk = M
+        else:
+            m_chunk = (M // m_block + 1) * m_block
+
+    a_chunks = (m_chunk, n_chunk)
+    a_blocks = (m_block, n_block)
+    b_chunks = (n_chunk,)
+    b_blocks = (n_block,)
+
+    return a_chunks, a_blocks, b_chunks, b_blocks
+
+
+def matmul_gemm_params(M, K, N, itemsize=8, l2_size=512 * 1024, chunk_size=128 * 1024 * 1024):
     """
     Given a matmul operation A * B = C, it computes the chunks and the blocks of the operands
     (A and B) to use an optimized version of the matmul algorithm.
@@ -1084,10 +1147,10 @@ def opt_gemm(a: IArray, b: IArray, ott_b=False, cfg=None, **kwargs):
             with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
                 if not ott_b:
                     print("optimized gemm (a)...")
-                    return ext.opt_gemm3(cfg, a, b)
+                    return ext.opt_gemm_a(cfg, a, b)
                 else:
                     print("optimized gemm (b)... ")
-                    return ext.opt_gemm2(cfg, a, b)
+                    return ext.opt_gemm_b(cfg, a, b)
         else:
             print("optimized matmul...")
             with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
@@ -1131,20 +1194,27 @@ def matmul(a: IArray, b: IArray, cfg=None, **kwargs):
         and a.chunks[0] % a.blocks[0] == 0
         and a.chunks[1] % a.blocks[1] == 0
         and b.chunks[0] % b.blocks[0] == 0
-        and b.chunks[1] % b.blocks[1] == 0
         and a.chunks[1] == b.chunks[0]
         and a.blocks[1] == a.blocks[0]
         and "chunks" not in kwargs
         and "blocks" not in kwargs
     ):
-        kwargs["chunks"] = (a.chunks[0], b.chunks[1])
-        kwargs["blocks"] = (a.blocks[0], b.blocks[1])
+        if b.ndim == 1:
+            kwargs["chunks"] = (a.chunks[0],)
+            kwargs["blocks"] = (a.blocks[0],)
 
-        with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
-            return ext.opt_gemm(cfg, a, b)
-    else:
-        with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
-            return ext.matmul(cfg, a, b)
+            with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
+                return ext.opt_gemv(cfg, a, b)
+
+        elif b.ndim == 2 and b.chunks[1] % b.blocks[1] == 0:
+            kwargs["chunks"] = (a.chunks[0], b.chunks[1])
+            kwargs["blocks"] = (a.blocks[0], b.blocks[1])
+
+            with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
+                return ext.opt_gemm(cfg, a, b)
+
+    with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
+        return ext.matmul(cfg, a, b)
 
 
 def transpose(a: IArray, cfg=None, **kwargs):

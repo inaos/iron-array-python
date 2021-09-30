@@ -322,7 +322,6 @@ cdef extern from "libiarray/iarray.h":
     ina_rc_t iarray_opt_gemv(iarray_context_t *ctx,
                                   iarray_container_t *a,
                                   iarray_container_t *b,
-                                  bool use_mkl,
                                   iarray_storage_t *store,
                                   iarray_container_t **result)
 
@@ -332,13 +331,13 @@ cdef extern from "libiarray/iarray.h":
                                   iarray_storage_t *store,
                                   iarray_container_t **result)
 
-    ina_rc_t iarray_opt_gemm2(iarray_context_t *ctx,
+    ina_rc_t iarray_opt_gemm_b(iarray_context_t *ctx,
                                   iarray_container_t *a,
                                   iarray_container_t *b,
                                   iarray_storage_t *store,
                                   iarray_container_t **result)
 
-    ina_rc_t iarray_opt_gemm3(iarray_context_t *ctx,
+    ina_rc_t iarray_opt_gemm_a(iarray_context_t *ctx,
                                   iarray_container_t *a,
                                   iarray_container_t *b,
                                   iarray_storage_t *store,

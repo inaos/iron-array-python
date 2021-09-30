@@ -6,33 +6,41 @@ import numpy as np
 
 _ = ia.set_config(clevel=1, codec=ia.Codecs.LZ4, btune=False, nthreads=8, dtype=np.float64, seed=0)
 
-shape = (25000, 13859)
-# wia = ia.random.normal(shape, 3, 2, chunks=(1024, 1024), blocks=(128, 128), contiguous=True, urlpath="dense.iarray", fp_mantissa_bits=3)
+shape = (50_000, 13_859)
 
-wia = ia.load("dense.iarray")
-print(wia.info)
+params = ia.matmul_gemv_params(shape[0], shape[1], l2_size=512 * 1024)
+a_chunks, a_blocks, b_chunks, b_blocks = params
 
-w = wia.data
+aia = ia.random.normal(
+    shape,
+    3,
+    2,
+    chunks=a_chunks,
+    blocks=a_blocks,
+    contiguous=True,
+    urlpath="dense.iarray",
+    mode="w",
+    fp_mantissa_bits=3,
+)
 
-bia = ia.linspace((wia.shape[1],), 2, 10, chunks=(wia.chunks[1],), blocks=(wia.blocks[1],))
+aia = ia.load("dense.iarray")
+print(aia.info)
 
-# b[256:512] = 0
+a = aia.data
+
+bia = ia.linspace((aia.shape[1],), 2, 10, chunks=b_chunks, blocks=b_blocks)
+b = bia.data
+
 t0 = time()
-c = w.dot(bia.data)
+c = a.dot(b)
 t1 = time()
 print(f"numpy: {t1 - t0:.5f} s")
 
 t0 = time()
-cia = ia.opt_gemv(wia, bia, use_mkl=False, chunks=(wia.chunks[0],), blocks=(wia.blocks[0],))
-t1 = time()
-
-print(f"iarray (gemv): {t1 - t0:.5f} s")
-
-t0 = time()
-cia2 = ia.matmul(wia, bia, chunks=(wia.chunks[0],), blocks=(wia.blocks[0],))
+cia2 = ia.matmul(aia, bia)
 t1 = time()
 
 print(f"iarray: {t1 - t0:.5f} s")
 
 
-np.testing.assert_allclose(cia.data, c, rtol=1e-10 if w.dtype == np.float64 else 1e-4)
+np.testing.assert_allclose(cia2.data, c, rtol=1e-10 if a.dtype == np.float64 else 1e-4)

@@ -1174,7 +1174,7 @@ def matmul(cfg, a, b):
     return ia.IArray(ctx, c_c)
 
 
-def opt_gemv(cfg, a, b, use_mkl):
+def opt_gemv(cfg, a, b):
     ctx = Context(cfg)
     cdef ciarray.iarray_container_t *a_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(a.to_capsule(), "iarray_container_t*")
     cdef ciarray.iarray_container_t *b_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(b.to_capsule(), "iarray_container_t*")
@@ -1184,7 +1184,7 @@ def opt_gemv(cfg, a, b, use_mkl):
     cdef ciarray.iarray_storage_t store_
     set_storage(cfg.store, &store_)
 
-    iarray_check(ciarray.iarray_opt_gemv(ctx_, a_, b_, use_mkl, &store_, &c))
+    iarray_check(ciarray.iarray_opt_gemv(ctx_, a_, b_, &store_, &c))
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     return ia.IArray(ctx, c_c)
@@ -1206,7 +1206,7 @@ def opt_gemm(cfg, a, b):
     return ia.IArray(ctx, c_c)
 
 
-def opt_gemm2(cfg, a, b):
+def opt_gemm_b(cfg, a, b):
     ctx = Context(cfg)
     cdef ciarray.iarray_container_t *a_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(a.to_capsule(), "iarray_container_t*")
     cdef ciarray.iarray_container_t *b_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(b.to_capsule(), "iarray_container_t*")
@@ -1216,13 +1216,13 @@ def opt_gemm2(cfg, a, b):
     cdef ciarray.iarray_storage_t store_
     set_storage(cfg.store, &store_)
 
-    iarray_check(ciarray.iarray_opt_gemm2(ctx_, a_, b_, &store_, &c))
+    iarray_check(ciarray.iarray_opt_gemm_b(ctx_, a_, b_, &store_, &c))
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     return ia.IArray(ctx, c_c)
 
 
-def opt_gemm3(cfg, a, b):
+def opt_gemm_a(cfg, a, b):
     ctx = Context(cfg)
     cdef ciarray.iarray_container_t *a_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(a.to_capsule(), "iarray_container_t*")
     cdef ciarray.iarray_container_t *b_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(b.to_capsule(), "iarray_container_t*")
@@ -1232,7 +1232,7 @@ def opt_gemm3(cfg, a, b):
     cdef ciarray.iarray_storage_t store_
     set_storage(cfg.store, &store_)
 
-    iarray_check(ciarray.iarray_opt_gemm3(ctx_, a_, b_, &store_, &c))
+    iarray_check(ciarray.iarray_opt_gemm_a(ctx_, a_, b_, &store_, &c))
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     return ia.IArray(ctx, c_c)
