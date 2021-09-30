@@ -925,20 +925,20 @@ def matmul_gemv_params(M, N, itemsize=8, l2_size=512 * 1024, chunk_size=128 * 10
     Parameters
     ----------
     M: int
-    Specifies the number of rows of the matrix A and of the matrix C. M must be at least zero.
+        Specifies the number of rows of the matrix A and of the matrix C. M must be at least zero.
     N: int
-    Specifies the number of columns of the matrix A and the number of rows of the vector b.
-    The size of each item.
+        Specifies the number of columns of the matrix A and the number of rows of the vector b.
+        The size of each item.
     l2_size: int
-    The size of the l2 cache. It is used to compute the size of the blocks.
+        The size of the l2 cache. It is used to compute the size of the blocks.
     chunk_size: int
-    The maximum chunksize allowed. It is used to compute the size of the chunks.
+        The maximum chunksize allowed. It is used to compute the size of the chunks.
 
     Returns
     -------
     params: tuple
-    A tuple specifying the chunks and the blocks of the matmul operands A and b
-    (A_chunks, A_blocks, b_chunks, b_blocks).
+        A tuple specifying the chunks and the blocks of the matmul operands A and b
+        (A_chunks, A_blocks, b_chunks, b_blocks).
     """
     l2_nelem = l2_size // itemsize
     block_nelem_dim = int(-1 + np.sqrt(1 + l2_nelem))
@@ -988,25 +988,25 @@ def matmul_gemm_params(M, K, N, itemsize=8, l2_size=512 * 1024, chunk_size=128 *
     Parameters
     ----------
     M: int
-    Specifies the number of rows of the matrix A and of the matrix C. M must be at least zero.
+        Specifies the number of rows of the matrix A and of the matrix C. M must be at least zero.
     K: int
-    Specifies the number of columns of the matrix A and the number of rows of the matrix B.
-    K must be at least zero.
+        Specifies the number of columns of the matrix A and the number of rows of the matrix B.
+        K must be at least zero.
     N: int
-    Specifies the number of columns of the matrix B and the number of columns of the matrix C.
-    N must be at least zero.
+        Specifies the number of columns of the matrix B and the number of columns of the matrix C.
+        N must be at least zero.
     itemsize: int
-    The size of each item.
+        The size of each item.
     l2_size: int
-    The size of the l2 cache. It is used to compute the size of the blocks.
+        The size of the l2 cache. It is used to compute the size of the blocks.
     chunk_size: int
-    The maximum chunksize allowed. It is used to compute the size of the chunks.
+        The maximum chunksize allowed. It is used to compute the size of the chunks.
 
     Returns
     -------
     params: tuple
-    A tuple specifying the chunks and the blocks of the matmul operands A and B
-    (A_chunks, A_blocks, B_chunks, B_blocks).
+        A tuple specifying the chunks and the blocks of the matmul operands A and B
+        (A_chunks, A_blocks, B_chunks, B_blocks).
     """
     l2_nelem = l2_size // itemsize
     block_nelem = l2_nelem // 3
