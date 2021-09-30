@@ -127,10 +127,8 @@ from .config_params import (
 
 from .iarray_container import (
     IArray,
-    opt_gemv,
-    opt_gemm,
-    opt_gemm_params,
-    matmul_params,
+    matmul_gemm_params,
+    matmul_gemv_params,
     matmul,
     transpose,
     # reductions

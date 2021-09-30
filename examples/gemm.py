@@ -10,7 +10,7 @@ nreps = 3
 
 dtype = np.dtype(np.float32)
 
-params = ia.matmul_params(M, K, N, itemsize=dtype.itemsize, l2_size=512 * 1024)
+params = ia.matmul_gemm_params(M, K, N, itemsize=dtype.itemsize, l2_size=512 * 1024)
 a_chunks, a_blocks, b_chunks, b_blocks = params
 
 
