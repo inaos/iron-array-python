@@ -194,3 +194,23 @@ def numpy2iarray(arr: np.ndarray, cfg: ia.Config = None, **kwargs) -> ia.IArray:
     with ia.config(shape=arr.shape, cfg=cfg, **kwargs) as cfg:
         dtshape = ia.DTShape(arr.shape, cfg.dtype)
         return ext.numpy2iarray(cfg, arr, dtshape)
+
+# File system utilities
+def remove(urlpath):
+    """Permanently remove the file or the directory given by `urlpath`.
+
+    Parameters
+    ----------
+    urlpath: String
+        The path of the directory or file.
+
+    Returns
+    -------
+    None
+    """
+    if urlpath is not None:
+        if os.path.exists(urlpath):
+            if os.path.isdir(urlpath):
+                shutil.rmtree(urlpath)
+            else:
+                os.remove(urlpath)

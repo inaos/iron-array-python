@@ -3,17 +3,17 @@ import iarray as ia
 
 
 @pytest.mark.parametrize(
-    "clevel, codec, filters, chunks, blocks, contiguous",
+    "clevel, codec, filters, chunks, blocks, contiguous, urlpath",
     [
-        (0, ia.Codec.ZSTD, [ia.Filter.SHUFFLE], None, None, False),
-        (1, ia.Codec.BLOSCLZ, [ia.Filter.SHUFFLE], [50, 50], [20, 20], True),
-        (9, ia.Codec.ZSTD, [ia.Filter.SHUFFLE, ia.Filter.DELTA], [50, 50], [20, 20], False),
-        (6, ia.Codec.ZSTD, [ia.Filter.SHUFFLE], [100, 50], [50, 20], False),
-        (0, ia.Codec.ZSTD, [ia.Filter.SHUFFLE], None, None, False),
+        (0, ia.Codecs.ZSTD, [ia.Filters.SHUFFLE], None, None, False, None),
+        (1, ia.Codecs.BLOSCLZ, [ia.Filters.SHUFFLE], [50, 50], [20, 20], True, None),
+        (9, ia.Codecs.ZSTD, [ia.Filters.SHUFFLE, ia.Filters.DELTA], [50, 50], [20, 20], False, b"test_config_params_sparse.iarr"),
+        (6, ia.Codecs.ZSTD, [ia.Filters.SHUFFLE], [100, 50], [50, 20], True, b"test_config_params_contiguous.iarr"),
+        (0, ia.Codecs.ZSTD, [ia.Filters.SHUFFLE], None, None, False, None),
     ],
 )
-def test_global_config(clevel, codec, filters, chunks, blocks, contiguous):
-    store = ia.Store(chunks, blocks, contiguous=contiguous)
+def test_global_config(clevel, codec, filters, chunks, blocks, contiguous, urlpath):
+    store = ia.Store(chunks, blocks, contiguous=contiguous, urlpath=urlpath)
     ia.set_config(clevel=clevel, codec=codec, filters=filters, store=store)
     config = ia.get_config()
     assert config.clevel == clevel
@@ -23,6 +23,7 @@ def test_global_config(clevel, codec, filters, chunks, blocks, contiguous):
     assert store2.chunks == chunks
     assert store2.blocks == blocks
     assert store2.contiguous == contiguous
+    assert store2.urlpath == urlpath
 
     # One can pass store parameters straight to config() dataclass too
     ia.set_config(
@@ -32,6 +33,7 @@ def test_global_config(clevel, codec, filters, chunks, blocks, contiguous):
         chunks=chunks,
         blocks=blocks,
         contiguous=False,
+        urlpath=None,
     )
     config = ia.get_config()
     assert config.clevel == clevel
@@ -41,6 +43,7 @@ def test_global_config(clevel, codec, filters, chunks, blocks, contiguous):
     assert store2.chunks == chunks
     assert store2.blocks == blocks
     assert store2.contiguous == False
+    assert store2.urlpath == None
 
     # Or, we can set defaults via Config (for better auto-completion)
     cfg = ia.Config(
@@ -50,6 +53,7 @@ def test_global_config(clevel, codec, filters, chunks, blocks, contiguous):
         chunks=chunks,
         blocks=blocks,
         contiguous=False,
+        urlpath=None,
     )
     ia.set_config(cfg)
     config = ia.get_config()
@@ -60,6 +64,7 @@ def test_global_config(clevel, codec, filters, chunks, blocks, contiguous):
     assert store2.chunks == chunks
     assert store2.blocks == blocks
     assert store2.contiguous == False
+    assert store2.urlpath == None
 
     # Or, we can use a mix of Config and keyword args
     cfg = ia.Config(
@@ -67,6 +72,7 @@ def test_global_config(clevel, codec, filters, chunks, blocks, contiguous):
         codec=codec,
         blocks=blocks,
         contiguous=False,
+        urlpath=urlpath
     )
     ia.set_config(cfg, filters=filters, chunks=chunks)
     config = ia.get_config()
@@ -78,6 +84,7 @@ def test_global_config(clevel, codec, filters, chunks, blocks, contiguous):
     assert store2.chunks == chunks
     assert store2.blocks == blocks
     assert store2.contiguous == False
+    assert store2.urlpath == urlpath
 
 
 @pytest.mark.parametrize(

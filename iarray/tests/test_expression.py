@@ -6,7 +6,7 @@ import numpy as np
 
 # Expression
 @pytest.mark.parametrize(
-    "method, shape, chunks, blocks, dtype, expression",
+    "method, shape, chunks, blocks, dtype, expression, xcontiguous, xurlpath, ycontiguous, yurlpath",
     [
         (
             ia.Eval.ITERBLOSC,
@@ -15,9 +15,13 @@ import numpy as np
             [10, 10],
             np.float64,
             "cos(x)",
+            True,
+            "test_expression_xcontiguous.iarr",
+            True,
+            "test_expression_ycontiguous.iarr",
         ),  # TODO: fix this
-        (ia.Eval.ITERBLOSC, [100, 100], [10, 99], [4, 12], np.float64, "x"),
-        (ia.Eval.ITERBLOSC, [1000], [110], [55], np.float32, "x"),
+        (ia.Eval.ITERBLOSC, [100, 100], [10, 99], [4, 12], np.float64, "x", False, None, False, None),
+        (ia.Eval.ITERBLOSC, [1000], [110], [55], np.float32, "x", True, None, True, None),
         (
             ia.Eval.ITERBLOSC,
             [1000],
@@ -25,6 +29,10 @@ import numpy as np
             [30],
             np.float64,
             "(cos(x) - 1.35) * (sin(x) - 4.45) * tan(x - 8.5)",
+            False,
+            "test_expression_xsparse.iarr",
+            False,
+            "test_expression_ysparse.iarr",
         ),
         (
             ia.Eval.AUTO,
@@ -33,6 +41,10 @@ import numpy as np
             [25],
             np.float64,
             "(cos(x) - 1.35) * (sin(x) - 4.45) * tan(x - 8.5)",
+            True,
+            None,
+            False,
+            "test_expression_ysparse.iarr",
         ),
         (
             ia.Eval.ITERCHUNK,
@@ -41,6 +53,10 @@ import numpy as np
             [77],
             np.float32,
             "(abs(-x) - 1.35) * ceil(x) * floor(x - 8.5)",
+            False,
+            None,
+            True,
+            None,
         ),
         (
             ia.Eval.ITERBLOSC,
@@ -49,6 +65,10 @@ import numpy as np
             [12, 16, 8],
             np.float64,
             "sinh(x) + (cosh(x) - 1.35) - tanh(x + .2)",
+            True,
+            "test_expression_xcontiguous.iarr",
+            True,
+            None,
         ),
         (
             ia.Eval.ITERBLOSC,
@@ -57,6 +77,10 @@ import numpy as np
             [30],
             np.float64,
             "sinh(x) + (cosh(x) - 1.35) - tanh(x + .2)",
+            True,
+            "test_expression_xcontiguous.iarr",
+            False,
+            "test_expression_ysparse.iarr",
         ),
         (
             ia.Eval.ITERCHUNK,
@@ -65,6 +89,10 @@ import numpy as np
             [3, 4, 3],
             np.float64,
             "asin(x) + (acos(x) - 1.35) - atan(x + .2)",
+            False,
+            None,
+            True,
+            "test_expression_ycontiguous.iarr",
         ),
         (
             ia.Eval.ITERCHUNK,
@@ -73,9 +101,13 @@ import numpy as np
             [3, 4, 3],
             np.float64,
             "arcsin(x) + (arccos(x) - 1.35) - arctan(x + .2)",
+            True,
+            None,
+            True,
+            "test_expression_ycontiguous.iarr",
         ),  # check NumPy naming convention for ufuncs
-        (ia.Eval.AUTO, [1000], None, None, np.float64, "exp(x) + (log(x) - 1.35) - log10(x + .2)"),
-        (ia.Eval.ITERCHUNK, [1000], None, None, np.float32, "sqrt(x) + atan2(x, x) + pow(x, x)"),
+        (ia.Eval.AUTO, [1000], None, None, np.float64, "exp(x) + (log(x) - 1.35) - log10(x + .2)", True, None, False, None),
+        (ia.Eval.ITERCHUNK, [1000], None, None, np.float32, "sqrt(x) + atan2(x, x) + pow(x, x)", False, None, True, None),
         (
             ia.Eval.AUTO,
             [1000],
@@ -83,8 +115,12 @@ import numpy as np
             None,
             np.float32,
             "sqrt(x) + arctan2(x, x) + power(x, x)",
+            False,
+            "test_expression_xsparse.iarr",
+            True,
+            "test_expression_ycontiguous.iarr",
         ),  # NumPy conventions
-        (ia.Eval.AUTO, [100, 100], None, None, np.float64, "(x - cos(1)) * 2"),
+        (ia.Eval.AUTO, [100, 100], None, None, np.float64, "(x - cos(1)) * 2", True, None, False, "test_expression_ysparse.iarr"),
         (
             ia.Eval.ITERCHUNK,
             [8, 6, 7, 4, 5],
@@ -92,6 +128,10 @@ import numpy as np
             None,
             np.float32,
             "(x - cos(y)) * (sin(x) + y) + 2 * x + y",
+            False,
+            "test_expression_xsparse.iarr",
+            True,
+            None,
         ),
         (
             ia.Eval.ITERBLOSC,
@@ -100,6 +140,10 @@ import numpy as np
             [4, 3, 3, 4, 5],
             np.float64,
             "(x - cos(y)) * (sin(x) + y) + 2 * x + y",
+            False,
+            None,
+            False,
+            "test_expression_ysparse.iarr",
         ),
         (
             ia.Eval.ITERBLOSC,
@@ -108,22 +152,33 @@ import numpy as np
             [4, 3, 3, 4, 5],
             np.float64,
             "(x - cos(0.5)) * (sin(.1) + y) + 2 * x + y",
+            True,
+            "test_expression_xcontiguous.iarr",
+            False,
+            "test_expression_ysparse.iarr",
         ),
     ],
 )
-def test_expression(method, shape, chunks, blocks, dtype, expression):
+def test_expression(method, shape, chunks, blocks, dtype, expression, xcontiguous, xurlpath, ycontiguous, yurlpath):
     # The ranges below are important for not overflowing operations
+    ia.remove(xurlpath)
+    ia.remove(yurlpath)
     if chunks is None:
-        store = ia.Store(plainbuffer=True)
+        xstore = ia.Store(plainbuffer=True)
+        ystore = ia.Store(plainbuffer=True)
     else:
-        store = ia.Store(chunks=chunks, blocks=blocks)
+        xstore = ia.Store(chunks=chunks, blocks=blocks, contiguous=xcontiguous, urlpath=xurlpath)
+        ystore = ia.Store(chunks=chunks, blocks=blocks, contiguous=ycontiguous, urlpath=yurlpath)
 
-    x = ia.linspace(shape, 0.1, 0.2, dtype=dtype, store=store)
-    y = ia.linspace(shape, 0, 1, dtype=dtype, store=store)
+    x = ia.linspace(shape, 0.1, 0.2, dtype=dtype, store=xstore)
+    y = ia.linspace(shape, 0, 1, dtype=dtype, store=ystore)
     npx = ia.iarray2numpy(x)
     npy = ia.iarray2numpy(y)
 
-    expr = ia.expr_from_string(expression, {"x": x, "y": y}, store=store, eval_method=method)
+    if (xstore.urlpath is not None):
+        xstore.urlpath = "test_expression_res.iarr"
+        ia.remove(xstore.urlpath)
+    expr = ia.expr_from_string(expression, {"x": x, "y": y}, store=xstore, eval_method=method)
     iout = expr.eval()
     npout = ia.iarray2numpy(iout)
 
@@ -152,7 +207,11 @@ def test_expression(method, shape, chunks, blocks, dtype, expression):
     tol = 1e-6 if dtype is np.float32 else 1e-14
     np.testing.assert_allclose(npout, npout2, rtol=tol, atol=tol)
 
+    ia.remove(xurlpath)
+    ia.remove(yurlpath)
+    ia.remove(xstore.urlpath)
 
+"""
 # ufuncs
 @pytest.mark.parametrize(
     "ufunc, ia_expr",
@@ -332,3 +391,4 @@ def test_expr_fusion(expr, np_expr):
 
         tol = 1e-6 if dtype is np.float32 else 1e-14
         np.testing.assert_allclose(npout, npout2, rtol=tol, atol=tol)
+"""
