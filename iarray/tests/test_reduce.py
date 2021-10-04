@@ -2,7 +2,6 @@ import pytest
 import iarray as ia
 import numpy as np
 from math import isclose
-import os
 
 params_names = "shape, chunks, blocks, axis, dtype"
 params_data = [
@@ -19,8 +18,7 @@ params_data = [
 @pytest.mark.parametrize("urlpath", [None, "test_reduce.iarray"])
 def test_reduce(shape, chunks, blocks, axis, dtype, rfunc, urlpath):
 
-    ia.set_config(contiguous=False)
-
+    ia.remove(urlpath)
     store = ia.Store(chunks, blocks)
     a1 = ia.linspace(shape, -1, 0, dtype=dtype, store=store)
     a2 = a1.data
@@ -35,5 +33,4 @@ def test_reduce(shape, chunks, blocks, axis, dtype, rfunc, urlpath):
     else:
         np.testing.assert_allclose(ia.iarray2numpy(b1), b2, rtol=rtol, atol=0)
 
-    if urlpath:
-        os.remove(urlpath)
+    ia.remove(urlpath)

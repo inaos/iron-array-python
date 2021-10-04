@@ -35,6 +35,7 @@ class Expr(ext.Expression):
             self.cfg = cfg
             super().__init__(self.cfg)
             super().bind_out_properties(dtshape, cfg.store)
+            print(cfg.store)
 
     def eval(self) -> ia.IArray:
         """Evaluate the expression in self.

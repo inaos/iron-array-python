@@ -1,7 +1,6 @@
 import pytest
 import iarray as ia
 import numpy as np
-import os
 
 
 # Test load, open and save
@@ -19,8 +18,7 @@ import os
 def test_load_save(shape, chunks, blocks, dtype, func):
     urlpath = "test_load_save.iarray"
 
-    if os.path.exists(urlpath):
-        os.remove(urlpath)
+    ia.remove(urlpath)
 
     store = ia.Store(chunks, blocks)
     a = ia.linspace(shape, -10, 10, dtype=dtype, store=store)
@@ -33,5 +31,4 @@ def test_load_save(shape, chunks, blocks, dtype, func):
 
     np.testing.assert_almost_equal(an, bn)
 
-    if os.path.exists(urlpath):
-        os.remove(urlpath)
+    ia.remove(urlpath)

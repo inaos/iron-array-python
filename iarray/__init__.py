@@ -177,6 +177,7 @@ from .utils import (
     iarray2numpy,
     numpy2iarray,
     _check_path_mode,
+    remove,
 )
 
 # random constructors (follow NumPy convention)

@@ -308,9 +308,7 @@ class Store:
         'w-' means create (fail if exists).  Default is 'r'.
     contiguous : bool
         If True, the output array will be stored contiguously (as a frame), even when in-memory.  If False
-        (the default), the store will be sparse.  Currently, persistent store only supports
-        the frame format. When in-memory, the array can be in sparse (the default)
-        or contiguous form (frame), depending on this flag.
+        (the default), the store will be sparse.
     plainbuffer : bool
         When True, the output array will be stored on a plain, contiguous buffer, without
         any compression.  This can help faster data sharing among other data containers
@@ -333,7 +331,7 @@ class Store:
         self.mode = (
             self.mode.encode("utf-8") if isinstance(self.mode, str) else self.mode
         )
-        self.contiguous = True if self.urlpath else self.contiguous
+        #self.contiguous = True if self.urlpath else self.contiguous
         if self.plainbuffer:
             if self.chunks is not None or self.blocks is not None:
                 raise ValueError("plainbuffer array does not support neither a chunks nor blocks")
