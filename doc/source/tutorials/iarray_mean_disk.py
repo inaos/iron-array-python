@@ -45,7 +45,7 @@ chunks = precip1.chunks
 blocks = precip1.blocks
 
 store = ia.Store(chunks=precip1.chunks, blocks=precip1.blocks)
-# cfg = ia.Config(nthreads=14, store=store, clevel=1, codec=ia.Codecs.ZSTD, filters=[ia.Filters.BITSHUFFLE])
+# cfg = ia.Config(nthreads=14, store=store, clevel=1, codec=ia.Codec.ZSTD, filters=[ia.Filter.BITSHUFFLE])
 cfg = ia.Config(store=store)
 
 

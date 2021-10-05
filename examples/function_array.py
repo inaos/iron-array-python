@@ -28,7 +28,7 @@ t1 = time()
 print("Time for numexpr evaluation: %.3f" % (t1 - t0))
 
 t0 = time()
-expr = ia.expr_from_string("cos(x)", {"x": ia1}, favor=ia.Favors.SPEED)
+expr = ia.expr_from_string("cos(x)", {"x": ia1}, favor=ia.Favor.SPEED)
 ia2 = expr.eval()
 t1 = time()
 print("Time for iarray evaluation: %.3f (cratio: %.2fx)" % ((t1 - t0), ia2.cratio))
@@ -37,7 +37,7 @@ np3 = ia.iarray2numpy(ia2)
 ia.cmp_arrays(np3, np2, "OK.  Results are the same.")
 
 t0 = time()
-ia3 = ia.cos(ia1).eval(favor=ia.Favors.SPEED)
+ia3 = ia.cos(ia1).eval(favor=ia.Favor.SPEED)
 t1 = time()
 print("Time for iarray via lazy evaluation: %.3f (cratio: %.2fx)" % ((t1 - t0), ia3.cratio))
 

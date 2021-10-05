@@ -11,7 +11,7 @@ blocks = [16 * 1000]
 
 expression = "(x - 1.35) * (x - 4.45) * (x - 8.5)"
 clevel = 5  # compression level
-codec = ia.Codecs.LZ4  # compression codec
+codec = ia.Codec.LZ4  # compression codec
 nthreads = 8  # number of threads for the evaluation and/or compression
 
 plainbuffer = True  # enforce using a plainbuffer

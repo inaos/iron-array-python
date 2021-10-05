@@ -11,7 +11,7 @@ print(f"src chunks: {a.chunks}")
 
 # Do a regular copy changing the parameters
 t0 = time()
-with ia.config(chunks=[2048, 2048], blocks=[256, 256], codec=ia.Codecs.LZ4, clevel=5):
+with ia.config(chunks=[2048, 2048], blocks=[256, 256], codec=ia.Codec.LZ4, clevel=5):
     b = a.copy()
 t1 = time()
 

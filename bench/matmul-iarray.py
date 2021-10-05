@@ -19,7 +19,7 @@ if len(sys.argv) == 1:
 else:
     nthreads = int(sys.argv[1])
 
-codec = ia.Codecs.LZ4
+codec = ia.Codec.LZ4
 clevel = 5
 
 if persistent:

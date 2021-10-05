@@ -29,7 +29,7 @@ else:
 DTYPE = np.float32
 NTHREADS = 8
 CLEVEL = 9
-CODEC = ia.Codecs.LZ4
+CODEC = ia.Codec.LZ4
 
 t_iarray = []
 t_dask = []

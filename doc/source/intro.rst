@@ -129,11 +129,11 @@ Automatic tuning
 ironArray comes with BTune, a sophisticated tuning tool to automatically choose the best codecs or filters that minimizes execution time, compression ratio or a balance among the two (the default).
 Let's suppose that you are doing some computation in a Python script that you want to run as fast as possible; you can tell BTune to optimize things internally with::
 
-    ia.set_config(favor=ia.Favors.SPEED)
+    ia.set_config(favor=ia.Favor.SPEED)
 
 Or, in case you may rather be interested in saving the maximum amount of memory (or disk)::
 
-    ia.set_config(favor=ia.Favors.CRATIO)
+    ia.set_config(favor=ia.Favor.CRATIO)
 
 Only with these small tweaks, you can make ironArray adapt to your needs very easily.  Look here at an example of BTune in action, and how it affects the speed of computation:
 

@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 
 NTHREADS = 8
 CLEVEL = 5
-CODEC = ia.Codecs.LZ4
+CODEC = ia.Codec.LZ4
 
 #ia.set_config(codec=CODEC, clevel=CLEVEL, nthreads=NTHREADS)
 ia.set_config()

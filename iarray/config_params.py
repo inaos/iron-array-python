@@ -120,7 +120,7 @@ class DefaultStore:
 
 
 def default_filters():
-    return [ia.Filters.SHUFFLE]
+    return [ia.Filter.SHUFFLE]
 
 
 @dataclass
@@ -128,11 +128,11 @@ class Defaults(object):
     # Config params
     # Keep in sync the defaults below with Config.__doc__ docstring.
     _config = None
-    codec: ia.Codecs = ia.Codecs.LZ4
+    codec: ia.Codec = ia.Codec.LZ4
     clevel: int = 9
-    favor: ia.Favors = ia.Favors.BALANCE
+    favor: ia.Favor = ia.Favor.BALANCE
     use_dict: bool = False
-    filters: List[ia.Filters] = field(default_factory=default_filters)
+    filters: List[ia.Filter] = field(default_factory=default_filters)
     nthreads: int = 0
     fp_mantissa_bits: int = 0
     eval_method: int = ia.Eval.AUTO
@@ -362,17 +362,17 @@ class Config(ext.Config):
 
     Parameters
     ----------
-    codec : Codecs
-        The codec to be used inside Blosc.  Default is :py:obj:`Codecs.ZSTD <Codecs>`.
+    codec : Codec
+        The codec to be used inside Blosc.  Default is :py:obj:`Codec.ZSTD <Codec>`.
     clevel : int
         The compression level.  It can have values between 0 (no compression) and
         9 (max compression).  Default is 1.
-    favor : Favors
-        What favor when compressing. Possible values are :py:obj:`Favors.SPEED <Favors>`
-        for better speed, :py:obj:`Favors.CRATIO <Favors>` for bettwer compresion ratios
-        and :py:obj:`Favors.BALANCE <Favors>`.  Default is :py:obj:`Favors.BALANCE <Favors>`.
+    favor : Favor
+        What favor when compressing. Possible values are :py:obj:`Favor.SPEED <Favor>`
+        for better speed, :py:obj:`Favor.CRATIO <Favor>` for bettwer compresion ratios
+        and :py:obj:`Favor.BALANCE <Favor>`.  Default is :py:obj:`Favor.BALANCE <Favor>`.
     filters : list
-        The list of filters for Blosc.  Default is [:py:obj:`Filters.BITSHUFFLE <Filters>`].
+        The list of filters for Blosc.  Default is [:py:obj:`Filter.BITSHUFFLE <Filter>`].
     fp_mantissa_bits : int
         The number of bits to be kept in the mantissa in output arrays.  If 0 (the default),
         no precision is capped.  FYI, double precision have 52 bit in mantissa, whereas
@@ -380,7 +380,7 @@ class Config(ext.Config):
         you will be using a compressed store very close as if you were using singles.
     use_dict : bool
         Whether Blosc should use a dictionary for enhanced compression (currently only
-        supported by :py:obj:`Codecs.ZSTD <Codecs>`).  Default is False.
+        supported by :py:obj:`Codec.ZSTD <Codec>`).  Default is False.
     nthreads : int
         The number of threads for internal ironArray operations.  This number can be
         silently capped to be the number of *logical* cores in the system.  If 0
@@ -409,10 +409,10 @@ class Config(ext.Config):
     config
     """
 
-    codec: ia.Codecs = field(default_factory=defaults._codec)
+    codec: ia.Codec = field(default_factory=defaults._codec)
     clevel: int = field(default_factory=defaults._clevel)
     favor: int = field(default_factory=defaults._favor)
-    filters: List[ia.Filters] = field(default_factory=defaults._filters)
+    filters: List[ia.Filter] = field(default_factory=defaults._filters)
     fp_mantissa_bits: int = field(default_factory=defaults._fp_mantissa_bits)
     use_dict: bool = field(default_factory=defaults._use_dict)
     nthreads: int = field(default_factory=defaults._nthreads)
@@ -456,17 +456,17 @@ class Config(ext.Config):
             ncores = get_ncores(0)
             # Experiments say that nthreads is optimal when is ~1.5x the number of logical cores
             self.nthreads = ncores // 2 + ncores // 4
-        if self.favor == ia.Favors.SPEED:
-            self.codec = ia.Codecs.LZ4 if self.codec == Defaults.codec else self.codec
+        if self.favor == ia.Favor.SPEED:
+            self.codec = ia.Codec.LZ4 if self.codec == Defaults.codec else self.codec
             self.clevel = 9 if self.clevel == Defaults.clevel else self.clevel
             self.filters = (
-                [ia.Filters.SHUFFLE] if self.filters == default_filters() else self.filters
+                [ia.Filter.SHUFFLE] if self.filters == default_filters() else self.filters
             )
-        elif self.favor == ia.Favors.CRATIO:
-            self.codec = ia.Codecs.ZSTD if self.codec == Defaults.codec else self.codec
+        elif self.favor == ia.Favor.CRATIO:
+            self.codec = ia.Codec.ZSTD if self.codec == Defaults.codec else self.codec
             self.clevel = 5 if self.clevel == Defaults.clevel else self.clevel
             self.filters = (
-                [ia.Filters.BITSHUFFLE] if self.filters == default_filters() else self.filters
+                [ia.Filter.BITSHUFFLE] if self.filters == default_filters() else self.filters
             )
 
         # Initialize the Cython counterpart
@@ -665,8 +665,8 @@ if __name__ == "__main__":
         assert cfg_new.store.contiguous is True
         assert get_config().clevel == 0
 
-    cfg = ia.Config(codec=ia.Codecs.BLOSCLZ)
-    cfg2 = ia.set_config(cfg=cfg, codec=ia.Codecs.LIZARD)
+    cfg = ia.Config(codec=ia.Codec.BLOSCLZ)
+    cfg2 = ia.set_config(cfg=cfg, codec=ia.Codec.LIZARD)
     print("Standalone config:", cfg)
     print("Global config", cfg2)
 
