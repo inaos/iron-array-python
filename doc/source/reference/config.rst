@@ -43,8 +43,8 @@ Enumerated classes
    :toctree: autofiles/config/
    :nosignatures:
 
-   Codecs
-   Filters
+   Codec
+   Filter
    Eval
    RandomGen
 

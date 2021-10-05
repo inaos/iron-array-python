@@ -29,7 +29,7 @@ dtype = np.float64
 nthreads = 8
 
 # Set global defaults
-#ia.set_config(chunks=chunks, blocks=blocks, favor=ia.Favors.SPEED, dtype=dtype)
+#ia.set_config(chunks=chunks, blocks=blocks, favor=ia.Favor.SPEED, dtype=dtype)
 ia.set_config()
 # Output required precision (in significant bits for the mantissa)
 # out_prec = 0

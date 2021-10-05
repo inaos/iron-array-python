@@ -38,7 +38,7 @@ else:
     lib1 = cdll.LoadLibrary(os.path.join(install_dir, "iarray.dll"))
 
 # Compression codecs
-class Codecs(Enum):
+class Codec(Enum):
     BLOSCLZ = 0
     LZ4 = 1
     LZ4HC = 2
@@ -47,8 +47,8 @@ class Codecs(Enum):
     LIZARD = 6
 
 
-# Filters
-class Filters(Enum):
+# Filter
+class Filter(Enum):
     NOFILTER = 0
     SHUFFLE = 1
     BITSHUFFLE = 2
@@ -56,8 +56,8 @@ class Filters(Enum):
     TRUNC_PREC = 8
 
 
-# Favors.  Select to favor compression speed, compression ratio or a balance between them.
-class Favors(Enum):
+# Favor.  Select to favor compression speed, compression ratio or a balance between them.
+class Favor(Enum):
     BALANCE = 0
     SPEED = 1
     CRATIO = 2

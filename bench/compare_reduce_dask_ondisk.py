@@ -17,7 +17,7 @@ DTYPE = np.float64
 NTHREADS = 10
 # Using a codec like BLOSCLZ and medium clevel is better here,
 # but let's use LZ4 for uniformity
-CODEC = ia.Codecs.LZ4
+CODEC = ia.Codec.LZ4
 CLEVEL = 6
 
 FUNCS = ["max", "min", "sum", "prod", "mean"]

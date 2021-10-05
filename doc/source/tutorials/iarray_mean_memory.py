@@ -16,9 +16,9 @@ blocks = (45, 4, 180)
 
 # store = ia.Store(contiguous=contiguous, chunks=chunks, blocks=blocks)
 store = ia.Store(contiguous=contiguous)
-# cfg = ia.Config(nthreads=nthreads, store=store, clevel=1, codec=ia.Codecs.ZSTD, filters=[ia.Filters.BITSHUFFLE])
-# cfg = ia.Config(store=store, clevel=1, codec=ia.Codecs.ZSTD, filters=[ia.Filters.BITSHUFFLE])
-# cfg = ia.Config(nthreads=0, store=store, clevel=1, codec=ia.Codecs.ZSTD, filters=[ia.Filters.BITSHUFFLE])
+# cfg = ia.Config(nthreads=nthreads, store=store, clevel=1, codec=ia.Codec.ZSTD, filters=[ia.Filter.BITSHUFFLE])
+# cfg = ia.Config(store=store, clevel=1, codec=ia.Codec.ZSTD, filters=[ia.Filter.BITSHUFFLE])
+# cfg = ia.Config(nthreads=0, store=store, clevel=1, codec=ia.Codec.ZSTD, filters=[ia.Filter.BITSHUFFLE])
 cfg = ia.Config(store=store)
 print("cfg:", cfg)
 

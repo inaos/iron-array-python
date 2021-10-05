@@ -22,7 +22,7 @@ def mkl_set_num_threads(cores):
 DTYPE = np.float32
 NTHREADS = 1
 CLEVEL = 9
-CODEC = ia.Codecs.LZ4
+CODEC = ia.Codec.LZ4
 
 t_iarray = []
 t_dask = []

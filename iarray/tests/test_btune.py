@@ -15,11 +15,11 @@ import iarray as ia
 def test_btune(start, stop, shape, chunks, blocks, dtype):
 
     store = ia.Store(chunks, blocks)
-    with ia.config(favor=ia.Favors.SPEED, btune=True):
+    with ia.config(favor=ia.Favor.SPEED, btune=True):
         a = ia.linspace(shape, start, stop, dtype=dtype, store=store)
         c1 = a.cratio
 
-    with ia.config(favor=ia.Favors.CRATIO, btune=True):
+    with ia.config(favor=ia.Favor.CRATIO, btune=True):
         a = ia.linspace(shape, start, stop, dtype=dtype, store=store)
         c2 = a.cratio
 

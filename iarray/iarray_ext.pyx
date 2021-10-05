@@ -195,7 +195,7 @@ cdef class Config:
         for f in filters:
             filter_flags |= f.value
         if fp_mantissa_bits > 0:
-            filter_flags |= ia.Filters.TRUNC_PREC.value
+            filter_flags |= ia.Filter.TRUNC_PREC.value
         self.config.filter_flags = filter_flags
 
         if eval_method == ia.Eval.AUTO:
@@ -673,18 +673,18 @@ def open(cfg, urlpath):
     ciarray.iarray_get_cfg(ctx_, c, &cfg_)
 
     clevel = cfg_.compression_level
-    codec = ia.Codecs(cfg_.compression_codec)
+    codec = ia.Codec(cfg_.compression_codec)
     mantissa_bits = cfg_.fp_mantissa_bits
 
     filters = []
     if cfg_.filter_flags & ciarray.IARRAY_COMP_TRUNC_PREC:
-        filters.append(ia.Filters.TRUNC_PREC)
+        filters.append(ia.Filter.TRUNC_PREC)
     if cfg_.filter_flags & ciarray.IARRAY_COMP_DELTA:
-        filters.append(ia.Filters.DELTA)
+        filters.append(ia.Filter.DELTA)
     if cfg_.filter_flags & ciarray.IARRAY_COMP_BITSHUFFLE:
-        filters.append(ia.Filters.BITSHUFFLE)
+        filters.append(ia.Filter.BITSHUFFLE)
     if cfg_.filter_flags & ciarray.IARRAY_COMP_SHUFFLE:
-        filters.append(ia.Filters.SHUFFLE)
+        filters.append(ia.Filter.SHUFFLE)
 
     cdef ciarray.iarray_dtshape_t dtshape;
     ciarray.iarray_get_dtshape(ctx_, c, &dtshape)

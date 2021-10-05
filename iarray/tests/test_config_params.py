@@ -5,11 +5,11 @@ import iarray as ia
 @pytest.mark.parametrize(
     "clevel, codec, filters, chunks, blocks, contiguous",
     [
-        (0, ia.Codecs.ZSTD, [ia.Filters.SHUFFLE], None, None, False),
-        (1, ia.Codecs.BLOSCLZ, [ia.Filters.SHUFFLE], [50, 50], [20, 20], True),
-        (9, ia.Codecs.ZSTD, [ia.Filters.SHUFFLE, ia.Filters.DELTA], [50, 50], [20, 20], False),
-        (6, ia.Codecs.ZSTD, [ia.Filters.SHUFFLE], [100, 50], [50, 20], False),
-        (0, ia.Codecs.ZSTD, [ia.Filters.SHUFFLE], None, None, False),
+        (0, ia.Codec.ZSTD, [ia.Filter.SHUFFLE], None, None, False),
+        (1, ia.Codec.BLOSCLZ, [ia.Filter.SHUFFLE], [50, 50], [20, 20], True),
+        (9, ia.Codec.ZSTD, [ia.Filter.SHUFFLE, ia.Filter.DELTA], [50, 50], [20, 20], False),
+        (6, ia.Codec.ZSTD, [ia.Filter.SHUFFLE], [100, 50], [50, 20], False),
+        (0, ia.Codec.ZSTD, [ia.Filter.SHUFFLE], None, None, False),
     ],
 )
 def test_global_config(clevel, codec, filters, chunks, blocks, contiguous):
@@ -83,9 +83,9 @@ def test_global_config(clevel, codec, filters, chunks, blocks, contiguous):
 @pytest.mark.parametrize(
     "favor, filters, chunks, blocks",
     [
-        (ia.Favors.BALANCE, [ia.Filters.BITSHUFFLE], None, None),
-        (ia.Favors.SPEED, [ia.Filters.SHUFFLE], [50, 50], [20, 20]),
-        (ia.Favors.CRATIO, [ia.Filters.BITSHUFFLE], [50, 50], [20, 20]),
+        (ia.Favor.BALANCE, [ia.Filter.BITSHUFFLE], None, None),
+        (ia.Favor.SPEED, [ia.Filter.SHUFFLE], [50, 50], [20, 20]),
+        (ia.Favor.CRATIO, [ia.Filter.BITSHUFFLE], [50, 50], [20, 20]),
     ],
 )
 def test_global_favor(favor, filters, chunks, blocks):
@@ -151,11 +151,11 @@ def test_global_config_dtype(chunks, blocks, shape):
 @pytest.mark.parametrize(
     "clevel, codec, filters, chunks, blocks, plainbuffer",
     [
-        (0, ia.Codecs.ZSTD, [ia.Filters.SHUFFLE], None, None, False),
-        (1, ia.Codecs.BLOSCLZ, [ia.Filters.BITSHUFFLE], [50, 50], [20, 20], True),
-        (9, ia.Codecs.ZSTD, [ia.Filters.SHUFFLE, ia.Filters.DELTA], [50, 50], [20, 20], False),
-        (6, ia.Codecs.ZSTD, [ia.Filters.SHUFFLE], [100, 50], [50, 20], False),
-        (0, ia.Codecs.ZSTD, [ia.Filters.SHUFFLE], None, None, False),
+        (0, ia.Codec.ZSTD, [ia.Filter.SHUFFLE], None, None, False),
+        (1, ia.Codec.BLOSCLZ, [ia.Filter.BITSHUFFLE], [50, 50], [20, 20], True),
+        (9, ia.Codec.ZSTD, [ia.Filter.SHUFFLE, ia.Filter.DELTA], [50, 50], [20, 20], False),
+        (6, ia.Codec.ZSTD, [ia.Filter.SHUFFLE], [100, 50], [50, 20], False),
+        (0, ia.Codec.ZSTD, [ia.Filter.SHUFFLE], None, None, False),
     ],
 )
 def test_config_ctx(clevel, codec, filters, chunks, blocks, plainbuffer):
