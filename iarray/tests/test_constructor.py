@@ -289,4 +289,3 @@ def test_fortran(shape, dtype, contiguous, urlpath):
     np.testing.assert_almost_equal(a_fortran, b.data)
 
     ia.remove(urlpath)
-

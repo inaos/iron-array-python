@@ -163,22 +163,22 @@ def test_expression(method, shape, chunks, blocks, dtype, expression, xcontiguou
     # The ranges below are important for not overflowing operations
     ia.remove(xurlpath)
     ia.remove(yurlpath)
+    ia.remove("test_expression_zarray.iarr")
     if chunks is None:
         xstore = ia.Store(plainbuffer=True)
         ystore = ia.Store(plainbuffer=True)
+        zstore = ia.Store(plainbuffer=True)
     else:
         xstore = ia.Store(chunks=chunks, blocks=blocks, contiguous=xcontiguous, urlpath=xurlpath)
         ystore = ia.Store(chunks=chunks, blocks=blocks, contiguous=ycontiguous, urlpath=yurlpath)
+        zstore = ia.Store(chunks=chunks, blocks=blocks, contiguous=xcontiguous, urlpath="test_expression_zarray.iarr")
 
     x = ia.linspace(shape, 0.1, 0.2, dtype=dtype, store=xstore)
     y = ia.linspace(shape, 0, 1, dtype=dtype, store=ystore)
     npx = ia.iarray2numpy(x)
     npy = ia.iarray2numpy(y)
 
-    if (xstore.urlpath is not None):
-        xstore.urlpath = "test_expression_res.iarr"
-        ia.remove(xstore.urlpath)
-    expr = ia.expr_from_string(expression, {"x": x, "y": y}, store=xstore, eval_method=method)
+    expr = ia.expr_from_string(expression, {"x": x, "y": y}, store=zstore, eval_method=method)
     iout = expr.eval()
     npout = ia.iarray2numpy(iout)
 
@@ -207,51 +207,61 @@ def test_expression(method, shape, chunks, blocks, dtype, expression, xcontiguou
     tol = 1e-6 if dtype is np.float32 else 1e-14
     np.testing.assert_allclose(npout, npout2, rtol=tol, atol=tol)
 
-    ia.remove(xurlpath)
-    ia.remove(yurlpath)
     ia.remove(xstore.urlpath)
+    ia.remove(ystore.urlpath)
+    ia.remove(zstore.urlpath)
 
-"""
+
 # ufuncs
 @pytest.mark.parametrize(
-    "ufunc, ia_expr",
+    "ufunc, ia_expr, xcontiguous, xurlpath, ycontiguous, yurlpath",
     [
-        ("abs(x)", "abs(x)"),
-        ("arccos(x)", "acos(x)"),
-        ("arcsin(x)", "asin(x)"),
-        ("arctan(x)", "atan(x)"),
-        ("arctan2(x, y)", "atan2(x, y)"),
-        ("ceil(x)", "ceil(x)"),
-        ("cos(x)", "cos(x)"),
-        ("cosh(x)", "cosh(x)"),
-        ("exp(x)", "exp(x)"),
-        ("floor(x)", "floor(x)"),
-        ("log(x)", "log(x)"),
-        ("log10(x)", "log10(x)"),
+        ("abs(x)", "abs(x)", True, None, True, None),
+        ("arccos(x)", "acos(x)", False, None, False, None),
+        ("arcsin(x)", "asin(x)", True, "test_expression_xcontiguous.iarr", True, None),
+        ("arctan(x)", "atan(x)", False, "test_expression_xsparse.iarr", True, "test_expression_ycontiguous.iarr"),
+        ("arctan2(x, y)", "atan2(x, y)", True, "test_expression_xcontiguous.iarr", False, "test_expression_ysparse.iarr"),
+        ("ceil(x)", "ceil(x)", False, None, True, None),
+        ("cos(x)", "cos(x)", True, None, False, None),
+        ("cosh(x)", "cosh(x)", True, "test_expression_xcontiguous.iarr", False, None),
+        ("exp(x)", "exp(x)", False, "test_expression_xsparse.iarr", True, "test_expression_ycontiguous.iarr"),
+        ("floor(x)", "floor(x)", False, None, False, None),
+        ("log(x)", "log(x)", True, None, False, None),
+        ("log10(x)", "log10(x)", True, "test_expression_xcontiguous.iarr", False, None),
         # ("negative(x)", "negate(x)"),
-        ("power(x, y)", "pow(x, y)"),
-        ("sin(x)", "sin(x)"),
-        ("sinh(x)", "sinh(x)"),
-        ("sqrt(x)", "sqrt(x)"),
-        ("tan(x)", "tan(x)"),
-        ("tanh(x)", "tanh(x)"),
+        ("power(x, y)", "pow(x, y)", False, "test_expression_xsparse.iarr", False, "test_expression_ysparse.iarr"),
+        ("sin(x)", "sin(x)", True, None, True, None),
+        ("sinh(x)", "sinh(x)", False, None, False, None),
+        ("sqrt(x)", "sqrt(x)", True, "test_expression_xcontiugous.iarr", True, None),
+        ("tan(x)", "tan(x)", True, None, True, "test_expression_ycontiguous.iarr"),
+        ("tanh(x)", "tanh(x)", False, None, False, "test_expression_ysparse.iarr"),
     ],
 )
-def test_ufuncs(ufunc, ia_expr):
+def test_ufuncs(ufunc, ia_expr, xcontiguous, xurlpath, ycontiguous, yurlpath):
     shape = [200, 300]
     chunks = [40, 40]
     bshape = [10, 17]
 
-    store = ia.Store(chunks=chunks, blocks=bshape)
+    xstore = ia.Store(chunks=chunks, blocks=bshape, contiguous=xcontiguous, urlpath=xurlpath)
+    ystore = ia.Store(chunks=chunks, blocks=bshape, contiguous=ycontiguous, urlpath=yurlpath)
+    if yurlpath != None:
+        zstore = ia.Store(chunks=chunks, blocks=bshape, contiguous=ycontiguous, urlpath="test_expression_res.iarr")
+    else:
+        zstore = ystore
+
+    ia.remove(xstore.urlpath)
+    ia.remove(ystore.urlpath)
+    ia.remove(zstore.urlpath)
+
 
     for dtype in np.float64, np.float32:
         # The ranges below are important for not overflowing operations
-        x = ia.linspace(shape, 0.1, 0.9, dtype=dtype, store=store)
-        y = ia.linspace(shape, 0, 1, dtype=dtype, store=store)
+        x = ia.linspace(shape, 0.1, 0.9, dtype=dtype, store=xstore)
+        y = ia.linspace(shape, 0, 1, dtype=dtype, store=ystore)
         npx = ia.iarray2numpy(x)
         npy = ia.iarray2numpy(y)
 
-        expr = ia.expr_from_string(ia_expr, {"x": x, "y": y}, store=store)
+        expr = ia.expr_from_string(ia_expr, {"x": x, "y": y}, store=zstore)
         iout = expr.eval()
         npout = ia.iarray2numpy(iout)
 
@@ -279,42 +289,63 @@ def test_ufuncs(ufunc, ia_expr):
         npout2 = eval("np." + ufunc, {"np": np, "x": npx, "y": npy})  # pure numpy
         np.testing.assert_allclose(npout, npout2, rtol=tol, atol=tol)
 
+        ia.remove(xstore.urlpath)
+        ia.remove(ystore.urlpath)
+        ia.remove(zstore.urlpath)
+
 
 # ufuncs inside of expressions
 @pytest.mark.parametrize(
-    "ufunc",
+    "ufunc, xcontiguous, xurlpath, ycontiguous, yurlpath",
     [
-        "abs",
-        "arccos",
-        "arcsin",
-        "arctan",
-        "arctan2",
-        "ceil",
-        "cos",
-        "cosh",
-        "exp",
-        "floor",
-        "log",
-        "log10",
+        ("abs", True, None, True, None),
+        ("arccos", False, "test_expression_xsparse.iarr", True, None),
+        ("arcsin", False, None, True, "test_expression_ycontiguous.iarr"),
+        ("arctan", False, None, False, None),
+        ("arctan2", True, None, True, "test_expression_ycontiguous.iarr"),
+        ("ceil", False, None, False, "test_expression_ysparse.iarr"),
+        ("cos", True, "test_expression_xcontiguous.iarr", True, "test_expression_ycontiguous.iarr"),
+        ("cosh", True, None, False, None),
+        ("exp", False, None, True, None),
+        ("floor", False, "test_expression_xsparse.iarr", False, "test_expression_ysparse.iarr"),
+        ("log", False, "test_expression_xsparse.iarr", True, "test_expression_ycontiguous.iarr"),
+        ("log10", True, "test_expression_xcontiguous.iarr", False, "test_expression_ysparse.iarr"),
         # "negative",
-        "power",
-        "sin",
-        "sinh",
-        "sqrt",
-        "tan",
-        "tanh",
+        ("power", True, "test_expression_xcontiguous.iarr", True, None),
+        ("sin",  True, "test_expression_xcontiguous.iarr", False, None),
+        ("sinh", True, None, False, "test_expression_ysparse.iarr"),
+        ("sqrt", False, None, True, None),
+        ("tan", False, "test_expression_xsparse.iarr", False, "test_expression_ysparse"),
+        ("tanh", True, None, True, None),
     ],
 )
-def test_expr_ufuncs(ufunc):
+def test_expr_ufuncs(ufunc, xcontiguous, xurlpath, ycontiguous, yurlpath):
     shape = [200, 300]
     cshape = [40, 50]
     bshape = [20, 20]
-    store = ia.Store(chunks=cshape, blocks=bshape)
+
+    xstore = ia.Store(chunks=cshape, blocks=bshape, contiguous=xcontiguous, urlpath=xurlpath)
+    x32store = ia.Store(chunks=cshape, blocks=bshape, contiguous=xcontiguous, urlpath="x32urlpath")
+    if xstore.urlpath is None:
+        x32store.urlpath = None
+    ystore = ia.Store(chunks=cshape, blocks=bshape, contiguous=ycontiguous, urlpath=yurlpath)
+    y32store = ia.Store(chunks=cshape, blocks=bshape, contiguous=ycontiguous, urlpath="y32urlpath")
+    if ystore.urlpath is None:
+        y32store.urlpath = None
+
+    ia.remove(xstore.urlpath)
+    ia.remove(ystore.urlpath)
+    ia.remove(x32store.urlpath)
+    ia.remove(y32store.urlpath)
 
     for dtype in np.float64, np.float32:
         # The ranges below are important for not overflowing operations
-        x = ia.linspace(shape, 0.1, 0.9, dtype=dtype, store=store)
-        y = ia.linspace(shape, 0.5, 1, dtype=dtype, store=store)
+        if dtype == np.float32:
+            x = ia.linspace(shape, 0.1, 0.9, dtype=dtype, store=x32store)
+            y = ia.linspace(shape, 0.5, 1, dtype=dtype, store=y32store)
+        else:
+            x = ia.linspace(shape, 0.1, 0.9, dtype=dtype, store=xstore)
+            y = ia.linspace(shape, 0.5, 1, dtype=dtype, store=ystore)
 
         # NumPy computation
         npx = ia.iarray2numpy(x)
@@ -335,47 +366,160 @@ def test_expr_ufuncs(ufunc):
         tol = 1e-5 if dtype is np.float32 else 1e-13
         np.testing.assert_allclose(npout, npout2, rtol=tol, atol=tol)
 
+    ia.remove(xstore.urlpath)
+    ia.remove(ystore.urlpath)
+    ia.remove(x32store.urlpath)
+    ia.remove(y32store.urlpath)
+
 
 # Different operand fusions inside expressions
 @pytest.mark.parametrize(
-    "expr, np_expr",
+    "expr, np_expr, xcontiguous, xurlpath, ycontiguous, yurlpath, zcontiguous, zurlpath, tcontiguous, turlpath",
     [
-        ("x + y", "x + y"),
-        ("(x + y) + z", "(x + y) + z"),
-        ("(x + y) * (x + z)", "(x + y) * (x + z)"),
-        ("(x + y + z) * (x + z)", "(x + y + z) * (x + z)"),
-        ("(x + y - z) * (x + y + t)", "(x + y - z) * (x + y + t)"),
-        ("(x - z + t) * (x + y - z)", "(x - z + t) * (x + y - z)"),
-        ("(x - z + t) * (z + t - x)", "(x - z + t) * (z + t - x)"),
-        ("(x - z + t + y) * (t - y + z - x)", "(x - z + t + y) * (t - y + z - x)"),
-        ("(x - z + t + y) * (t - y + z - x)", "(x - z + t + y) * (t - y + z - x)"),
+        ("x + y", "x + y", True, "test_expression_xcontiguous.iarr", True, None, True, None, True, None),
+        (
+            "(x + y) + z",
+            "(x + y) + z",
+            False, "test_expression_xsparse.iarr",
+            True, "test_expression_ycontiguous.iarr",
+            True, "test_expression_zcontiguous.iarr",
+            False, None
+        ),
+        (
+            "(x + y) * (x + z)",
+            "(x + y) * (x + z)",
+            False, None,
+            False, "test_expression_ysparse.iarr",
+            False, None,
+            False, None
+        ),
+        (
+            "(x + y + z) * (x + z)",
+            "(x + y + z) * (x + z)",
+            True, None,
+            False, None,
+            False, None,
+            False, None
+        ),
+        (
+            "(x + y - z) * (x + y + t)",
+            "(x + y - z) * (x + y + t)",
+            False, None,
+            False, None,
+            False, None,
+            False, None
+        ),
+        (
+            "(x - z + t) * (x + y - z)",
+            "(x - z + t) * (x + y - z)",
+            False, None,
+            False, "test_expression_ysparse.iarr",
+            False, "test_expression_zsparse.iarr",
+            True, None
+        ),
+        (
+            "(x - z + t) * (z + t - x)",
+            "(x - z + t) * (z + t - x)",
+            True, "test_expression_xcontiguous.iarr",
+            True, "test_expression_ycontiguous.iarr",
+            True, "test_expression_zcontiguous.iarr",
+            True, "test_expression_tcontiguous.iarr"
+        ),
+        (
+            "(x - z + t + y) * (t - y + z - x)",
+            "(x - z + t + y) * (t - y + z - x)",
+            False, "test_expression_xsparse.iarr",
+            False, "test_expression_ysparse.iarr",
+            False, "test_expression_zsparse.iarr",
+            False, "test_expression_tsparse.iarr"
+        ),
+        (
+            "(x - z + t + y) * (t - y + z - x)",
+            "(x - z + t + y) * (t - y + z - x)",
+            True, None,
+            True, None,
+            True, None,
+            True, None
+        ),
         # transcendental functions
-        ("x.cos() + y", "np.cos(x) + y"),
-        ("ia.cos(x) + y", "np.cos(x) + y"),
-        ("x.sin() * x.sin() + y.cos()", "np.sin(x) * np.sin(x) + np.cos(y)"),
+        (
+             "x.cos() + y",
+             "np.cos(x) + y",
+             True, "test_expression_xcontiguous.iarr", True, "test_expression_ycontiguous.iarr",
+             True, None,
+             True, None
+         ),
+        ("ia.cos(x) + y", "np.cos(x) + y", False, None, False, None, False, None, False, None),
+        (
+             "x.sin() * x.sin() + y.cos()",
+             "np.sin(x) * np.sin(x) + np.cos(y)",
+             False, "test_expression_xsparse.iarr",
+             True, "test_expression_xcontiguous.iarr",
+             False, None,
+             False, None
+        ),
         (
             "x.tan() * (y.sin() * y.sin() + z.cos()) + (t.sqrt() * 2)",
             "np.tan(x) * (np.sin(y) * np.sin(y) + np.cos(z)) + (np.sqrt(t) * 2)",
+            True, None,
+            False, "test_expression_ysparse.iarr",
+            False, "test_expression_zsparse.iarr",
+            True, "test_expression_tsparse.iarr"
         ),
         # Use another order than before (precision needs to be relaxed a bit)
         (
             "t.tan() * (x.sin() * x.sin() + y.cos()) + (z.sqrt() * 2)",
             "np.tan(t) * (np.sin(x) * np.sin(x) + np.cos(y)) + (np.sqrt(z) * 2)",
+            False, None,
+            True, None,
+            False, None,
+            True, None
         ),
     ],
 )
-def test_expr_fusion(expr, np_expr):
+def test_expr_fusion(expr, np_expr, xcontiguous, xurlpath, ycontiguous, yurlpath, zcontiguous, zurlpath, tcontiguous, turlpath):
     shape = [200, 300]
     chunks = [40, 50]
     bshape = [20, 20]
-    store = ia.Store(chunks=chunks, blocks=bshape)
+
+    xstore = ia.Store(chunks=chunks, blocks=bshape, contiguous=xcontiguous, urlpath=xurlpath)
+    x32store = ia.Store(chunks=chunks, blocks=bshape, contiguous=xcontiguous, urlpath="x32urlpath")
+    ystore = ia.Store(chunks=chunks, blocks=bshape, contiguous=ycontiguous, urlpath=yurlpath)
+    y32store = ia.Store(chunks=chunks, blocks=bshape, contiguous=ycontiguous, urlpath="y32urlpath")
+    zstore = ia.Store(chunks=chunks, blocks=bshape, contiguous=zcontiguous, urlpath=zurlpath)
+    z32store = ia.Store(chunks=chunks, blocks=bshape, contiguous=zcontiguous, urlpath="z32urlpath")
+    tstore = ia.Store(chunks=chunks, blocks=bshape, contiguous=tcontiguous, urlpath=turlpath)
+    t32store = ia.Store(chunks=chunks, blocks=bshape, contiguous=tcontiguous, urlpath="t32urlpath")
+    if xstore.urlpath is None:
+        x32store.urlpath = None
+    if ystore.urlpath is None:
+        y32store.urlpath = None
+    if zstore.urlpath is None:
+        z32store.urlpath = None
+    if tstore.urlpath is None:
+        t32store.urlpath = None
+
+    ia.remove(xstore.urlpath)
+    ia.remove(ystore.urlpath)
+    ia.remove(x32store.urlpath)
+    ia.remove(y32store.urlpath)
+    ia.remove(zstore.urlpath)
+    ia.remove(tstore.urlpath)
+    ia.remove(z32store.urlpath)
+    ia.remove(t32store.urlpath)
 
     for dtype in np.float64, np.float32:
         # The ranges below are important for not overflowing operations
-        x = ia.linspace(shape, 0.1, 0.9, dtype=dtype, store=store)
-        y = ia.linspace(shape, 0.5, 1.0, dtype=dtype, store=store)
-        z = ia.linspace(shape, 1.0, 2.0, dtype=dtype, store=store)
-        t = ia.linspace(shape, 1.5, 3.0, dtype=dtype, store=store)
+        if dtype == np.float32:
+            x = ia.linspace(shape, 0.1, 0.9, dtype=dtype, store=x32store)
+            y = ia.linspace(shape, 0.5, 1, dtype=dtype, store=y32store)
+            z = ia.linspace(shape, 0.1, 0.9, dtype=dtype, store=z32store)
+            t = ia.linspace(shape, 0.5, 1, dtype=dtype, store=t32store)
+        else:
+            x = ia.linspace(shape, 0.1, 0.9, dtype=dtype, store=xstore)
+            y = ia.linspace(shape, 0.5, 1, dtype=dtype, store=ystore)
+            z = ia.linspace(shape, 1.0, 2.0, dtype=dtype, store=zstore)
+            t = ia.linspace(shape, 1.5, 3.0, dtype=dtype, store=tstore)
 
         # NumPy computation
         npx = ia.iarray2numpy(x)
@@ -391,4 +535,12 @@ def test_expr_fusion(expr, np_expr):
 
         tol = 1e-6 if dtype is np.float32 else 1e-14
         np.testing.assert_allclose(npout, npout2, rtol=tol, atol=tol)
-"""
+
+    ia.remove(xstore.urlpath)
+    ia.remove(ystore.urlpath)
+    ia.remove(x32store.urlpath)
+    ia.remove(y32store.urlpath)
+    ia.remove(zstore.urlpath)
+    ia.remove(tstore.urlpath)
+    ia.remove(z32store.urlpath)
+    ia.remove(t32store.urlpath)

@@ -331,7 +331,6 @@ class Store:
         self.mode = (
             self.mode.encode("utf-8") if isinstance(self.mode, str) else self.mode
         )
-        #self.contiguous = True if self.urlpath else self.contiguous
         if self.plainbuffer:
             if self.chunks is not None or self.blocks is not None:
                 raise ValueError("plainbuffer array does not support neither a chunks nor blocks")

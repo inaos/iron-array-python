@@ -4,6 +4,7 @@ import numpy as np
 
 
 # Test load, open and save
+@pytest.mark.parametrize("contiguous", [True, False])
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
 @pytest.mark.parametrize(
     "shape, chunks, blocks",
@@ -15,16 +16,16 @@ import numpy as np
     ],
 )
 @pytest.mark.parametrize("func", [ia.load, ia.open])
-def test_load_save(shape, chunks, blocks, dtype, func):
+def test_load_save(shape, chunks, blocks, dtype, func, contiguous):
     urlpath = "test_load_save.iarray"
 
     ia.remove(urlpath)
 
-    store = ia.Store(chunks, blocks)
+    store = ia.Store(chunks, blocks, contiguous=contiguous)
     a = ia.linspace(shape, -10, 10, dtype=dtype, store=store)
     an = ia.iarray2numpy(a)
 
-    ia.save(urlpath, a)
+    ia.save(urlpath, a, contiguous=contiguous)
 
     b = func(urlpath)
     bn = ia.iarray2numpy(b)

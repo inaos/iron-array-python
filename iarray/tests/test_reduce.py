@@ -15,16 +15,18 @@ params_data = [
 
 @pytest.mark.parametrize(params_names, params_data)
 @pytest.mark.parametrize("rfunc", ["mean", "sum", "prod", "max", "min"])
-@pytest.mark.parametrize("urlpath", [None, "test_reduce.iarray"])
-def test_reduce(shape, chunks, blocks, axis, dtype, rfunc, urlpath):
+@pytest.mark.parametrize("contiguous", [True, False])
+@pytest.mark.parametrize("urlpath", [None, "test_reduce.iarr"])
+def test_reduce(shape, chunks, blocks, axis, dtype, rfunc, contiguous, urlpath):
 
     ia.remove(urlpath)
-    store = ia.Store(chunks, blocks)
+    ia.remove("test_reduce_res.iarr")
+    store = ia.Store(chunks, blocks, contiguous=contiguous, urlpath=urlpath)
     a1 = ia.linspace(shape, -1, 0, dtype=dtype, store=store)
     a2 = a1.data
 
     b2 = getattr(np, rfunc)(a2, axis=axis)
-    b1 = getattr(ia, rfunc)(a1, axis=axis, urlpath=urlpath)
+    b1 = getattr(ia, rfunc)(a1, axis=axis, urlpath="test_reduce_res.iarr")
 
     rtol = 1e-6 if dtype == np.float32 else 1e-14
 
@@ -34,3 +36,4 @@ def test_reduce(shape, chunks, blocks, axis, dtype, rfunc, urlpath):
         np.testing.assert_allclose(ia.iarray2numpy(b1), b2, rtol=rtol, atol=0)
 
     ia.remove(urlpath)
+    ia.remove("test_reduce_res.iarr")
