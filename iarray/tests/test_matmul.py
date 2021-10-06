@@ -8,44 +8,44 @@ import numpy as np
     "ashape, achunks, ablocks, acontiguous, aurlpath," "bshape, bchunks, bblocks, bcontiguous, burlpath," "cchunks, cblocks, dtype, ccontiguous, curlpath",
     [
         (
-                [20, 20], [10, 10], [5, 5], True, None,
-                [20, 20], [10, 10], [5, 5], True, None,
-                [10, 10], [5, 5], np.float64, True, None
+            [20, 20], [10, 10], [5, 5], True, None,
+            [20, 20], [10, 10], [5, 5], True, None,
+            [10, 10], [5, 5], np.float64, True, None
         ),
         (
-                [100, 100], None, None, False, "test_matmul_asparse.iarr",
-                [100, 100], None, None, False, "test_matmul_bsparse.iarr",
-                None, None, np.float32, False, "test_matmul_csparse.iarr"
+            [100, 100], None, None, False, "test_matmul_asparse.iarr",
+            [100, 100], None, None, False, "test_matmul_bsparse.iarr",
+            None, None, np.float32, False, "test_matmul_csparse.iarr"
          ),
         (
-                [100, 100], [40, 40], [12, 12], False, None,
-                [100], [60], [30], False, None,
-                [50], [30], np.float64, False, None
+            [100, 100], [40, 40], [12, 12], False, None,
+            [100], [60], [30], False, None,
+            [50], [30], np.float64, False, None
         ),
         (
-                [100, 100], None, None, True, "test_matmul_acontiguous.iarr",
-                [100], None, None, True, "test_matmul_bcontiguous.iarr",
-                None, None, np.float32, True, "test_matmul_ccontiguous.iarr"
+            [100, 100], None, None, True, "test_matmul_acontiguous.iarr",
+            [100], None, None, True, "test_matmul_bcontiguous.iarr",
+            None, None, np.float32, True, "test_matmul_ccontiguous.iarr"
         ),
         (
-                [100, 100], None, None, True, "test_matmul_acontiguous.iarr",
-                [100, 100], [20, 20], [12, 3], False, None,
-                [70, 23], [25, 5], np.float64, False, "test_matmul_csparse.iarr"
+            [100, 100], None, None, True, "test_matmul_acontiguous.iarr",
+            [100, 100], [20, 20], [12, 3], False, None,
+            [70, 23], [25, 5], np.float64, False, "test_matmul_csparse.iarr"
         ),
         (
-                [100, 100], [20, 20], [7, 9], False, None,
-                [100, 100], None, None, True, "test_matmul_bcontiguous.iarr",
-                None, None, np.float32, True, "test_matmul_ccontiguous.iarr"
+            [100, 100], [20, 20], [7, 9], False, None,
+            [100, 100], None, None, True, "test_matmul_bcontiguous.iarr",
+            None, None, np.float32, True, "test_matmul_ccontiguous.iarr"
         ),
         (
-                [100, 100], None, None, True, "test_matmul_acontiguous",
-                [100], [50], [25], False, None,
-                [100], [49], np.float64, False, None
+            [100, 100], None, None, True, "test_matmul_acontiguous",
+            [100], [50], [25], False, None,
+            [100], [49], np.float64, False, None
         ),
         (
-                [500, 100], [30, 30], [5, 20], False, "test_matmul_asparse.iarr",
-                [100], None, None, False, None,
-                [200], [100], np.float32, True, "test_matmul_ccontiguous.iarr"
+            [500, 100], [30, 30], [5, 20], False, "test_matmul_asparse.iarr",
+            [100], None, None, False, None,
+            [200], [100], np.float32, True, "test_matmul_ccontiguous.iarr"
         ),
     ],
 )
