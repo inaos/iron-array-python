@@ -17,7 +17,7 @@ import numpy as np
 )
 @pytest.mark.parametrize("func", [ia.load, ia.open])
 def test_load_save(shape, chunks, blocks, dtype, func, contiguous):
-    urlpath = "test_load_save.iarray"
+    urlpath = "test_load_save.iarr"
 
     ia.remove(urlpath)
 

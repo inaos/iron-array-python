@@ -23,9 +23,9 @@ codec = ia.Codec.LZ4
 clevel = 5
 
 if persistent:
-    aurlpath = "a.iarray"
-    burlpath = "b.iarray"
-    curlpath = "c.iarray"
+    aurlpath = "a.iarr"
+    burlpath = "b.iarr"
+    curlpath = "c.iarr"
 else:
     aurlpath = None
     burlpath = None
@@ -43,7 +43,7 @@ if persistent:
     if not os.path.exists(aurlpath):
         aia = ia.linspace(shape, -1, 1, store=astore)
     else:
-        aia = ia.open("a.iarray")
+        aia = ia.open("a.iarr")
         if aia.shape != shape or aia.chunks != chunks or aia.blocks != blocks:
             # Ooops, we cannot use the array on-disk.  Regenerate it.
             os.remove(aurlpath)
@@ -56,7 +56,7 @@ if persistent:
     if not os.path.exists(burlpath):
         bia = ia.linspace(shape, -1, 1, store=bstore)
     else:
-        bia = ia.open("b.iarray")
+        bia = ia.open("b.iarr")
         if bia.shape != shape or bia.chunks != chunks or bia.blocks != blocks:
             # Ooops, we cannot use the array on-disk.  Regenerate it.
             os.remove(burlpath)
