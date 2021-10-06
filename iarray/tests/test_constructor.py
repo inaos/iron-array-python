@@ -19,14 +19,14 @@ def test_linspace(start, stop, shape, chunks, blocks, dtype, contiguous, urlpath
     else:
         store = ia.Store(chunks, blocks, contiguous=contiguous, urlpath=urlpath)
     size = int(np.prod(shape))
-    ia.remove(urlpath)
+    ia.remove_urlpath(urlpath)
     a = ia.linspace(shape, start, stop, dtype=dtype, store=store)
     b = ia.iarray2numpy(a)
     npdtype = np.float64 if dtype == np.float64 else np.float32
     c = np.linspace(start, stop, size, dtype=npdtype).reshape(shape)
     np.testing.assert_almost_equal(b, c)
 
-    ia.remove(urlpath)
+    ia.remove_urlpath(urlpath)
 
 
 # arange
@@ -46,13 +46,13 @@ def test_arange(start, stop, shape, chunks, blocks, dtype, contiguous, urlpath):
         store = ia.Store(chunks, blocks, contiguous=contiguous, urlpath=urlpath)
     size = int(np.prod(shape))
     step = (stop - start) / size
-    ia.remove(urlpath)
+    ia.remove_urlpath(urlpath)
     a = ia.arange(shape, start, stop, step, dtype=dtype, store=store)
     b = ia.iarray2numpy(a)
     npdtype = np.float64 if dtype == np.float64 else np.float32
     c = np.arange(start, stop, step, dtype=npdtype).reshape(shape)
     np.testing.assert_almost_equal(b, c)
-    ia.remove(urlpath)
+    ia.remove_urlpath(urlpath)
 
 
 # from_file
@@ -81,7 +81,7 @@ def test_from_file(start, stop, shape, chunks, blocks, dtype, contiguous, urlpat
     c = ia.load(urlpath)
     d = ia.iarray2numpy(c)
     np.testing.assert_almost_equal(a, d)
-    ia.remove(urlpath)
+    ia.remove_urlpath(urlpath)
 
 
 # get_slice
@@ -111,7 +111,7 @@ def test_slice(start, stop, slice, shape, chunks, blocks, dtype, contiguous, url
         store = ia.Store(chunks, blocks, contiguous=contiguous, urlpath=urlpath)
     size = int(np.prod(shape))
     step = (stop - start) / size
-    ia.remove(urlpath)
+    ia.remove_urlpath(urlpath)
     a = ia.arange(shape, start, stop, step, dtype=dtype, store=store)
     b = a[slice]
     c = ia.iarray2numpy(b)
@@ -119,7 +119,7 @@ def test_slice(start, stop, slice, shape, chunks, blocks, dtype, contiguous, url
     d = np.arange(start, stop, step, dtype=npdtype).reshape(shape)[slice]
     np.testing.assert_almost_equal(c, d)
 
-    ia.remove(urlpath)
+    ia.remove_urlpath(urlpath)
 
 
 # empty  # TODO: make it work properly
@@ -137,7 +137,7 @@ def test_empty(shape, chunks, blocks, dtype, contiguous, urlpath):
         store = ia.Store(plainbuffer=True)
     else:
         store = ia.Store(chunks, blocks, contiguous=contiguous, urlpath=urlpath)
-    ia.remove(urlpath)
+    ia.remove_urlpath(urlpath)
     with ia.config(store=store):
         a = ia.empty(shape, dtype=dtype)
     b = ia.iarray2numpy(a)
@@ -145,7 +145,7 @@ def test_empty(shape, chunks, blocks, dtype, contiguous, urlpath):
     assert b.dtype == npdtype
     assert b.shape == tuple(shape)
 
-    ia.remove(urlpath)
+    ia.remove_urlpath(urlpath)
 
 
 # zeros
@@ -163,14 +163,14 @@ def test_zeros(shape, chunks, blocks, dtype, contiguous, urlpath):
         store = ia.Store(plainbuffer=True)
     else:
         store = ia.Store(chunks, blocks, contiguous=contiguous, urlpath=urlpath)
-    ia.remove(urlpath)
+    ia.remove_urlpath(urlpath)
     a = ia.zeros(shape, dtype=dtype, store=store)
     b = ia.iarray2numpy(a)
     npdtype = np.float64 if dtype == np.float64 else np.float32
     c = np.zeros(shape, dtype=npdtype)
     np.testing.assert_almost_equal(b, c)
 
-    ia.remove(urlpath)
+    ia.remove_urlpath(urlpath)
 
 
 # ones
@@ -188,14 +188,14 @@ def test_ones(shape, chunks, blocks, dtype, contiguous, urlpath):
         store = ia.Store(plainbuffer=True)
     else:
         store = ia.Store(chunks, blocks, contiguous=contiguous, urlpath=urlpath)
-    ia.remove(urlpath)
+    ia.remove_urlpath(urlpath)
     a = ia.ones(shape, dtype=dtype, store=store)
     b = ia.iarray2numpy(a)
     npdtype = np.float64 if dtype == np.float64 else np.float32
     c = np.ones(shape, dtype=npdtype)
     np.testing.assert_almost_equal(b, c)
 
-    ia.remove(urlpath)
+    ia.remove_urlpath(urlpath)
 
 
 # full
@@ -213,14 +213,14 @@ def test_full(fill_value, shape, chunks, blocks, dtype, contiguous, urlpath):
         store = ia.Store(plainbuffer=True)
     else:
         store = ia.Store(chunks, blocks, contiguous=contiguous, urlpath=urlpath)
-    ia.remove(urlpath)
+    ia.remove_urlpath(urlpath)
     a = ia.full(shape, fill_value, dtype=dtype, store=store)
     b = ia.iarray2numpy(a)
     npdtype = np.float64 if dtype == np.float64 else np.float32
     c = np.full(shape, fill_value, dtype=npdtype)
     np.testing.assert_almost_equal(b, c)
 
-    ia.remove(urlpath)
+    ia.remove_urlpath(urlpath)
 
 # TODO: Update this when persistent sparse would be supported
 @pytest.mark.parametrize(
@@ -232,11 +232,11 @@ def test_full(fill_value, shape, chunks, blocks, dtype, contiguous, urlpath):
 )
 def test_overwrite(contiguous):
     fname = "pepe.iarr"
-    ia.remove(fname)
+    ia.remove_urlpath(fname)
     a = ia.arange([10, 20, 10, 14], clevel=9, contiguous=contiguous, urlpath=fname)
     b = ia.arange([10, 20, 10, 14], clevel=9, contiguous=contiguous, urlpath=fname, mode="w")
 
-    ia.remove(fname)
+    ia.remove_urlpath(fname)
 
 
 # numpy views
@@ -250,7 +250,7 @@ def test_overwrite(contiguous):
     ],
 )
 def test_view(shape, starts, stops, dtype, contiguous, urlpath):
-    ia.remove(urlpath)
+    ia.remove_urlpath(urlpath)
     cfg = ia.set_config(contiguous=contiguous, urlpath=urlpath)
     nelems = np.prod(shape)
     a = np.linspace(0, 1, nelems, dtype=dtype).reshape(shape)
@@ -262,7 +262,7 @@ def test_view(shape, starts, stops, dtype, contiguous, urlpath):
     assert b.shape == a_view.shape
     np.testing.assert_almost_equal(a_view, b.data)
 
-    ia.remove(urlpath)
+    ia.remove_urlpath(urlpath)
 
 
 # numpy arrays stored in Fortran ordering
@@ -276,7 +276,7 @@ def test_view(shape, starts, stops, dtype, contiguous, urlpath):
     ],
 )
 def test_fortran(shape, dtype, contiguous, urlpath):
-    ia.remove(urlpath)
+    ia.remove_urlpath(urlpath)
     cfg = ia.set_config(contiguous=contiguous, urlpath=urlpath)
     nelems = np.prod(shape)
     a = np.linspace(0, 1, nelems, dtype=dtype).reshape(shape)
@@ -288,4 +288,4 @@ def test_fortran(shape, dtype, contiguous, urlpath):
     assert b.shape == a_fortran.shape
     np.testing.assert_almost_equal(a_fortran, b.data)
 
-    ia.remove(urlpath)
+    ia.remove_urlpath(urlpath)

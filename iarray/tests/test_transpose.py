@@ -13,7 +13,7 @@ import numpy as np
     ],
 )
 def test_transpose(shape, chunks, blocks, dtype, contiguous, urlpath):
-    ia.remove(urlpath)
+    ia.remove_urlpath(urlpath)
     if chunks is None:
         store = ia.Store(plainbuffer=True)
     else:
@@ -38,4 +38,4 @@ def test_transpose(shape, chunks, blocks, dtype, contiguous, urlpath):
     an = ia.iarray2numpy(at)
     np.testing.assert_allclose(an, bn, rtol=rtol)
 
-    ia.remove(urlpath)
+    ia.remove_urlpath(urlpath)

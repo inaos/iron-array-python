@@ -23,8 +23,8 @@ import numpy as np
     ],
 )
 def test_copy(shape, chunks, blocks, dtype, plainbuffer, contiguous, urlpath, urlpath2):
-    ia.remove(urlpath)
-    ia.remove(urlpath2)
+    ia.remove_urlpath(urlpath)
+    ia.remove_urlpath(urlpath2)
 
     if plainbuffer:
         store = ia.Store(plainbuffer=True)
@@ -41,5 +41,5 @@ def test_copy(shape, chunks, blocks, dtype, plainbuffer, contiguous, urlpath, ur
 
     np.testing.assert_allclose(an, bn, rtol=rtol)
 
-    ia.remove(urlpath)
-    ia.remove(urlpath2)
+    ia.remove_urlpath(urlpath)
+    ia.remove_urlpath(urlpath2)

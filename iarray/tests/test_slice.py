@@ -30,7 +30,7 @@ from math import isclose
     ],
 )
 def test_slice(slices, shape, chunks, blocks, dtype, acontiguous, aurlpath):
-    ia.remove(aurlpath)
+    ia.remove_urlpath(aurlpath)
     if chunks is None:
         store = ia.Store(plainbuffer=True)
     else:
@@ -60,7 +60,7 @@ def test_slice(slices, shape, chunks, blocks, dtype, acontiguous, aurlpath):
         assert an2.ndim == bn.ndim
         np.testing.assert_almost_equal(an[slices], bn)
 
-    ia.remove(aurlpath)
+    ia.remove_urlpath(aurlpath)
 
 
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
@@ -74,7 +74,7 @@ def test_slice(slices, shape, chunks, blocks, dtype, acontiguous, aurlpath):
     ],
 )
 def test_double_slice(shape, chunks, blocks, dtype, acontiguous, aurlpath):
-    ia.remove(aurlpath)
+    ia.remove_urlpath(aurlpath)
     if chunks is None:
         store = ia.Store(plainbuffer=True)
     else:
@@ -85,4 +85,4 @@ def test_double_slice(shape, chunks, blocks, dtype, acontiguous, aurlpath):
     b2 = a[4]
     np.testing.assert_almost_equal(b1.data, b2.data)
 
-    ia.remove(aurlpath)
+    ia.remove_urlpath(aurlpath)

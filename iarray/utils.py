@@ -196,7 +196,7 @@ def numpy2iarray(arr: np.ndarray, cfg: ia.Config = None, **kwargs) -> ia.IArray:
         return ext.numpy2iarray(cfg, arr, dtshape)
 
 # File system utilities
-def remove(urlpath):
+def remove_urlpath(urlpath):
     """Permanently remove the file or the directory given by `urlpath`.
 
     Parameters

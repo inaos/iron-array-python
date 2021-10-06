@@ -16,12 +16,12 @@ import iarray as ia
 def test_btune(start, stop, shape, chunks, blocks, dtype, contiguous, urlpath):
 
     store = ia.Store(chunks, blocks, contiguous=contiguous, urlpath=urlpath)
-    ia.remove(urlpath)
+    ia.remove_urlpath(urlpath)
     with ia.config(favor=ia.Favor.SPEED, btune=True):
         a = ia.linspace(shape, start, stop, dtype=dtype, store=store)
         c1 = a.cratio
 
-    ia.remove(urlpath)
+    ia.remove_urlpath(urlpath)
     with ia.config(favor=ia.Favor.CRATIO, btune=True):
         a = ia.linspace(shape, start, stop, dtype=dtype, store=store)
         c2 = a.cratio
@@ -30,4 +30,4 @@ def test_btune(start, stop, shape, chunks, blocks, dtype, contiguous, urlpath):
     # Hopefully the 2x factor would avoid a failure in most of the cases...
     assert c1 < 2 * c2
 
-    ia.remove(urlpath)
+    ia.remove_urlpath(urlpath)
