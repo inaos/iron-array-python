@@ -59,7 +59,7 @@ def test_arange(start, stop, shape, chunks, blocks, dtype, contiguous, urlpath):
 @pytest.mark.parametrize(
     "start, stop, shape, chunks, blocks, dtype, contiguous, urlpath",
     [
-        (0, 10, [1234], [123], [21], np.float64, False, "test.fromfile0.iarray"),
+        (0, 10, [1234], [123], [21], np.float64, False, "test.fromfile0.iarr"),
         (
             -0.1,
             -0.10,
@@ -68,7 +68,7 @@ def test_arange(start, stop, shape, chunks, blocks, dtype, contiguous, urlpath):
             [2, 3, 2, 3, 2],
             np.float32,
             True,
-            "test.fromfile1.iarray",
+            "test.fromfile1.iarr",
         ),
     ],
 )

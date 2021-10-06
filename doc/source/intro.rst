@@ -38,13 +38,13 @@ Here it is how you create a persistent array::
 
     import iarray as ia
 
-    ia.linspace(shape=(70, 130), start=-10, stop=10, urlpath="arange.iarray")
+    ia.linspace(shape=(70, 130), start=-10, stop=10, urlpath="arange.iarr")
 
-After that you will have a "arange.iarray" on-disk.  Later you can load it in-memory easily with::
+After that you will have a "arange.iarr" on-disk.  Later you can load it in-memory easily with::
 
     import iarray as ia
 
-    myarr = ia.load("arange.iarray")
+    myarr = ia.load("arange.iarr")
 
 ironArray tries to mimic existing APIs in the PyData ecosystem, so chances are that most of standard
 functions out there can work with ironArray too.
@@ -56,7 +56,7 @@ Array slicing
 You can get and set whole areas of your array using the usual NumPy indexing notation::
 
     # Getting slices
-    myarr = ia.load("arange.iarray")
+    myarr = ia.load("arange.iarr")
     print("Second row:", myarr[1])
     print("Second column:", myarr[:, 1])
 
@@ -73,7 +73,7 @@ Expression evaluation
 
 One of the main features of ironArray is that it provides support for operating with compressed arrays efficiently and in a transparent way.  In the tutorials section you will see a lot of examples on how to deal with them, but here it is a simple example::
 
-    x = ia.load("arange.iarray")
+    x = ia.load("arange.iarr")
     y = ((x - 1.35) * (x - 4.45) * (x - 8.5)).eval()
 
 So, ironArray understands simple expressions with arrays as operands.  Then these are evaluated by calling the `eval()` method.  That's pretty easy, and very fast too as you will see in the `tutorials <https://ironarray.io/docs/html/tutorials.html>`_.

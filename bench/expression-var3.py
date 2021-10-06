@@ -60,7 +60,7 @@ def f3(
 # Create initial containers
 if PROFILE:
     a1_store = None  # avoid a warning
-    a1_fname = "a1.iarray"
+    a1_fname = "a1.iarr"
     if not os.path.isfile(a1_fname):
         print(f"Creating {a1_fname}")
         a1_store = ia.Store(urlpath=a1_fname)

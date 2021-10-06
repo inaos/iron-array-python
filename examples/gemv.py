@@ -18,12 +18,12 @@ aia = ia.random.normal(
     chunks=a_chunks,
     blocks=a_blocks,
     contiguous=True,
-    urlpath="dense.iarray",
+    urlpath="dense.iarr",
     mode="w",
     fp_mantissa_bits=3,
 )
 
-aia = ia.load("dense.iarray")
+aia = ia.load("dense.iarr")
 print(aia.info)
 
 a = aia.data

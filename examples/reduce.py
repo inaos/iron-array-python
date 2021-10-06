@@ -11,9 +11,9 @@ b = a[0]
 an = ia.iarray2numpy(a)
 
 cn2 = np.mean(an, axis=(2, 3, 1))
-cn = ia.mean(a, axis=(2, 3, 1), chunks=(4,), blocks=(4,), urlpath="red.iarray")
-d = ia.open("red.iarray")
+cn = ia.mean(a, axis=(2, 3, 1), chunks=(4,), blocks=(4,), urlpath="red.iarr")
+d = ia.open("red.iarr")
 
 np.testing.assert_allclose(d.data, cn2)
 print("Matrix reduction is working!")
-os.remove("red.iarray")
+os.remove("red.iarr")

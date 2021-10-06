@@ -4,7 +4,7 @@ import iarray as ia
 import numpy as np
 
 
-urlpath = "arange.iarray"
+urlpath = "arange.iarr"
 shape = (70, 130)
 size = int(np.prod(shape))
 a = np.arange(size, dtype=np.float64).reshape(shape)
