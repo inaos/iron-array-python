@@ -67,9 +67,9 @@ def test_matmul(
     curlpath,
 ):
 
-    ia.remove(aurlpath)
-    ia.remove(burlpath)
-    ia.remove(curlpath)
+    ia.remove_urlpath(aurlpath)
+    ia.remove_urlpath(burlpath)
+    ia.remove_urlpath(curlpath)
     if achunks is None:
         astore = ia.Store(plainbuffer=True)
     else:
@@ -98,9 +98,9 @@ def test_matmul(
 
     np.testing.assert_allclose(cn, cn_2, rtol=rtol)
 
-    ia.remove(aurlpath)
-    ia.remove(burlpath)
-    ia.remove(curlpath)
+    ia.remove_urlpath(aurlpath)
+    ia.remove_urlpath(burlpath)
+    ia.remove_urlpath(curlpath)
 
 
 # Matmul slice
@@ -276,9 +276,9 @@ def test_matmul_slice(
     ccontiguous,
     curlpath,
 ):
-    ia.remove(aurlpath)
-    ia.remove(burlpath)
-    ia.remove(curlpath)
+    ia.remove_urlpath(aurlpath)
+    ia.remove_urlpath(burlpath)
+    ia.remove_urlpath(curlpath)
 
     if achunks is None:
         astore = ia.Store(plainbuffer=True)
@@ -316,9 +316,9 @@ def test_matmul_slice(
 
     np.testing.assert_allclose(cn, cn_2, rtol=rtol)
 
-    ia.remove(aurlpath)
-    ia.remove(burlpath)
-    ia.remove(curlpath)
+    ia.remove_urlpath(aurlpath)
+    ia.remove_urlpath(burlpath)
+    ia.remove_urlpath(curlpath)
 
 
 @pytest.mark.parametrize(
@@ -345,8 +345,8 @@ def test_matmul_opt(ashape, bshape, dtype, acontiguous, aurlpath, bcontiguous, b
 
     achunks, ablocks, bchunks, bblocks = params
 
-    ia.remove(aurlpath)
-    ia.remove(burlpath)
+    ia.remove_urlpath(aurlpath)
+    ia.remove_urlpath(burlpath)
 
     astore = ia.Store(achunks, ablocks, contiguous=acontiguous, urlpath=aurlpath)
     a = ia.linspace(ashape, -10, 1, dtype=dtype, store=astore)
@@ -365,5 +365,5 @@ def test_matmul_opt(ashape, bshape, dtype, acontiguous, aurlpath, bcontiguous, b
 
     np.testing.assert_allclose(cn, cn_2, rtol=rtol)
 
-    ia.remove(aurlpath)
-    ia.remove(burlpath)
+    ia.remove_urlpath(aurlpath)
+    ia.remove_urlpath(burlpath)

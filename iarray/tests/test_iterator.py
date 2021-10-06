@@ -42,8 +42,8 @@ def test_iterator(shape, chunks, blocks, itershape, dtype, acontiguous, aurlpath
         astore = ia.Store(chunks, blocks, contiguous=acontiguous, urlpath=aurlpath)
         bstore = ia.Store(chunks, blocks, contiguous=bcontiguous, urlpath=burlpath)
 
-    ia.remove(aurlpath)
-    ia.remove(burlpath)
+    ia.remove_urlpath(aurlpath)
+    ia.remove_urlpath(burlpath)
     a = ia.linspace(shape, -10, 10, dtype=dtype, store=astore)
     an = ia.iarray2numpy(a)
 
@@ -61,5 +61,5 @@ def test_iterator(shape, chunks, blocks, itershape, dtype, acontiguous, aurlpath
 
     np.testing.assert_almost_equal(bn, an)
 
-    ia.remove(aurlpath)
-    ia.remove(burlpath)
+    ia.remove_urlpath(aurlpath)
+    ia.remove_urlpath(burlpath)

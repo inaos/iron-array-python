@@ -161,9 +161,9 @@ import numpy as np
 )
 def test_expression(method, shape, chunks, blocks, dtype, expression, xcontiguous, xurlpath, ycontiguous, yurlpath):
     # The ranges below are important for not overflowing operations
-    ia.remove(xurlpath)
-    ia.remove(yurlpath)
-    ia.remove("test_expression_zarray.iarr")
+    ia.remove_urlpath(xurlpath)
+    ia.remove_urlpath(yurlpath)
+    ia.remove_urlpath("test_expression_zarray.iarr")
     if chunks is None:
         xstore = ia.Store(plainbuffer=True)
         ystore = ia.Store(plainbuffer=True)
@@ -207,9 +207,9 @@ def test_expression(method, shape, chunks, blocks, dtype, expression, xcontiguou
     tol = 1e-6 if dtype is np.float32 else 1e-14
     np.testing.assert_allclose(npout, npout2, rtol=tol, atol=tol)
 
-    ia.remove(xstore.urlpath)
-    ia.remove(ystore.urlpath)
-    ia.remove(zstore.urlpath)
+    ia.remove_urlpath(xstore.urlpath)
+    ia.remove_urlpath(ystore.urlpath)
+    ia.remove_urlpath(zstore.urlpath)
 
 
 # ufuncs
@@ -249,9 +249,9 @@ def test_ufuncs(ufunc, ia_expr, xcontiguous, xurlpath, ycontiguous, yurlpath):
     else:
         zstore = ystore
 
-    ia.remove(xstore.urlpath)
-    ia.remove(ystore.urlpath)
-    ia.remove(zstore.urlpath)
+    ia.remove_urlpath(xstore.urlpath)
+    ia.remove_urlpath(ystore.urlpath)
+    ia.remove_urlpath(zstore.urlpath)
 
 
     for dtype in np.float64, np.float32:
@@ -289,9 +289,9 @@ def test_ufuncs(ufunc, ia_expr, xcontiguous, xurlpath, ycontiguous, yurlpath):
         npout2 = eval("np." + ufunc, {"np": np, "x": npx, "y": npy})  # pure numpy
         np.testing.assert_allclose(npout, npout2, rtol=tol, atol=tol)
 
-        ia.remove(xstore.urlpath)
-        ia.remove(ystore.urlpath)
-        ia.remove(zstore.urlpath)
+        ia.remove_urlpath(xstore.urlpath)
+        ia.remove_urlpath(ystore.urlpath)
+        ia.remove_urlpath(zstore.urlpath)
 
 
 # ufuncs inside of expressions
@@ -333,10 +333,10 @@ def test_expr_ufuncs(ufunc, xcontiguous, xurlpath, ycontiguous, yurlpath):
     if ystore.urlpath is None:
         y32store.urlpath = None
 
-    ia.remove(xstore.urlpath)
-    ia.remove(ystore.urlpath)
-    ia.remove(x32store.urlpath)
-    ia.remove(y32store.urlpath)
+    ia.remove_urlpath(xstore.urlpath)
+    ia.remove_urlpath(ystore.urlpath)
+    ia.remove_urlpath(x32store.urlpath)
+    ia.remove_urlpath(y32store.urlpath)
 
     for dtype in np.float64, np.float32:
         # The ranges below are important for not overflowing operations
@@ -366,10 +366,10 @@ def test_expr_ufuncs(ufunc, xcontiguous, xurlpath, ycontiguous, yurlpath):
         tol = 1e-5 if dtype is np.float32 else 1e-13
         np.testing.assert_allclose(npout, npout2, rtol=tol, atol=tol)
 
-    ia.remove(xstore.urlpath)
-    ia.remove(ystore.urlpath)
-    ia.remove(x32store.urlpath)
-    ia.remove(y32store.urlpath)
+    ia.remove_urlpath(xstore.urlpath)
+    ia.remove_urlpath(ystore.urlpath)
+    ia.remove_urlpath(x32store.urlpath)
+    ia.remove_urlpath(y32store.urlpath)
 
 
 # Different operand fusions inside expressions
@@ -499,14 +499,14 @@ def test_expr_fusion(expr, np_expr, xcontiguous, xurlpath, ycontiguous, yurlpath
     if tstore.urlpath is None:
         t32store.urlpath = None
 
-    ia.remove(xstore.urlpath)
-    ia.remove(ystore.urlpath)
-    ia.remove(x32store.urlpath)
-    ia.remove(y32store.urlpath)
-    ia.remove(zstore.urlpath)
-    ia.remove(tstore.urlpath)
-    ia.remove(z32store.urlpath)
-    ia.remove(t32store.urlpath)
+    ia.remove_urlpath(xstore.urlpath)
+    ia.remove_urlpath(ystore.urlpath)
+    ia.remove_urlpath(x32store.urlpath)
+    ia.remove_urlpath(y32store.urlpath)
+    ia.remove_urlpath(zstore.urlpath)
+    ia.remove_urlpath(tstore.urlpath)
+    ia.remove_urlpath(z32store.urlpath)
+    ia.remove_urlpath(t32store.urlpath)
 
     for dtype in np.float64, np.float32:
         # The ranges below are important for not overflowing operations
@@ -536,11 +536,11 @@ def test_expr_fusion(expr, np_expr, xcontiguous, xurlpath, ycontiguous, yurlpath
         tol = 1e-6 if dtype is np.float32 else 1e-14
         np.testing.assert_allclose(npout, npout2, rtol=tol, atol=tol)
 
-    ia.remove(xstore.urlpath)
-    ia.remove(ystore.urlpath)
-    ia.remove(x32store.urlpath)
-    ia.remove(y32store.urlpath)
-    ia.remove(zstore.urlpath)
-    ia.remove(tstore.urlpath)
-    ia.remove(z32store.urlpath)
-    ia.remove(t32store.urlpath)
+    ia.remove_urlpath(xstore.urlpath)
+    ia.remove_urlpath(ystore.urlpath)
+    ia.remove_urlpath(x32store.urlpath)
+    ia.remove_urlpath(y32store.urlpath)
+    ia.remove_urlpath(zstore.urlpath)
+    ia.remove_urlpath(tstore.urlpath)
+    ia.remove_urlpath(z32store.urlpath)
+    ia.remove_urlpath(t32store.urlpath)

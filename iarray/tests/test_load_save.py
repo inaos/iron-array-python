@@ -19,7 +19,7 @@ import numpy as np
 def test_load_save(shape, chunks, blocks, dtype, func, contiguous):
     urlpath = "test_load_save.iarr"
 
-    ia.remove(urlpath)
+    ia.remove_urlpath(urlpath)
 
     store = ia.Store(chunks, blocks, contiguous=contiguous)
     a = ia.linspace(shape, -10, 10, dtype=dtype, store=store)
@@ -32,4 +32,4 @@ def test_load_save(shape, chunks, blocks, dtype, func, contiguous):
 
     np.testing.assert_almost_equal(an, bn)
 
-    ia.remove(urlpath)
+    ia.remove_urlpath(urlpath)
