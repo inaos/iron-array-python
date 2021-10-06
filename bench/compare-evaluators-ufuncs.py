@@ -124,7 +124,7 @@ def do_block_evaluation(plainbuffer):
         store = ia.Store(plainbuffer=True)
     else:
         store = ia.Store(chunks, blocks, plainbuffer=False)
-    # ia.set_config(codec=ia.Codecs.LZ4, clevel=clevel, nthreads=nthreads, store=store)
+    # ia.set_config(codec=ia.Codec.LZ4, clevel=clevel, nthreads=nthreads, store=store)
     # The latest versions of BTune work much better for 1-dim arrays
     ia.set_config(favor=ia.Favor.SPEED)
 

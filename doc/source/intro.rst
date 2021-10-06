@@ -111,13 +111,13 @@ Configuration settings
 ironArray comes with an advanced configuration system that allows to configure your operations globally for a whole program, or locally for functions; you can even use contexts for using configurations that are valid in just regions of code::
 
     # Global configuration
-    ia.set_config(codec=ia.Codecs.ZSTD, clevel=1, btune=False)
+    ia.set_config(codec=ia.Codec.ZSTD, clevel=1, btune=False)
 
     # Local configuration
-    c = (x - y).eval(clevel=9, codec=ia.Codecs.LZ4)
+    c = (x - y).eval(clevel=9, codec=ia.Codec.LZ4)
 
     # Context
-    with ia.config(clevel=9, codec=ia.Codecs.BLOSCLZ):
+    with ia.config(clevel=9, codec=ia.Codec.BLOSCLZ):
         c = (x - y).eval()
 
 Use whatever version you prefer.  You can find more examples in the `Configuring ironArray tutorial <https://ironarray.io/docs/html/tutorials/configuration.html>`_.
