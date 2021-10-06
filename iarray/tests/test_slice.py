@@ -21,19 +21,20 @@ from math import isclose
 )
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
 @pytest.mark.parametrize(
-    "shape, chunks, blocks",
+    "shape, chunks, blocks, acontiguous, aurlpath",
     [
-        ([100, 100], [20, 20], [10, 13]),
-        ([100, 130], None, None),
-        ([98, 78, 55, 21], None, None),
-        ([100, 100], [30, 44], [30, 2]),
+        ([100, 100], [20, 20], [10, 13], True, None),
+        ([100, 130], None, None, False, None),
+        ([98, 78, 55, 21], None, None, True, "test_slice_acontiguous.iarr"),
+        ([100, 100], [30, 44], [30, 2], False, "test_slice_asparse.iarr"),
     ],
 )
-def test_slice(slices, shape, chunks, blocks, dtype):
+def test_slice(slices, shape, chunks, blocks, dtype, acontiguous, aurlpath):
+    ia.remove(aurlpath)
     if chunks is None:
         store = ia.Store(plainbuffer=True)
     else:
-        store = ia.Store(chunks, blocks, contiguous=True)
+        store = ia.Store(chunks, blocks, contiguous=acontiguous, urlpath=aurlpath)
 
     a = ia.linspace(shape, -10, 10, store=store, dtype=dtype)
     an = ia.iarray2numpy(a)
@@ -59,24 +60,29 @@ def test_slice(slices, shape, chunks, blocks, dtype):
         assert an2.ndim == bn.ndim
         np.testing.assert_almost_equal(an[slices], bn)
 
+    ia.remove(aurlpath)
+
 
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
 @pytest.mark.parametrize(
-    "shape, chunks, blocks",
+    "shape, chunks, blocks, acontiguous, aurlpath",
     [
-        ([100, 100], [20, 20], [10, 13]),
-        ([100, 130], None, None),
-        ([98, 78, 55, 21], None, None),
-        ([100, 100], [30, 44], [30, 2]),
+        ([100, 100], [20, 20], [10, 13], True, None),
+        ([100, 130], None, None, False, None),
+        ([98, 78, 55, 21], None, None, True, "test_slice_acontiguous.iarr"),
+        ([100, 100], [30, 44], [30, 2], False, "test_slice_asparse.iarr"),
     ],
 )
-def test_double_slice(shape, chunks, blocks, dtype):
+def test_double_slice(shape, chunks, blocks, dtype, acontiguous, aurlpath):
+    ia.remove(aurlpath)
     if chunks is None:
         store = ia.Store(plainbuffer=True)
     else:
-        store = ia.Store(chunks, blocks, contiguous=True)
+        store = ia.Store(chunks, blocks, contiguous=acontiguous, urlpath=aurlpath)
 
     a = ia.linspace(shape, -10, 10, store=store, dtype=dtype)
     b1 = a[4]
     b2 = a[4]
     np.testing.assert_almost_equal(b1.data, b2.data)
+
+    ia.remove(aurlpath)

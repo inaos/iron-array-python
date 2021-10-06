@@ -5,11 +5,11 @@ import iarray as ia
 @pytest.mark.parametrize(
     "clevel, codec, filters, chunks, blocks, contiguous, urlpath",
     [
-        (0, ia.Codecs.ZSTD, [ia.Filters.SHUFFLE], None, None, False, None),
-        (1, ia.Codecs.BLOSCLZ, [ia.Filters.SHUFFLE], [50, 50], [20, 20], True, None),
-        (9, ia.Codecs.ZSTD, [ia.Filters.SHUFFLE, ia.Filters.DELTA], [50, 50], [20, 20], False, b"test_config_params_sparse.iarr"),
-        (6, ia.Codecs.ZSTD, [ia.Filters.SHUFFLE], [100, 50], [50, 20], True, b"test_config_params_contiguous.iarr"),
-        (0, ia.Codecs.ZSTD, [ia.Filters.SHUFFLE], None, None, False, None),
+        (0, ia.Codec.ZSTD, [ia.Filter.SHUFFLE], None, None, False, None),
+        (1, ia.Codec.BLOSCLZ, [ia.Filter.SHUFFLE], [50, 50], [20, 20], True, None),
+        (9, ia.Codec.ZSTD, [ia.Filter.SHUFFLE, ia.Filter.DELTA], [50, 50], [20, 20], False, b"test_config_params_sparse.iarr"),
+        (6, ia.Codec.ZSTD, [ia.Filter.SHUFFLE], [100, 50], [50, 20], True, b"test_config_params_contiguous.iarr"),
+        (0, ia.Codec.ZSTD, [ia.Filter.SHUFFLE], None, None, False, None),
     ],
 )
 def test_global_config(clevel, codec, filters, chunks, blocks, contiguous, urlpath):
