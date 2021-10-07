@@ -16,4 +16,4 @@ d = ia.open("red.iarr")
 
 np.testing.assert_allclose(d.data, cn2)
 print("Matrix reduction is working!")
-os.remove("red.iarr")
+ia.remove_urlpath("red.iarr")

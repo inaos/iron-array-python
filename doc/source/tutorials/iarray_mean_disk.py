@@ -60,7 +60,7 @@ mean_expr = (precip1 + precip2 + precip3) / 3
 t = time() - t0
 print("mean expr time ->", round(t, 3))
 
-if os.path.exists("mean-3m.iarr"): os.remove("mean-3m.iarr")
+if os.path.exists("mean-3m.iarr"): ia.remove_urlpath("mean-3m.iarr")
 t0 = time()
 mean_disk = iarray_mean_disk(mean_expr)
 t = time() - t0
@@ -78,7 +78,7 @@ def iarray_trans_disk(expr):
 trans_expr = (
     ia.tan(precip1) * (ia.sin(precip1) * ia.sin(precip2) + ia.cos(precip2)) + ia.sqrt(precip3) * 2
 )
-if os.path.exists("trans-3m.iarr"): os.remove("trans-3m.iarr")
+if os.path.exists("trans-3m.iarr"): ia.remove_urlpath("trans-3m.iarr")
 t0 = time()
 trans_val = iarray_trans_disk(trans_expr)
 t = time() - t0

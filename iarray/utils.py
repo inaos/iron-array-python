@@ -23,10 +23,7 @@ def _check_path_mode(urlpath, mode):
     Based on `urlpath` and `mode`, remove the possible underlying storage.
     """
     if urlpath is not None and mode == b"w" and os.path.exists(urlpath):
-        if os.path.isdir(urlpath):
-            shutil.rmtree(urlpath)
-        else:
-            os.remove(urlpath)
+        ia.remove_urlpath(urlpath)
 
 
 def cmp_arrays(a, b, success=None) -> None:
