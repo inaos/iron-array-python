@@ -32,4 +32,10 @@ def test_load_save(shape, chunks, blocks, dtype, func, contiguous):
 
     np.testing.assert_almost_equal(an, bn)
 
+    # Overwrite existing array
+    ia.save(urlpath, a, contiguous=contiguous)
+    # Create the new persistent array
+    ia.save("new.iarr", a, contiguous=contiguous)
+
     ia.remove_urlpath(urlpath)
+    ia.remove_urlpath("new.iarr")

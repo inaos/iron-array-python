@@ -56,7 +56,8 @@ def cmp_arrays(a, b, success=None) -> None:
 
 # TODO: are cfg and kwargs needed here?
 def save(urlpath: str, iarr: ia.IArray, cfg: ia.Config = None, **kwargs) -> None:
-    """Save an array to a binary file in ironArray ``.iarr`` format.
+    """Save an array to a binary file in ironArray ``.iarr`` format. If the file already
+    exists it overwrites it.
 
     `cfg` and `kwargs` are the same than for :func:`empty`.
 
@@ -72,6 +73,7 @@ def save(urlpath: str, iarr: ia.IArray, cfg: ia.Config = None, **kwargs) -> None
     load : Load an array from disk.
     open : Open an array from disk.
     """
+    ia.remove_urlpath(urlpath)
     iarr.copy(cfg=cfg, urlpath=urlpath, **kwargs)
 
 
