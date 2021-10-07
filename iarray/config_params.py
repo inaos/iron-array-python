@@ -148,7 +148,7 @@ class Defaults(object):
     urlpath: str = None
     mode: str = "r"
 
-    contiguous: bool = False
+    contiguous: bool = None
     plainbuffer: bool = False
 
     def __post_init__(self):
@@ -307,8 +307,9 @@ class Store:
         'a' means read/write (create if doesn’t exist); 'w' means create (overwrite if exists);
         'w-' means create (fail if exists).  Default is 'r'.
     contiguous : bool
-        If True, the output array will be stored contiguously (as a frame), even when in-memory.  If False
-        (the default), the store will be sparse.
+        If True, the output array will be stored contiguously, even when in-memory.  If False,
+        the store will be sparse. The default value is False for in-memory and True for persistent
+        storage.
     plainbuffer : bool
         When True, the output array will be stored on a plain, contiguous buffer, without
         any compression.  This can help faster data sharing among other data containers
@@ -328,6 +329,10 @@ class Store:
         self.urlpath = (
             self.urlpath.encode("utf-8") if isinstance(self.urlpath, str) else self.urlpath
         )
+        if self.contiguous is None:
+            self.contiguous = True if self.urlpath is not None else False
+        else:
+            self.contiguous = self.contiguous
         self.mode = (
             self.mode.encode("utf-8") if isinstance(self.mode, str) else self.mode
         )
@@ -366,8 +371,8 @@ class Config(ext.Config):
         9 (max compression).  Default is 1.
     favor : Favor
         What favor when compressing. Possible values are :py:obj:`Favor.SPEED <Favor>`
-        for better speed, :py:obj:`Favor.CRATIO <Favor>` for bettwer compresion ratios
-        and :py:obj:`Favor.BALANCE <Favor>`.  Default is :py:obj:`Favor.BALANCE <Favor>`.
+        for better speed, :py:obj:`Favor.CRATIO <Favor>` for better compression ratios
+        and :py:obj:`Favor.BALANCE <Favor>` for a balance among the two.  Default is :py:obj:`Favor.BALANCE <Favor>`.
     filters : list
         The list of filters for Blosc.  Default is [:py:obj:`Filter.BITSHUFFLE <Filter>`].
     fp_mantissa_bits : int
