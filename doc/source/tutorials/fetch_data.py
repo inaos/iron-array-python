@@ -18,7 +18,7 @@ def open_zarr(year, month, datestart, dateend):
     return precip_zarr.precipitation_amount_1hour_Accumulation
 
 # WARNING: this is for debugging purposes only. In production comment out the line below!
-# if os.path.exists("precip-3m.iarr"): os.remove("precip-3m.iarr")
+# if os.path.exists("precip-3m.iarr"): ia.remove_urlpath("precip-3m.iarr")
 if os.path.exists("precip-3m.iarr"):
     print("Dataset %s is already here!" % "precip-3m.iarr")
     sys.exit(0)
@@ -30,7 +30,7 @@ precip_m2 = open_zarr(1987, 12, '1987-12-01', '1987-12-30 23:59')
 
 for path in ("precip1.iarr", "precip2.iarr", "precip3.iarr"):
     if os.path.exists(path):
-        os.remove(path)
+        ia.remove_urlpath(path)
 
 #ia.set_config(favor=ia.Favor.SPEED)
 m_shape = precip_m0.shape

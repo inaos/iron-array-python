@@ -46,7 +46,7 @@ if persistent:
         aia = ia.open("a.iarr")
         if aia.shape != shape or aia.chunks != chunks or aia.blocks != blocks:
             # Ooops, we cannot use the array on-disk.  Regenerate it.
-            os.remove(aurlpath)
+            ia.remove_urlpath(aurlpath)
             aia = ia.linspace(shape, -1, 1, store=astore)
 else:
     aia = ia.linspace(shape, -1, 1, store=astore)
@@ -59,14 +59,14 @@ if persistent:
         bia = ia.open("b.iarr")
         if bia.shape != shape or bia.chunks != chunks or bia.blocks != blocks:
             # Ooops, we cannot use the array on-disk.  Regenerate it.
-            os.remove(burlpath)
+            ia.remove_urlpath(burlpath)
             bia = ia.linspace(shape, -1, 1, store=bstore)
 else:
     bia = ia.linspace(shape, -1, 1, store=bstore)
 
 if persistent:
     if os.path.exists(curlpath):
-        os.remove(curlpath)
+        ia.remove_urlpath(curlpath)
 
 print(f"Start actual matmul with nthreads = {cfg.nthreads}")
 t0 = time()
@@ -75,8 +75,8 @@ print("Time for iarray matmul:", round((time() - t0), 3))
 
 if persistent:
     # if os.path.exists(aurlpath):
-    #     os.remove(aurlpath)
+    #     ia.remove_urlpath(aurlpath)
     # if os.path.exists(burlpath):
-    #     os.remove(burlpath)
+    #     ia.remove_urlpath(burlpath)
     if os.path.exists(curlpath):
-        os.remove(curlpath)
+        ia.remove_urlpath(curlpath)
