@@ -373,6 +373,7 @@ class Config(ext.Config):
         What favor when compressing. Possible values are :py:obj:`Favor.SPEED <Favor>`
         for better speed, :py:obj:`Favor.CRATIO <Favor>` for better compression ratios
         and :py:obj:`Favor.BALANCE <Favor>` for a balance among the two.  Default is :py:obj:`Favor.BALANCE <Favor>`.
+        For this to work properly, `btune` has to be activated (the default).
     filters : list
         The list of filters for Blosc.  Default is [:py:obj:`Filter.BITSHUFFLE <Filter>`].
     fp_mantissa_bits : int
