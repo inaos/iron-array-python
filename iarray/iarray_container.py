@@ -917,6 +917,43 @@ def opt_gemv(a: IArray, b: IArray, cfg=None, **kwargs):
         return ext.opt_gemv(cfg, a, b)
 
 
+def matmul_params(ashape, bshape, itemsize=8, l2_size=512 * 1024, chunk_size=128 * 1024 * 1024):
+    """
+    Given a matmul operation a * b = c, it computes the chunks and the blocks of the operands
+    (a and b) to use an optimized version of the matmul algorithm.
+
+    Parameters
+    ----------
+    ashape: tuple or list
+        The shape of the operand a.
+    bshape: tuple or list
+        The shape of the operand b.
+    itemsize:
+        The size of each item.
+    l2_size: int
+        The size of the l2 cache. It is used to compute the size of the blocks.
+    chunk_size: int
+        The maximum chunksize allowed. It is used to compute the size of the chunks.
+
+    Returns
+    -------
+    params: tuple
+        A tuple specifying the chunks and the blocks of the matmul operands A and b
+        (A_chunks, A_blocks, b_chunks, b_blocks).
+    """
+    if len(ashape) != 2:
+        raise AttributeError("The dimension of a must be 2")
+    if len(bshape) != 1 and len(bshape) != 2:
+        raise AttributeError("The dimension of b must be 1 or 2")
+    if ashape[1] != bshape[0]:
+        raise AttributeError("ashape[1] must be equal to bshape[0]")
+
+    if len(bshape) == 1:
+        return matmul_gemv_params(ashape[0], ashape[1], itemsize, l2_size, chunk_size)
+    else:
+        return matmul_gemm_params(ashape[0], ashape[1], bshape[1], itemsize, l2_size, chunk_size)
+
+
 def matmul_gemv_params(M, N, itemsize=8, l2_size=512 * 1024, chunk_size=128 * 1024 * 1024):
     """
     Given a matmul operation A * b = c, it computes the chunks and the blocks of the operands
@@ -928,6 +965,7 @@ def matmul_gemv_params(M, N, itemsize=8, l2_size=512 * 1024, chunk_size=128 * 10
         Specifies the number of rows of the matrix A and of the matrix C. M must be at least zero.
     N: int
         Specifies the number of columns of the matrix A and the number of rows of the vector b.
+    itemsize:
         The size of each item.
     l2_size: int
         The size of the l2 cache. It is used to compute the size of the blocks.
