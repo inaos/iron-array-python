@@ -938,8 +938,8 @@ def matmul_params(ashape, bshape, itemsize=8, l2_size=512 * 1024, chunk_size=128
     Returns
     -------
     params: tuple
-        A tuple specifying the chunks and the blocks of the matmul operands A and b
-        (A_chunks, A_blocks, b_chunks, b_blocks).
+        A tuple specifying the chunks and the blocks of the matmul operands a and b
+        (achunks, ablocks, bchunks, bblocks).
     """
     if len(ashape) != 2:
         raise AttributeError("The dimension of a must be 2")
@@ -956,15 +956,15 @@ def matmul_params(ashape, bshape, itemsize=8, l2_size=512 * 1024, chunk_size=128
 
 def matmul_gemv_params(M, N, itemsize=8, l2_size=512 * 1024, chunk_size=128 * 1024 * 1024):
     """
-    Given a matmul operation A * b = c, it computes the chunks and the blocks of the operands
-    (A and b) to use an optimized version of the matmul algorithm.
+    Given a matmul operation a * b = c, it computes the chunks and the blocks of the operands
+    (a and b) to use an optimized version of the matmul algorithm.
 
     Parameters
     ----------
     M: int
-        Specifies the number of rows of the matrix A and of the matrix C. M must be at least zero.
+        Specifies the number of rows of the matrix a and of the matrix c. M must be at least zero.
     N: int
-        Specifies the number of columns of the matrix A and the number of rows of the vector b.
+        Specifies the number of columns of the matrix a and the number of rows of the vector b.
     itemsize:
         The size of each item.
     l2_size: int
@@ -975,8 +975,8 @@ def matmul_gemv_params(M, N, itemsize=8, l2_size=512 * 1024, chunk_size=128 * 10
     Returns
     -------
     params: tuple
-        A tuple specifying the chunks and the blocks of the matmul operands A and b
-        (A_chunks, A_blocks, b_chunks, b_blocks).
+        A tuple specifying the chunks and the blocks of the matmul operands a and b
+        (achunks, ablocks, bchunks, bblocks).
     """
     l2_nelem = l2_size // itemsize
     block_nelem_dim = int(-1 + np.sqrt(1 + l2_nelem))
@@ -1020,8 +1020,8 @@ def matmul_gemv_params(M, N, itemsize=8, l2_size=512 * 1024, chunk_size=128 * 10
 
 def matmul_gemm_params(M, K, N, itemsize=8, l2_size=512 * 1024, chunk_size=128 * 1024 * 1024):
     """
-    Given a matmul operation A * B = C, it computes the chunks and the blocks of the operands
-    (A and B) to use an optimized version of the matmul algorithm.
+    Given a matmul operation a * b = c, it computes the chunks and the blocks of the operands
+    (a and b) to use an optimized version of the matmul algorithm.
 
     Parameters
     ----------
@@ -1043,8 +1043,8 @@ def matmul_gemm_params(M, K, N, itemsize=8, l2_size=512 * 1024, chunk_size=128 *
     Returns
     -------
     params: tuple
-        A tuple specifying the chunks and the blocks of the matmul operands A and B
-        (A_chunks, A_blocks, B_chunks, B_blocks).
+        A tuple specifying the chunks and the blocks of the matmul operands a and b
+        (achunks, ablocks, bchunks, bblocks).
     """
     l2_nelem = l2_size // itemsize
     block_nelem = l2_nelem // 3
@@ -1098,105 +1098,6 @@ def matmul_gemm_params(M, K, N, itemsize=8, l2_size=512 * 1024, chunk_size=128 *
     b_blocks = (k_block, n_block)
 
     return a_chunks, a_blocks, b_chunks, b_blocks
-
-
-def opt_gemm_params(M, K, N, itemsize=8, l2_size=512 * 1024):
-    l2_nelem = l2_size // itemsize
-    block_nelem = l2_nelem // 3
-    block_nelem_dim = int(np.sqrt(block_nelem))
-
-    n_block = block_nelem_dim
-    if n_block > N:
-        n_block = N
-
-    m_block = block_nelem // n_block
-    if m_block > M:
-        m_block = M
-
-    k_block = (l2_nelem - n_block * m_block) // (n_block + m_block)
-    if k_block > K:
-        k_block = K
-
-    k_chunk = K // k_block
-    if K % k_block != 0:
-        k_chunk += 1
-    k_chunk *= k_block
-
-    a_chunk_0 = m_block
-    a_chunk_1 = k_chunk
-
-    b_chunk_0 = k_chunk
-    b_chunk_1 = n_block
-
-    a_block_0 = a_chunk_0
-    a_block_1 = k_block
-
-    b_block_0 = k_block
-    b_block_1 = b_chunk_1
-
-    a_chunks = (a_chunk_0, a_chunk_1)
-    b_chunks = (b_chunk_0, b_chunk_1)
-    a_blocks = (a_block_0, a_block_1)
-    b_blocks = (b_block_0, b_block_1)
-
-    return a_chunks, a_blocks, b_chunks, b_blocks
-
-
-def opt_gemm(a: IArray, b: IArray, ott_b=False, cfg=None, **kwargs):
-    shape = (a.shape[0], b.shape[1]) if b.ndim == 2 else (a.shape[0],)
-
-    if cfg is None:
-        cfg = ia.get_config()
-
-    if (
-        a.chunks[0] % a.blocks[0] == 0
-        and a.chunks[1] % a.blocks[1] == 0
-        and b.chunks[0] % b.blocks[0] == 0
-        and b.chunks[1] % b.blocks[1] == 0
-    ):
-        # Bypass Caterva
-
-        if (
-            a.chunks[0] == a.blocks[0]
-            and b.chunks[1] == b.blocks[1]
-            and a.shape[1] < a.chunks[1] == b.chunks[0] > b.shape[0]
-        ):
-            # Optimize data extraction
-
-            if not ott_b:
-                c_chunk_0 = a.chunks[0]
-                c_chunk_1 = b.shape[1] // b.chunks[1]
-                if b.shape[1] % b.chunks[1] != 0:
-                    c_chunk_1 += 1
-                c_chunk_1 *= b.chunks[1]
-            else:
-                c_chunk_0 = a.shape[0] // a.chunks[0]
-                if a.shape[0] % a.chunks[0] != 0:
-                    c_chunk_0 += 1
-                c_chunk_0 *= a.chunks[0]
-                c_chunk_1 = b.chunks[1]
-
-            c_block_0 = a.chunks[0]
-            c_block_1 = b.chunks[1]
-
-            kwargs["chunks"] = (c_chunk_0, c_chunk_1)
-            kwargs["blocks"] = (c_block_0, c_block_1)
-
-            with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
-                if not ott_b:
-                    print("optimized gemm (a)...")
-                    return ext.opt_gemm_a(cfg, a, b)
-                else:
-                    print("optimized gemm (b)... ")
-                    return ext.opt_gemm_b(cfg, a, b)
-        else:
-            print("optimized matmul...")
-            with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
-                return ext.opt_gemm(cfg, a, b)
-    else:
-        # Other cases
-        print("default matmul...")
-        return ia.matmul(a, b, cfg=cfg, **kwargs)
 
 
 def matmul(a: IArray, b: IArray, cfg=None, **kwargs):
