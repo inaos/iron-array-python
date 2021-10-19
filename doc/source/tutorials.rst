@@ -18,4 +18,4 @@ The results shown here have been rendered on a specific server for your convenie
    tutorials/07.Expression_Evaluation_(User_Defined_Functions)
    tutorials/08.Expression_Evaluation_(On-Disk)
    tutorials/09.Error_handling
-   tutorials/10.Linear_Algebra
+   tutorials/10.Matrix_Multiplication
