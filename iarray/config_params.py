@@ -582,7 +582,10 @@ def set_config(cfg: Config = None, shape=None, **kwargs):
         cfg = copy.deepcopy(cfg)
 
     if kwargs != {}:
-        cfg = cfg._replace(**kwargs)
+        if cfg.contiguous is None and kwargs.get('urlpath') is not None:
+            cfg = cfg._replace(**dict(kwargs, contiguous=True))
+        else:
+            cfg = cfg._replace(**kwargs)
     if shape is not None:
         cfg.store._get_shape_advice(shape, cfg=cfg)
         cfg._replace(**{"store": cfg.store})
