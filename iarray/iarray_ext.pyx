@@ -699,7 +699,7 @@ def open(cfg, urlpath):
 
     urlpath = str(storage.urlpath)
     contiguous = storage.contiguous
-    store = ia.Store(chunks, blocks, urlpath, contiguous)
+    store = ia.Store(chunks=chunks, blocks=blocks, urlpath=urlpath, contiguous=contiguous)
 
     c_cfg = ia.Config(
         codec=codec,
