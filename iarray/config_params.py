@@ -584,6 +584,7 @@ def set_config(cfg: Config = None, shape=None, **kwargs):
         cfg = copy.deepcopy(cfg)
 
     if kwargs != {}:
+        # The default when creating frames on-disk is to use contiguous storage (mainly because of performance  reasons)
         if kwargs.get('contiguous', None) is None and cfg.contiguous is None and kwargs.get('urlpath', None) is not None:
             cfg = cfg._replace(**dict(kwargs, contiguous=True))
         else:
