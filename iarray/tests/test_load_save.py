@@ -37,5 +37,7 @@ def test_load_save(shape, chunks, blocks, dtype, func, contiguous):
     # Create the new persistent array
     ia.save("new.iarr", a, contiguous=contiguous)
 
+    b = ia.open(urlpath)
+    assert(b.cfg.contiguous == contiguous)
     ia.remove_urlpath(urlpath)
     ia.remove_urlpath("new.iarr")

@@ -435,6 +435,8 @@ class Config(ext.Config):
     plainbuffer: bool = field(default_factory=defaults._plainbuffer)
 
     def __post_init__(self):
+        if self.urlpath is not None and self.contiguous is None:
+            self.contiguous = True
         global RANDOM_SEED
         # Increase the random seed each time so as to prevent re-using them
         if self.seed is None:
@@ -582,7 +584,7 @@ def set_config(cfg: Config = None, shape=None, **kwargs):
         cfg = copy.deepcopy(cfg)
 
     if kwargs != {}:
-        if cfg.contiguous is None and kwargs.get('urlpath') is not None:
+        if kwargs.get('contiguous', None) is None and cfg.contiguous is None and kwargs.get('urlpath', None) is not None:
             cfg = cfg._replace(**dict(kwargs, contiguous=True))
         else:
             cfg = cfg._replace(**kwargs)

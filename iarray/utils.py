@@ -71,18 +71,20 @@ def save(urlpath: str, iarr: ia.IArray, cfg: ia.Config = None, **kwargs) -> None
     open : Open an array from disk.
     """
     ia.remove_urlpath(urlpath)
+    if kwargs.get('contiguous', None) is None and cfg is None:
+        kwargs = dict(kwargs, contiguous=True)
     iarr.copy(cfg=cfg, urlpath=urlpath, **kwargs)
 
 
-def load(filename: str, cfg: ia.Config = None, **kwargs) -> ia.IArray:
+def load(urlpath: str, cfg: ia.Config = None, **kwargs) -> ia.IArray:
     """Open an array from a binary file in ironArray ``.iarr`` format and load data into memory.
 
     `cfg` and `kwargs` are the same than for :func:`empty`.
 
     Parameters
     ----------
-    filename : str
-        The file name to read.
+    urlpath : str
+        The url path to read.
 
     Returns
     -------
@@ -98,10 +100,10 @@ def load(filename: str, cfg: ia.Config = None, **kwargs) -> ia.IArray:
         cfg = ia.get_config()
 
     with ia.config(cfg=cfg, **kwargs) as cfg:
-        return ext.load(cfg, filename)
+        return ext.load(cfg, urlpath)
 
 
-def open(filename: str, cfg: ia.Config = None, **kwargs) -> ia.IArray:
+def open(urlpath: str, cfg: ia.Config = None, **kwargs) -> ia.IArray:
     """Open an array from a binary file in ironArray ``.iarr`` format. The array data will lazily
     be read when necessary.
 
@@ -109,8 +111,8 @@ def open(filename: str, cfg: ia.Config = None, **kwargs) -> ia.IArray:
 
     Parameters
     ----------
-    filename : str
-        The file name to read.
+    urlpath : str
+        The url path to read.
 
     Returns
     -------
@@ -125,7 +127,7 @@ def open(filename: str, cfg: ia.Config = None, **kwargs) -> ia.IArray:
         cfg = ia.get_config()
 
     with ia.config(cfg=cfg, **kwargs) as cfg:
-        return ext.open(cfg, filename)
+        return ext.open(cfg, urlpath)
 
 
 # TODO: are cfg and kwargs needed here?
