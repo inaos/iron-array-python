@@ -35,7 +35,8 @@ def iarray_open_data():
     precip3 = ia.open("precip3.iarr")
     return precip1, precip2, precip3
 
-
+cmd = 'vmtouch -e precip1.iarr precip2.iarr precip3.iarr'
+os.system(cmd)
 t0 = time()
 precip1, precip2, precip3 = iarray_open_data()
 t = time() - t0
@@ -55,6 +56,7 @@ def iarray_mean_disk(expr):
         expr_val = expr.eval(mode="w")
     return expr_val
 
+os.system(cmd)
 t0 = time()
 mean_expr = (precip1 + precip2 + precip3) / 3
 t = time() - t0
@@ -74,7 +76,7 @@ def iarray_trans_disk(expr):
         expr_val = expr.eval(mode="w")
     return expr_val
 
-
+os.system(cmd)
 trans_expr = (
     ia.tan(precip1) * (ia.sin(precip1) * ia.sin(precip2) + ia.cos(precip2)) + ia.sqrt(precip3) * 2
 )
