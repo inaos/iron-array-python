@@ -329,8 +329,8 @@ class Store:
         self.urlpath = (
             self.urlpath.encode("utf-8") if isinstance(self.urlpath, str) else self.urlpath
         )
-        if self.contiguous is None:
-            self.contiguous = True if self.urlpath is not None else False
+        if self.contiguous is None and self.urlpath is not None:
+            self.contiguous = True
         else:
             self.contiguous = self.contiguous
         self.mode = (
@@ -624,17 +624,14 @@ def config(cfg: Config = None, shape=None, **kwargs):
     global global_diff
     global defaults
 
+    cfg_aux = ia.get_config()
     cfg = set_config(cfg, shape, **kwargs)
 
     try:
         yield cfg
     finally:
         global_diff.pop()
-
-        cfg_old = copy.deepcopy(global_config)
-        for diff in global_diff:
-            cfg_old = cfg_old._replace(**diff)
-        defaults.config = cfg_old
+        defaults.config = cfg_aux
 
 
 def reset_config_defaults():
