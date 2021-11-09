@@ -278,6 +278,19 @@ def test_nested_contexts():
     assert a.cratio > 1
 
 
+def test_default_params():
+    urlpath = "arr.iarr"
+    ia.remove_urlpath(urlpath)
+
+    cfg = ia.get_config()
+    a = ia.linspace([10], start=0, stop=1, urlpath=urlpath, contiguous=False)
+    cfg2 = ia.Config()
+
+    assert cfg.contiguous == cfg2.contiguous
+    assert cfg.urlpath == cfg2.urlpath
+    ia.remove_urlpath(urlpath)
+
+
 @pytest.fixture(scope="function", autouse=True)
 def cleanup(request):
     # Make the defaults sane for other tests to come
