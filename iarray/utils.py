@@ -59,7 +59,7 @@ def save(urlpath: str, iarr: ia.IArray, cfg: ia.Config = None, **kwargs) -> None
 
     The default for this function is `contiguous=True`.
 
-    `cfg` and `kwargs` are the same than for :func:`empty`.
+    `cfg` and `kwargs` are the same than for :func:`copy`.
 
     Parameters
     ----------

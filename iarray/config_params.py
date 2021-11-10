@@ -511,7 +511,6 @@ class Config(ext.Config):
 
 # Global config
 global_config = Config()
-global_diff = []
 
 
 def get_config(cfg=None):
@@ -532,15 +531,11 @@ def get_config(cfg=None):
     ia.set_config
     """
     global global_config
-    global global_diff
 
     if not cfg:
         cfg = global_config
     else:
         cfg = copy.deepcopy(cfg)
-
-    for diff in global_diff:
-        cfg = cfg._replace(**diff)
 
     return cfg
 
@@ -572,11 +567,9 @@ def set_config(cfg: Config = None, shape=None, **kwargs):
     ia.get_config
     """
     global global_config
-    global global_diff
     global defaults
 
     cfg_old = get_config()
-    d_old = asdict(cfg_old)
 
     if cfg is None:
         cfg = copy.deepcopy(cfg_old)
@@ -593,13 +586,7 @@ def set_config(cfg: Config = None, shape=None, **kwargs):
         cfg.store._get_shape_advice(shape, cfg=cfg)
         cfg._replace(**{"store": cfg.store})
 
-    d = asdict(cfg)
-
-    diff = {k: d[k] for k in d.keys() if d_old[k] != d[k]}
-    if "store" in diff:
-        diff["store"] = Store(**diff["store"])
-
-    global_diff.append(diff)
+    global_config = cfg
     defaults.config = cfg
 
     return get_config()
@@ -621,28 +608,28 @@ def config(cfg: Config = None, shape=None, **kwargs):
     ia.Config
     """
     global global_config
-    global global_diff
     global defaults
 
     cfg_aux = ia.get_config()
+    #print("cfg aux", cfg_aux)
     cfg = set_config(cfg, shape, **kwargs)
+    #print("després set config", cfg)
 
     try:
         yield cfg
     finally:
-        global_diff.pop()
+        #global_diff.pop()
         defaults.config = cfg_aux
+        global_config = cfg_aux
 
 
 def reset_config_defaults():
     """Reset the defaults of the configuration parameters."""
     global global_config
-    global global_diff
     global defaults
 
     defaults.config = Defaults()
     global_config = Config()
-    global_diff = []
     return global_config
 
 
