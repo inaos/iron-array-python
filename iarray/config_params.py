@@ -613,14 +613,11 @@ def config(cfg: Config = None, shape=None, **kwargs):
     global defaults
 
     cfg_aux = ia.get_config()
-    #print("cfg aux", cfg_aux)
     cfg = set_config(cfg, shape, **kwargs)
-    #print("després set config", cfg)
 
     try:
         yield cfg
     finally:
-        #global_diff.pop()
         defaults.config = cfg_aux
         global_config = cfg_aux
 
