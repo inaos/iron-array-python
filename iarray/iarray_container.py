@@ -77,7 +77,7 @@ class IArray(ext.Container):
         ----------
         cfg : Config
             The configuration for this operation.  If None (default), the
-            configuration from the array will be used without including any changes done inside contexts.
+            configuration from the array will be used instead of that of the current configuration.
         kwargs : dict
             A dictionary for setting some or all of the fields in the Config
             dataclass that should override the current configuration.
