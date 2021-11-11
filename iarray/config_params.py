@@ -460,7 +460,9 @@ class Config(ext.Config):
         if self.nthreads == 0:
             ncores = get_ncores(0)
             # Experiments say that nthreads is optimal when is ~1.5x the number of logical cores
-            self.nthreads = ncores // 2 + ncores // 4
+            #self.nthreads = ncores // 2 + ncores // 4
+            # More experiments with AMD 5950X seems to say that using all logical cores is better
+            self.nthreads = ncores
         if self.favor == ia.Favor.SPEED:
             self.codec = ia.Codec.LZ4 if self.codec == Defaults.codec else self.codec
             self.clevel = 9 if self.clevel == Defaults.clevel else self.clevel
