@@ -66,7 +66,7 @@ class IArray(ext.Container):
 
         Returns
         -------
-        np.ndarray
+        out: `np.ndarray <https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html>`_
         """
         return ia.iarray2numpy(self)
 
@@ -75,16 +75,16 @@ class IArray(ext.Container):
 
         Parameters
         ----------
-        cfg : Config
+        cfg : :class:`Config`
             The configuration for this operation.  If None (default), the
             configuration from the array will be used instead of that of the current configuration.
         kwargs : dict
-            A dictionary for setting some or all of the fields in the Config
+            A dictionary for setting some or all of the fields in the :class:`Config`
             dataclass that should override the current configuration.
 
         Returns
         -------
-        IArray
+        :ref:`IArray`
             The copy.
         """
         if cfg is None:
@@ -203,6 +203,20 @@ class IArray(ext.Container):
         return self.transpose()
 
     def transpose(self, **kwargs):
+        """Transpose the array.
+
+        Parameters
+        ----------
+        kwargs : dict
+            A dictionary for setting some or all of the fields in the :class:`Config`
+            dataclass that should override the current configuration.
+
+        Returns
+        -------
+        :ref:`IArray`
+            The transposed array.
+
+        """
         return ia.transpose(self, **kwargs)
 
     def abs(self):
@@ -211,17 +225,17 @@ class IArray(ext.Container):
 
         Parameters
         ----------
-        iarr: IArray
+        iarr: :ref:`IArray`
            Input array.
 
         Returns
         -------
-        abs: IArray
+        abs: :ref:`IArray`
            An array containing the absolute value of each element in x.
 
         References
         ----------
-        https://numpy.org/doc/stable/reference/generated/numpy.abs.html
+        `np.absolute <https://numpy.org/doc/stable/reference/generated/numpy.absolute.html>`_
         """
         return ia.LazyExpr(new_op=(self, "abs", None))
 
@@ -229,28 +243,28 @@ class IArray(ext.Container):
         """
         Trigonometric inverse cosine, element-wise.
 
-        The inverse of :py:obj:`cos` so that, if $y = \\\\cos(x)$, then $x = \\\\arccos(y)$.
+        The inverse of :py:obj:`cos` so that, if :math:`y = \\cos(x)`, then :math:`x = \\arccos(y)`.
 
         Parameters
         ----------
-        iarr: IArray
-            x-coordinate on the unit circle. For real arguments, the domain is $[-1, 1]$.
+        iarr: :ref:`IArray`
+            x-coordinate on the unit circle. For real arguments, the domain is :math:`\\left [ -1, 1 \\right]`.
 
         Returns
         -------
-        angle: IArray
+        angle: :ref:`IArray`
             The angle of the ray intersecting the unit circle at the given x-coordinate in radians
-            $[0, \\\\pi]$.
+            :math:`[0, \\pi]`.
 
         Notes
         -----
-        :py:obj:`arccos` is a multivalued function: for each x there are infinitely many numbers z
-        such that $\\\\cos(z) = x$. The convention is to return the angle z whose real part lies in
-        &[0, \\\\pi]$.
+        :py:obj:`arccos` is a multivalued function: for each :math:`x` there are infinitely many numbers :math:`z`
+        such that :math:`\\cos(z) = x`. The convention is to return the angle :math:`z` whose real part lies in
+        :math:`\\left [ 0, \\pi \\right]`.
 
         References
         ----------
-        https://numpy.org/doc/stable/reference/generated/numpy.arccos.html
+        `np.arccos <https://numpy.org/doc/stable/reference/generated/numpy.arccos.html>`_
         """
         return ia.LazyExpr(new_op=(self, "acos", None))
 
@@ -258,28 +272,28 @@ class IArray(ext.Container):
         """
         Trigonometric inverse sine, element-wise.
 
-        The inverse of :py:obj:`sin` so that, if $y = \\\\sin(x)$, then $x = \\\\arcsin(y)$.
+        The inverse of :py:obj:`sin` so that, if :math:`y = \\sin(x)`, then :math:`x = \\arcsin(y)`.
 
         Parameters
         ----------
-        iarr: IArray
+        iarr: :ref:`IArray`
            y-coordinate on the unit circle.
 
         Returns
         -------
-        angle: IArray
-           The inverse sine of each element in x, in radians and in the closed interval
-           $\\\\left[-\\\\frac{\\\\pi}{2}, \\\\frac{\\\\pi}{2}\\\\right]$.
+        angle: :ref:`IArray`
+           The inverse sine of each element in :math:`x`, in radians and in the closed interval
+           :math:`\\left[-\\frac{\\pi}{2}, \\frac{\\pi}{2}\\right]`.
 
         Notes
         -----
-        :py:obj:`arcsin` is a multivalued function: for each x there are infinitely many numbers z
-        such that $\\\\sin(z) = x$. The convention is to return the angle z whose real part lies in
-        $\\\\left[-\\\\frac{\\\\pi}{2}, \\\\frac{\\\\pi}{2}\\\\right]$.
+        :py:obj:`arcsin` is a multivalued function: for each :math:`x` there are infinitely many numbers :math:`z`
+        such that :math:`\\sin(z) = x`. The convention is to return the angle :math:`z` whose real part lies in
+        :math:`\\left[-\\frac{\\pi}{2}, \\frac{\\pi}{2}\\right]`.
 
         References
         ----------
-        https://numpy.org/doc/stable/reference/generated/numpy.arcsin.html
+        `np.arcsin <https://numpy.org/doc/stable/reference/generated/numpy.arcsin.html>`_
         """
         return ia.LazyExpr(new_op=(self, "asin", None))
 
@@ -287,51 +301,51 @@ class IArray(ext.Container):
         """
         Trigonometric inverse tangent, element-wise.
 
-        The inverse of :py:obj:`tan` so that, if $y = \\\\tan(x)$, then $x = \\\\arctan(y)$.
+        The inverse of :py:obj:`tan` so that, if :math:`y = \\tan(x)`, then :math:`x = \\arctan(y)`.
 
         Parameters
         ----------
-        iarr: IArray
+        iarr: :ref:`IArray`
             Input array.
 
         Returns
         -------
-        angle: IArray
+        angle: :ref:`IArray`
             Array of angles in radians, in the range
-            $\\\\left[-\\\\frac{\\\\pi}{2}, \\\\frac{\\\\pi}{2}\\\\right]$.
+            :math:`\\left[-\\frac{\\pi}{2}, \\frac{\\pi}{2}\\right]`.
 
         Notes
         -----
-        :py:obj:`arctan` is a multi-valued function: for each x there are infinitely many numbers z
-        such that $\\\\tan(z) = x$. The convention is to return the angle z whose real part lies in
-        $\\\\left[-\\\\frac{\\\\pi}{2}, \\\\frac{\\\\pi}{2}\\\\right]$.
+        :py:obj:`arctan` is a multi-valued function: for each x there are infinitely many numbers :math:`z`
+        such that :math:`\\tan(z) = x`. The convention is to return the angle :math:`z` whose real part lies in
+        :math:`\\left[-\\frac{\\pi}{2}, \\frac{\\pi}{2}\\right]`.
 
         References
         ----------
-        https://numpy.org/doc/stable/reference/generated/numpy.arctan.html
+        `np.arctan <https://numpy.org/doc/stable/reference/generated/numpy.arctan.html>`_
         """
         return ia.LazyExpr(new_op=(self, "atan", None))
 
     def arctan2(self, op2):
         """
-        Element-wise arc tangent of $\\\\frac{iarr_1}{iarr_2}$ choosing the quadrant correctly.
+        Element-wise arc tangent of :math:`\\frac{iarr_1}{iarr_2}` choosing the quadrant correctly.
 
 
         Parameters
         ----------
-        iarr1: IArray
+        iarr1: :ref:`IArray`
             y-coordinates.
-        iarr2: IArray
+        iarr2: :ref:`IArray`
             x-coordinates.
 
         Returns
         -------
-        angle: IArray
-            Array of angles in radians, in the range $[-\\\\pi, \\\\pi]$.
+        angle: :ref:`IArray`
+            Array of angles in radians, in the range :math:`[-\\pi, \\pi]`.
 
         References
         ----------
-        https://numpy.org/doc/stable/reference/generated/numpy.arctan2.html
+        `np.arctan2 <https://numpy.org/doc/stable/reference/generated/numpy.arctan2.html>`_
         """
         return ia.LazyExpr(new_op=(self, "atan2", op2))
 
@@ -353,21 +367,21 @@ class IArray(ext.Container):
 
     def ceil(self):
         """
-        Return the ceiling of the input, element-wise.  It is often denoted as $\\\\lceil x \\\\rceil$.
+        Return the ceiling of the input, element-wise.  It is often denoted as :math:`\\lceil x \\rceil`.
 
         Parameters
         ----------
-        iarr: IArray
+        iarr: :ref:`IArray`
             Input array.
 
         Returns
         -------
-        out: IArray
-            The ceiling of each element in x.
+        out: :ref:`IArray`
+            The ceiling of each element in :math:`x`.
 
         References
         ----------
-        https://numpy.org/doc/stable/reference/generated/numpy.ceil.html
+        `np.ceil <https://numpy.org/doc/stable/reference/generated/numpy.ceil.html>`_
         """
         return ia.LazyExpr(new_op=(self, "ceil", None))
 
@@ -377,17 +391,17 @@ class IArray(ext.Container):
 
         Parameters
         ----------
-        iarr: IArray
+        iarr: :ref:`IArray`
             Angle, in radians.
 
         Returns
         -------
-        out: IArray
+        out: :ref:`IArray`
             The corresponding cosine values.
 
         References
         ----------
-        https://numpy.org/doc/stable/reference/generated/numpy.cos.html
+        `np.cos <https://numpy.org/doc/stable/reference/generated/numpy.cos.html>`_
         """
         return ia.LazyExpr(new_op=(self, "cos", None))
 
@@ -399,17 +413,17 @@ class IArray(ext.Container):
 
         Parameters
         ----------
-        iarr: IArray
+        iarr: :ref:`IArray`
             Input data.
 
         Returns
         -------
-        out: IArray
+        out: :ref:`IArray`
             The corresponding hyperbolic cosine values.
 
         References
         ----------
-        https://numpy.org/doc/stable/reference/generated/numpy.cosh.html
+        `np.cosh <https://numpy.org/doc/stable/reference/generated/numpy.cosh.html>`_
         """
         return ia.LazyExpr(new_op=(self, "cosh", None))
 
@@ -419,37 +433,37 @@ class IArray(ext.Container):
 
         Parameters
         ----------
-        iarr: IArray
+        iarr: :ref:`IArray`
             Input array.
 
         Returns
         -------
-        out: IArray
+        out: :ref:`IArray`
             Element-wise exponential of input data.
 
         References
         ----------
-        See https://numpy.org/doc/stable/reference/generated/numpy.exp.html
+        `np.exp <https://numpy.org/doc/stable/reference/generated/numpy.exp.html>`_
         """
         return ia.LazyExpr(new_op=(self, "exp", None))
 
     def floor(self):
         """
-        Return the floor of the input, element-wise. It is often denoted as $\\\\lfloor x \\\\rfloor$.
+        Return the floor of the input, element-wise. It is often denoted as :math:`\\lfloor x \\rfloor`.
 
         Parameters
         ----------
-        iarr: IArray
+        iarr: :ref:`IArray`
             Input array.
 
         Returns
         -------
-        out: IArray
+        out: :ref:`IArray`
             The floor of each element in input data.
 
         References
         ----------
-        https://numpy.org/doc/stable/reference/generated/numpy.floor.html
+        `np.floor <https://numpy.org/doc/stable/reference/generated/numpy.floor.html>`_
         """
         return ia.LazyExpr(new_op=(self, "floor", None))
 
@@ -458,21 +472,21 @@ class IArray(ext.Container):
         Natural logarithm, element-wise.
 
         The natural logarithm log is the inverse of the exponential function, so that
-        $\\\\log(\\\\exp(x)) = x$. The natural logarithm is logarithm in base $e$.
+        :math:`\\log(\\exp(x)) = x`. The natural logarithm is logarithm in base :math:`e`.
 
         Parameters
         ----------
-        iarr: IArray
+        iarr: :ref:`IArray`
             Input array.
 
         Returns
         -------
-        out: IArray
+        out: :ref:`IArray`
             The natural logarithm of input data, element-wise.
 
         References
         ----------
-        https://numpy.org/doc/stable/reference/generated/numpy.log.html
+        `np.log <https://numpy.org/doc/stable/reference/generated/numpy.log.html>`_
         """
         return ia.LazyExpr(new_op=(self, "log", None))
 
@@ -482,17 +496,17 @@ class IArray(ext.Container):
 
         Parameters
         ----------
-        iarr: IArray
+        iarr: :ref:`IArray`
             Input array.
 
         Returns
         -------
-        out: IArray
+        out: :ref:`IArray`
             The logarithm to the base 10 of input data, element-wise.
 
         References
         ----------
-        https://numpy.org/doc/stable/reference/generated/numpy.log10.html
+        `np.log10 <https://numpy.org/doc/stable/reference/generated/numpy.log10.html>`_
         """
         return ia.LazyExpr(new_op=(self, "log10", None))
 
@@ -502,17 +516,17 @@ class IArray(ext.Container):
 
         Parameters
         ----------
-        iarr: IArray
+        iarr: :ref:`IArray`
             Input array.
 
         Returns
         -------
-        out: IArray
-            Returned array $out = -iarr$.
+        out: :ref:`IArray`
+            Returned array :math:`out = -iarr`.
 
         References
         ----------
-        https://numpy.org/doc/stable/reference/generated/numpy.log10.html
+        `np.negative <https://numpy.org/doc/stable/reference/generated/numpy.negative.html>`_
         """
         return ia.LazyExpr(new_op=(self, "negate", None))
 
@@ -522,19 +536,19 @@ class IArray(ext.Container):
 
         Parameters
         ----------
-        iarr1: IArray
+        iarr1: :ref:`IArray`
             The bases.
-        iarr1: IArray
+        iarr1: :ref:`IArray`
             The exponents.
 
         Returns
         -------
-        out: IArray
+        out: :ref:`IArray`
             The bases raised to the exponents.
 
         References
         ----------
-        https://numpy.org/doc/stable/reference/generated/numpy.log10.html
+        `np.power <https://numpy.org/doc/stable/reference/generated/numpy.power.html>`_
         """
         return ia.LazyExpr(new_op=(self, "pow", op2))
 
@@ -544,17 +558,17 @@ class IArray(ext.Container):
 
         Parameters
         ----------
-        iarr: IArray
+        iarr: :ref:`IArray`
             Angle, in radians.
 
         Returns
         -------
-        out: IArray
+        out: :ref:`IArray`
             The corresponding sine values.
 
         References
         ----------
-        https://numpy.org/doc/stable/reference/generated/numpy.sin.html
+        `np.sin <https://numpy.org/doc/stable/reference/generated/numpy.sin.html>`_
         """
         return ia.LazyExpr(new_op=(self, "sin", None))
 
@@ -566,17 +580,17 @@ class IArray(ext.Container):
 
         Parameters
         ----------
-        iarr: IArray
+        iarr: :ref:`IArray`
             Input data.
 
         Returns
         -------
-        out: IArray
+        out: :ref:`IArray`
             The corresponding hyperbolic sine values.
 
         References
         ----------
-        https://numpy.org/doc/stable/reference/generated/numpy.sinh.html
+        `np.sinh <https://numpy.org/doc/stable/reference/generated/numpy.sinh.html>`_
         """
         return ia.LazyExpr(new_op=(self, "sinh", None))
 
@@ -586,17 +600,17 @@ class IArray(ext.Container):
 
         Parameters
         ----------
-        iarr: IArray
+        iarr: :ref:`IArray`
             The values whose square-roots are required.
 
         Returns
         -------
-        out: IArray
+        out: :ref:`IArray`
             An array containing the positive square-root of each element in input data.
 
         References
         ----------
-        https://numpy.org/doc/stable/reference/generated/numpy.sqrt.html
+        `np.sqrt <https://numpy.org/doc/stable/reference/generated/numpy.sqrt.html>`_
         """
         return ia.LazyExpr(new_op=(self, "sqrt", None))
 
@@ -608,17 +622,17 @@ class IArray(ext.Container):
 
         Parameters
         ----------
-        iarr: IArray
+        iarr: :ref:`IArray`
             Input data.
 
         Returns
         -------
-        out: IArray
+        out: :ref:`IArray`
             The corresponding tangent values.
 
         References
         ----------
-        https://numpy.org/doc/stable/reference/generated/numpy.tan.html
+        `np.tan <https://numpy.org/doc/stable/reference/generated/numpy.tan.html>`_
         """
         return ia.LazyExpr(new_op=(self, "tan", None))
 
@@ -630,17 +644,17 @@ class IArray(ext.Container):
 
         Parameters
         ----------
-        iarr: IArray
+        iarr: :ref:`IArray`
             Input data.
 
         Returns
         -------
-        out: IArray
+        out: :ref:`IArray`
             The corresponding hyperbolic tangent values.
 
         References
         ----------
-        https://numpy.org/doc/stable/reference/generated/numpy.tanh.html
+        `np.tanh <https://numpy.org/doc/stable/reference/generated/numpy.tanh.html>`_
         """
         return ia.LazyExpr(new_op=(self, "tanh", None))
 
@@ -769,22 +783,22 @@ def max(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwar
 
     Parameters
     ----------
-    a : IArray
+    a : :ref:`IArray`
         Input data.
     axis : None, int, tuple of ints, optional
         Axis or axes along which the reduction is performed. The default (axis = None) is perform
         the reduction over all dimensions of the input array.
         If this is a tuple of ints, a reduction is performed on multiple axes, instead of a single
         axis or all the axes as default.
-    cfg : Config or None
+    cfg : :class:`Config` or None
         The configuration for this operation. If None (default), the current configuration will be
         used.
     kwargs : dict
-        A dictionary for setting some or all of the fields in the Config dataclass that should
+        A dictionary for setting some or all of the fields in the :class:`Config` dataclass that should
         override the current configuration.
     Returns
     -------
-    max : IArray or float
+    max : :ref:`IArray` or float
         Maximum of a. If axis is None, the result is a float value. If axis is given, the result is
         an array of dimension a.ndim - len(axis).
     """
@@ -798,22 +812,22 @@ def min(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwar
 
     Parameters
     ----------
-    a : IArray
+    a : :ref:`IArray`
         Input data.
     axis : None, int, tuple of ints, optional
         Axis or axes along which the reduction is performed. The default (axis = None) is perform
         the reduction over all dimensions of the input array.
         If this is a tuple of ints, a reduction is performed on multiple axes, instead of a single
         axis or all the axes as default.
-    cfg : Config or None
+    cfg : :class:`Config` or None
         The configuration for this operation. If None (default), the current configuration will be
         used.
     kwargs : dict
-        A dictionary for setting some or all of the fields in the Config dataclass that should
+        A dictionary for setting some or all of the fields in the :class:`Config` dataclass that should
         override the current configuration.
     Returns
     -------
-    min : IArray or float
+    min : :ref:`IArray` or float
         Minimum of a. If axis is None, the result is a float value. If axis is given, the result is
         an array of dimension a.ndim - len(axis).
     """
@@ -826,22 +840,22 @@ def sum(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwar
 
     Parameters
     ----------
-    a : IArray
+    a : :ref:`IArray`
         Input data.
     axis : None, int, tuple of ints, optional
         Axis or axes along which the reduction is performed. The default (axis = None) is perform
         the reduction over all dimensions of the input array.
         If this is a tuple of ints, a reduction is performed on multiple axes, instead of a single
         axis or all the axes as default.
-    cfg : Config or None
+    cfg : :class:`Config` or None
         The configuration for this operation. If None (default), the current configuration will be
         used.
     kwargs : dict
-        A dictionary for setting some or all of the fields in the Config dataclass that should
+        A dictionary for setting some or all of the fields in the :class:`Config` dataclass that should
         override the current configuration.
     Returns
     -------
-    sum : IArray or float
+    sum : :ref:`IArray` or float
         Sum of a. If axis is None, the result is a float value. If axis is given, the result is
         an array of dimension a.ndim - len(axis).
     """
@@ -854,22 +868,22 @@ def prod(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwa
 
     Parameters
     ----------
-    a : IArray
+    a : :ref:`IArray`
         Input data.
     axis : None, int, tuple of ints, optional
         Axis or axes along which the reduction is performed. The default (axis = None) is perform
         the reduction over all dimensions of the input array.
         If this is a tuple of ints, a reduction is performed on multiple axes, instead of a single
         axis or all the axes as default.
-    cfg : Config or None
+    cfg : :class:`Config` or None
         The configuration for this operation. If None (default), the current configuration will be
         used.
     kwargs : dict
-        A dictionary for setting some or all of the fields in the Config dataclass that should
+        A dictionary for setting some or all of the fields in the :class:`Config` dataclass that should
         override the current configuration.
     Returns
     -------
-    prod : IArray or float
+    prod : :ref:`IArray` or float
         Product of a. If axis is None, the result is a float value. If axis is given, the result is
         an array of dimension a.ndim - len(axis).
     """
@@ -882,22 +896,22 @@ def mean(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwa
 
     Parameters
     ----------
-    a : IArray
+    a : :ref:`IArray`
         Input data.
     axis : None, int, tuple of ints, optional
         Axis or axes along which the reduction is performed. The default (axis = None) is perform
         the reduction over all dimensions of the input array.
         If this is a tuple of ints, a reduction is performed on multiple axes, instead of a single
         axis or all the axes as default.
-    cfg : Config or None
+    cfg : :class:`Config` or None
         The configuration for this operation. If None (default), the current configuration will be
         used.
     kwargs : dict
-        A dictionary for setting some or all of the fields in the Config dataclass that should
+        A dictionary for setting some or all of the fields in the :class:`Config` dataclass that should
         override the current configuration.
     Returns
     -------
-    mean : IArray or float
+    mean : :ref:`IArray` or float
         Mean of a. If axis is None, the result is a float value. If axis is given, the result is
         an array of dimension a.ndim - len(axis).
     """
@@ -919,7 +933,7 @@ def opt_gemv(a: IArray, b: IArray, cfg=None, **kwargs):
 
 def matmul_params(ashape, bshape, itemsize=8, l2_size=512 * 1024, chunk_size=128 * 1024 * 1024):
     """
-    Given a matmul operation a * b = c, it computes the chunks and the blocks of the operands
+    Given a matmul operation :math:`a \\cdot b = c` it computes the chunks and the blocks of the operands
     (a and b) to use an optimized version of the matmul algorithm.
 
     Parameters
@@ -1105,20 +1119,20 @@ def matmul(a: IArray, b: IArray, cfg=None, **kwargs):
 
     Parameters
     ----------
-    a : IArray
+    a : :ref:`IArray`
         First array.
-    b : IArray
+    b : :ref:`IArray`
         Second array.
-    cfg : Config
+    cfg : :class:`Config`
         The configuration for running the expression.
         If None (default), global defaults are used.
     kwargs : dict
-        A dictionary for setting some or all of the fields in the Config
+        A dictionary for setting some or all of the fields in the :class:`Config`
         dataclass that should override the current configuration.
 
     Returns
     -------
-    IArray
+    :ref:`IArray`
         The resulting array.
 
     """
@@ -1161,18 +1175,18 @@ def transpose(a: IArray, cfg=None, **kwargs):
 
     Parameters
     ----------
-    a : IArray
+    a : :ref:`IArray`
         The array to transpose.
-    cfg : Config
+    cfg : :class:`Config`
         The configuration for running the expression.
         If None (default), global defaults are used.
     kwargs : dict
-        A dictionary for setting some or all of the fields in the Config
+        A dictionary for setting some or all of the fields in the :class:`Config`
         dataclass that should override the current configuration.
 
     Returns
     -------
-    IArray
+    :ref:`IArray`
         The transposed array.
 
     """

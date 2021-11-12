@@ -329,7 +329,7 @@ cdef class Container:
 
     @property
     def is_plainbuffer(self):
-        """bool indicating if the container is based on a plainbuffer or not"""
+        """bool indicating if the container is based on a plainbuffer or not."""
         cdef ciarray.iarray_storage_t storage
         iarray_check(ciarray.iarray_get_storage(self.context.ia_ctx, self.ia_container, &storage))
         if storage.backend == ciarray.IARRAY_STORAGE_PLAINBUFFER:
@@ -372,7 +372,7 @@ cdef class Container:
 
     @property
     def cratio(self):
-        """Array compression ratio"""
+        """Array compression ratio."""
         cdef ciarray.int64_t nbytes, cbytes
         iarray_check(ciarray.iarray_container_info(self.ia_container, &nbytes, &cbytes))
         return <double>nbytes / <double>cbytes

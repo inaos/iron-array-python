@@ -1,6 +1,10 @@
--------------------
-N-Dimensional Array
--------------------
+.. _IArray:
+
+-------
+IArray
+-------
+
+Multidimensional and compressed data container.
 
 .. currentmodule:: iarray
 

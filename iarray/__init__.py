@@ -39,6 +39,9 @@ else:
 
 # Compression codecs
 class Codec(Enum):
+    """
+    Available codecs.
+    """
     BLOSCLZ = 0
     LZ4 = 1
     LZ4HC = 2
@@ -49,6 +52,9 @@ class Codec(Enum):
 
 # Filter
 class Filter(Enum):
+    """
+    Available filters.
+    """
     NOFILTER = 0
     SHUFFLE = 1
     BITSHUFFLE = 2
@@ -58,6 +64,9 @@ class Filter(Enum):
 
 # Favor.  Select to favor compression speed, compression ratio or a balance between them.
 class Favor(Enum):
+    """
+    Which computer resource to be favored.
+    """
     BALANCE = 0
     SPEED = 1
     CRATIO = 2
@@ -65,6 +74,9 @@ class Favor(Enum):
 
 # Random generators
 class RandomGen(Enum):
+    """
+    Available random generators.
+    """
     MERSENNE_TWISTER = 0
     SOBOL = 1
 
@@ -72,7 +84,7 @@ class RandomGen(Enum):
 # Eval method
 class Eval(Enum):
     """
-    Available eval methods
+    Available eval methods.
     """
 
     AUTO = auto()
@@ -81,6 +93,9 @@ class Eval(Enum):
 
 
 class Reduce(Enum):
+    """
+    Available reduction operations.
+    """
     MAX = 0
     MIN = 1
     SUM = 2

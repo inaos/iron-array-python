@@ -41,7 +41,7 @@ class Expr(ext.Expression):
 
         Returns
         -------
-        IArray
+        :ref:`IArray`
             The output array.
         """
         return super().eval()
@@ -64,7 +64,7 @@ def check_inputs(inputs: list, shape):
 
 
 def expr_from_string(sexpr: str, inputs: dict, cfg: ia.Config = None, **kwargs) -> Expr:
-    """Create an `Expr` instance from a expression in string form.
+    """Create an :ref:`Expr <Expressions>` instance from a expression in string form.
 
     Parameters
     ----------
@@ -72,17 +72,21 @@ def expr_from_string(sexpr: str, inputs: dict, cfg: ia.Config = None, **kwargs) 
         An expression in string format.
     inputs : dict
         Map of variables in `sexpr` to actual arrays.
-    cfg : Config
+    cfg : :class:`Config`
         The configuration for running the expression.
         If None (default), global defaults are used.
     kwargs : dict
-        A dictionary for setting some or all of the fields in the Config
+        A dictionary for setting some or all of the fields in the :class:`Config`
         dataclass that should override the current configuration.
 
     Returns
     -------
-    Expr
+    :ref:`Expr <Expressions>`
         An expression ready to be evaluated via :func:`Expr.eval`.
+
+    See Also
+    --------
+    expr_from_udf
     """
     with ia.config(cfg, **kwargs):
         shape, dtype = check_inputs(list(inputs.values()), None)
@@ -95,7 +99,7 @@ def expr_from_string(sexpr: str, inputs: dict, cfg: ia.Config = None, **kwargs) 
 
 
 def expr_from_udf(udf: py2llvm.Function, inputs: list, shape=None, cfg=None, **kwargs) -> Expr:
-    """Create an `Expr` instance from an UDF function.
+    """Create an :ref:`Expr <Expressions>` instance from an UDF function.
 
     Parameters
     ----------
@@ -104,17 +108,21 @@ def expr_from_udf(udf: py2llvm.Function, inputs: list, shape=None, cfg=None, **k
     inputs : list
         List of arrays whose values are passed as arguments, after the output,
         to the UDF function.
-    cfg : Config
+    cfg : :class:`Config`
         The configuration for running the expression.
         If None (default), global defaults are used.
     kwargs : dict
-        A dictionary for setting some or all of the fields in the Config
+        A dictionary for setting some or all of the fields in the :class:`Config`
         dataclass that should override the current configuration.
 
     Returns
     -------
-    Expr
+    :ref:`Expr <Expressions>`
         An expression ready to be evaluated via :func:`Expr.eval`.
+
+    See Also
+    --------
+    expr_from_string
     """
     with ia.config(cfg, shape=shape, **kwargs):
         shape, dtype = check_inputs(inputs, shape)

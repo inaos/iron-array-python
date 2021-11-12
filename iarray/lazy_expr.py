@@ -187,16 +187,16 @@ class LazyExpr:
 
         Parameters
         ----------
-        cfg : ia.Config
+        cfg : :class:`Config`
             The configuration for this operation.  If None (default), the current
             configuration will be used.
         kwargs : dict
-            A dictionary for setting some or all of the fields in the ia.Config
+            A dictionary for setting some or all of the fields in the :class:`Config`
             dataclass that should override the current configuration.
 
         Returns
         -------
-        IArray
+        :ref:`IArray`
             The output array.
         """
         if cfg is None:

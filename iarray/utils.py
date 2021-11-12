@@ -59,11 +59,11 @@ def save(urlpath: str, iarr: ia.IArray, cfg: ia.Config = None, **kwargs) -> None
 
     The default for this function is `contiguous=True`.
 
-    `cfg` and `kwargs` are the same than for :func:`copy`.
+    `cfg` and `kwargs` are the same than for :func:`IArray.copy`.
 
     Parameters
     ----------
-    iarr : IArray
+    iarr : :ref:`IArray`
         The array to save.
     urlpath : str
         The url path to save the array.
@@ -91,7 +91,7 @@ def load(urlpath: str, cfg: ia.Config = None, **kwargs) -> ia.IArray:
 
     Returns
     -------
-    IArray
+    :ref:`IArray`
         The new loaded array.
 
     See Also
@@ -120,7 +120,7 @@ def open(urlpath: str, cfg: ia.Config = None, **kwargs) -> ia.IArray:
 
     Returns
     -------
-    IArray
+    :ref:`IArray`
         The new opened array.
 
     See Also
@@ -142,12 +142,12 @@ def iarray2numpy(iarr: ia.IArray, cfg: ia.Config = None, **kwargs) -> np.ndarray
 
     Parameters
     ----------
-    iarr : IArray
+    iarr : :ref:`IArray`
         The array to convert.
 
     Returns
     -------
-    np.ndarray
+    out: `np.ndarray <https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html>`_
         The new NumPy array.
 
     See Also
@@ -168,12 +168,12 @@ def numpy2iarray(arr: np.ndarray, cfg: ia.Config = None, **kwargs) -> ia.IArray:
 
     Parameters
     ----------
-    arr : np.ndarray
+    arr : `np.ndarray <https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html>`_
         The array to convert.
 
     Returns
     -------
-    IArray
+    :ref:`IArray`
         The new ironArray array.
 
     See Also
