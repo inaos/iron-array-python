@@ -64,7 +64,7 @@ def check_inputs(inputs: list, shape):
 
 
 def expr_from_string(sexpr: str, inputs: dict, cfg: ia.Config = None, **kwargs) -> Expr:
-    """Create an :ref:`Expr <Expressions>` instance from a expression in string form.
+    """Create an :class:`Expr` instance from a expression in string form.
 
     Parameters
     ----------
@@ -81,7 +81,7 @@ def expr_from_string(sexpr: str, inputs: dict, cfg: ia.Config = None, **kwargs) 
 
     Returns
     -------
-    :ref:`Expr <Expressions>`
+    :class:`Expr`
         An expression ready to be evaluated via :func:`Expr.eval`.
 
     See Also
@@ -99,7 +99,7 @@ def expr_from_string(sexpr: str, inputs: dict, cfg: ia.Config = None, **kwargs) 
 
 
 def expr_from_udf(udf: py2llvm.Function, inputs: list, shape=None, cfg=None, **kwargs) -> Expr:
-    """Create an :ref:`Expr <Expressions>` instance from an UDF function.
+    """Create an :class:`Expr` instance from an UDF function.
 
     Parameters
     ----------
@@ -117,7 +117,7 @@ def expr_from_udf(udf: py2llvm.Function, inputs: list, shape=None, cfg=None, **k
 
     Returns
     -------
-    :ref:`Expr <Expressions>`
+    :class:`Expr`
         An expression ready to be evaluated via :func:`Expr.eval`.
 
     See Also

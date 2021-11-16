@@ -1,8 +1,8 @@
 .. _IArray:
 
--------
-IArray
--------
+----------------
+IArray container
+----------------
 
 Multidimensional and compressed data container.
 

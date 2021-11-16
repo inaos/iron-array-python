@@ -933,8 +933,8 @@ def opt_gemv(a: IArray, b: IArray, cfg=None, **kwargs):
 
 def matmul_params(ashape, bshape, itemsize=8, l2_size=512 * 1024, chunk_size=128 * 1024 * 1024):
     """
-    Given a matmul operation :math:`a \\cdot b = c` it computes the chunks and the blocks of the operands
-    (a and b) to use an optimized version of the matmul algorithm.
+    Given a matrix multiplication of two arrays, it computes the chunks and the blocks of the operands
+    to use an optimized version of the matmul algorithm.
 
     Parameters
     ----------
