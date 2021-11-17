@@ -76,10 +76,10 @@ The UDF uses Python annotations so as to express properties like the data types 
 
         return 0
 
-    precip_expr = ia.expr_from_udf(mean, [precip1, precip2, precip3])
+    precip_expr = ia.expr_from_udf(mean_with_cap, [precip1, precip2, precip3])
     precip_mean = precip_expr.eval()
 
-Above we have an UDF called `mean` that produces an `out` data block of `float32` with 3 dimensions, and has 3 inputs (`p1`, `p2`, `p3`) also with a `float32` type and 3 dimensions as well.  The function returns an `int` as an error code (0 typically means `success`).  Then, it retrieves the shape of the view of one of the inputs (ironArray guarantees that all the views in inputs and output have the same shape) and does a nested `for loop` for computing the mean for every value in the inputs.
+Above we have an UDF called `mean_with_cap` that produces an `out` data block of `float32` with 3 dimensions, and has 3 inputs (`p1`, `p2`, `p3`) also with a `float32` type and 3 dimensions as well.  The function returns an `int` as an error code (0 typically means `success`).  Then, it retrieves the shape of the view of one of the inputs (ironArray guarantees that all the views in inputs and output have the same shape) and does a nested `for loop` for computing the mean for every value in the inputs.
 
 After that, the UDF is compiled and produces an :class:`Expr` expression via the `expr_from_udf` call.  The inputs are passed in the `expr_from_udf` call too, but there is no need to create the `out` array as one will be properly crafted and passed to the UDF during the execution of the `precip_expr.eval()` call.  The different `out` blocks coming out of the UDF are assembled internally by the computational engine in ironArray and delivered in the final `precip_mean` array.
 
