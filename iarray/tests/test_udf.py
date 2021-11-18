@@ -18,7 +18,6 @@ def cmp_udf_np(f, start_stop, shape, partitions, dtype, cparams, f_np=None):
                      tuples. Each tuple has 2 elements with the start and stop
                      arguments that define a linspace array.
         partitions : A tuple with the chunk and block shapes for iarrays.
-                     If None, a plainbuffer is used.
         dtype      : Data type.
         cparams    : Configuration parameters for ironArray.
         f_np       : An equivalent function for NumPy (for incompatible UDFs).
@@ -30,11 +29,9 @@ def cmp_udf_np(f, start_stop, shape, partitions, dtype, cparams, f_np=None):
     if type(start_stop) is tuple:
         start_stop = [start_stop]
 
-    if partitions is not None:
-        chunks, blocks = partitions
-        store = ia.Store(chunks, blocks)
-    else:
-        store = ia.Store(plainbuffer=True)
+    chunks, blocks = partitions
+    store = ia.Store(chunks, blocks)
+
     inputs = [
         ia.linspace(shape, start, stop, store=store, dtype=dtype, **cparams)
         for start, stop in start_stop
@@ -154,17 +151,6 @@ def f_math(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
     return 0
 
 
-@pytest.mark.parametrize(
-    "f,dtype", [(f_1dim, np.float64), (f_1dim_f32, np.float32), (f_math, np.float64)]
-)
-def test_1dim_plain(f, dtype):
-    shape = [10 * 1000]
-    cparams = dict(clevel=5, nthreads=16)
-    start, stop = 0, 10
-
-    cmp_udf_np(f, (start, stop), shape, None, dtype, cparams)
-
-
 @udf.jit
 def f_2dim(out: udf.Array(udf.float64, 2), x: udf.Array(udf.float64, 2)):
     n = x.shape[0]
@@ -186,16 +172,6 @@ def test_2dim(f):
     start, stop = 0, 10
 
     cmp_udf_np(f, (start, stop), shape, (chunks, blocks), dtype, cparams)
-
-
-@pytest.mark.parametrize("f", [f_2dim])
-def test_2dim_plain(f):
-    shape = [400, 800]
-    dtype = np.float64
-    cparams = dict()
-    start, stop = 0, 10
-
-    cmp_udf_np(f, (start, stop), shape, None, dtype, cparams)
 
 
 @udf.jit

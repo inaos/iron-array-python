@@ -6,6 +6,13 @@ from math import isclose
 
 # Slice
 
+slice_data = [
+    ([100, 100], [20, 20], [10, 13], True, None),
+    ([100, 130], [50, 50], [20, 25], False, None),
+    ([98, 78, 55, 21], [30, 30, 30, 21], [10, 12, 6, 21], True, "test_slice_acontiguous.iarr"),
+    ([100, 100], [30, 44], [30, 2], False, "test_slice_asparse.iarr"),
+]
+
 
 @pytest.mark.parametrize(
     "slices",
@@ -22,19 +29,11 @@ from math import isclose
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
 @pytest.mark.parametrize(
     "shape, chunks, blocks, acontiguous, aurlpath",
-    [
-        ([100, 100], [20, 20], [10, 13], True, None),
-        ([100, 130], None, None, False, None),
-        ([98, 78, 55, 21], None, None, True, "test_slice_acontiguous.iarr"),
-        ([100, 100], [30, 44], [30, 2], False, "test_slice_asparse.iarr"),
-    ],
+    slice_data,
 )
 def test_slice(slices, shape, chunks, blocks, dtype, acontiguous, aurlpath):
     ia.remove_urlpath(aurlpath)
-    if chunks is None:
-        store = ia.Store(plainbuffer=True)
-    else:
-        store = ia.Store(chunks, blocks, contiguous=acontiguous, urlpath=aurlpath)
+    store = ia.Store(chunks, blocks, contiguous=acontiguous, urlpath=aurlpath)
 
     a = ia.linspace(shape, -10, 10, store=store, dtype=dtype)
     an = ia.iarray2numpy(a)
@@ -66,19 +65,11 @@ def test_slice(slices, shape, chunks, blocks, dtype, acontiguous, aurlpath):
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
 @pytest.mark.parametrize(
     "shape, chunks, blocks, acontiguous, aurlpath",
-    [
-        ([100, 100], [20, 20], [10, 13], True, None),
-        ([100, 130], None, None, False, None),
-        ([98, 78, 55, 21], None, None, True, "test_slice_acontiguous.iarr"),
-        ([100, 100], [30, 44], [30, 2], False, "test_slice_asparse.iarr"),
-    ],
+    slice_data,
 )
 def test_double_slice(shape, chunks, blocks, dtype, acontiguous, aurlpath):
     ia.remove_urlpath(aurlpath)
-    if chunks is None:
-        store = ia.Store(plainbuffer=True)
-    else:
-        store = ia.Store(chunks, blocks, contiguous=acontiguous, urlpath=aurlpath)
+    store = ia.Store(chunks, blocks, contiguous=acontiguous, urlpath=aurlpath)
 
     a = ia.linspace(shape, -10, 10, store=store, dtype=dtype)
     b1 = a[4]

@@ -28,17 +28,17 @@ import numpy as np
         ),
         (
             [100, 100],
-            None,
-            None,
+            [100, 100],
+            [10, 10],
             False,
             "test_matmul_asparse.iarr",
             [100, 100],
-            None,
-            None,
+            [10, 10],
+            [10, 10],
             False,
             "test_matmul_bsparse.iarr",
-            None,
-            None,
+            [20, 20],
+            [10, 10],
             np.float32,
             False,
             "test_matmul_csparse.iarr",
@@ -62,25 +62,25 @@ import numpy as np
         ),
         (
             [100, 100],
-            None,
-            None,
+            [50, 50],
+            [20, 20],
             True,
             "test_matmul_acontiguous.iarr",
             [100],
-            None,
-            None,
+            [50],
+            [20],
             True,
             "test_matmul_bcontiguous.iarr",
-            None,
-            None,
+            [30],
+            [15],
             np.float32,
             True,
             "test_matmul_ccontiguous.iarr",
         ),
         (
             [100, 100],
-            None,
-            None,
+            [77, 12],
+            [23, 12],
             True,
             "test_matmul_acontiguous.iarr",
             [100, 100],
@@ -101,20 +101,20 @@ import numpy as np
             False,
             None,
             [100, 100],
-            None,
-            None,
+            [50, 45],
+            [20, 20],
             True,
             "test_matmul_bcontiguous.iarr",
-            None,
-            None,
+            [40, 27],
+            [20, 20],
             np.float32,
             True,
             "test_matmul_ccontiguous.iarr",
         ),
         (
             [100, 100],
-            None,
-            None,
+            [10, 10],
+            [10, 10],
             True,
             "test_matmul_acontiguous",
             [100],
@@ -135,8 +135,8 @@ import numpy as np
             False,
             "test_matmul_asparse.iarr",
             [100],
-            None,
-            None,
+            [50],
+            [25],
             False,
             None,
             [200],
@@ -168,25 +168,15 @@ def test_matmul(
     ia.remove_urlpath(aurlpath)
     ia.remove_urlpath(burlpath)
     ia.remove_urlpath(curlpath)
-    if achunks is None:
-        astore = ia.Store(plainbuffer=True)
-    else:
-        astore = ia.Store(achunks, ablocks, contiguous=acontiguous, urlpath=aurlpath)
+    astore = ia.Store(achunks, ablocks, contiguous=acontiguous, urlpath=aurlpath)
     a = ia.linspace(ashape, -10, 1, dtype=dtype, store=astore)
     an = ia.iarray2numpy(a)
 
-    if bchunks is None:
-        bstore = ia.Store(plainbuffer=True)
-    else:
-        bstore = ia.Store(bchunks, bblocks, contiguous=bcontiguous, urlpath=burlpath)
+    bstore = ia.Store(bchunks, bblocks, contiguous=bcontiguous, urlpath=burlpath)
     b = ia.linspace(bshape, -1, 10, dtype=dtype, store=bstore)
     bn = ia.iarray2numpy(b)
 
-    if cchunks is None:
-        cstore = ia.Store(plainbuffer=True)
-    else:
-        cstore = ia.Store(chunks=cchunks, blocks=cblocks, contiguous=ccontiguous, urlpath=curlpath)
-
+    cstore = ia.Store(chunks=cchunks, blocks=cblocks, contiguous=ccontiguous, urlpath=curlpath)
     c = ia.matmul(a, b, store=cstore)
     cn_2 = ia.iarray2numpy(c)
 
@@ -335,8 +325,8 @@ def test_matmul(
         ),
         (
             [1000, 500],
-            None,
-            None,
+            [200, 200],
+            [50, 50],
             [144, 55],
             [964, 465],
             False,
@@ -363,8 +353,8 @@ def test_matmul(
             True,
             None,
             [2000],
-            None,
-            None,
+            [500],
+            [100],
             [140],
             [420],
             True,
@@ -402,10 +392,7 @@ def test_matmul_slice(
     ia.remove_urlpath(burlpath)
     ia.remove_urlpath(curlpath)
 
-    if achunks is None:
-        astore = ia.Store(plainbuffer=True)
-    else:
-        astore = ia.Store(achunks, ablocks, contiguous=acontiguous, urlpath=aurlpath)
+    astore = ia.Store(achunks, ablocks, contiguous=acontiguous, urlpath=aurlpath)
     a = ia.linspace(ashape, -1, -2, dtype=dtype, store=astore)
     an = ia.iarray2numpy(a)
     aslices = tuple(slice(astart[i], astop[i]) for i in range(len(astart)))
@@ -413,10 +400,7 @@ def test_matmul_slice(
         aslices = aslices[0]
     asl = a[aslices]
 
-    if bchunks is None:
-        bstore = ia.Store(plainbuffer=True)
-    else:
-        bstore = ia.Store(bchunks, bblocks, contiguous=bcontiguous, urlpath=burlpath)
+    bstore = ia.Store(bchunks, bblocks, contiguous=bcontiguous, urlpath=burlpath)
     b = ia.linspace(bshape, 1, 200, dtype=dtype, store=bstore)
     bn = ia.iarray2numpy(b)
     bslices = tuple(slice(bstart[i], bstop[i]) for i in range(len(bstart)))
@@ -424,11 +408,7 @@ def test_matmul_slice(
         bslices = bslices[0]
     bsl = b[bslices]
 
-    if cchunks is None:
-        cstore = ia.Store(plainbuffer=True)
-    else:
-        cstore = ia.Store(chunks=cchunks, blocks=cblocks, contiguous=ccontiguous, urlpath=curlpath)
-
+    cstore = ia.Store(chunks=cchunks, blocks=cblocks, contiguous=ccontiguous, urlpath=curlpath)
     c = ia.matmul(asl, bsl, store=cstore)
     cn = np.matmul(an[aslices], bn[bslices])
 

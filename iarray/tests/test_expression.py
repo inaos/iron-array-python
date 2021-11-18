@@ -20,7 +20,18 @@ import numpy as np
             True,
             "test_expression_ycontiguous.iarr",
         ),  # TODO: fix this
-        (ia.Eval.ITERBLOSC, [100, 100], [10, 99], [4, 12], np.float64, "x", False, None, False, None),
+        (
+            ia.Eval.ITERBLOSC,
+            [100, 100],
+            [10, 99],
+            [4, 12],
+            np.float64,
+            "x",
+            False,
+            None,
+            False,
+            None,
+        ),
         (ia.Eval.ITERBLOSC, [1000], [110], [55], np.float32, "x", True, None, True, None),
         (
             ia.Eval.ITERBLOSC,
@@ -106,13 +117,35 @@ import numpy as np
             True,
             "test_expression_ycontiguous.iarr",
         ),  # check NumPy naming convention for ufuncs
-        (ia.Eval.AUTO, [1000], None, None, np.float64, "exp(x) + (log(x) - 1.35) - log10(x + .2)", True, None, False, None),
-        (ia.Eval.ITERCHUNK, [1000], None, None, np.float32, "sqrt(x) + atan2(x, x) + pow(x, x)", False, None, True, None),
         (
             ia.Eval.AUTO,
             [1000],
+            [500],
+            [100],
+            np.float64,
+            "exp(x) + (log(x) - 1.35) - log10(x + .2)",
+            True,
             None,
+            False,
             None,
+        ),
+        (
+            ia.Eval.ITERCHUNK,
+            [1000],
+            [500],
+            [200],
+            np.float32,
+            "sqrt(x) + atan2(x, x) + pow(x, x)",
+            False,
+            None,
+            True,
+            None,
+        ),
+        (
+            ia.Eval.AUTO,
+            [1000],
+            [500],
+            [250],
             np.float32,
             "sqrt(x) + arctan2(x, x) + power(x, x)",
             False,
@@ -120,12 +153,23 @@ import numpy as np
             True,
             "test_expression_ycontiguous.iarr",
         ),  # NumPy conventions
-        (ia.Eval.AUTO, [100, 100], None, None, np.float64, "(x - cos(1)) * 2", True, None, False, "test_expression_ysparse.iarr"),
+        (
+            ia.Eval.AUTO,
+            [100, 100],
+            [50, 50],
+            [25, 25],
+            np.float64,
+            "(x - cos(1)) * 2",
+            True,
+            None,
+            False,
+            "test_expression_ysparse.iarr",
+        ),
         (
             ia.Eval.ITERCHUNK,
             [8, 6, 7, 4, 5],
-            None,
-            None,
+            [2, 2, 2, 2, 2],
+            [2, 2, 2, 2, 2],
             np.float32,
             "(x - cos(y)) * (sin(x) + y) + 2 * x + y",
             False,
@@ -159,19 +203,19 @@ import numpy as np
         ),
     ],
 )
-def test_expression(method, shape, chunks, blocks, dtype, expression, xcontiguous, xurlpath, ycontiguous, yurlpath):
+def test_expression(
+    method, shape, chunks, blocks, dtype, expression, xcontiguous, xurlpath, ycontiguous, yurlpath
+):
     # The ranges below are important for not overflowing operations
     ia.remove_urlpath(xurlpath)
     ia.remove_urlpath(yurlpath)
     ia.remove_urlpath("test_expression_zarray.iarr")
-    if chunks is None:
-        xstore = ia.Store(plainbuffer=True)
-        ystore = ia.Store(plainbuffer=True)
-        zstore = ia.Store(plainbuffer=True)
-    else:
-        xstore = ia.Store(chunks=chunks, blocks=blocks, contiguous=xcontiguous, urlpath=xurlpath)
-        ystore = ia.Store(chunks=chunks, blocks=blocks, contiguous=ycontiguous, urlpath=yurlpath)
-        zstore = ia.Store(chunks=chunks, blocks=blocks, contiguous=xcontiguous, urlpath="test_expression_zarray.iarr")
+
+    xstore = ia.Store(chunks=chunks, blocks=blocks, contiguous=xcontiguous, urlpath=xurlpath)
+    ystore = ia.Store(chunks=chunks, blocks=blocks, contiguous=ycontiguous, urlpath=yurlpath)
+    zstore = ia.Store(
+        chunks=chunks, blocks=blocks, contiguous=xcontiguous, urlpath="test_expression_zarray.iarr"
+    )
 
     x = ia.linspace(shape, 0.1, 0.2, dtype=dtype, store=xstore)
     y = ia.linspace(shape, 0, 1, dtype=dtype, store=ystore)
@@ -219,17 +263,45 @@ def test_expression(method, shape, chunks, blocks, dtype, expression, xcontiguou
         ("abs(x)", "abs(x)", True, None, True, None),
         ("arccos(x)", "acos(x)", False, None, False, None),
         ("arcsin(x)", "asin(x)", True, "test_expression_xcontiguous.iarr", True, None),
-        ("arctan(x)", "atan(x)", False, "test_expression_xsparse.iarr", True, "test_expression_ycontiguous.iarr"),
-        ("arctan2(x, y)", "atan2(x, y)", True, "test_expression_xcontiguous.iarr", False, "test_expression_ysparse.iarr"),
+        (
+            "arctan(x)",
+            "atan(x)",
+            False,
+            "test_expression_xsparse.iarr",
+            True,
+            "test_expression_ycontiguous.iarr",
+        ),
+        (
+            "arctan2(x, y)",
+            "atan2(x, y)",
+            True,
+            "test_expression_xcontiguous.iarr",
+            False,
+            "test_expression_ysparse.iarr",
+        ),
         ("ceil(x)", "ceil(x)", False, None, True, None),
         ("cos(x)", "cos(x)", True, None, False, None),
         ("cosh(x)", "cosh(x)", True, "test_expression_xcontiguous.iarr", False, None),
-        ("exp(x)", "exp(x)", False, "test_expression_xsparse.iarr", True, "test_expression_ycontiguous.iarr"),
+        (
+            "exp(x)",
+            "exp(x)",
+            False,
+            "test_expression_xsparse.iarr",
+            True,
+            "test_expression_ycontiguous.iarr",
+        ),
         ("floor(x)", "floor(x)", False, None, False, None),
         ("log(x)", "log(x)", True, None, False, None),
         ("log10(x)", "log10(x)", True, "test_expression_xcontiguous.iarr", False, None),
         # ("negative(x)", "negate(x)"),
-        ("power(x, y)", "pow(x, y)", False, "test_expression_xsparse.iarr", False, "test_expression_ysparse.iarr"),
+        (
+            "power(x, y)",
+            "pow(x, y)",
+            False,
+            "test_expression_xsparse.iarr",
+            False,
+            "test_expression_ysparse.iarr",
+        ),
         ("sin(x)", "sin(x)", True, None, True, None),
         ("sinh(x)", "sinh(x)", False, None, False, None),
         ("sqrt(x)", "sqrt(x)", True, "test_expression_xcontiugous.iarr", True, None),
@@ -245,14 +317,18 @@ def test_ufuncs(ufunc, ia_expr, xcontiguous, xurlpath, ycontiguous, yurlpath):
     xstore = ia.Store(chunks=chunks, blocks=bshape, contiguous=xcontiguous, urlpath=xurlpath)
     ystore = ia.Store(chunks=chunks, blocks=bshape, contiguous=ycontiguous, urlpath=yurlpath)
     if yurlpath != None:
-        zstore = ia.Store(chunks=chunks, blocks=bshape, contiguous=ycontiguous, urlpath="test_expression_res.iarr")
+        zstore = ia.Store(
+            chunks=chunks,
+            blocks=bshape,
+            contiguous=ycontiguous,
+            urlpath="test_expression_res.iarr",
+        )
     else:
         zstore = ystore
 
     ia.remove_urlpath(xstore.urlpath)
     ia.remove_urlpath(ystore.urlpath)
     ia.remove_urlpath(zstore.urlpath)
-
 
     for dtype in np.float64, np.float32:
         # The ranges below are important for not overflowing operations
@@ -304,7 +380,13 @@ def test_ufuncs(ufunc, ia_expr, xcontiguous, xurlpath, ycontiguous, yurlpath):
         ("arctan", False, None, False, None),
         ("arctan2", True, None, True, "test_expression_ycontiguous.iarr"),
         ("ceil", False, None, False, "test_expression_ysparse.iarr"),
-        ("cos", True, "test_expression_xcontiguous.iarr", True, "test_expression_ycontiguous.iarr"),
+        (
+            "cos",
+            True,
+            "test_expression_xcontiguous.iarr",
+            True,
+            "test_expression_ycontiguous.iarr",
+        ),
         ("cosh", True, None, False, None),
         ("exp", False, None, True, None),
         ("floor", False, "test_expression_xsparse.iarr", False, "test_expression_ysparse.iarr"),
@@ -312,7 +394,7 @@ def test_ufuncs(ufunc, ia_expr, xcontiguous, xurlpath, ycontiguous, yurlpath):
         ("log10", True, "test_expression_xcontiguous.iarr", False, "test_expression_ysparse.iarr"),
         # "negative",
         ("power", True, "test_expression_xcontiguous.iarr", True, None),
-        ("sin",  True, "test_expression_xcontiguous.iarr", False, None),
+        ("sin", True, "test_expression_xcontiguous.iarr", False, None),
         ("sinh", True, None, False, "test_expression_ysparse.iarr"),
         ("sqrt", False, None, True, None),
         ("tan", False, "test_expression_xsparse.iarr", False, "test_expression_ysparse"),
@@ -376,108 +458,179 @@ def test_expr_ufuncs(ufunc, xcontiguous, xurlpath, ycontiguous, yurlpath):
 @pytest.mark.parametrize(
     "expr, np_expr, xcontiguous, xurlpath, ycontiguous, yurlpath, zcontiguous, zurlpath, tcontiguous, turlpath",
     [
-        ("x + y", "x + y", True, "test_expression_xcontiguous.iarr", True, None, True, None, True, None),
+        (
+            "x + y",
+            "x + y",
+            True,
+            "test_expression_xcontiguous.iarr",
+            True,
+            None,
+            True,
+            None,
+            True,
+            None,
+        ),
         (
             "(x + y) + z",
             "(x + y) + z",
-            False, "test_expression_xsparse.iarr",
-            True, "test_expression_ycontiguous.iarr",
-            True, "test_expression_zcontiguous.iarr",
-            False, None
+            False,
+            "test_expression_xsparse.iarr",
+            True,
+            "test_expression_ycontiguous.iarr",
+            True,
+            "test_expression_zcontiguous.iarr",
+            False,
+            None,
         ),
         (
             "(x + y) * (x + z)",
             "(x + y) * (x + z)",
-            False, None,
-            False, "test_expression_ysparse.iarr",
-            False, None,
-            False, None
+            False,
+            None,
+            False,
+            "test_expression_ysparse.iarr",
+            False,
+            None,
+            False,
+            None,
         ),
         (
             "(x + y + z) * (x + z)",
             "(x + y + z) * (x + z)",
-            True, None,
-            False, None,
-            False, None,
-            False, None
+            True,
+            None,
+            False,
+            None,
+            False,
+            None,
+            False,
+            None,
         ),
         (
             "(x + y - z) * (x + y + t)",
             "(x + y - z) * (x + y + t)",
-            False, None,
-            False, None,
-            False, None,
-            False, None
+            False,
+            None,
+            False,
+            None,
+            False,
+            None,
+            False,
+            None,
         ),
         (
             "(x - z + t) * (x + y - z)",
             "(x - z + t) * (x + y - z)",
-            False, None,
-            False, "test_expression_ysparse.iarr",
-            False, "test_expression_zsparse.iarr",
-            True, None
+            False,
+            None,
+            False,
+            "test_expression_ysparse.iarr",
+            False,
+            "test_expression_zsparse.iarr",
+            True,
+            None,
         ),
         (
             "(x - z + t) * (z + t - x)",
             "(x - z + t) * (z + t - x)",
-            True, "test_expression_xcontiguous.iarr",
-            True, "test_expression_ycontiguous.iarr",
-            True, "test_expression_zcontiguous.iarr",
-            True, "test_expression_tcontiguous.iarr"
+            True,
+            "test_expression_xcontiguous.iarr",
+            True,
+            "test_expression_ycontiguous.iarr",
+            True,
+            "test_expression_zcontiguous.iarr",
+            True,
+            "test_expression_tcontiguous.iarr",
         ),
         (
             "(x - z + t + y) * (t - y + z - x)",
             "(x - z + t + y) * (t - y + z - x)",
-            False, "test_expression_xsparse.iarr",
-            False, "test_expression_ysparse.iarr",
-            False, "test_expression_zsparse.iarr",
-            False, "test_expression_tsparse.iarr"
+            False,
+            "test_expression_xsparse.iarr",
+            False,
+            "test_expression_ysparse.iarr",
+            False,
+            "test_expression_zsparse.iarr",
+            False,
+            "test_expression_tsparse.iarr",
         ),
         (
             "(x - z + t + y) * (t - y + z - x)",
             "(x - z + t + y) * (t - y + z - x)",
-            True, None,
-            True, None,
-            True, None,
-            True, None
+            True,
+            None,
+            True,
+            None,
+            True,
+            None,
+            True,
+            None,
         ),
         # transcendental functions
         (
-             "x.cos() + y",
-             "np.cos(x) + y",
-             True, "test_expression_xcontiguous.iarr", True, "test_expression_ycontiguous.iarr",
-             True, None,
-             True, None
-         ),
+            "x.cos() + y",
+            "np.cos(x) + y",
+            True,
+            "test_expression_xcontiguous.iarr",
+            True,
+            "test_expression_ycontiguous.iarr",
+            True,
+            None,
+            True,
+            None,
+        ),
         ("ia.cos(x) + y", "np.cos(x) + y", False, None, False, None, False, None, False, None),
         (
-             "x.sin() * x.sin() + y.cos()",
-             "np.sin(x) * np.sin(x) + np.cos(y)",
-             False, "test_expression_xsparse.iarr",
-             True, "test_expression_xcontiguous.iarr",
-             False, None,
-             False, None
+            "x.sin() * x.sin() + y.cos()",
+            "np.sin(x) * np.sin(x) + np.cos(y)",
+            False,
+            "test_expression_xsparse.iarr",
+            True,
+            "test_expression_xcontiguous.iarr",
+            False,
+            None,
+            False,
+            None,
         ),
         (
             "x.tan() * (y.sin() * y.sin() + z.cos()) + (t.sqrt() * 2)",
             "np.tan(x) * (np.sin(y) * np.sin(y) + np.cos(z)) + (np.sqrt(t) * 2)",
-            True, None,
-            False, "test_expression_ysparse.iarr",
-            False, "test_expression_zsparse.iarr",
-            True, "test_expression_tsparse.iarr"
+            True,
+            None,
+            False,
+            "test_expression_ysparse.iarr",
+            False,
+            "test_expression_zsparse.iarr",
+            True,
+            "test_expression_tsparse.iarr",
         ),
         # Use another order than before (precision needs to be relaxed a bit)
         (
             "t.tan() * (x.sin() * x.sin() + y.cos()) + (z.sqrt() * 2)",
             "np.tan(t) * (np.sin(x) * np.sin(x) + np.cos(y)) + (np.sqrt(z) * 2)",
-            False, None,
-            True, None,
-            False, None,
-            True, None
+            False,
+            None,
+            True,
+            None,
+            False,
+            None,
+            True,
+            None,
         ),
     ],
 )
-def test_expr_fusion(expr, np_expr, xcontiguous, xurlpath, ycontiguous, yurlpath, zcontiguous, zurlpath, tcontiguous, turlpath):
+def test_expr_fusion(
+    expr,
+    np_expr,
+    xcontiguous,
+    xurlpath,
+    ycontiguous,
+    yurlpath,
+    zcontiguous,
+    zurlpath,
+    tcontiguous,
+    turlpath,
+):
     shape = [200, 300]
     chunks = [40, 50]
     bshape = [20, 20]
