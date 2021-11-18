@@ -79,10 +79,8 @@ def save(urlpath: str, iarr: ia.IArray, cfg: ia.Config = None, **kwargs) -> None
     iarr.copy(cfg=cfg, urlpath=urlpath, **kwargs)
 
 
-def load(urlpath: str, cfg: ia.Config = None, **kwargs) -> ia.IArray:
+def load(urlpath: str) -> ia.IArray:
     """Open an array from a binary file in ironArray `.iarr` format and load data into memory.
-
-    `cfg` and `kwargs` are the same than for :func:`empty`.
 
     Parameters
     ----------
@@ -98,20 +96,15 @@ def load(urlpath: str, cfg: ia.Config = None, **kwargs) -> ia.IArray:
     --------
     save : Save an array to disk.
     """
-
-    if cfg is None:
-        cfg = ia.get_config()
-
-    with ia.config(cfg=cfg, **kwargs) as cfg:
+    cfg = ia.get_config()
+    with ia.config(cfg=cfg) as cfg:
         return ext.load(cfg, urlpath)
 
 
-def open(urlpath: str, cfg: ia.Config = None, **kwargs) -> ia.IArray:
+def open(urlpath: str) -> ia.IArray:
     """Open an array from a binary file in ironArray `.iarr` format.
 
     The array data will lazily be read when necessary.
-
-    `cfg` and `kwargs` are the same than for :func:`empty`.
 
     Parameters
     ----------
@@ -127,10 +120,8 @@ def open(urlpath: str, cfg: ia.Config = None, **kwargs) -> ia.IArray:
     --------
     save : Save an array to disk.
     """
-    if cfg is None:
-        cfg = ia.get_config()
-
-    with ia.config(cfg=cfg, **kwargs) as cfg:
+    cfg = ia.get_config()
+    with ia.config(cfg=cfg) as cfg:
         return ext.open(cfg, urlpath)
 
 

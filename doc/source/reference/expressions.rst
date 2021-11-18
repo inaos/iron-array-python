@@ -93,7 +93,7 @@ The current supported statements are the `for` and the `if`. The syntax is exact
 Supported math operations
 -------------------------
 
-All the basic arithmetic operations (+, -, *, /) are supported.  In addition, the whole set of mathematical functions in ironArray expressions are supported too (see `Math Functions`_).
+All the basic arithmetic operations (+, -, *, /) are supported.  In addition, the whole set of mathematical functions in ironArray expressions are supported too (see :ref:`Math Functions`).
 
 Data window metainfo
 --------------------
