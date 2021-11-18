@@ -91,7 +91,7 @@ def do_regular_evaluation():
     # np.testing.assert_almost_equal(y0, y1)
 
     t0 = time()
-    #ne.set_num_threads(nthreads)
+    # ne.set_num_threads(nthreads)
     for i in range(NITER):
         y1 = ne.evaluate(expression, local_dict={"x": x})
     print("Regular evaluate via numexpr (multi-thread):", round((time() - t0) / NITER, 4))
@@ -110,7 +110,7 @@ def do_regular_evaluation():
     # print("Regular evaluate via numba (II):", round((time() - t0) / NITER, 4))
     # np.testing.assert_almost_equal(y0, y1)
 
-    #nb.set_num_threads(nthreads)
+    # nb.set_num_threads(nthreads)
     t0 = time()
     for i in range(NITER):
         y1 = poly_numba(x)
@@ -118,12 +118,9 @@ def do_regular_evaluation():
     # np.testing.assert_almost_equal(y0, y1)
 
 
-def do_block_evaluation(plainbuffer):
-    print(f"Block evaluation (plainbuffer={plainbuffer})")
-    if plainbuffer:
-        store = ia.Store(plainbuffer=True)
-    else:
-        store = ia.Store(chunks, blocks, plainbuffer=False)
+def do_block_evaluation():
+    print(f"Block evaluation")
+    store = ia.Store(chunks, blocks)
     # ia.set_config(codec=ia.Codec.LZ4, clevel=clevel, nthreads=nthreads, store=store)
     # The latest versions of BTune work much better for 1-dim arrays
     ia.set_config(favor=ia.Favor.SPEED)
@@ -131,8 +128,7 @@ def do_block_evaluation(plainbuffer):
     xa = ia.linspace(shape, 0.0, 10.0)
     # x = np.linspace(0, 10, N, dtype=np.double).reshape(shape)
     #
-    # if not plainbuffer:
-    #     print("Operand cratio:", round(xa.cratio, 2))
+    # print("Operand cratio:", round(xa.cratio, 2))
     #
     # # Reference to compare to
     # y0 = eval(numpy_expression)
@@ -213,13 +209,10 @@ def do_block_evaluation(plainbuffer):
     y1 = ia.iarray2numpy(ya)
     # np.testing.assert_almost_equal(y0, y1)
 
-    if not plainbuffer:
-        print("Result cratio:", round(ya.cratio, 2))
+    print("Result cratio:", round(ya.cratio, 2))
 
 
 if __name__ == "__main__":
     do_regular_evaluation()
     print("-*-" * 10)
-    #do_block_evaluation(plainbuffer=True)
-    #print("-*-" * 10)
-    do_block_evaluation(plainbuffer=False)
+    do_block_evaluation()

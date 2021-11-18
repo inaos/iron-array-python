@@ -7,17 +7,32 @@ import iarray as ia
 @pytest.mark.parametrize(
     "start, stop, shape, chunks, blocks, dtype, contiguous, urlpath",
     [
-        (0, 10, [100, 120, 50], [33, 21, 34], [12, 13, 7], np.float64, False, "test_linspace_sparse.iarr"),
+        (
+            0,
+            10,
+            [100, 120, 50],
+            [33, 21, 34],
+            [12, 13, 7],
+            np.float64,
+            False,
+            "test_linspace_sparse.iarr",
+        ),
         (-0.1, -0.2, [40, 39, 52, 12], [12, 17, 6, 5], [5, 4, 6, 5], np.float32, True, None),
-        (0, 10, [55, 24, 31], None, None, np.float64, True, "test_linspace_contiguous.iarr"),
-        (-0.1, -0.2, [4, 3, 5, 2], None, None, np.float32, False, None),
+        (
+            0,
+            10,
+            [55, 24, 31],
+            [55, 24, 15],
+            [55, 24, 5],
+            np.float64,
+            True,
+            "test_linspace_contiguous.iarr",
+        ),
+        (-0.1, -0.2, [4, 3, 5, 2], [4, 3, 5, 2], [2, 3, 2, 2], np.float32, False, None),
     ],
 )
 def test_linspace(start, stop, shape, chunks, blocks, dtype, contiguous, urlpath):
-    if blocks is None or chunks is None:
-        store = ia.Store(plainbuffer=True)
-    else:
-        store = ia.Store(chunks, blocks, contiguous=contiguous, urlpath=urlpath)
+    store = ia.Store(chunks, blocks, contiguous=contiguous, urlpath=urlpath)
     size = int(np.prod(shape))
     ia.remove_urlpath(urlpath)
     a = ia.linspace(shape, start, stop, dtype=dtype, store=store)
@@ -33,17 +48,41 @@ def test_linspace(start, stop, shape, chunks, blocks, dtype, contiguous, urlpath
 @pytest.mark.parametrize(
     "start, stop, shape, chunks, blocks, dtype, contiguous, urlpath",
     [
-        (0, 10, [22, 21, 51], [12, 14, 22], [5, 3, 6], np.float64, False, "test_arange_sparse.iarr"),
-        (0, 1, [12, 12, 15, 13, 18, 19], [6, 5, 4, 7, 7, 5], [2, 2, 1, 2, 3, 3], np.float32, True, None),
-        (0, 10, [10, 12, 5], None, None, np.float64, True, "test_arange_contiguous.iarr"),
-        (-0.1, -0.2, [4, 3, 5, 2], None, None, np.float32, False, None),
+        (
+            0,
+            10,
+            [22, 21, 51],
+            [12, 14, 22],
+            [5, 3, 6],
+            np.float64,
+            False,
+            "test_arange_sparse.iarr",
+        ),
+        (
+            0,
+            1,
+            [12, 12, 15, 13, 18, 19],
+            [6, 5, 4, 7, 7, 5],
+            [2, 2, 1, 2, 3, 3],
+            np.float32,
+            True,
+            None,
+        ),
+        (
+            0,
+            10,
+            [10, 12, 5],
+            [5, 5, 5],
+            [2, 1, 2],
+            np.float64,
+            True,
+            "test_arange_contiguous.iarr",
+        ),
+        (-0.1, -0.2, [4, 3, 5, 2], [2, 2, 2, 2], [2, 2, 2, 2], np.float32, False, None),
     ],
 )
 def test_arange(start, stop, shape, chunks, blocks, dtype, contiguous, urlpath):
-    if blocks is None or chunks is None:
-        store = ia.Store(plainbuffer=True)
-    else:
-        store = ia.Store(chunks, blocks, contiguous=contiguous, urlpath=urlpath)
+    store = ia.Store(chunks, blocks, contiguous=contiguous, urlpath=urlpath)
     size = int(np.prod(shape))
     step = (stop - start) / size
     ia.remove_urlpath(urlpath)
@@ -99,16 +138,43 @@ def test_from_file(start, stop, shape, chunks, blocks, dtype, contiguous, urlpat
             True,
             None,
         ),
-        (-0.1, -0.2, (slice(2, 4), slice(7, 12)), [55, 123], [12, 16], [5, 7], np.float32, False, "test_slice_sparse.iarr"),
-        (0, 10, (slice(2, 4), slice(5, 10), slice(1, 2)), [10, 12, 5], None, None, np.float64, True, "test_slice_contiguous.iarr"),
-        (-0.1, -0.2, (slice(2, 4), slice(7, 12)), [12, 16], None, None, np.float32, False, None),
+        (
+            -0.1,
+            -0.2,
+            (slice(2, 4), slice(7, 12)),
+            [55, 123],
+            [12, 16],
+            [5, 7],
+            np.float32,
+            False,
+            "test_slice_sparse.iarr",
+        ),
+        (
+            0,
+            10,
+            (slice(2, 4), slice(5, 10), slice(1, 2)),
+            [10, 12, 5],
+            [5, 6, 5],
+            [5, 6, 5],
+            np.float64,
+            True,
+            "test_slice_contiguous.iarr",
+        ),
+        (
+            -0.1,
+            -0.2,
+            (slice(2, 4), slice(7, 12)),
+            [120, 160],
+            [120, 40],
+            [30, 20],
+            np.float64,
+            False,
+            None,
+        ),
     ],
 )
 def test_slice(start, stop, slice, shape, chunks, blocks, dtype, contiguous, urlpath):
-    if blocks is None or chunks is None:
-        store = ia.Store(plainbuffer=True)
-    else:
-        store = ia.Store(chunks, blocks, contiguous=contiguous, urlpath=urlpath)
+    store = ia.Store(chunks, blocks, contiguous=contiguous, urlpath=urlpath)
     size = int(np.prod(shape))
     step = (stop - start) / size
     ia.remove_urlpath(urlpath)
@@ -117,7 +183,7 @@ def test_slice(start, stop, slice, shape, chunks, blocks, dtype, contiguous, url
     c = ia.iarray2numpy(b)
     npdtype = np.float64 if dtype == np.float64 else np.float32
     d = np.arange(start, stop, step, dtype=npdtype).reshape(shape)[slice]
-    np.testing.assert_almost_equal(c, d)
+    np.testing.assert_allclose(c, d)
 
     ia.remove_urlpath(urlpath)
 
@@ -127,16 +193,13 @@ def test_slice(start, stop, slice, shape, chunks, blocks, dtype, contiguous, url
     "shape, chunks, blocks, dtype, contiguous, urlpath",
     [
         ([55, 123, 72], [10, 12, 25], [2, 3, 7], np.float64, True, None),
-        ([10, 12, 5], None, None, np.float32, False, "test_empty_sparse.iarr"),
+        ([10, 12, 5], [10, 12, 1], [5, 12, 1], np.float32, False, "test_empty_sparse.iarr"),
         ([55, 123, 72], [10, 12, 25], [2, 3, 7], np.float64, True, "test_empty_contiguous.iarr"),
-        ([10, 12, 5], None, None, np.float32, False, None),
+        ([10, 12, 5], [5, 12, 5], [2, 12, 5], np.float32, False, None),
     ],
 )
 def test_empty(shape, chunks, blocks, dtype, contiguous, urlpath):
-    if blocks is None or chunks is None:
-        store = ia.Store(plainbuffer=True)
-    else:
-        store = ia.Store(chunks, blocks, contiguous=contiguous, urlpath=urlpath)
+    store = ia.Store(chunks, blocks, contiguous=contiguous, urlpath=urlpath)
     ia.remove_urlpath(urlpath)
     with ia.config(store=store):
         a = ia.empty(shape, dtype=dtype)
@@ -152,17 +215,21 @@ def test_empty(shape, chunks, blocks, dtype, contiguous, urlpath):
 @pytest.mark.parametrize(
     "shape, chunks, blocks, dtype, contiguous, urlpath",
     [
-        ([134, 1234, 238], [10, 25, 35], [2, 7, 12], np.float64, True, "test_zeros_contiguous.iarr"),
+        (
+            [134, 1234, 238],
+            [10, 25, 35],
+            [2, 7, 12],
+            np.float64,
+            True,
+            "test_zeros_contiguous.iarr",
+        ),
         ([456, 431], [102, 16], [12, 7], np.float32, False, "test_zeros_sparse.iarr"),
-        ([10, 12, 5], None, None, np.float64, False, None),
-        ([12, 16], None, None, np.float32, True, None),
+        ([10, 12, 5], [10, 1, 1], [10, 1, 1], np.float64, False, None),
+        ([12, 16], [1, 16], [1, 16], np.float32, True, None),
     ],
 )
 def test_zeros(shape, chunks, blocks, dtype, contiguous, urlpath):
-    if blocks is None or chunks is None:
-        store = ia.Store(plainbuffer=True)
-    else:
-        store = ia.Store(chunks, blocks, contiguous=contiguous, urlpath=urlpath)
+    store = ia.Store(chunks, blocks, contiguous=contiguous, urlpath=urlpath)
     ia.remove_urlpath(urlpath)
     a = ia.zeros(shape, dtype=dtype, store=store)
     b = ia.iarray2numpy(a)
@@ -179,15 +246,12 @@ def test_zeros(shape, chunks, blocks, dtype, contiguous, urlpath):
     [
         ([456, 12, 234], [55, 6, 21], [12, 3, 5], np.float64, False, None),
         ([1024, 55], [66, 22], [12, 3], np.float32, True, "test_ones_contiguous.iarr"),
-        ([10, 12, 5], None, None, np.float64, True, None),
-        ([12, 16], None, None, np.float32, False, "test_ones_sparse.iarr"),
+        ([10, 12, 5], [5, 6, 5], [5, 3, 5], np.float64, True, None),
+        ([120, 130], [45, 64], [33, 12], np.float32, False, "test_ones_sparse.iarr"),
     ],
 )
 def test_ones(shape, chunks, blocks, dtype, contiguous, urlpath):
-    if blocks is None or chunks is None:
-        store = ia.Store(plainbuffer=True)
-    else:
-        store = ia.Store(chunks, blocks, contiguous=contiguous, urlpath=urlpath)
+    store = ia.Store(chunks, blocks, contiguous=contiguous, urlpath=urlpath)
     ia.remove_urlpath(urlpath)
     a = ia.ones(shape, dtype=dtype, store=store)
     b = ia.iarray2numpy(a)
@@ -204,15 +268,12 @@ def test_ones(shape, chunks, blocks, dtype, contiguous, urlpath):
     [
         (8.34, [123, 432, 222], [24, 31, 15], [6, 6, 6], np.float64, True, None),
         (2.00001, [567, 375], [52, 16], [9, 7], np.float32, False, "test_full_sparse.iarr"),
-        (8.34, [10, 12, 5], None, None, np.float64, True, "test_full_contiguous.iarr"),
-        (2.00001, [12, 16], None, None, np.float32, False, None),
+        (8.34, [10, 12, 5], [5, 5, 5], [5, 5, 5], np.float64, True, "test_full_contiguous.iarr"),
+        (2.00001, [12, 16], [12, 16], [10, 10], np.float32, False, None),
     ],
 )
 def test_full(fill_value, shape, chunks, blocks, dtype, contiguous, urlpath):
-    if blocks is None or chunks is None:
-        store = ia.Store(plainbuffer=True)
-    else:
-        store = ia.Store(chunks, blocks, contiguous=contiguous, urlpath=urlpath)
+    store = ia.Store(chunks, blocks, contiguous=contiguous, urlpath=urlpath)
     ia.remove_urlpath(urlpath)
     a = ia.full(shape, fill_value, dtype=dtype, store=store)
     b = ia.iarray2numpy(a)
@@ -221,6 +282,7 @@ def test_full(fill_value, shape, chunks, blocks, dtype, contiguous, urlpath):
     np.testing.assert_almost_equal(b, c)
 
     ia.remove_urlpath(urlpath)
+
 
 # TODO: Update this when persistent sparse would be supported
 @pytest.mark.parametrize(
