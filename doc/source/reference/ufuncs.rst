@@ -1,3 +1,5 @@
+.. _Math Functions:
+
 ----------------------
 Mathematical functions
 ----------------------

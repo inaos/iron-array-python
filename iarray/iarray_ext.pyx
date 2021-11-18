@@ -358,7 +358,7 @@ cdef class Container:
 
     @property
     def cratio(self):
-        """Array compression ratio"""
+        """Array compression ratio."""
         cdef ciarray.int64_t nbytes, cbytes
         iarray_check(ciarray.iarray_container_info(self.ia_container, &nbytes, &cbytes))
         return <double>nbytes / <double>cbytes

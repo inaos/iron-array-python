@@ -65,7 +65,7 @@ def partition_advice(
         Minimum value for blocksize (in bytes).  If 0 (default), a sensible value is chosen.
     max_bloksize : int
         Maximum value for blocksize (in bytes).  If 0 (default), a sensible value is chosen.
-    cfg : ia.Config
+    cfg : :class:`Config`
         A configuration.  If None, the global configuration is used.
 
     Returns
@@ -344,17 +344,17 @@ class Config(ext.Config):
 
     Parameters
     ----------
-    codec : Codec
+    codec : :class:`Codec`
         The codec to be used inside Blosc.  Default is :py:obj:`Codec.ZSTD <Codec>`.
     clevel : int
         The compression level.  It can have values between 0 (no compression) and
         9 (max compression).  Default is 1.
-    favor : Favor
+    favor : :class:`Favor`
         What favor when compressing. Possible values are :py:obj:`Favor.SPEED <Favor>`
         for better speed, :py:obj:`Favor.CRATIO <Favor>` for better compression ratios
         and :py:obj:`Favor.BALANCE <Favor>` for a balance among the two.  Default is :py:obj:`Favor.BALANCE <Favor>`.
         For this to work properly, `btune` has to be activated (the default).
-    filters : list
+    filters : :class:`Filter` list
         The list of filters for Blosc.  Default is [:py:obj:`Filter.BITSHUFFLE <Filter>`].
     fp_mantissa_bits : int
         The number of bits to be kept in the mantissa in output arrays.  If 0 (the default),
@@ -368,20 +368,20 @@ class Config(ext.Config):
         The number of threads for internal ironArray operations.  This number can be
         silently capped to be the number of *logical* cores in the system.  If 0
         (the default), the number of logical cores in the system is used.
-    eval_method : Eval
+    eval_method : :class:`Eval`
         Method to evaluate expressions.  The default is :py:obj:`Eval.AUTO <Eval>`, where the
         expression is analyzed and the more convenient method is used.
     seed : int
         The default seed for internal random generators.  If None (the default), a
         seed will automatically be generated internally for you.
-    random_gen : RandomGen
+    random_gen : :class:`RandomGen`
         The random generator to be used.  The default is
         :py:obj:`RandomGen.MERSENNE_TWISTER <RandomGen>`.
     btune: bool
         Enable btune machinery. The default is True.
     dtype: (np.float32, np.float64)
         The data type to use. The default is np.float64.
-    store : Store
+    store : :class:`Store`
         Store instance where you can specify different properties of the output
         store.  See :py:obj:`Store` docs for details.  For convenience, you can also
         pass all the Store parameters directly in this constructor too.
@@ -503,12 +503,12 @@ def get_config(cfg=None):
 
     Returns
     -------
-    ia.Config
+    :class:`Config`
         The existing global configuration.
 
     See Also
     --------
-    ia.set_config
+    set_config
     """
     global global_config
 
@@ -525,7 +525,7 @@ def set_config(cfg: Config = None, shape=None, **kwargs):
 
     Parameters
     ----------
-    cfg : ia.Config
+    cfg : :class:`Config`
         The configuration that will become the default for iarray operations.
         If None, the defaults are not changed.
     shape : Sequence
@@ -533,18 +533,18 @@ def set_config(cfg: Config = None, shape=None, **kwargs):
         it will be used so as to compute sensible defaults for store properties
         like chunk shape and block shape.  This is mainly meant for internal use.
     kwargs : dict
-        A dictionary for setting some or all of the fields in the ia.Config
+        A dictionary for setting some or all of the fields in the :class:`Config`
         dataclass that should override the current configuration.
 
     Returns
     -------
-    ia.Config
+    :class:`Config`
         The new global configuration.
 
     See Also
     --------
-    ia.Config
-    ia.get_config
+    Config
+    get_config
     """
     global global_config
     global defaults
@@ -583,13 +583,13 @@ def set_config(cfg: Config = None, shape=None, **kwargs):
 def config(cfg: Config = None, shape=None, **kwargs):
     """Create a context with some specific configuration parameters.
 
-    All parameters are the same than in `ia.set_config()`.
+    All parameters are the same than in :class:`Config()`.
     The only difference is that this does not set global defaults.
 
     See Also
     --------
-    ia.set_config
-    ia.Config
+    set_config
+    Config
     """
     global global_config
     global defaults

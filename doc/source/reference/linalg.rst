@@ -15,3 +15,4 @@ Basic algebra operations
 
    matmul
    transpose
+   matmul_params

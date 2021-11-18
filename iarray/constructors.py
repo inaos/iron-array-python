@@ -46,21 +46,17 @@ def empty(shape: Sequence, cfg: ia.Config = None, **kwargs) -> ia.IArray:
     ----------
     shape : tuple, list
         The shape of the array to be created.
-    cfg : Config
+    cfg : :class:`Config`
         The configuration for running the expression.
         If None (default), global defaults are used.
     kwargs : dict
-        A dictionary for setting some or all of the fields in the Config
+        A dictionary for setting some or all of the fields in the :class:`Config`
         dataclass that should override the current configuration.
 
     Returns
     -------
-    IArray
+    :ref:`IArray`
         The new array.
-
-    See Also
-    --------
-    IArray.iter_write_block : Iterator for filling an empty array.
     """
 
     if cfg is None:
@@ -78,11 +74,11 @@ def arange(
 
     `shape`, `cfg` and `kwargs` are the same than for :func:`empty`.
 
-    `start`, `stop`, `step` are the same as in np.arange.
+    `start`, `stop`, `step` are the same as in `np.arange <https://numpy.org/doc/stable/reference/generated/numpy.arange.html>`_.
 
     Returns
     -------
-    IArray
+    :ref:`IArray`
         The new array.
 
     See Also
@@ -123,11 +119,11 @@ def linspace(
 
     `shape`, `cfg` and `kwargs` are the same than for :func:`empty`.
 
-    `start`, `stop` are the same as in np.linspace.
+    `start`, `stop` are the same as in `np.linspace <https://numpy.org/doc/stable/reference/generated/numpy.linspace.html>`_.
 
     Returns
     -------
-    IArray
+    :ref:`IArray`
         The new array.
 
     See Also
@@ -149,7 +145,7 @@ def zeros(shape: Sequence, cfg: ia.Config = None, **kwargs) -> ia.IArray:
 
     Returns
     -------
-    IArray
+    :ref:`IArray`
         The new array.
 
     See Also
@@ -169,9 +165,10 @@ def ones(shape: Sequence, cfg: ia.Config = None, **kwargs) -> ia.IArray:
     """Return a new array of given shape and type, filled with ones.
 
     `shape`, `cfg` and `kwargs` are the same than for :func:`empty`.
+
     Returns
     -------
-    IArray
+    :ref:`IArray`
         The new array.
 
     See Also
@@ -194,7 +191,7 @@ def full(shape: Sequence, fill_value: float, cfg: ia.Config = None, **kwargs) ->
 
     Returns
     -------
-    IArray
+    :ref:`IArray`
         The new array.
 
     See Also

@@ -23,22 +23,22 @@ def random_sample(shape: Sequence, cfg: ia.Config = None, **kwargs) -> ia.IArray
     ----------
     shape : Sequence
         The shape of the array to be created.
-    cfg : Config
+    cfg : :class:`iarray.Config`
         The configuration for running the expression. If None (default), global defaults are used.
         In particular, `cfg.seed` and `cfg.random_gen` are honored in this context.
     kwargs : dict
-        A dictionary for setting some or all of the fields in the Config dataclass that should
+        A dictionary for setting some or all of the fields in the :class:`iarray.Config` dataclass that should
         override the current configuration.
         In particular, `seed=` and `random_gen=` arguments are honored in this context.
 
     Returns
     -------
-    IArray
+    :ref:`IArray`
         The new array.
 
-    See Also
-    --------
-    np.random.random_sample
+    References
+    ----------
+    `np.random-random_sample <https://numpy.org/doc/stable/reference/random/generated/numpy.random.random_sample.html>`_
     """
     if cfg is None:
         cfg = ia.get_config()
@@ -51,7 +51,7 @@ def random_sample(shape: Sequence, cfg: ia.Config = None, **kwargs) -> ia.IArray
 def standard_normal(shape: Sequence, cfg: ia.Config = None, **kwargs) -> ia.IArray:
     """Draw samples from a standard Normal distribution (mean=0, stdev=1).
 
-    The `cfg` and `kwargs` parameters are the same than in :func:`random.random_sample`.
+    The `cfg` and `kwargs` parameters are the same than in :func:`random_sample`.
 
     Parameters
     ----------
@@ -60,13 +60,16 @@ def standard_normal(shape: Sequence, cfg: ia.Config = None, **kwargs) -> ia.IArr
 
     Returns
     -------
-    IArray
+    :ref:`IArray`
         The new array.
 
     See Also
     --------
-    random.random_sample
-    np.random.standard_normal
+    random_sample
+
+    References
+    ----------
+    `np.random.standard_normal <https://numpy.org/doc/stable/reference/random/generated/numpy.random.random_sample.html>`_
     """
     if cfg is None:
         cfg = ia.get_config()
@@ -79,7 +82,7 @@ def standard_normal(shape: Sequence, cfg: ia.Config = None, **kwargs) -> ia.IArr
 def beta(shape: Sequence, alpha: float, beta: float, cfg: ia.Config = None, **kwargs) -> ia.IArray:
     """Draw samples from a Beta distribution.
 
-    The `cfg` and `kwargs` parameters are the same than in :func:`random.random_sample`.
+    The `cfg` and `kwargs` parameters are the same than in :func:`random_sample`.
 
     Parameters
     ----------
@@ -92,13 +95,16 @@ def beta(shape: Sequence, alpha: float, beta: float, cfg: ia.Config = None, **kw
 
     Returns
     -------
-    IArray
+    :ref:`IArray`
         The new array.
 
     See Also
     --------
-    random.random_sample
-    np.random.beta
+    random_sample
+
+    References
+    ----------
+    `np.random.beta <https://numpy.org/doc/stable/reference/random/generated/numpy.random.beta.html>`_
     """
     if cfg is None:
         cfg = ia.get_config()
@@ -113,7 +119,7 @@ def lognormal(
 ) -> ia.IArray:
     """Draw samples from a log-normal distribution.
 
-    The `cfg` and `kwargs` parameters are the same than in :func:`random.random_sample`.
+    The `cfg` and `kwargs` parameters are the same than in :func:`random_sample`.
 
     Parameters
     ----------
@@ -127,13 +133,16 @@ def lognormal(
 
     Returns
     -------
-    IArray
+    :ref:`IArray`
         The new array.
 
     See Also
     --------
-    random.random_sample
-    np.random.lognormal
+    random_sample
+
+    References
+    ----------
+    `np.random.lognormal <https://numpy.org/doc/stable/reference/random/generated/numpy.random.lognormal.html>`_
     """
     if cfg is None:
         cfg = ia.get_config()
@@ -146,7 +155,7 @@ def lognormal(
 def exponential(shape: Sequence, scale: float = 1.0, cfg: ia.Config = None, **kwargs) -> ia.IArray:
     """Draw samples from an exponential distribution.
 
-    The `cfg` and `kwargs` parameters are the same than in :func:`random.random_sample`.
+    The `cfg` and `kwargs` parameters are the same than in :func:`random_sample`.
 
     Parameters
     ----------
@@ -158,13 +167,16 @@ def exponential(shape: Sequence, scale: float = 1.0, cfg: ia.Config = None, **kw
 
     Returns
     -------
-    IArray
+    :ref:`IArray`
         The new array.
 
     See Also
     --------
-    random.random_sample
-    np.random.exponential
+    random_sample
+
+    References
+    ----------
+    `np.random.exponential <https://numpy.org/doc/stable/reference/random/generated/numpy.random.exponential.html>`_
     """
     if cfg is None:
         cfg = ia.get_config()
@@ -179,7 +191,7 @@ def uniform(
 ) -> ia.IArray:
     """Draw samples from a uniform distribution.
 
-    The `cfg` and `kwargs` parameters are the same than in :func:`random.random_sample`.
+    The `cfg` and `kwargs` parameters are the same than in :func:`random_sample`.
 
     Parameters
     ----------
@@ -194,13 +206,16 @@ def uniform(
 
     Returns
     -------
-    IArray
+    :ref:`IArray`
         The new array.
 
     See Also
     --------
-    random.random_sample
-    np.random.uniform
+    random_sample
+
+    References
+    ----------
+    `np.random.uniform <https://numpy.org/doc/stable/reference/random/generated/numpy.random.uniform.html>`_
     """
     if cfg is None:
         cfg = ia.get_config()
@@ -215,7 +230,7 @@ def normal(
 ) -> ia.IArray:
     """Draw random samples from a normal (Gaussian) distribution.
 
-    The `cfg` and `kwargs` parameters are the same than in :func:`random.random_sample`.
+    The `cfg` and `kwargs` parameters are the same than in :func:`random_sample`.
 
     Parameters
     ----------
@@ -229,13 +244,16 @@ def normal(
 
     Returns
     -------
-    IArray
+    :ref:`IArray`
         The new array.
 
     See Also
     --------
-    random.random_sample
-    np.random.normal
+    random_sample
+
+    References
+    ----------
+    `np.random.normal <https://numpy.org/doc/stable/reference/random/generated/numpy.random.normal.html>`_
     """
     if cfg is None:
         cfg = ia.get_config()
@@ -251,7 +269,7 @@ def bernoulli(shape: Sequence, p: float, cfg: ia.Config = None, **kwargs) -> ia.
     The Bernoulli distribution is a special case of the binomial distribution where a
     single trial is conducted (so n would be 1 for such a binomial distribution).
 
-    The `cfg` and `kwargs` parameters are the same than in :func:`random.random_sample`.
+    The `cfg` and `kwargs` parameters are the same than in :func:`random_sample`.
 
     Parameters
     ----------
@@ -262,13 +280,13 @@ def bernoulli(shape: Sequence, p: float, cfg: ia.Config = None, **kwargs) -> ia.
 
     Returns
     -------
-    IArray
+    :ref:`IArray`
         The new array.
 
     See Also
     --------
-    random.random_sample
-    random.binomial
+    random_sample
+    binomial
     """
     if cfg is None:
         cfg = ia.get_config()
@@ -281,7 +299,7 @@ def bernoulli(shape: Sequence, p: float, cfg: ia.Config = None, **kwargs) -> ia.
 def binomial(shape: Sequence, n: float, p: float, cfg: ia.Config = None, **kwargs) -> ia.IArray:
     """Draw samples from a binomial distribution.
 
-    The `cfg` and `kwargs` parameters are the same than in :func:`random.random_sample`.
+    The `cfg` and `kwargs` parameters are the same than in :func:`random_sample`.
 
     Parameters
     ----------
@@ -295,13 +313,16 @@ def binomial(shape: Sequence, n: float, p: float, cfg: ia.Config = None, **kwarg
 
     Returns
     -------
-    IArray
+    :ref:`IArray`
         The new array.
 
     See Also
     --------
-    random.random_sample
-    np.random.binomial
+    random_sample
+
+    References
+    ----------
+    `np.random.binomial <https://numpy.org/doc/stable/reference/random/generated/numpy.random.binomial.html>`_
     """
     if cfg is None:
         cfg = ia.get_config()
@@ -314,7 +335,7 @@ def binomial(shape: Sequence, n: float, p: float, cfg: ia.Config = None, **kwarg
 def poisson(shape: Sequence, lam: float, cfg: ia.Config = None, **kwargs) -> ia.IArray:
     """Draw samples from a Poisson distribution.
 
-    The `cfg` and `kwargs` parameters are the same than in :func:`random.random_sample`.
+    The `cfg` and `kwargs` parameters are the same than in :func:`random_sample`.
 
     Parameters
     ----------
@@ -325,13 +346,16 @@ def poisson(shape: Sequence, lam: float, cfg: ia.Config = None, **kwargs) -> ia.
 
     Returns
     -------
-    IArray
+    :ref:`IArray`
         The new array.
 
     See Also
     --------
-    random.random_sample
-    np.random.poisson
+    random_sample
+
+    References
+    ----------
+    `np.random.poisson <https://numpy.org/doc/stable/reference/random/generated/numpy.random.poisson.html>`_
     """
     if cfg is None:
         cfg = ia.get_config()
@@ -346,13 +370,13 @@ def kstest(a: ia.IArray, b: ia.IArray, cfg: ia.Config = None, **kwargs) -> bool:
 
     This is mainly used for testing purposes.
 
-    The `cfg` and `kwargs` parameters are the same than in :func:`random.random_sample`.
+    The `cfg` and `kwargs` parameters are the same than in :func:`random_sample`.
 
     Parameters
     ----------
-    a : IArray
+    a : :ref:`IArray`
         First distribution.
-    b : IArray
+    b : :ref:`IArray`
         Second distribution.
 
     Returns
@@ -362,8 +386,11 @@ def kstest(a: ia.IArray, b: ia.IArray, cfg: ia.Config = None, **kwargs) -> bool:
 
     See Also
     --------
-    random.random_sample
-    np.random.poisson
+    random_sample
+
+    References
+    ----------
+    `np.random.poisson <https://numpy.org/doc/stable/reference/random/generated/numpy.random.poisson.html>`_
     """
     if cfg is None:
         cfg = ia.get_config()

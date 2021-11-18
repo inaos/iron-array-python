@@ -44,6 +44,7 @@ Enumerated classes
    :nosignatures:
 
    Codec
+   Favor
    Filter
    Eval
    RandomGen
