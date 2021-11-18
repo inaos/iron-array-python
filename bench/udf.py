@@ -14,7 +14,6 @@ clevel = 5  # compression level
 codec = ia.Codec.LZ4  # compression codec
 nthreads = 8  # number of threads for the evaluation and/or compression
 
-plainbuffer = True  # enforce using a plainbuffer
 engine = "udf"  # can be "udf" or "juggernaut" (it always works with "juggernaut")
 
 
@@ -26,13 +25,8 @@ def poly_llvm(out: udf.Array(float64, 1), x: udf.Array(float64, 1)) -> int64:
     return 0
 
 
-if plainbuffer:
-    store = ia.Store(plainbuffer=True)
-else:
-    store = ia.Store(chunks, blocks)
+store = ia.Store(chunks, blocks)
 ia.set_config(codec=codec, clevel=clevel, nthreads=nthreads, store=store)
-
-print(f"plainbuffer: {store.plainbuffer}, engine: {engine}")
 
 xa = ia.linspace(shape, 0.0, 10.0)
 

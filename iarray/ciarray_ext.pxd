@@ -107,13 +107,7 @@ cdef extern from "libiarray/iarray.h":
         int8_t fp_mantissa_bits
         bool btune
 
-    ctypedef enum iarray_storage_type_t:
-        IARRAY_STORAGE_PLAINBUFFER = 0
-        IARRAY_STORAGE_BLOSC = 1
-
-
     ctypedef struct iarray_storage_t:
-        iarray_storage_type_t backend
         const char *urlpath
         bool contiguous
         int64_t chunkshape[IARRAY_DIMENSION_MAX]

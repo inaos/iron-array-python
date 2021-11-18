@@ -13,23 +13,20 @@ import numpy as np
 )
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
 @pytest.mark.parametrize(
-    "plainbuffer, contiguous, urlpath, urlpath2",
+    " contiguous, urlpath, urlpath2",
     [
-        (True, False, None, None),
-        (False, False, None, None),
-        (False, True, None, None),
-        (False, True, "test_copy.iarr", "test_copy2.iarr"),
-        (False, False, "test_copy.iarr", "test_copy2.iarr"),
+        (False, None, None),
+        (False, None, None),
+        (True, None, None),
+        (True, "test_copy.iarr", "test_copy2.iarr"),
+        (False, "test_copy.iarr", "test_copy2.iarr"),
     ],
 )
-def test_copy(shape, chunks, blocks, dtype, plainbuffer, contiguous, urlpath, urlpath2):
+def test_copy(shape, chunks, blocks, dtype, contiguous, urlpath, urlpath2):
     ia.remove_urlpath(urlpath)
     ia.remove_urlpath(urlpath2)
 
-    if plainbuffer:
-        store = ia.Store(plainbuffer=True)
-    else:
-        store = ia.Store(chunks, blocks, contiguous=contiguous, urlpath=urlpath)
+    store = ia.Store(chunks, blocks, contiguous=contiguous, urlpath=urlpath)
     a_ = ia.linspace(shape, -10, 10, dtype=dtype, store=store)
     sl = tuple([slice(0, s - 1) for s in shape])
     a = a_[sl]

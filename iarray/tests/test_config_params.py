@@ -7,8 +7,24 @@ import iarray as ia
     [
         (0, ia.Codec.ZSTD, [ia.Filter.SHUFFLE], None, None, False, None),
         (1, ia.Codec.BLOSCLZ, [ia.Filter.SHUFFLE], [50, 50], [20, 20], True, None),
-        (9, ia.Codec.ZSTD, [ia.Filter.SHUFFLE, ia.Filter.DELTA], [50, 50], [20, 20], False, b"test_config_params_sparse.iarr"),
-        (6, ia.Codec.ZSTD, [ia.Filter.SHUFFLE], [100, 50], [50, 20], True, b"test_config_params_contiguous.iarr"),
+        (
+            9,
+            ia.Codec.ZSTD,
+            [ia.Filter.SHUFFLE, ia.Filter.DELTA],
+            [50, 50],
+            [20, 20],
+            False,
+            b"test_config_params_sparse.iarr",
+        ),
+        (
+            6,
+            ia.Codec.ZSTD,
+            [ia.Filter.SHUFFLE],
+            [100, 50],
+            [50, 20],
+            True,
+            b"test_config_params_contiguous.iarr",
+        ),
         (0, ia.Codec.ZSTD, [ia.Filter.SHUFFLE], None, None, False, None),
     ],
 )
@@ -67,13 +83,7 @@ def test_global_config(clevel, codec, filters, chunks, blocks, contiguous, urlpa
     assert store2.urlpath == None
 
     # Or, we can use a mix of Config and keyword args
-    cfg = ia.Config(
-        clevel=clevel,
-        codec=codec,
-        blocks=blocks,
-        contiguous=False,
-        urlpath=urlpath
-    )
+    cfg = ia.Config(clevel=clevel, codec=codec, blocks=blocks, contiguous=False, urlpath=urlpath)
     ia.set_config(cfg, filters=filters, chunks=chunks)
     config = ia.get_config()
 
@@ -129,7 +139,6 @@ def test_global_config_dtype(chunks, blocks, shape):
             assert store2.chunks <= shape
             assert store2.blocks <= store2.chunks
     except ValueError:
-        # chunks cannot be set when a plainbuffer is used
         assert shape == ()
 
     # One can pass store parameters straight to config() dataclass too
@@ -151,33 +160,30 @@ def test_global_config_dtype(chunks, blocks, shape):
             assert store2.blocks <= store2.chunks
         assert store2.contiguous == True
     except ValueError:
-        # chunks cannot be set when a plainbuffer is used
         assert shape == ()
 
 
 @pytest.mark.parametrize(
-    "clevel, codec, filters, chunks, blocks, plainbuffer",
+    "clevel, codec, filters, chunks, blocks",
     [
-        (0, ia.Codec.ZSTD, [ia.Filter.SHUFFLE], None, None, False),
-        (1, ia.Codec.BLOSCLZ, [ia.Filter.BITSHUFFLE], [50, 50], [20, 20], True),
-        (9, ia.Codec.ZSTD, [ia.Filter.SHUFFLE, ia.Filter.DELTA], [50, 50], [20, 20], False),
-        (6, ia.Codec.ZSTD, [ia.Filter.SHUFFLE], [100, 50], [50, 20], False),
-        (0, ia.Codec.ZSTD, [ia.Filter.SHUFFLE], None, None, False),
+        (0, ia.Codec.ZSTD, [ia.Filter.SHUFFLE], None, None),
+        (1, ia.Codec.BLOSCLZ, [ia.Filter.BITSHUFFLE], [50, 50], [20, 20]),
+        (9, ia.Codec.ZSTD, [ia.Filter.SHUFFLE, ia.Filter.DELTA], [50, 50], [20, 20]),
+        (6, ia.Codec.ZSTD, [ia.Filter.SHUFFLE], [100, 50], [50, 20]),
+        (0, ia.Codec.ZSTD, [ia.Filter.SHUFFLE], None, None),
     ],
 )
-def test_config_ctx(clevel, codec, filters, chunks, blocks, plainbuffer):
+def test_config_ctx(clevel, codec, filters, chunks, blocks):
     try:
-        store = ia.Store(chunks, blocks, plainbuffer=plainbuffer)
+        store = ia.Store(chunks, blocks)
         with ia.config(clevel=clevel, codec=codec, filters=filters, store=store) as cfg:
             assert cfg.clevel == clevel
             assert cfg.codec == codec
             assert cfg.filters == filters
             assert cfg.store.chunks == chunks
             assert cfg.store.blocks == blocks
-            assert cfg.store.plainbuffer == plainbuffer
     except ValueError:
-        # chunks cannot be set when a plainbuffer is used
-        assert plainbuffer and chunks is not None
+        assert chunks is not None
 
     # One can pass store parameters straight to config() dataclass too
     try:
@@ -187,17 +193,14 @@ def test_config_ctx(clevel, codec, filters, chunks, blocks, plainbuffer):
             filters=filters,
             chunks=chunks,
             blocks=blocks,
-            plainbuffer=False,
         ) as cfg:
             assert cfg.clevel == clevel
             assert cfg.codec == codec
             assert cfg.filters == filters
             assert cfg.store.chunks == chunks
             assert cfg.store.blocks == blocks
-            assert cfg.store.plainbuffer == False
     except ValueError:
-        # chunks cannot be set when a plainbuffer is used
-        assert plainbuffer and chunks is not None
+        assert chunks is not None
 
 
 @pytest.mark.parametrize(
@@ -223,7 +226,6 @@ def test_config_ctx_dtype(chunks, blocks, shape):
                 assert store2.chunks <= shape
                 assert store2.blocks <= store2.chunks
     except ValueError:
-        # chunks cannot be set when a plainbuffer is used
         assert shape == ()
 
     # One can pass store parameters straight to config() dataclass too
@@ -242,9 +244,8 @@ def test_config_ctx_dtype(chunks, blocks, shape):
                 # automatic partitioning
                 assert store2.chunks <= shape
                 assert store2.blocks <= store2.chunks
-            assert store2.contiguous == True
+            assert store2.contiguous is True
     except ValueError:
-        # chunks cannot be set when a plainbuffer is used
         assert shape == ()
 
 

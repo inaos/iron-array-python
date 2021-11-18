@@ -48,13 +48,9 @@ IARRAY_ERR_EVAL_ENGINE_OUT_OF_RANGE  = ciarray.IARRAY_ERR_EVAL_ENGINE_OUT_OF_RAN
 
 cdef set_storage(storage, ciarray.iarray_storage_t *cstore):
     cstore.contiguous = storage.contiguous
-    if storage.plainbuffer:
-        cstore.backend = ciarray.IARRAY_STORAGE_PLAINBUFFER
-    else:
-        cstore.backend = ciarray.IARRAY_STORAGE_BLOSC
-        for i in range(len(storage.chunks)):
-            cstore.chunkshape[i] = storage.chunks[i]
-            cstore.blockshape[i] = storage.blocks[i]
+    for i in range(len(storage.chunks)):
+        cstore.chunkshape[i] = storage.chunks[i]
+        cstore.blockshape[i] = storage.blocks[i]
 
     if storage.urlpath is not None:
         urlpath = storage.urlpath.encode("utf-8") if isinstance(storage.urlpath, str) else storage.urlpath
@@ -328,21 +324,11 @@ cdef class Container:
         return tuple(shape)
 
     @property
-    def is_plainbuffer(self):
-        """bool indicating if the container is based on a plainbuffer or not"""
-        cdef ciarray.iarray_storage_t storage
-        iarray_check(ciarray.iarray_get_storage(self.context.ia_ctx, self.ia_container, &storage))
-        if storage.backend == ciarray.IARRAY_STORAGE_PLAINBUFFER:
-            return True
-        else:
-            return False
-
-    @property
     def chunks(self):
         """Tuple of chunk dimensions."""
         cdef ciarray.iarray_storage_t storage
         iarray_check(ciarray.iarray_get_storage(self.context.ia_ctx, self.ia_container, &storage))
-        if storage.backend == ciarray.IARRAY_STORAGE_PLAINBUFFER or self.is_view():
+        if self.is_view():
             return None
         chunks = [storage.chunkshape[i] for i in range(self.ndim)]
         return tuple(chunks)
@@ -352,7 +338,7 @@ cdef class Container:
         """Tuple of block dimensions."""
         cdef ciarray.iarray_storage_t storage
         iarray_check(ciarray.iarray_get_storage(self.context.ia_ctx, self.ia_container, &storage))
-        if storage.backend == ciarray.IARRAY_STORAGE_PLAINBUFFER or self.is_view():
+        if self.is_view():
             return None
         blocks = [storage.blockshape[i] for i in range(self.ndim)]
         return tuple(blocks)
@@ -1316,7 +1302,6 @@ def partition_advice(dtshape, min_chunksize, max_chunksize, min_blocksize, max_b
 
     # Create a storage struct and initialize it.  Do we really need a store for this (maybe a frame info)?
     cdef ciarray.iarray_storage_t store
-    store.backend = ciarray.IARRAY_STORAGE_BLOSC
     store.contiguous = False
     # Ask for the actual advice
     try:

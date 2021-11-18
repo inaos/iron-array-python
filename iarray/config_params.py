@@ -116,7 +116,6 @@ class DefaultStore:
     urlpath: Any
     mode: Any
     contiguous: Any
-    plainbuffer: Any
 
 
 def default_filters():
@@ -149,7 +148,6 @@ class Defaults(object):
     mode: str = "r"
 
     contiguous: bool = None
-    plainbuffer: bool = False
 
     def __post_init__(self):
         # Initialize config and store with its getters and setters
@@ -249,9 +247,6 @@ class Defaults(object):
     def _contiguous(self):
         return self.contiguous
 
-    def _plainbuffer(self):
-        return self.plainbuffer
-
     @property
     def store(self):
         if self._store is None:
@@ -262,7 +257,6 @@ class Defaults(object):
                 urlpath=self.urlpath,
                 mode=self.mode,
                 contiguous=self.contiguous,
-                plainbuffer=self.plainbuffer,
             )
         return self._store
 
@@ -274,7 +268,6 @@ class Defaults(object):
         self.urlpath = value.urlpath
         self.mode = value.mode
         self.contiguous = value.contiguous
-        self.plainbuffer = value.plainbuffer
         self._store = value
 
 
@@ -310,11 +303,6 @@ class Store:
         If True, the output array will be stored contiguously, even when in-memory.  If False,
         the store will be sparse. The default value is False for in-memory and True for persistent
         storage.
-    plainbuffer : bool
-        When True, the output array will be stored on a plain, contiguous buffer, without
-        any compression.  This can help faster data sharing among other data containers
-        (e.g. NumPy).  When False (the default), the output array will be stored in a Blosc
-        container, which can be compressed (the default).
     """
 
     global defaults
@@ -323,7 +311,6 @@ class Store:
     urlpath: bytes or str = field(default_factory=defaults._urlpath)
     mode: bytes or str = field(default_factory=defaults._mode)
     contiguous: bool = field(default_factory=defaults._contiguous)
-    plainbuffer: bool = field(default_factory=defaults._plainbuffer)
 
     def __post_init__(self):
         self.urlpath = (
@@ -333,16 +320,9 @@ class Store:
             self.contiguous = True
         else:
             self.contiguous = self.contiguous
-        self.mode = (
-            self.mode.encode("utf-8") if isinstance(self.mode, str) else self.mode
-        )
-        if self.plainbuffer:
-            if self.chunks is not None or self.blocks is not None:
-                raise ValueError("plainbuffer array does not support neither a chunks nor blocks")
+        self.mode = self.mode.encode("utf-8") if isinstance(self.mode, str) else self.mode
 
     def _get_shape_advice(self, shape, cfg=None):
-        if self.plainbuffer:
-            return
         chunks, blocks = self.chunks, self.blocks
         if chunks is not None and blocks is not None:
             return
@@ -432,7 +412,6 @@ class Config(ext.Config):
     urlpath: bytes or str = field(default_factory=defaults._urlpath)
     mode: bytes or str = field(default_factory=defaults._mode)
     contiguous: bool = field(default_factory=defaults._contiguous)
-    plainbuffer: bool = field(default_factory=defaults._plainbuffer)
 
     def __post_init__(self):
         if self.urlpath is not None and self.contiguous is None:
@@ -452,7 +431,6 @@ class Config(ext.Config):
                 urlpath=self.urlpath,
                 mode=self.mode,
                 contiguous=self.contiguous,
-                plainbuffer=self.plainbuffer,
             )
         # Once we have all the settings and hints from the user, we can proceed
         # with some fine tuning.
@@ -460,7 +438,7 @@ class Config(ext.Config):
         if self.nthreads == 0:
             ncores = get_ncores(0)
             # Experiments say that nthreads is optimal when is ~1.5x the number of logical cores
-            #self.nthreads = ncores // 2 + ncores // 4
+            # self.nthreads = ncores // 2 + ncores // 4
             # More experiments with AMD 5950X seems to say that using all logical cores is better
             self.nthreads = ncores
         if self.favor == ia.Favor.SPEED:
@@ -580,7 +558,11 @@ def set_config(cfg: Config = None, shape=None, **kwargs):
 
     if kwargs != {}:
         # The default when creating frames on-disk is to use contiguous storage (mainly because of performance  reasons)
-        if kwargs.get('contiguous', None) is None and cfg.contiguous is None and kwargs.get('urlpath', None) is not None:
+        if (
+            kwargs.get("contiguous", None) is None
+            and cfg.contiguous is None
+            and kwargs.get("urlpath", None) is not None
+        ):
             cfg = cfg._replace(**dict(kwargs, contiguous=True))
         else:
             cfg = cfg._replace(**kwargs)

@@ -15,8 +15,10 @@ from itertools import zip_longest as izip
             [7, 8],
             [15, 15],
             np.float32,
-            True, "test_iter_acontiguous.iarr",
-            True, "test_iter_bcontiguous.iarr"
+            True,
+            "test_iter_acontiguous.iarr",
+            True,
+            "test_iter_bcontiguous.iarr",
         ),
         (
             [10, 10, 10],
@@ -24,23 +26,73 @@ from itertools import zip_longest as izip
             [2, 3, 6],
             [4, 5, 6],
             np.float64,
-            False, "test_iter_asparse.iarr",
-            False, "test_iter_bsparse.iarr"
-         ),
-        ([10, 10, 10, 10], [3, 4, 3, 4], [2, 2, 2, 2], [3, 4, 3, 4], np.float32, False, None, False, None),
-        ([100, 100], None, None, [30, 30], np.float64, False, "test_iter_asparse.iarr", True, None),
-        ([100, 100], None, None, [15, 15], np.float32, False, None, True, "test_iter_bcontiguous.iarr"),
-        ([10, 10, 10], None, None, [4, 5, 6], np.float64, True, "test_iter_asparse.iarr", True, "test_iter_bsparse.iarr"),
-        ([10, 10, 10, 10], None, None, [3, 4, 3, 4], np.float32, True, None, False, None),
+            False,
+            "test_iter_asparse.iarr",
+            False,
+            "test_iter_bsparse.iarr",
+        ),
+        (
+            [10, 10, 10, 10],
+            [3, 4, 3, 4],
+            [2, 2, 2, 2],
+            [3, 4, 3, 4],
+            np.float32,
+            False,
+            None,
+            False,
+            None,
+        ),
+        (
+            [100, 100],
+            [50, 50],
+            [20, 20],
+            [50, 50],
+            np.float64,
+            False,
+            "test_iter_asparse.iarr",
+            True,
+            None,
+        ),
+        (
+            [100, 100],
+            [23, 35],
+            [21, 33],
+            [23, 35],
+            np.float32,
+            False,
+            None,
+            True,
+            "test_iter_bcontiguous.iarr",
+        ),
+        (
+            [10, 10, 10],
+            [10, 10, 10],
+            [5, 5, 5],
+            [10, 10, 10],
+            np.float64,
+            True,
+            "test_iter_asparse.iarr",
+            True,
+            "test_iter_bsparse.iarr",
+        ),
+        (
+            [10, 10, 10, 10],
+            [3, 4, 3, 4],
+            [3, 4, 3, 4],
+            [3, 4, 3, 4],
+            np.float32,
+            True,
+            None,
+            False,
+            None,
+        ),
     ],
 )
-def test_iterator(shape, chunks, blocks, itershape, dtype, acontiguous, aurlpath, bcontiguous, burlpath):
-    if chunks is None:
-        astore = ia.Store(plainbuffer=True)
-        bstore = ia.Store(plainbuffer=True)
-    else:
-        astore = ia.Store(chunks, blocks, contiguous=acontiguous, urlpath=aurlpath)
-        bstore = ia.Store(chunks, blocks, contiguous=bcontiguous, urlpath=burlpath)
+def test_iterator(
+    shape, chunks, blocks, itershape, dtype, acontiguous, aurlpath, bcontiguous, burlpath
+):
+    astore = ia.Store(chunks, blocks, contiguous=acontiguous, urlpath=aurlpath)
+    bstore = ia.Store(chunks, blocks, contiguous=bcontiguous, urlpath=burlpath)
 
     ia.remove_urlpath(aurlpath)
     ia.remove_urlpath(burlpath)

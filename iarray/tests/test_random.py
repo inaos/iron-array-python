@@ -7,21 +7,22 @@ import pytest
 import iarray as ia
 import numpy as np
 
+rand_data = [
+    ([20, 20, 20], [10, 12, 5], [2, 3, 2], np.float64),
+    ([12, 31, 11, 22], [4, 3, 5, 2], [2, 2, 2, 2], np.float32),
+    ([10, 12, 5], [5, 6, 2], [5, 2, 2], np.float64),
+    ([4, 3, 5, 2], [2, 2, 2, 2], [2, 2, 1, 2], np.float32),
+    ([10, 12, 5], [10, 12, 4], [10, 6, 4], np.float64),
+    ([4, 3, 5, 2], [2, 2, 2, 2], [2, 1, 1, 2], np.float32),
+]
 
 # Rand
 @pytest.mark.parametrize(
-    "shape, chunks, blocks, dtype, plainbuffer",
-    [
-        ([20, 20, 20], [10, 12, 5], [2, 3, 2], np.float64, False),
-        ([12, 31, 11, 22], [4, 3, 5, 2], [2, 2, 2, 2], np.float32, False),
-        ([10, 12, 5], None, None, np.float64, False),
-        ([4, 3, 5, 2], None, None, np.float32, False),
-        ([10, 12, 5], None, None, np.float64, True),
-        ([4, 3, 5, 2], None, None, np.float32, True),
-    ],
+    "shape, chunks, blocks, dtype",
+    rand_data,
 )
-def test_rand(shape, chunks, blocks, dtype, plainbuffer):
-    store = ia.Store(chunks, blocks, plainbuffer=plainbuffer)
+def test_rand(shape, chunks, blocks, dtype):
+    store = ia.Store(chunks, blocks)
     size = int(np.prod(shape))
 
     i = 0
@@ -39,18 +40,11 @@ def test_rand(shape, chunks, blocks, dtype, plainbuffer):
 
 # Randn
 @pytest.mark.parametrize(
-    "shape, chunks, blocks, dtype, plainbuffer",
-    [
-        ([20, 20, 20], [10, 12, 5], [2, 3, 2], np.float64, False),
-        ([10, 10, 8, 10], [4, 3, 5, 2], [2, 2, 2, 2], np.float32, False),
-        ([10, 12, 5], None, None, np.float64, False),
-        ([4, 3, 5, 2], None, None, np.float32, False),
-        ([10, 12, 5], None, None, np.float64, True),
-        ([4, 3, 5, 2], None, None, np.float32, True),
-    ],
+    "shape, chunks, blocks, dtype",
+    rand_data,
 )
-def test_randn(shape, chunks, blocks, dtype, plainbuffer):
-    store = ia.Store(chunks, blocks, plainbuffer=plainbuffer)
+def test_randn(shape, chunks, blocks, dtype):
+    store = ia.Store(chunks, blocks)
     size = int(np.prod(shape))
 
     i = 0
@@ -68,18 +62,18 @@ def test_randn(shape, chunks, blocks, dtype, plainbuffer):
 
 # Beta
 @pytest.mark.parametrize(
-    "alpha, beta, shape, chunks, blocks, dtype, plainbuffer",
+    "alpha, beta",
     [
-        (3, 4, [20, 20, 30], [10, 12, 5], [2, 3, 4], np.float64, False),
-        (0.1, 5, [12, 13, 8, 7], [4, 3, 5, 2], [2, 2, 5, 2], np.float32, False),
-        (3, 0.2, [10, 12, 5], None, None, np.float64, False),
-        (0.5, 0.05, [4, 3, 5, 2], None, None, np.float32, False),
-        (3, 0.2, [10, 12, 5], None, None, np.float64, True),
-        (0.5, 0.05, [4, 3, 5, 2], None, None, np.float32, True),
+        (3, 4),
+        (0.1, 5),
     ],
 )
-def test_beta(alpha, beta, shape, chunks, blocks, dtype, plainbuffer):
-    store = ia.Store(chunks, blocks, plainbuffer=plainbuffer)
+@pytest.mark.parametrize(
+    "shape, chunks, blocks, dtype",
+    rand_data,
+)
+def test_beta(alpha, beta, shape, chunks, blocks, dtype):
+    store = ia.Store(chunks, blocks)
     size = int(np.prod(shape))
 
     i = 0
@@ -97,18 +91,18 @@ def test_beta(alpha, beta, shape, chunks, blocks, dtype, plainbuffer):
 
 # Lognormal
 @pytest.mark.parametrize(
-    "mu, sigma, shape, chunks, blocks, dtype, plainbuffer",
+    "mu, sigma",
     [
-        (3, 4, [20, 20, 20], [10, 12, 5], [2, 3, 2], np.float64, False),
-        (0.1, 5, [10, 20, 10, 20], [4, 3, 5, 2], [2, 2, 2, 2], np.float32, False),
-        (3, 0.2, [10, 12, 5], None, None, np.float64, False),
-        (0.5, 0.05, [4, 3, 5, 2], None, None, np.float32, False),
-        (3, 0.2, [10, 12, 5], None, None, np.float64, True),
-        (0.5, 0.05, [4, 3, 5, 2], None, None, np.float32, True),
+        (3, 4),
+        (3, 0.2),
     ],
 )
-def test_lognormal(mu, sigma, shape, chunks, blocks, dtype, plainbuffer):
-    store = ia.Store(chunks, blocks, plainbuffer=plainbuffer)
+@pytest.mark.parametrize(
+    "shape, chunks, blocks, dtype",
+    rand_data,
+)
+def test_lognormal(mu, sigma, shape, chunks, blocks, dtype):
+    store = ia.Store(chunks, blocks)
     size = int(np.prod(shape))
 
     i = 0
@@ -126,18 +120,18 @@ def test_lognormal(mu, sigma, shape, chunks, blocks, dtype, plainbuffer):
 
 # Exponential
 @pytest.mark.parametrize(
-    "beta, shape, chunks, blocks, dtype, plainbuffer",
+    "beta",
     [
-        (3, [20, 20, 12], [10, 12, 5], [3, 5, 2], np.float64, False),
-        (0.1, [10, 20, 20, 10], [4, 10, 8, 2], [2, 5, 3, 2], np.float32, False),
-        (3, [10, 12, 5], None, None, np.float64, False),
-        (0.5, [4, 3, 5, 2], None, None, np.float32, False),
-        (3, [10, 12, 5], None, None, np.float64, True),
-        (0.5, [4, 3, 5, 2], None, None, np.float32, True),
+        3,
+        0.1,
     ],
 )
-def test_exponential(beta, shape, chunks, blocks, dtype, plainbuffer):
-    store = ia.Store(chunks, blocks, plainbuffer=plainbuffer)
+@pytest.mark.parametrize(
+    "shape, chunks, blocks, dtype",
+    rand_data,
+)
+def test_exponential(beta, shape, chunks, blocks, dtype):
+    store = ia.Store(chunks, blocks)
     size = int(np.prod(shape))
 
     i = 0
@@ -155,18 +149,18 @@ def test_exponential(beta, shape, chunks, blocks, dtype, plainbuffer):
 
 # Uniform
 @pytest.mark.parametrize(
-    "a_, b_, shape, chunks, blocks, dtype, plainbuffer",
+    "a_, b_",
     [
-        (3, 5, [20, 20, 20], [10, 12, 10], [2, 3, 2], np.float64, False),
-        (0.1, 0.2, [10, 20, 20, 10], [4, 10, 8, 2], [2, 5, 3, 2], np.float32, False),
-        (-3, -2, [10, 12, 5], None, None, np.float64, False),
-        (0.5, 1000, [4, 3, 5, 2], None, None, np.float32, False),
-        (-3, -2, [10, 12, 5], None, None, np.float64, True),
-        (0.5, 1000, [4, 3, 5, 2], None, None, np.float32, True),
+        (-3, -2),
+        (0.5, 1000),
     ],
 )
-def test_uniform(a_, b_, shape, chunks, blocks, dtype, plainbuffer):
-    store = ia.Store(chunks, blocks, plainbuffer=plainbuffer)
+@pytest.mark.parametrize(
+    "shape, chunks, blocks, dtype",
+    rand_data,
+)
+def test_uniform(a_, b_, shape, chunks, blocks, dtype):
+    store = ia.Store(chunks, blocks)
     size = int(np.prod(shape))
 
     i = 0
@@ -184,18 +178,18 @@ def test_uniform(a_, b_, shape, chunks, blocks, dtype, plainbuffer):
 
 # Normal
 @pytest.mark.parametrize(
-    "mu, sigma, shape, chunks, blocks, dtype, plainbuffer",
+    "mu, sigma",
     [
-        (3, 5, [20, 20, 12], [10, 12, 5], [3, 5, 2], np.float64, False),
-        (0.1, 0.2, [10, 20, 20, 10], [4, 10, 8, 2], [2, 5, 3, 2], np.float32, False),
-        (-3, 2, [10, 12, 5], None, None, np.float64, False),
-        (0.5, 1000, [4, 3, 5, 2], None, None, np.float32, False),
-        (-3, 2, [10, 12, 5], None, None, np.float64, True),
-        (0.5, 1000, [4, 3, 5, 2], None, None, np.float32, True),
+        (0.1, 0.2),
+        (-10, 0.01),
     ],
 )
-def test_normal(mu, sigma, shape, chunks, blocks, dtype, plainbuffer):
-    store = ia.Store(chunks, blocks, plainbuffer=plainbuffer)
+@pytest.mark.parametrize(
+    "shape, chunks, blocks, dtype",
+    rand_data,
+)
+def test_normal(mu, sigma, shape, chunks, blocks, dtype):
+    store = ia.Store(chunks, blocks)
     size = int(np.prod(shape))
 
     i = 0
@@ -213,18 +207,15 @@ def test_normal(mu, sigma, shape, chunks, blocks, dtype, plainbuffer):
 
 # Bernoulli (compare against np.random.binomial)
 @pytest.mark.parametrize(
-    "p, shape, chunks, blocks, dtype, plainbuffer",
-    [
-        (0.7, [20, 20, 12], [10, 12, 5], [3, 5, 2], np.float64, False),
-        (0.01, [10, 20, 20, 10], [4, 10, 8, 2], [2, 5, 3, 2], np.float32, False),
-        (0.15, [10, 12, 5], None, None, np.float64, False),
-        (0.6, [4, 3, 5, 2], None, None, np.float32, False),
-        (0.15, [10, 12, 5], None, None, np.float64, True),
-        (0.6, [4, 3, 5, 2], None, None, np.float32, True),
-    ],
+    "p",
+    [0.01, 0.15, 0.6],
 )
-def test_bernoulli(p, shape, chunks, blocks, dtype, plainbuffer):
-    store = ia.Store(chunks, blocks, plainbuffer=plainbuffer)
+@pytest.mark.parametrize(
+    "shape, chunks, blocks, dtype",
+    rand_data,
+)
+def test_bernoulli(p, shape, chunks, blocks, dtype):
+    store = ia.Store(chunks, blocks)
     size = int(np.prod(shape))
 
     i = 0
@@ -242,18 +233,18 @@ def test_bernoulli(p, shape, chunks, blocks, dtype, plainbuffer):
 
 # Binomial
 @pytest.mark.parametrize(
-    "n, p, shape, chunks, blocks, dtype, plainbuffer",
+    "n, p",
     [
-        (3, 0.7, [20, 20, 12], [10, 12, 5], [3, 5, 2], np.float64, False),
-        (10, 0.01, [10, 20, 20, 10], [4, 10, 8, 2], [2, 5, 3, 2], np.float32, False),
-        (1000, 0.15, [10, 12, 5], None, None, np.float64, False),
-        (5, 0.6, [4, 3, 5, 2], None, None, np.float32, False),
-        (1000, 0.15, [10, 12, 5], None, None, np.float64, True),
-        (5, 0.6, [4, 3, 5, 2], None, None, np.float32, True),
+        (10, 0.01),
+        (5, 0.6),
     ],
 )
-def test_binomial(n, p, shape, chunks, blocks, dtype, plainbuffer):
-    store = ia.Store(chunks, blocks, plainbuffer=plainbuffer)
+@pytest.mark.parametrize(
+    "shape, chunks, blocks, dtype",
+    rand_data,
+)
+def test_binomial(n, p, shape, chunks, blocks, dtype):
+    store = ia.Store(chunks, blocks)
     size = int(np.prod(shape))
 
     i = 0
@@ -273,18 +264,15 @@ def test_binomial(n, p, shape, chunks, blocks, dtype, plainbuffer):
 
 # Poisson
 @pytest.mark.parametrize(
-    "lamb, shape, chunks, blocks, dtype, plainbuffer",
-    [
-        (3, [20, 20, 12], [10, 12, 5], [3, 5, 2], np.float64, False),
-        (0.01, [10, 20, 20, 10], [4, 10, 8, 2], [2, 5, 3, 2], np.float32, False),
-        (0.15, [10, 12, 5], None, None, np.float64, False),
-        (5, [4, 3, 5, 2], None, None, np.float32, False),
-        (0.15, [10, 12, 5], None, None, np.float64, True),
-        (5, [4, 3, 5, 2], None, None, np.float32, True),
-    ],
+    "lamb",
+    [5, 0.15],
 )
-def test_poisson(lamb, shape, chunks, blocks, dtype, plainbuffer):
-    store = ia.Store(chunks, blocks, plainbuffer=plainbuffer)
+@pytest.mark.parametrize(
+    "shape, chunks, blocks, dtype",
+    rand_data,
+)
+def test_poisson(lamb, shape, chunks, blocks, dtype):
+    store = ia.Store(chunks, blocks)
     size = int(np.prod(shape))
 
     i = 0
