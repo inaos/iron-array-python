@@ -683,7 +683,6 @@ def open(cfg, urlpath):
     chunks = tuple(storage.chunkshape[i] for i in range(dtshape.ndim))
     blocks = tuple(storage.blockshape[i] for i in range(dtshape.ndim))
 
-    urlpath = str(storage.urlpath)
     contiguous = storage.contiguous
     store = ia.Store(chunks=chunks, blocks=blocks, urlpath=urlpath, contiguous=contiguous)
 

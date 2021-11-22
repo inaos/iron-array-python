@@ -12,7 +12,7 @@ import numpy as np
         ([123], [44], [20]),
         ([100, 123], [12, 21], [10, 10]),
         ([100, 100], [5, 17], [5, 5]),
-        ([104, 121, 212], [5, 46, 10], [2, 8, 5]),
+        ([10, 12, 21], [5, 4, 10], [2, 1, 5]),
     ],
 )
 @pytest.mark.parametrize("func", [ia.load, ia.open])
@@ -39,5 +39,7 @@ def test_load_save(shape, chunks, blocks, dtype, func, contiguous):
 
     b = ia.open(urlpath)
     assert(b.cfg.contiguous == contiguous)
+    assert(isinstance(b.cfg.urlpath, bytes))
+    assert(b.cfg.urlpath == urlpath.encode("utf-8"))
     ia.remove_urlpath(urlpath)
     ia.remove_urlpath("new.iarr")
