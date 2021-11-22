@@ -118,6 +118,17 @@ def test_global_favor(favor, chunks, blocks):
 
 
 @pytest.mark.parametrize(
+    "favor",
+    [
+        (ia.Favor.BALANCE, ia.Favor.SPEED, ia.Favor.CRATIO),
+    ],
+)
+def test_favor_nobtune(favor):
+    with pytest.raises(ValueError):
+        ia.set_config(favor=favor, btune=False)
+
+
+@pytest.mark.parametrize(
     "clevel, codec, filters",
     [
         (1, None, None),

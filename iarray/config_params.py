@@ -564,11 +564,17 @@ def set_config(cfg: Config = None, shape=None, **kwargs):
         cfg = copy.deepcopy(cfg)
 
     if kwargs != {}:
+        # Check incompatibilities
+        # btune=True with others
         btune_incompatible = ['clevel', 'codec', 'filters']
         btune_not_allowed = any(x in kwargs for x in btune_incompatible)
         btune_disabled = True if "btune" in kwargs and kwargs["btune"] is False else False
         if cfg.btune is True and not btune_disabled and btune_not_allowed:
-            raise ValueError(f"To set any flag in {btune_incompatible} you need to disable btune explicitly.")
+            raise ValueError(f"To set any flag in {btune_incompatible} you need to disable `btune` explicitly.")
+        # favor=something and btune=False
+        if "favor" in kwargs and btune_disabled:
+            raise ValueError(f"A `favor` argument needs `btune` enabled.")
+
         # The default when creating frames on-disk is to use contiguous storage (mainly because of performance  reasons)
         if (kwargs.get("contiguous", None) is None
             and cfg.contiguous is None
