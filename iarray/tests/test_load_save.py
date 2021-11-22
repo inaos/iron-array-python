@@ -22,7 +22,7 @@ def test_load_save(shape, chunks, blocks, dtype, func, contiguous):
     ia.remove_urlpath(urlpath)
 
     store = ia.Store(chunks, blocks, contiguous=contiguous)
-    a = ia.linspace(shape, -10, 10, dtype=dtype, store=store)
+    a = ia.linspace(shape, -10, 10, dtype=dtype, store=store) #, fp_mantissa_bits=20)
     an = ia.iarray2numpy(a)
 
     ia.save(urlpath, a, contiguous=contiguous)
@@ -41,5 +41,21 @@ def test_load_save(shape, chunks, blocks, dtype, func, contiguous):
     assert(b.cfg.contiguous == contiguous)
     assert(isinstance(b.cfg.urlpath, bytes))
     assert(b.cfg.urlpath == urlpath.encode("utf-8"))
+    assert(b.cfg.chunks == a.chunks)
+    assert(b.cfg.blocks == a.blocks)
+    assert(b.cfg.filters == a.cfg.filters)
+    assert(b.cfg.fp_mantissa_bits == a.cfg.fp_mantissa_bits)
+    assert(b.dtype == a.dtype)
+
+    c = ia.load(urlpath)
+    assert(c.cfg.contiguous == contiguous)
+    assert(c.cfg.urlpath == None)
+    assert(c.cfg.chunks == a.chunks)
+    assert(c.cfg.blocks == a.blocks)
+    assert(c.cfg.codec == a.cfg.codec)
+    assert(c.cfg.filters == a.cfg.filters)
+    assert(c.cfg.fp_mantissa_bits == a.cfg.fp_mantissa_bits)
+    assert(c.dtype == a.dtype)
+
     ia.remove_urlpath(urlpath)
     ia.remove_urlpath("new.iarr")
