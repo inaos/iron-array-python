@@ -30,7 +30,7 @@ import iarray as ia
 )
 def test_global_config(clevel, codec, filters, chunks, blocks, contiguous, urlpath):
     store = ia.Store(chunks, blocks, contiguous=contiguous, urlpath=urlpath)
-    ia.set_config(clevel=clevel, codec=codec, filters=filters, store=store)
+    ia.set_config(clevel=clevel, codec=codec, filters=filters, store=store, btune=False)
     config = ia.get_config()
     assert config.clevel == clevel
     assert config.codec == codec
@@ -50,6 +50,7 @@ def test_global_config(clevel, codec, filters, chunks, blocks, contiguous, urlpa
         blocks=blocks,
         contiguous=False,
         urlpath=None,
+        btune=False,
     )
     config = ia.get_config()
     assert config.clevel == clevel
@@ -70,6 +71,7 @@ def test_global_config(clevel, codec, filters, chunks, blocks, contiguous, urlpa
         blocks=blocks,
         contiguous=False,
         urlpath=None,
+        btune=False,
     )
     ia.set_config(cfg)
     config = ia.get_config()
@@ -83,7 +85,7 @@ def test_global_config(clevel, codec, filters, chunks, blocks, contiguous, urlpa
     assert store2.urlpath == None
 
     # Or, we can use a mix of Config and keyword args
-    cfg = ia.Config(clevel=clevel, codec=codec, blocks=blocks, contiguous=False, urlpath=urlpath)
+    cfg = ia.Config(clevel=clevel, codec=codec, blocks=blocks, contiguous=False, urlpath=urlpath, btune=False)
     ia.set_config(cfg, filters=filters, chunks=chunks)
     config = ia.get_config()
 
@@ -98,22 +100,35 @@ def test_global_config(clevel, codec, filters, chunks, blocks, contiguous, urlpa
 
 
 @pytest.mark.parametrize(
-    "favor, filters, chunks, blocks",
+    "favor, chunks, blocks",
     [
-        (ia.Favor.BALANCE, [ia.Filter.BITSHUFFLE], None, None),
-        (ia.Favor.SPEED, [ia.Filter.SHUFFLE], [50, 50], [20, 20]),
-        (ia.Favor.CRATIO, [ia.Filter.BITSHUFFLE], [50, 50], [20, 20]),
+        (ia.Favor.BALANCE, None, None),
+        (ia.Favor.SPEED, [50, 50], [20, 20]),
+        (ia.Favor.CRATIO, [50, 50], [20, 20]),
     ],
 )
-def test_global_favor(favor, filters, chunks, blocks):
+def test_global_favor(favor, chunks, blocks):
     store = ia.Store(chunks, blocks)
-    ia.set_config(favor=favor, filters=filters, store=store)
+    ia.set_config(favor=favor, store=store)
     config = ia.get_config()
     assert config.favor == favor
-    assert config.filters == filters
+    assert config.btune == True
     assert config.store.chunks == chunks
     assert config.store.blocks == blocks
 
+
+@pytest.mark.parametrize(
+    "clevel, codec, filters",
+    [
+        (1, None, None),
+        (None, ia.Codec.ZSTD, None),
+        (None, None, [ia.Filter.SHUFFLE]),
+        (1, ia.Codec.ZSTD, [ia.Filter.SHUFFLE]),
+    ],
+)
+def test_btune_incompat(clevel, codec, filters):
+    with pytest.raises(ValueError):
+        ia.set_config(clevel=clevel, codec=codec, filters=filters, btune=True)
 
 @pytest.mark.parametrize(
     "chunks, blocks, shape",
@@ -176,9 +191,10 @@ def test_global_config_dtype(chunks, blocks, shape):
 def test_config_ctx(clevel, codec, filters, chunks, blocks):
     try:
         store = ia.Store(chunks, blocks)
-        with ia.config(clevel=clevel, codec=codec, filters=filters, store=store) as cfg:
+        with ia.config(clevel=clevel, codec=codec, filters=filters, store=store, btune=False) as cfg:
             assert cfg.clevel == clevel
             assert cfg.codec == codec
+            assert cfg.btune == False
             assert cfg.filters == filters
             assert cfg.store.chunks == chunks
             assert cfg.store.blocks == blocks
@@ -193,9 +209,11 @@ def test_config_ctx(clevel, codec, filters, chunks, blocks):
             filters=filters,
             chunks=chunks,
             blocks=blocks,
+            btune=False,
         ) as cfg:
             assert cfg.clevel == clevel
             assert cfg.codec == codec
+            assert cfg.btune == False
             assert cfg.filters == filters
             assert cfg.store.chunks == chunks
             assert cfg.store.blocks == blocks

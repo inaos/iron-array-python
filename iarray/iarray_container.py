@@ -77,10 +77,10 @@ class IArray(ext.Container):
         ----------
         cfg : :class:`Config`
             The configuration for this operation.  If None (default), the
-            configuration from the array will be used instead of that of the current configuration.
+            configuration from self will be used instead of that of the current configuration.
         kwargs : dict
             A dictionary for setting some or all of the fields in the :class:`Config`
-            dataclass that should override the current configuration.
+            dataclass that should override the configuration.
 
         Returns
         -------
@@ -89,12 +89,16 @@ class IArray(ext.Container):
         """
         if cfg is None:
             cfg = ia.get_config(self.cfg)
-
             # the urlpath should not be copied
             cfg.store.urlpath = None
             cfg.urlpath = None
 
-        with ia.config(shape=self.shape, cfg=cfg, **kwargs) as cfg:
+        # Generally we don't want btune to optimize, except if specified
+        btune = False
+        if "btune" in kwargs:
+            btune = kwargs["btune"]
+            kwargs.pop("btune")
+        with ia.config(shape=self.shape, cfg=cfg, btune=btune, **kwargs) as cfg:
             return ext.copy(cfg, self)
 
     def copyto(self, dest):

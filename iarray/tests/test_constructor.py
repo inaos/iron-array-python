@@ -17,7 +17,7 @@ import iarray as ia
             False,
             "test_linspace_sparse.iarr",
         ),
-        (-0.1, -0.2, [40, 39, 52, 12], [12, 17, 6, 5], [5, 4, 6, 5], np.float32, True, None),
+       (-0.1, -0.2, [40, 39, 52, 12], [12, 17, 6, 5], [5, 4, 6, 5], np.float32, True, None),
         (
             0,
             10,
@@ -295,8 +295,8 @@ def test_full(fill_value, shape, chunks, blocks, dtype, contiguous, urlpath):
 def test_overwrite(contiguous):
     fname = "pepe.iarr"
     ia.remove_urlpath(fname)
-    a = ia.arange([10, 20, 10, 14], clevel=9, contiguous=contiguous, urlpath=fname)
-    b = ia.arange([10, 20, 10, 14], clevel=9, contiguous=contiguous, urlpath=fname, mode="w")
+    a = ia.arange([10, 20, 10, 14], contiguous=contiguous, urlpath=fname)
+    b = ia.arange([10, 20, 10, 14], contiguous=contiguous, urlpath=fname, mode="w")
 
     ia.remove_urlpath(fname)
 
@@ -351,3 +351,14 @@ def test_fortran(shape, dtype, contiguous, urlpath):
     np.testing.assert_almost_equal(a_fortran, b.data)
 
     ia.remove_urlpath(urlpath)
+
+@pytest.mark.parametrize(
+    "clevel, codec, filters",
+    [
+        (1, ia.Codec.ZSTD, [ia.Filter.NOFILTER]),
+    ],
+)
+def test_btune_copy(clevel, codec, filters):
+    a = ia.linspace([100], 0, 1)
+    a_copy = a.copy(clevel=clevel, codec=codec, filters=filters, btune=False)
+    np.testing.assert_almost_equal(a_copy.data, a.data)
