@@ -434,6 +434,7 @@ class Config(ext.Config):
                 mode=self.mode,
                 contiguous=self.contiguous,
             )
+
         # Once we have all the settings and hints from the user, we can proceed
         # with some fine tuning.
         # The settings below are based on experiments on a i9-10940X processor.
@@ -570,7 +571,7 @@ def set_config(cfg: Config = None, shape=None, **kwargs):
             cfg = cfg._replace(**kwargs)
     if shape is not None:
         cfg.store._get_shape_advice(shape, cfg=cfg)
-        cfg._replace(**{"store": cfg.store})
+        cfg = cfg._replace(**{"store": cfg.store})
 
     global_config = cfg
     defaults.config = cfg
