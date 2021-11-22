@@ -222,8 +222,12 @@ class Defaults(object):
         self.filters = value.filters
         self.nthreads = value.nthreads
         self.fp_mantissa_bits = value.fp_mantissa_bits
-        if (self.fp_mantissa_bits != 0):
+        # Activate TRUNC_PREC filter only if mantissa_bits > 0
+        if self.fp_mantissa_bits != 0 and ia.Filter.TRUNC_PREC not in self.filters:
             self.filters.insert(0, ia.Filter.TRUNC_PREC)
+        # De-activate TRUNC_PREC filter if mantissa_bits == 0
+        if self.fp_mantissa_bits == 0 and ia.Filter.TRUNC_PREC in self.filters:
+            self.filters.pop(0)
         self.eval_method = value.eval_method
         self.seed = value.seed
         self.random_gen = value.random_gen
