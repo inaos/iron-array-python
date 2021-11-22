@@ -22,7 +22,7 @@ def test_load_save(shape, chunks, blocks, dtype, func, contiguous):
     ia.remove_urlpath(urlpath)
 
     store = ia.Store(chunks, blocks, contiguous=contiguous)
-    a = ia.linspace(shape, -10, 10, dtype=dtype, store=store) #, fp_mantissa_bits=20)
+    a = ia.linspace(shape, -10, 10, dtype=dtype, store=store, fp_mantissa_bits=20)
     an = ia.iarray2numpy(a)
 
     ia.save(urlpath, a, contiguous=contiguous)
@@ -30,12 +30,11 @@ def test_load_save(shape, chunks, blocks, dtype, func, contiguous):
     b = func(urlpath)
     bn = ia.iarray2numpy(b)
 
-    np.testing.assert_almost_equal(an, bn)
+    # Test only the 3 first digits (we are using the TRUNC_PREC filter via fp_mantissa_bits above)
+    np.testing.assert_almost_equal(an, bn, decimal=3)
 
     # Overwrite existing array
     ia.save(urlpath, a, contiguous=contiguous)
-    # Create the new persistent array
-    ia.save("new.iarr", a, contiguous=contiguous)
 
     b = ia.open(urlpath)
     assert(b.cfg.contiguous == contiguous)
@@ -58,4 +57,3 @@ def test_load_save(shape, chunks, blocks, dtype, func, contiguous):
     assert(c.dtype == a.dtype)
 
     ia.remove_urlpath(urlpath)
-    ia.remove_urlpath("new.iarr")

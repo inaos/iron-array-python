@@ -222,6 +222,8 @@ class Defaults(object):
         self.filters = value.filters
         self.nthreads = value.nthreads
         self.fp_mantissa_bits = value.fp_mantissa_bits
+        if (self.fp_mantissa_bits != 0):
+            self.filters.insert(0, ia.Filter.TRUNC_PREC)
         self.eval_method = value.eval_method
         self.seed = value.seed
         self.random_gen = value.random_gen
