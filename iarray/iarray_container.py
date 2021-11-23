@@ -81,6 +81,7 @@ class IArray(ext.Container):
         kwargs : dict
             A dictionary for setting some or all of the fields in the :class:`Config`
             dataclass that should override the configuration.
+            By default, this function deactives btune unless it or :class:`Favor` are specified.
 
         Returns
         -------
@@ -98,6 +99,8 @@ class IArray(ext.Container):
         if "btune" in kwargs:
             btune = kwargs["btune"]
             kwargs.pop("btune")
+        if "favor" in kwargs and "btune" not in kwargs:
+            btune = True
         with ia.config(shape=self.shape, cfg=cfg, btune=btune, **kwargs) as cfg:
             return ext.copy(cfg, self)
 
