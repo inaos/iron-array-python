@@ -134,7 +134,7 @@ class Defaults(object):
     filters: List[ia.Filter] = field(default_factory=default_filters)
     nthreads: int = 0
     fp_mantissa_bits: int = 0
-    eval_method: int = ia.Eval.AUTO
+    eval_method: ia.Eval = ia.Eval.AUTO
     seed: int = None
     random_gen: ia.RandomGen = ia.RandomGen.MERSENNE_TWISTER
     btune: bool = True
@@ -149,24 +149,32 @@ class Defaults(object):
 
     contiguous: bool = None
 
+    # Keep track of the special params  set with default values to check concordance with btune
+    kwargs_params: set = field(default_factory=set)
+    check: bool = True
+
     def __post_init__(self):
         # Initialize config and store with its getters and setters
         self.config = self.config
 
     # Accessors only meant to serve as default_factory
     def _codec(self):
+        self.kwargs_params.add("codec")
         return self.codec
 
     def _clevel(self):
+        self.kwargs_params.add("clevel")
         return self.clevel
 
     def _favor(self):
+        self.kwargs_params.add("favor")
         return self.favor
 
     def _use_dict(self):
         return self.use_dict
 
     def _filters(self):
+        self.kwargs_params.add("filters")
         return self.filters
 
     def _nthreads(self):
@@ -400,12 +408,12 @@ class Config(ext.Config):
 
     codec: ia.Codec = field(default_factory=defaults._codec)
     clevel: int = field(default_factory=defaults._clevel)
-    favor: int = field(default_factory=defaults._favor)
+    favor: ia.Favor = field(default_factory=defaults._favor)
     filters: List[ia.Filter] = field(default_factory=defaults._filters)
     fp_mantissa_bits: int = field(default_factory=defaults._fp_mantissa_bits)
     use_dict: bool = field(default_factory=defaults._use_dict)
     nthreads: int = field(default_factory=defaults._nthreads)
-    eval_method: int = field(default_factory=defaults._eval_method)
+    eval_method: ia.Eval = field(default_factory=defaults._eval_method)
     seed: int = field(default_factory=defaults._seed)
     random_gen: ia.RandomGen = field(default_factory=defaults._random_gen)
     btune: bool = field(default_factory=defaults._btune)
@@ -420,6 +428,12 @@ class Config(ext.Config):
     contiguous: bool = field(default_factory=defaults._contiguous)
 
     def __post_init__(self):
+        if defaults.check:
+            self.check_config_params()
+        # Restore variable for next time
+        defaults.kwargs_params = set()
+        defaults.check = True
+
         if self.urlpath is not None and self.contiguous is None:
             self.contiguous = True
         global RANDOM_SEED
@@ -475,6 +489,8 @@ class Config(ext.Config):
         )
 
     def _replace(self, **kwargs):
+        # When a replace is done a new object from the class is created with all its params passed as kwargs
+        defaults.check = False
         cfg_ = replace(self, **kwargs)
         if "store" in kwargs:
             store = kwargs["store"]
@@ -492,8 +508,30 @@ class Config(ext.Config):
         kwargs = asdict(self)
         # asdict is recursive, but we need the store kwarg as a Store object
         kwargs["store"] = Store(**kwargs["store"])
+        defaults.check = False
         cfg = Config(**kwargs)
         return cfg
+
+    def check_config_params(self, **kwargs):
+        # Check incompatibilities
+        # btune=True with others
+        btune = kwargs.get("btune", self.btune)
+
+        btune_incompatible = {"clevel", "codec", "filters"}
+        if kwargs != {}:
+            btune_allowed = all(x not in kwargs for x in btune_incompatible)
+        else:
+            btune_allowed = all(x in defaults.kwargs_params for x in btune_incompatible)
+        if btune and not btune_allowed:
+            raise ValueError(f"To set any flag in", btune_incompatible, "you need to disable `btune` explicitly.")
+
+        # favor=something and btune=False
+        if kwargs !={}:
+            if "favor" in kwargs and not btune:
+                raise ValueError(f"A `favor` argument needs `btune` enabled.")
+        else:
+            if "favor" not in defaults.kwargs_params and not btune:
+                raise ValueError(f"A `favor` argument needs `btune` enabled.")
 
 
 # Global config
@@ -564,17 +602,7 @@ def set_config(cfg: Config = None, shape=None, **kwargs):
         cfg = copy.deepcopy(cfg)
 
     if kwargs != {}:
-        # Check incompatibilities
-        # btune=True with others
-        btune_incompatible = ['clevel', 'codec', 'filters']
-        btune_not_allowed = any(x in kwargs for x in btune_incompatible)
-        btune_disabled = True if "btune" in kwargs and kwargs["btune"] is False else False
-        if cfg.btune is True and not btune_disabled and btune_not_allowed:
-            raise ValueError(f"To set any flag in {btune_incompatible} you need to disable `btune` explicitly.")
-        # favor=something and btune=False
-        if "favor" in kwargs and btune_disabled:
-            raise ValueError(f"A `favor` argument needs `btune` enabled.")
-
+        cfg.check_config_params(**kwargs)
         # The default when creating frames on-disk is to use contiguous storage (mainly because of performance  reasons)
         if (kwargs.get("contiguous", None) is None
             and cfg.contiguous is None

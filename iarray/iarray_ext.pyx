@@ -468,7 +468,7 @@ def copy(cfg, src):
 
     cdef int flags = 0 if cfg.store.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
 
-    # Check that we are not unadvertently overwriting anything
+    # Check that we are not inadvertently overwriting anything
     ia._check_path_mode(cfg.store.urlpath, cfg.store.mode)
 
     cdef ciarray.iarray_container_t *c
@@ -661,6 +661,8 @@ cdef get_cfg_from_container(cfg, ciarray.iarray_context_t *ctx, ciarray.iarray_c
     contiguous = storage.contiguous
     store = ia.Store(chunks=chunks, blocks=blocks, urlpath=urlpath, contiguous=contiguous)
 
+    # The config params should already have been checked
+    ia.defaults.check = False
     c_cfg = ia.Config(
         codec=codec,
         clevel=clevel,
