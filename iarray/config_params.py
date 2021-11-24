@@ -549,13 +549,8 @@ class Config(ext.Config):
 global_config = Config()
 
 
-def get_config(cfg=None):
+def get_config():
     """Get the global defaults for iarray operations.
-
-    Parameters
-    ----------
-    cfg
-        The base configuration to which the changes will apply.
 
     Returns
     -------
@@ -566,14 +561,7 @@ def get_config(cfg=None):
     --------
     set_config
     """
-    global global_config
-
-    if not cfg:
-        cfg = global_config
-    else:
-        cfg = copy.deepcopy(cfg)
-
-    return cfg
+    return global_config
 
 
 def set_config(cfg: Config = None, shape=None, **kwargs):

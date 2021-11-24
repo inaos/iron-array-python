@@ -368,7 +368,6 @@ cdef class Container:
     def __getitem__(self, key):
         # key has been massaged already
         start, stop, squeeze_mask = key
-        cfg = ia.get_config(self.cfg)
 
         with ia.config(cfg=self.cfg) as cfg:
             return get_slice(cfg, self, start, stop, squeeze_mask, True, None)

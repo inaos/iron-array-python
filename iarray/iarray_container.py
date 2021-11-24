@@ -89,7 +89,7 @@ class IArray(ext.Container):
             The copy.
         """
         if cfg is None:
-            cfg = ia.get_config(self.cfg)
+            cfg = self.cfg
             # the urlpath should not be copied
             cfg.store.urlpath = None
             cfg.urlpath = None
