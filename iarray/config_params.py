@@ -523,14 +523,23 @@ class Config(ext.Config):
         else:
             btune_allowed = all(x in defaults.kwargs_params for x in btune_incompatible)
         if btune and not btune_allowed:
+            # Restore variable for next time
+            defaults.kwargs_params = set()
+            defaults.check = True
             raise ValueError(f"To set any flag in", btune_incompatible, "you need to disable `btune` explicitly.")
 
         # favor=something and btune=False
         if kwargs !={}:
             if "favor" in kwargs and not btune:
+                # Restore variable for next time
+                defaults.kwargs_params = set()
+                defaults.check = True
                 raise ValueError(f"A `favor` argument needs `btune` enabled.")
         else:
             if "favor" not in defaults.kwargs_params and not btune:
+                # Restore variable for next time
+                defaults.kwargs_params = set()
+                defaults.check = True
                 raise ValueError(f"A `favor` argument needs `btune` enabled.")
 
 

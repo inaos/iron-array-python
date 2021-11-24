@@ -120,12 +120,17 @@ def test_global_favor(favor, chunks, blocks):
 @pytest.mark.parametrize(
     "favor",
     [
-        (ia.Favor.BALANCE, ia.Favor.SPEED, ia.Favor.CRATIO),
+        ia.Favor.BALANCE, ia.Favor.SPEED, ia.Favor.CRATIO,
     ],
 )
 def test_favor_nobtune(favor):
     with pytest.raises(ValueError):
         ia.set_config(favor=favor, btune=False)
+
+    ia.set_config(btune=False)
+    with pytest.raises(ValueError):
+        ia.Config(favor=favor)
+    ia.Config(favor=favor, btune=True)
 
 
 @pytest.mark.parametrize(
@@ -140,6 +145,15 @@ def test_favor_nobtune(favor):
 def test_btune_incompat(clevel, codec, filters):
     with pytest.raises(ValueError):
         ia.set_config(clevel=clevel, codec=codec, filters=filters, btune=True)
+
+    ia.set_config(btune=True)
+    with pytest.raises(ValueError):
+        ia.Config(clevel=clevel)
+    with pytest.raises(ValueError):
+        ia.Config(filters=filters)
+    with pytest.raises(ValueError):
+        ia.Config(codec=codec)
+
 
 @pytest.mark.parametrize(
     "chunks, blocks, shape",
