@@ -138,7 +138,7 @@ from .config_params import (
     reset_config_defaults,
     get_ncores,
     partition_advice,
-    defaults,
+    defaults as _defaults,
 )
 
 from .iarray_container import (
