@@ -669,7 +669,7 @@ cdef get_cfg_from_container(cfg, ciarray.iarray_context_t *ctx, ciarray.iarray_c
         eval_method=cfg.eval_method,
         seed=cfg.seed,
         random_gen=cfg.random_gen,
-        btune=cfg.btune,
+        btune=False,   # we have not used btune to load/open
         dtype=dtype,
         store=store,
         chunks=chunks,
