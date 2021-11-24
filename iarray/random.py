@@ -41,7 +41,7 @@ def random_sample(shape: Sequence, cfg: ia.Config = None, **kwargs) -> ia.IArray
     `np.random-random_sample <https://numpy.org/doc/stable/reference/random/generated/numpy.random.random_sample.html>`_
     """
     if cfg is None:
-        cfg = ia.get_config()
+        cfg = ia.get_config_defaults()
 
     with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
         dtshape = ia.DTShape(shape, cfg.dtype)
@@ -72,7 +72,7 @@ def standard_normal(shape: Sequence, cfg: ia.Config = None, **kwargs) -> ia.IArr
     `np.random.standard_normal <https://numpy.org/doc/stable/reference/random/generated/numpy.random.random_sample.html>`_
     """
     if cfg is None:
-        cfg = ia.get_config()
+        cfg = ia.get_config_defaults()
 
     with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
         dtshape = ia.DTShape(shape, cfg.dtype)
@@ -107,7 +107,7 @@ def beta(shape: Sequence, alpha: float, beta: float, cfg: ia.Config = None, **kw
     `np.random.beta <https://numpy.org/doc/stable/reference/random/generated/numpy.random.beta.html>`_
     """
     if cfg is None:
-        cfg = ia.get_config()
+        cfg = ia.get_config_defaults()
 
     with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
         dtshape = ia.DTShape(shape, cfg.dtype)
@@ -145,7 +145,7 @@ def lognormal(
     `np.random.lognormal <https://numpy.org/doc/stable/reference/random/generated/numpy.random.lognormal.html>`_
     """
     if cfg is None:
-        cfg = ia.get_config()
+        cfg = ia.get_config_defaults()
 
     with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
         dtshape = ia.DTShape(shape, cfg.dtype)
@@ -179,7 +179,7 @@ def exponential(shape: Sequence, scale: float = 1.0, cfg: ia.Config = None, **kw
     `np.random.exponential <https://numpy.org/doc/stable/reference/random/generated/numpy.random.exponential.html>`_
     """
     if cfg is None:
-        cfg = ia.get_config()
+        cfg = ia.get_config_defaults()
 
     with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
         dtshape = ia.DTShape(shape, cfg.dtype)
@@ -218,7 +218,7 @@ def uniform(
     `np.random.uniform <https://numpy.org/doc/stable/reference/random/generated/numpy.random.uniform.html>`_
     """
     if cfg is None:
-        cfg = ia.get_config()
+        cfg = ia.get_config_defaults()
 
     with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
         dtshape = ia.DTShape(shape, cfg.dtype)
@@ -256,7 +256,7 @@ def normal(
     `np.random.normal <https://numpy.org/doc/stable/reference/random/generated/numpy.random.normal.html>`_
     """
     if cfg is None:
-        cfg = ia.get_config()
+        cfg = ia.get_config_defaults()
 
     with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
         dtshape = ia.DTShape(shape, cfg.dtype)
@@ -289,7 +289,7 @@ def bernoulli(shape: Sequence, p: float, cfg: ia.Config = None, **kwargs) -> ia.
     binomial
     """
     if cfg is None:
-        cfg = ia.get_config()
+        cfg = ia.get_config_defaults()
 
     with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
         dtshape = ia.DTShape(shape, cfg.dtype)
@@ -325,7 +325,7 @@ def binomial(shape: Sequence, n: float, p: float, cfg: ia.Config = None, **kwarg
     `np.random.binomial <https://numpy.org/doc/stable/reference/random/generated/numpy.random.binomial.html>`_
     """
     if cfg is None:
-        cfg = ia.get_config()
+        cfg = ia.get_config_defaults()
 
     with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
         dtshape = ia.DTShape(shape, cfg.dtype)
@@ -358,7 +358,7 @@ def poisson(shape: Sequence, lam: float, cfg: ia.Config = None, **kwargs) -> ia.
     `np.random.poisson <https://numpy.org/doc/stable/reference/random/generated/numpy.random.poisson.html>`_
     """
     if cfg is None:
-        cfg = ia.get_config()
+        cfg = ia.get_config_defaults()
 
     with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
         dtshape = ia.DTShape(shape, cfg.dtype)
@@ -393,7 +393,7 @@ def kstest(a: ia.IArray, b: ia.IArray, cfg: ia.Config = None, **kwargs) -> bool:
     `np.random.poisson <https://numpy.org/doc/stable/reference/random/generated/numpy.random.poisson.html>`_
     """
     if cfg is None:
-        cfg = ia.get_config()
+        cfg = ia.get_config_defaults()
 
     with ia.config(cfg=cfg, **kwargs) as cfg:
         return ext.random_kstest(cfg, a, b)

@@ -3,4 +3,4 @@
 
 .. currentmodule:: iarray
 
-.. autofunction:: set_config
+.. autofunction:: set_config_defaults

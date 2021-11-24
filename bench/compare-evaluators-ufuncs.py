@@ -121,9 +121,9 @@ def do_regular_evaluation():
 def do_block_evaluation():
     print(f"Block evaluation")
     store = ia.Store(chunks, blocks)
-    # ia.set_config(codec=ia.Codec.LZ4, clevel=clevel, nthreads=nthreads, store=store)
+    # ia.set_config_defaults(codec=ia.Codec.LZ4, clevel=clevel, nthreads=nthreads, store=store)
     # The latest versions of BTune work much better for 1-dim arrays
-    ia.set_config(favor=ia.Favor.SPEED)
+    ia.set_config_defaults(favor=ia.Favor.SPEED)
 
     xa = ia.linspace(shape, 0.0, 10.0)
     # x = np.linspace(0, 10, N, dtype=np.double).reshape(shape)

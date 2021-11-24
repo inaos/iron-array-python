@@ -3,4 +3,4 @@
 
 .. currentmodule:: iarray
 
-.. autofunction:: get_config
+.. autofunction:: get_config_defaults

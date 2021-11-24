@@ -35,8 +35,8 @@ astore = ia.Store(chunks, blocks, urlpath=aurlpath)
 bstore = ia.Store(chunks, blocks, urlpath=burlpath)
 cstore = ia.Store(chunks, blocks, urlpath=curlpath)
 
-ia.set_config(codec=codec, clevel=clevel, nthreads=nthreads, dtype=np.float64)
-cfg = ia.get_config()
+ia.set_config_defaults(codec=codec, clevel=clevel, nthreads=nthreads, dtype=np.float64)
+cfg = ia.get_config_defaults()
 
 print("(Re-)Generating operand A")
 if persistent:

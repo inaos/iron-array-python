@@ -30,8 +30,8 @@ import iarray as ia
 )
 def test_global_config(clevel, codec, filters, chunks, blocks, contiguous, urlpath):
     store = ia.Store(chunks, blocks, contiguous=contiguous, urlpath=urlpath)
-    ia.set_config(clevel=clevel, codec=codec, filters=filters, store=store, btune=False)
-    config = ia.get_config()
+    ia.set_config_defaults(clevel=clevel, codec=codec, filters=filters, store=store, btune=False)
+    config = ia.get_config_defaults()
     assert config.clevel == clevel
     assert config.codec == codec
     assert config.filters == filters
@@ -42,7 +42,7 @@ def test_global_config(clevel, codec, filters, chunks, blocks, contiguous, urlpa
     assert store2.urlpath == urlpath
 
     # One can pass store parameters straight to config() dataclass too
-    ia.set_config(
+    ia.set_config_defaults(
         clevel=clevel,
         codec=codec,
         filters=filters,
@@ -52,7 +52,7 @@ def test_global_config(clevel, codec, filters, chunks, blocks, contiguous, urlpa
         urlpath=None,
         btune=False,
     )
-    config = ia.get_config()
+    config = ia.get_config_defaults()
     assert config.clevel == clevel
     assert config.codec == codec
     assert config.filters == filters
@@ -73,8 +73,8 @@ def test_global_config(clevel, codec, filters, chunks, blocks, contiguous, urlpa
         urlpath=None,
         btune=False,
     )
-    ia.set_config(cfg)
-    config = ia.get_config()
+    ia.set_config_defaults(cfg)
+    config = ia.get_config_defaults()
     assert config.clevel == clevel
     assert config.codec == codec
     assert config.filters == filters
@@ -86,8 +86,8 @@ def test_global_config(clevel, codec, filters, chunks, blocks, contiguous, urlpa
 
     # Or, we can use a mix of Config and keyword args
     cfg = ia.Config(clevel=clevel, codec=codec, blocks=blocks, contiguous=False, urlpath=urlpath, btune=False)
-    ia.set_config(cfg, filters=filters, chunks=chunks)
-    config = ia.get_config()
+    ia.set_config_defaults(cfg, filters=filters, chunks=chunks)
+    config = ia.get_config_defaults()
 
     assert config.clevel == clevel
     assert config.codec == codec
@@ -109,8 +109,8 @@ def test_global_config(clevel, codec, filters, chunks, blocks, contiguous, urlpa
 )
 def test_global_favor(favor, chunks, blocks):
     store = ia.Store(chunks, blocks)
-    ia.set_config(favor=favor, store=store)
-    config = ia.get_config()
+    ia.set_config_defaults(favor=favor, store=store)
+    config = ia.get_config_defaults()
     assert config.favor == favor
     assert config.btune == True
     assert config.store.chunks == chunks
@@ -125,9 +125,9 @@ def test_global_favor(favor, chunks, blocks):
 )
 def test_favor_nobtune(favor):
     with pytest.raises(ValueError):
-        ia.set_config(favor=favor, btune=False)
+        ia.set_config_defaults(favor=favor, btune=False)
 
-    ia.set_config(btune=False)
+    ia.set_config_defaults(btune=False)
     with pytest.raises(ValueError):
         ia.Config(favor=favor)
     ia.Config(favor=favor, btune=True)
@@ -144,9 +144,9 @@ def test_favor_nobtune(favor):
 )
 def test_btune_incompat(clevel, codec, filters):
     with pytest.raises(ValueError):
-        ia.set_config(clevel=clevel, codec=codec, filters=filters, btune=True)
+        ia.set_config_defaults(clevel=clevel, codec=codec, filters=filters, btune=True)
 
-    ia.set_config(btune=True)
+    ia.set_config_defaults(btune=True)
     with pytest.raises(ValueError):
         ia.Config(clevel=clevel)
     with pytest.raises(ValueError):
@@ -168,7 +168,7 @@ def test_btune_incompat(clevel, codec, filters):
 def test_global_config_dtype(chunks, blocks, shape):
     try:
         store = ia.Store(chunks, blocks)
-        cfg = ia.set_config(shape=shape, store=store)
+        cfg = ia.set_config_defaults(shape=shape, store=store)
         store2 = cfg.store
 
         if chunks is not None:
@@ -183,7 +183,7 @@ def test_global_config_dtype(chunks, blocks, shape):
 
     # One can pass store parameters straight to config() dataclass too
     try:
-        cfg = ia.set_config(
+        cfg = ia.set_config_defaults(
             shape=shape,
             chunks=chunks,
             blocks=blocks,
@@ -294,7 +294,7 @@ def test_config_ctx_dtype(chunks, blocks, shape):
 
 def test_nested_contexts():
     # Set the default to enable compression
-    ia.set_config(clevel=5, btune=False)
+    ia.set_config_defaults(clevel=5, btune=False)
     a = ia.ones((100, 100))
     b = a.data
 
@@ -326,7 +326,7 @@ def test_default_params():
     urlpath = "arr.iarr"
     ia.remove_urlpath(urlpath)
 
-    cfg = ia.get_config()
+    cfg = ia.get_config_defaults()
     a = ia.linspace([10], start=0, stop=1, urlpath=urlpath, contiguous=False)
     cfg2 = ia.Config()
 

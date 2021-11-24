@@ -657,7 +657,7 @@ cdef get_cfg_from_container(cfg, ciarray.iarray_context_t *ctx, ciarray.iarray_c
     store = ia.Store(chunks=chunks, blocks=blocks, urlpath=urlpath, contiguous=contiguous)
 
     # The config params should already have been checked
-    ia._defaults.check = False
+    ia._defaults.check_compat = False
     c_cfg = ia.Config(
         codec=codec,
         clevel=clevel,

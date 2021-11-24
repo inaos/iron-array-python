@@ -96,7 +96,7 @@ def load(urlpath: str) -> ia.IArray:
     --------
     save : Save an array to disk.
     """
-    cfg = ia.get_config()
+    cfg = ia.get_config_defaults()
     with ia.config(cfg=cfg) as cfg:
         return ext.load(cfg, urlpath)
 
@@ -120,7 +120,7 @@ def open(urlpath: str) -> ia.IArray:
     --------
     save : Save an array to disk.
     """
-    cfg = ia.get_config()
+    cfg = ia.get_config_defaults()
     with ia.config(cfg=cfg) as cfg:
         return ext.open(cfg, urlpath)
 
@@ -146,7 +146,7 @@ def iarray2numpy(iarr: ia.IArray, cfg: ia.Config = None, **kwargs) -> np.ndarray
     numpy2iarray : Convert a NumPy array into an ironArray array.
     """
     if cfg is None:
-        cfg = ia.get_config()
+        cfg = ia.get_config_defaults()
 
     with ia.config(cfg=cfg, **kwargs) as cfg:
         return ext.iarray2numpy(cfg, iarr)
@@ -181,7 +181,7 @@ def numpy2iarray(arr: np.ndarray, cfg: ia.Config = None, **kwargs) -> ia.IArray:
     kwargs["dtype"] = dtype
 
     if cfg is None:
-        cfg = ia.get_config()
+        cfg = ia.get_config_defaults()
 
     if not arr.flags['C_CONTIGUOUS']:
         # For the conversion we need a *C* contiguous array

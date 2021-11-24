@@ -12,7 +12,7 @@ mkl_get_max_threads = mkl_rt.MKL_Get_Max_Threads
 nthreads = 8
 dtype = np.float64
 shape = [2000, 2000]
-ia.set_config(nthreads=nthreads, dtype=dtype)
+ia.set_config_defaults(nthreads=nthreads, dtype=dtype)
 
 a = ia.arange(shape)
 an = ia.iarray2numpy(a)

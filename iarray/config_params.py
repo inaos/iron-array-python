@@ -75,7 +75,7 @@ def partition_advice(
         In case of error, a (None, None) is returned and a warning is issued.
     """
     if cfg is None:
-        cfg = get_config()
+        cfg = get_config_defaults()
 
     dtshape = ia.DTShape(shape, cfg.dtype)
     if dtshape.shape == ():
@@ -150,8 +150,8 @@ class Defaults(object):
     contiguous: bool = None
 
     # Keep track of the special params set with default values for consistency checks with btune
-    kwargs_params: set = field(default_factory=set)
-    check: bool = True
+    compat_params: set = field(default_factory=set)
+    check_compat: bool = True
 
     def __post_init__(self):
         # Initialize config and store with its getters and setters
@@ -159,22 +159,22 @@ class Defaults(object):
 
     # Accessors only meant to serve as default_factory
     def _codec(self):
-        self.kwargs_params.add("codec")
+        self.compat_params.add("codec")
         return self.codec
 
     def _clevel(self):
-        self.kwargs_params.add("clevel")
+        self.compat_params.add("clevel")
         return self.clevel
 
     def _favor(self):
-        self.kwargs_params.add("favor")
+        self.compat_params.add("favor")
         return self.favor
 
     def _use_dict(self):
         return self.use_dict
 
     def _filters(self):
-        self.kwargs_params.add("filters")
+        self.compat_params.add("filters")
         return self.filters
 
     def _nthreads(self):
@@ -397,7 +397,7 @@ class Config(ext.Config):
 
     See Also
     --------
-    set_config
+    set_config_defaults
     config
     """
 
@@ -423,11 +423,11 @@ class Config(ext.Config):
     contiguous: bool = field(default_factory=defaults._contiguous)
 
     def __post_init__(self):
-        if defaults.check:
+        if defaults.check_compat:
             self.check_config_params()
         # Restore variable for next time
-        defaults.kwargs_params = set()
-        defaults.check = True
+        defaults.compat_params = set()
+        defaults.check_compat = True
 
         if self.urlpath is not None and self.contiguous is None:
             self.contiguous = True
@@ -492,7 +492,7 @@ class Config(ext.Config):
 
     def _replace(self, **kwargs):
         # When a replace is done a new object from the class is created with all its params passed as kwargs
-        defaults.check = False
+        defaults.check_compat = False
         cfg_ = replace(self, **kwargs)
         if "store" in kwargs:
             store = kwargs["store"]
@@ -510,7 +510,7 @@ class Config(ext.Config):
         kwargs = asdict(self)
         # asdict is recursive, but we need the store kwarg as a Store object
         kwargs["store"] = Store(**kwargs["store"])
-        defaults.check = False
+        defaults.check_compat = False
         cfg = Config(**kwargs)
         return cfg
 
@@ -523,25 +523,25 @@ class Config(ext.Config):
         if kwargs != {}:
             btune_allowed = all(x not in kwargs for x in btune_incompatible)
         else:
-            btune_allowed = all(x in defaults.kwargs_params for x in btune_incompatible)
+            btune_allowed = all(x in defaults.compat_params for x in btune_incompatible)
         if btune and not btune_allowed:
             # Restore variable for next time
-            defaults.kwargs_params = set()
-            defaults.check = True
+            defaults.compat_params = set()
+            defaults.check_compat = True
             raise ValueError(f"To set any flag in", btune_incompatible, "you need to disable `btune` explicitly.")
 
         # favor=something and btune=False
         if kwargs !={}:
             if "favor" in kwargs and not btune:
                 # Restore variable for next time
-                defaults.kwargs_params = set()
-                defaults.check = True
+                defaults.compat_params = set()
+                defaults.check_compat = True
                 raise ValueError(f"A `favor` argument needs `btune` enabled.")
         else:
-            if "favor" not in defaults.kwargs_params and not btune:
+            if "favor" not in defaults.compat_params and not btune:
                 # Restore variable for next time
-                defaults.kwargs_params = set()
-                defaults.check = True
+                defaults.compat_params = set()
+                defaults.check_compat = True
                 raise ValueError(f"A `favor` argument needs `btune` enabled.")
 
 
@@ -549,7 +549,7 @@ class Config(ext.Config):
 global_config = Config()
 
 
-def get_config():
+def get_config_defaults():
     """Get the global defaults for iarray operations.
 
     Returns
@@ -559,12 +559,12 @@ def get_config():
 
     See Also
     --------
-    set_config
+    set_config_defaults
     """
     return global_config
 
 
-def set_config(cfg: Config = None, shape=None, **kwargs):
+def set_config_defaults(cfg: Config = None, shape=None, **kwargs):
     """Set the global defaults for iarray operations.
 
     Parameters
@@ -588,12 +588,12 @@ def set_config(cfg: Config = None, shape=None, **kwargs):
     See Also
     --------
     Config
-    get_config
+    get_config_defaults
     """
     global global_config
     global defaults
 
-    cfg_old = get_config()
+    cfg_old = get_config_defaults()
 
     if cfg is None:
         cfg = copy.deepcopy(cfg_old)
@@ -616,7 +616,7 @@ def set_config(cfg: Config = None, shape=None, **kwargs):
     global_config = cfg
     defaults.config = cfg
 
-    return get_config()
+    return get_config_defaults()
 
 
 # Initialize the configuration
@@ -631,14 +631,14 @@ def config(cfg: Config = None, shape=None, **kwargs):
 
     See Also
     --------
-    set_config
+    set_config_defaults
     Config
     """
     global global_config
     global defaults
 
-    cfg_aux = ia.get_config()
-    cfg = set_config(cfg, shape, **kwargs)
+    cfg_aux = ia.get_config_defaults()
+    cfg = set_config_defaults(cfg, shape, **kwargs)
 
     try:
         yield cfg
@@ -658,34 +658,34 @@ def reset_config_defaults():
 
 
 if __name__ == "__main__":
-    cfg_ = get_config()
+    cfg_ = get_config_defaults()
     print("Defaults:", cfg_)
     assert cfg_.store.contiguous is False
 
-    set_config(store=Store(contiguous=True))
-    cfg = get_config()
+    set_config_defaults(store=Store(contiguous=True))
+    cfg = get_config_defaults()
     print("1st form:", cfg)
     assert cfg.store.contiguous is True
 
-    set_config(contiguous=False)
-    cfg = get_config()
+    set_config_defaults(contiguous=False)
+    cfg = get_config_defaults()
     print("2nd form:", cfg)
     assert cfg.store.contiguous is False
 
-    set_config(Config(clevel=5))
-    cfg = get_config()
+    set_config_defaults(Config(clevel=5))
+    cfg = get_config_defaults()
     print("3rd form:", cfg)
     assert cfg.clevel == 5
 
     with config(clevel=0, contiguous=True) as cfg_new:
         print("Context form:", cfg_new)
         assert cfg_new.store.contiguous is True
-        assert get_config().clevel == 0
+        assert get_config_defaults().clevel == 0
 
     cfg = ia.Config(codec=ia.Codec.BLOSCLZ)
-    cfg2 = ia.set_config(cfg=cfg, codec=ia.Codec.LIZARD)
+    cfg2 = ia.set_config_defaults(cfg=cfg, codec=ia.Codec.LIZARD)
     print("Standalone config:", cfg)
     print("Global config", cfg2)
 
-    cfg = ia.set_config(cfg_)
+    cfg = ia.set_config_defaults(cfg_)
     print("Defaults config:", cfg)

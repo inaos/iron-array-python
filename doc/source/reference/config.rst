@@ -30,8 +30,8 @@ Set / Get configuration params
    :toctree: autofiles/config/
    :nosignatures:
 
-   set_config
-   get_config
+   set_config_defaults
+   get_config_defaults
    config
    reset_config_defaults
 

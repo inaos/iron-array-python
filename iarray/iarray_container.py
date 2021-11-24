@@ -776,7 +776,7 @@ def reduce(
     shape = tuple([s for i, s in enumerate(a.shape) if i not in axis])
 
     if cfg is None:
-        cfg = ia.get_config()
+        cfg = ia.get_config_defaults()
 
     with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
         c = ext.reduce_multi(cfg, a, method, axis)
@@ -933,7 +933,7 @@ def opt_gemv(a: IArray, b: IArray, cfg=None, **kwargs):
     shape = (a.shape[0], b.shape[1]) if b.ndim == 2 else (a.shape[0],)
 
     if cfg is None:
-        cfg = ia.get_config()
+        cfg = ia.get_config_defaults()
 
     with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
         return ext.opt_gemv(cfg, a, b)
@@ -1147,7 +1147,7 @@ def matmul(a: IArray, b: IArray, cfg=None, **kwargs):
     shape = (a.shape[0], b.shape[1]) if b.ndim == 2 else (a.shape[0],)
 
     if cfg is None:
-        cfg = ia.get_config()
+        cfg = ia.get_config_defaults()
 
     if (
         a.chunks
@@ -1202,7 +1202,7 @@ def transpose(a: IArray, cfg=None, **kwargs):
         raise AttributeError("Array dimension must be 2")
 
     if cfg is None:
-        cfg = ia.get_config()
+        cfg = ia.get_config_defaults()
 
     with ia.config(cfg=cfg, **kwargs) as cfg:
         return ext.transpose(cfg, a)

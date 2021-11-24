@@ -132,8 +132,8 @@ UFUNC_LIST = (
 from .config_params import (
     Config,
     Store,
-    set_config,
-    get_config,
+    set_config_defaults,
+    get_config_defaults,
     config,
     reset_config_defaults,
     get_ncores,

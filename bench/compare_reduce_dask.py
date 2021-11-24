@@ -40,8 +40,8 @@ acompressor = Blosc(
     blocksize=reduce(lambda x, y: x * y, ablocks) * 8,
 )
 
-#ia.set_config(codec=CODEC, clevel=CLEVEL, nthreads=NTHREADS, dtype=DTYPE)
-ia.set_config()
+#ia.set_config_defaults(codec=CODEC, clevel=CLEVEL, nthreads=NTHREADS, dtype=DTYPE)
+ia.set_config_defaults()
 
 astore = ia.Store(achunks, ablocks)
 aia = ia.random.normal(ashape, 0, 1, store=astore)

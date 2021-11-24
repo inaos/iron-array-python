@@ -313,7 +313,7 @@ def test_overwrite(contiguous):
 )
 def test_view(shape, starts, stops, dtype, contiguous, urlpath):
     ia.remove_urlpath(urlpath)
-    cfg = ia.set_config(contiguous=contiguous, urlpath=urlpath)
+    cfg = ia.set_config_defaults(contiguous=contiguous, urlpath=urlpath)
     nelems = np.prod(shape)
     a = np.linspace(0, 1, nelems, dtype=dtype).reshape(shape)
     slice_ = tuple(slice(i, j) for i, j in zip(starts, stops))
@@ -339,7 +339,7 @@ def test_view(shape, starts, stops, dtype, contiguous, urlpath):
 )
 def test_fortran(shape, dtype, contiguous, urlpath):
     ia.remove_urlpath(urlpath)
-    cfg = ia.set_config(contiguous=contiguous, urlpath=urlpath)
+    cfg = ia.set_config_defaults(contiguous=contiguous, urlpath=urlpath)
     nelems = np.prod(shape)
     a = np.linspace(0, 1, nelems, dtype=dtype).reshape(shape)
     a_fortran = a.copy(order="F")
