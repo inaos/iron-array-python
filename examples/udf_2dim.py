@@ -19,7 +19,7 @@ shape = [1000, 10_000]
 dtype = np.float64
 
 # Let's favor speed during computations
-ia.set_config(favor=ia.Favor.SPEED, dtype=dtype)
+ia.set_config_defaults(favor=ia.Favor.SPEED, dtype=dtype)
 
 
 @jit(verbose=0)

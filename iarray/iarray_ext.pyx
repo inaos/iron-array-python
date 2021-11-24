@@ -190,8 +190,6 @@ cdef class Config:
         # At any rate, `filters` should be a list for displaying purposes in high level Config().
         for f in filters:
             filter_flags |= f.value
-        if fp_mantissa_bits > 0:
-            filter_flags |= ia.Filter.TRUNC_PREC.value
         self.config.filter_flags = filter_flags
 
         if eval_method == ia.Eval.AUTO:
@@ -364,17 +362,12 @@ cdef class Container:
         return <double>nbytes / <double>cbytes
 
     @property
-    def context(self):
-        return self.context
-
-    @property
     def cfg(self):
         return self.context.cfg
 
     def __getitem__(self, key):
         # key has been massaged already
         start, stop, squeeze_mask = key
-        cfg = ia.get_config(self.cfg)
 
         with ia.config(cfg=self.cfg) as cfg:
             return get_slice(cfg, self, start, stop, squeeze_mask, True, None)
@@ -470,7 +463,7 @@ def copy(cfg, src):
 
     cdef int flags = 0 if cfg.store.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
 
-    # Check that we are not unadvertently overwriting anything
+    # Check that we are not inadvertently overwriting anything
     ia._check_path_mode(cfg.store.urlpath, cfg.store.mode)
 
     cdef ciarray.iarray_container_t *c
@@ -631,32 +624,9 @@ def full(cfg, fill_value, dtshape):
     return ia.IArray(ctx, c_c)
 
 
-def load(cfg, urlpath):
-    ctx = Context(cfg)
-    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
-        ctx.to_capsule(), "iarray_context_t*")
-
-    urlpath = urlpath.encode("utf-8") if isinstance(urlpath, str) else urlpath
-
-    cdef ciarray.iarray_container_t *c
-    iarray_check(ciarray.iarray_container_load(ctx_, urlpath, &c))
-
-    c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
-    return ia.IArray(ctx, c_c)
-
-
-def open(cfg, urlpath):
-    ctx = Context(cfg)
-    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
-        ctx.to_capsule(), "iarray_context_t*")
-
-    urlpath = urlpath.encode("utf-8") if isinstance(urlpath, str) else urlpath
-
-    cdef ciarray.iarray_container_t *c
-    iarray_check(ciarray.iarray_container_open(ctx_, urlpath, &c))
-
+cdef get_cfg_from_container(cfg, ciarray.iarray_context_t *ctx, ciarray.iarray_container_t *c, urlpath):
     cdef ciarray.iarray_config_t cfg_
-    ciarray.iarray_get_cfg(ctx_, c, &cfg_)
+    ciarray.iarray_get_cfg(ctx, c, &cfg_)
 
     clevel = cfg_.compression_level
     codec = ia.Codec(cfg_.compression_codec)
@@ -673,20 +643,21 @@ def open(cfg, urlpath):
         filters.append(ia.Filter.SHUFFLE)
 
     cdef ciarray.iarray_dtshape_t dtshape;
-    ciarray.iarray_get_dtshape(ctx_, c, &dtshape)
+    ciarray.iarray_get_dtshape(ctx, c, &dtshape)
 
     dtype = np.float64 if dtshape.dtype == ciarray.IARRAY_DATA_TYPE_DOUBLE else np.float32
 
     cdef ciarray.iarray_storage_t storage;
-    ciarray.iarray_get_storage(ctx_, c, &storage)
+    ciarray.iarray_get_storage(ctx, c, &storage)
 
     chunks = tuple(storage.chunkshape[i] for i in range(dtshape.ndim))
     blocks = tuple(storage.blockshape[i] for i in range(dtshape.ndim))
 
-    urlpath = str(storage.urlpath)
     contiguous = storage.contiguous
     store = ia.Store(chunks=chunks, blocks=blocks, urlpath=urlpath, contiguous=contiguous)
 
+    # The config params should already have been checked
+    ia._defaults.check_compat = False
     c_cfg = ia.Config(
         codec=codec,
         clevel=clevel,
@@ -706,6 +677,38 @@ def open(cfg, urlpath):
         urlpath=urlpath,
         contiguous=contiguous,
     )
+    return c_cfg
+
+
+def load(cfg, urlpath):
+    ctx = Context(cfg)
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
+        ctx.to_capsule(), "iarray_context_t*")
+
+    urlpath = urlpath.encode("utf-8") if isinstance(urlpath, str) else urlpath
+
+    cdef ciarray.iarray_container_t *c
+    iarray_check(ciarray.iarray_container_load(ctx_, urlpath, &c))
+
+    # Fetch config from the new container
+    c_cfg = get_cfg_from_container(cfg, ctx_, c, None)
+
+    c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
+    return ia.IArray(Context(c_cfg), c_c)
+
+
+def open(cfg, urlpath):
+    ctx = Context(cfg)
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
+        ctx.to_capsule(), "iarray_context_t*")
+
+    urlpath = urlpath.encode("utf-8") if isinstance(urlpath, str) else urlpath
+
+    cdef ciarray.iarray_container_t *c
+    iarray_check(ciarray.iarray_container_open(ctx_, urlpath, &c))
+
+    # Fetch config from the recently open container
+    c_cfg = get_cfg_from_container(cfg, ctx_, c, urlpath)
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     return ia.IArray(Context(c_cfg), c_c)

@@ -42,7 +42,7 @@ compressor = Blosc(
     shuffle=Blosc.SHUFFLE,
     blocksize=reduce(lambda x, y: x * y, ablocks),
 )
-ia.set_config(codec=CODEC, clevel=CLEVEL, nthreads=NTHREADS, dtype=DTYPE)
+ia.set_config_defaults(codec=CODEC, clevel=CLEVEL, nthreads=NTHREADS, dtype=DTYPE)
 
 astore = ia.Store(achunks, ablocks)
 lia = ia.linspace(ashape, 0, 1, store=astore)

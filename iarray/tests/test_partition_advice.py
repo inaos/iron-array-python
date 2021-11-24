@@ -25,7 +25,7 @@ import numpy as np
 def test_partition_advice(shape, chunks, blocks, dtype):
     # We want to specify max for chunskize, blocksize explicitly, because L2/L3 size is CPU-dependent
 
-    ia.set_config(dtype=dtype)
+    ia.set_config_defaults(dtype=dtype)
     chunks_, blocks_ = ia.partition_advice(
         shape, max_chunksize=1024 * 1024, max_blocksize=64 * 1024
     )

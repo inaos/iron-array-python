@@ -60,7 +60,7 @@ def empty(shape: Sequence, cfg: ia.Config = None, **kwargs) -> ia.IArray:
     """
 
     if cfg is None:
-        cfg = ia.get_config()
+        cfg = ia.get_config_defaults()
 
     with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
         dtshape = ia.DTShape(shape, cfg.dtype)
@@ -104,7 +104,7 @@ def arange(
     slice_ = slice(start, stop, step)
 
     if cfg is None:
-        cfg = ia.get_config()
+        cfg = ia.get_config_defaults()
 
     with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
         dtshape = ia.DTShape(shape, cfg.dtype)
@@ -131,7 +131,7 @@ def linspace(
     empty : Create an empty array.
     """
     if cfg is None:
-        cfg = ia.get_config()
+        cfg = ia.get_config_defaults()
 
     with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
         dtshape = ia.DTShape(shape, cfg.dtype)
@@ -154,7 +154,7 @@ def zeros(shape: Sequence, cfg: ia.Config = None, **kwargs) -> ia.IArray:
     ones : Create an array filled with ones.
     """
     if cfg is None:
-        cfg = ia.get_config()
+        cfg = ia.get_config_defaults()
 
     with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
         dtshape = ia.DTShape(shape, cfg.dtype)
@@ -177,7 +177,7 @@ def ones(shape: Sequence, cfg: ia.Config = None, **kwargs) -> ia.IArray:
     zeros : Create an array filled with zeros.
     """
     if cfg is None:
-        cfg = ia.get_config()
+        cfg = ia.get_config_defaults()
 
     with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
         dtshape = ia.DTShape(shape, cfg.dtype)
@@ -200,7 +200,7 @@ def full(shape: Sequence, fill_value: float, cfg: ia.Config = None, **kwargs) ->
     zeros : Create an array filled with zeros.
     """
     if cfg is None:
-        cfg = ia.get_config()
+        cfg = ia.get_config_defaults()
 
     with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
         dtshape = ia.DTShape(shape, cfg.dtype)

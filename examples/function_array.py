@@ -11,7 +11,7 @@ dtype = np.float64
 shape = [10000, 8000]
 chunks = [1000, 800]
 blocks = [100, 100]
-ia.set_config(chunks=chunks, blocks=blocks, dtype=dtype)
+ia.set_config_defaults(chunks=chunks, blocks=blocks, dtype=dtype)
 
 # Create initial arrays
 ia1 = ia.linspace(shape, 0, 10)

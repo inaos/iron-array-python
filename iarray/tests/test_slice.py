@@ -7,10 +7,10 @@ from math import isclose
 # Slice
 
 slice_data = [
-    ([100, 100], [20, 20], [10, 13], True, None),
-    ([100, 130], [50, 50], [20, 25], False, None),
-    ([98, 78, 55, 21], [30, 30, 30, 21], [10, 12, 6, 21], True, "test_slice_acontiguous.iarr"),
-    ([100, 100], [30, 44], [30, 2], False, "test_slice_asparse.iarr"),
+    ([30, 100], [20, 20], [10, 13], True, None),
+    ([30, 130], [50, 50], [20, 25], False, None),
+    ([10, 78, 55, 21], [3, 30, 30, 21], [3, 12, 6, 21], True, "test_slice_acontiguous.iarr"),
+    ([30, 100], [30, 44], [30, 2], False, "test_slice_asparse.iarr"),
 ]
 
 
@@ -18,10 +18,10 @@ slice_data = [
     "slices",
     [
         slice(10, 20),
-        60,
+        9,
         (slice(5, 30), slice(10, 40)),
         (slice(5, 5), slice(5, 23)),
-        (slice(5, 5), slice(33, 12)),
+        (slice(5, 5), slice(3, 12)),
         (slice(5, 30), 47, ...),
         (..., slice(5, 6)),
     ],

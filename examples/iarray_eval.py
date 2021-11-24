@@ -9,7 +9,7 @@ NITER = 5
 
 # Do lossy compression for improved compression ratio
 dtype = np.float64
-ia.set_config(clevel=9, fp_mantissa_bits=20, dtype=dtype)
+ia.set_config_defaults(clevel=9, fp_mantissa_bits=20, dtype=dtype)
 
 # Vector sizes and partitions
 shape = [10_000_000]

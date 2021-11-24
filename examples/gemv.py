@@ -4,7 +4,7 @@ from time import time
 import numpy as np
 
 
-_ = ia.set_config(clevel=1, codec=ia.Codec.LZ4, btune=False, nthreads=8, dtype=np.float64, seed=0)
+_ = ia.set_config_defaults(clevel=1, codec=ia.Codec.LZ4, btune=False, nthreads=8, dtype=np.float64, seed=0)
 
 shape = (50_000, 13_859)
 

@@ -200,7 +200,7 @@ class LazyExpr:
             The output array.
         """
         if cfg is None:
-            cfg = ia.get_config()
+            cfg = ia.get_config_defaults()
 
         with ia.config(cfg=cfg, **kwargs) as cfg:
             expr = ia.expr_from_string(self.expression, self.operands, cfg=cfg)
@@ -216,7 +216,7 @@ if __name__ == "__main__":
     # Check representations of default config
     import numpy as np
 
-    print(ia.get_config())
+    print(ia.get_config_defaults())
 
     print()
     # Create initial containers

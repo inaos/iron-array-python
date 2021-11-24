@@ -75,7 +75,7 @@ def partition_advice(
         In case of error, a (None, None) is returned and a warning is issued.
     """
     if cfg is None:
-        cfg = get_config()
+        cfg = get_config_defaults()
 
     dtshape = ia.DTShape(shape, cfg.dtype)
     if dtshape.shape == ():
@@ -134,7 +134,7 @@ class Defaults(object):
     filters: List[ia.Filter] = field(default_factory=default_filters)
     nthreads: int = 0
     fp_mantissa_bits: int = 0
-    eval_method: int = ia.Eval.AUTO
+    eval_method: ia.Eval = ia.Eval.AUTO
     seed: int = None
     random_gen: ia.RandomGen = ia.RandomGen.MERSENNE_TWISTER
     btune: bool = True
@@ -149,24 +149,32 @@ class Defaults(object):
 
     contiguous: bool = None
 
+    # Keep track of the special params set with default values for consistency checks with btune
+    compat_params: set = field(default_factory=set)
+    check_compat: bool = True
+
     def __post_init__(self):
         # Initialize config and store with its getters and setters
         self.config = self.config
 
     # Accessors only meant to serve as default_factory
     def _codec(self):
+        self.compat_params.add("codec")
         return self.codec
 
     def _clevel(self):
+        self.compat_params.add("clevel")
         return self.clevel
 
     def _favor(self):
+        self.compat_params.add("favor")
         return self.favor
 
     def _use_dict(self):
         return self.use_dict
 
     def _filters(self):
+        self.compat_params.add("filters")
         return self.filters
 
     def _nthreads(self):
@@ -361,6 +369,7 @@ class Config(ext.Config):
         no precision is capped.  FYI, double precision have 52 bit in mantissa, whereas
         single precision has 23 bit.  For example, if you set this to 23 for doubles,
         you will be using a compressed store very close as if you were using singles.
+        This automatically activates the ia.Filter.TRUNC_PREC at the front of the filter list.
     use_dict : bool
         Whether Blosc should use a dictionary for enhanced compression (currently only
         supported by :py:obj:`Codec.ZSTD <Codec>`).  Default is False.
@@ -388,18 +397,18 @@ class Config(ext.Config):
 
     See Also
     --------
-    set_config
+    set_config_defaults
     config
     """
 
     codec: ia.Codec = field(default_factory=defaults._codec)
     clevel: int = field(default_factory=defaults._clevel)
-    favor: int = field(default_factory=defaults._favor)
+    favor: ia.Favor = field(default_factory=defaults._favor)
     filters: List[ia.Filter] = field(default_factory=defaults._filters)
     fp_mantissa_bits: int = field(default_factory=defaults._fp_mantissa_bits)
     use_dict: bool = field(default_factory=defaults._use_dict)
     nthreads: int = field(default_factory=defaults._nthreads)
-    eval_method: int = field(default_factory=defaults._eval_method)
+    eval_method: ia.Eval = field(default_factory=defaults._eval_method)
     seed: int = field(default_factory=defaults._seed)
     random_gen: ia.RandomGen = field(default_factory=defaults._random_gen)
     btune: bool = field(default_factory=defaults._btune)
@@ -414,6 +423,12 @@ class Config(ext.Config):
     contiguous: bool = field(default_factory=defaults._contiguous)
 
     def __post_init__(self):
+        if defaults.check_compat:
+            self.check_config_params()
+        # Restore variable for next time
+        defaults.compat_params = set()
+        defaults.check_compat = True
+
         if self.urlpath is not None and self.contiguous is None:
             self.contiguous = True
         global RANDOM_SEED
@@ -432,6 +447,7 @@ class Config(ext.Config):
                 mode=self.mode,
                 contiguous=self.contiguous,
             )
+
         # Once we have all the settings and hints from the user, we can proceed
         # with some fine tuning.
         # The settings below are based on experiments on a i9-10940X processor.
@@ -454,6 +470,13 @@ class Config(ext.Config):
                 [ia.Filter.BITSHUFFLE] if self.filters == default_filters() else self.filters
             )
 
+        # Activate TRUNC_PREC filter only if mantissa_bits > 0
+        if self.fp_mantissa_bits != 0 and ia.Filter.TRUNC_PREC not in self.filters:
+            self.filters.insert(0, ia.Filter.TRUNC_PREC)
+        # De-activate TRUNC_PREC filter if mantissa_bits == 0
+        if self.fp_mantissa_bits == 0 and ia.Filter.TRUNC_PREC in self.filters:
+            self.filters.pop(0)
+
         # Initialize the Cython counterpart
         super().__init__(
             self.codec,
@@ -468,6 +491,8 @@ class Config(ext.Config):
         )
 
     def _replace(self, **kwargs):
+        # When a replace is done a new object from the class is created with all its params passed as kwargs
+        defaults.check_compat = False
         cfg_ = replace(self, **kwargs)
         if "store" in kwargs:
             store = kwargs["store"]
@@ -485,21 +510,47 @@ class Config(ext.Config):
         kwargs = asdict(self)
         # asdict is recursive, but we need the store kwarg as a Store object
         kwargs["store"] = Store(**kwargs["store"])
+        defaults.check_compat = False
         cfg = Config(**kwargs)
         return cfg
+
+    def check_config_params(self, **kwargs):
+        # Check incompatibilities
+        # btune=True with others
+        btune = kwargs.get("btune", self.btune)
+
+        btune_incompatible = {"clevel", "codec", "filters"}
+        if kwargs != {}:
+            btune_allowed = all(x not in kwargs for x in btune_incompatible)
+        else:
+            btune_allowed = all(x in defaults.compat_params for x in btune_incompatible)
+        if btune and not btune_allowed:
+            # Restore variable for next time
+            defaults.compat_params = set()
+            defaults.check_compat = True
+            raise ValueError(f"To set any flag in", btune_incompatible, "you need to disable `btune` explicitly.")
+
+        # favor=something and btune=False
+        if kwargs !={}:
+            if "favor" in kwargs and not btune:
+                # Restore variable for next time
+                defaults.compat_params = set()
+                defaults.check_compat = True
+                raise ValueError(f"A `favor` argument needs `btune` enabled.")
+        else:
+            if "favor" not in defaults.compat_params and not btune:
+                # Restore variable for next time
+                defaults.compat_params = set()
+                defaults.check_compat = True
+                raise ValueError(f"A `favor` argument needs `btune` enabled.")
 
 
 # Global config
 global_config = Config()
 
 
-def get_config(cfg=None):
+def get_config_defaults():
     """Get the global defaults for iarray operations.
-
-    Parameters
-    ----------
-    cfg
-        The base configuration to which the changes will apply.
 
     Returns
     -------
@@ -508,19 +559,12 @@ def get_config(cfg=None):
 
     See Also
     --------
-    set_config
+    set_config_defaults
     """
-    global global_config
-
-    if not cfg:
-        cfg = global_config
-    else:
-        cfg = copy.deepcopy(cfg)
-
-    return cfg
+    return global_config
 
 
-def set_config(cfg: Config = None, shape=None, **kwargs):
+def set_config_defaults(cfg: Config = None, shape=None, **kwargs):
     """Set the global defaults for iarray operations.
 
     Parameters
@@ -544,12 +588,12 @@ def set_config(cfg: Config = None, shape=None, **kwargs):
     See Also
     --------
     Config
-    get_config
+    get_config_defaults
     """
     global global_config
     global defaults
 
-    cfg_old = get_config()
+    cfg_old = get_config_defaults()
 
     if cfg is None:
         cfg = copy.deepcopy(cfg_old)
@@ -557,23 +601,22 @@ def set_config(cfg: Config = None, shape=None, **kwargs):
         cfg = copy.deepcopy(cfg)
 
     if kwargs != {}:
+        cfg.check_config_params(**kwargs)
         # The default when creating frames on-disk is to use contiguous storage (mainly because of performance  reasons)
-        if (
-            kwargs.get("contiguous", None) is None
+        if (kwargs.get("contiguous", None) is None
             and cfg.contiguous is None
-            and kwargs.get("urlpath", None) is not None
-        ):
+            and kwargs.get("urlpath", None) is not None):
             cfg = cfg._replace(**dict(kwargs, contiguous=True))
         else:
             cfg = cfg._replace(**kwargs)
     if shape is not None:
         cfg.store._get_shape_advice(shape, cfg=cfg)
-        cfg._replace(**{"store": cfg.store})
+        cfg = cfg._replace(**{"store": cfg.store})
 
     global_config = cfg
     defaults.config = cfg
 
-    return get_config()
+    return get_config_defaults()
 
 
 # Initialize the configuration
@@ -588,14 +631,14 @@ def config(cfg: Config = None, shape=None, **kwargs):
 
     See Also
     --------
-    set_config
+    set_config_defaults
     Config
     """
     global global_config
     global defaults
 
-    cfg_aux = ia.get_config()
-    cfg = set_config(cfg, shape, **kwargs)
+    cfg_aux = ia.get_config_defaults()
+    cfg = set_config_defaults(cfg, shape, **kwargs)
 
     try:
         yield cfg
@@ -615,34 +658,34 @@ def reset_config_defaults():
 
 
 if __name__ == "__main__":
-    cfg_ = get_config()
+    cfg_ = get_config_defaults()
     print("Defaults:", cfg_)
     assert cfg_.store.contiguous is False
 
-    set_config(store=Store(contiguous=True))
-    cfg = get_config()
+    set_config_defaults(store=Store(contiguous=True))
+    cfg = get_config_defaults()
     print("1st form:", cfg)
     assert cfg.store.contiguous is True
 
-    set_config(contiguous=False)
-    cfg = get_config()
+    set_config_defaults(contiguous=False)
+    cfg = get_config_defaults()
     print("2nd form:", cfg)
     assert cfg.store.contiguous is False
 
-    set_config(Config(clevel=5))
-    cfg = get_config()
+    set_config_defaults(Config(clevel=5))
+    cfg = get_config_defaults()
     print("3rd form:", cfg)
     assert cfg.clevel == 5
 
     with config(clevel=0, contiguous=True) as cfg_new:
         print("Context form:", cfg_new)
         assert cfg_new.store.contiguous is True
-        assert get_config().clevel == 0
+        assert get_config_defaults().clevel == 0
 
     cfg = ia.Config(codec=ia.Codec.BLOSCLZ)
-    cfg2 = ia.set_config(cfg=cfg, codec=ia.Codec.LIZARD)
+    cfg2 = ia.set_config_defaults(cfg=cfg, codec=ia.Codec.LIZARD)
     print("Standalone config:", cfg)
     print("Global config", cfg2)
 
-    cfg = ia.set_config(cfg_)
+    cfg = ia.set_config_defaults(cfg_)
     print("Defaults config:", cfg)

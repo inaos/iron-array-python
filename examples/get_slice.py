@@ -8,7 +8,7 @@ ashape, astart, astop = [100, 100], [20, 40], [70, 90]
 bshape, bstart, bstop = [100, 100], [10, 20], [60, 70]
 dtype = np.float64
 
-ia.set_config(dtype=dtype)
+ia.set_config_defaults(dtype=dtype)
 
 asize = int(np.prod(ashape))
 a = ia.linspace(ashape, -10, 10)

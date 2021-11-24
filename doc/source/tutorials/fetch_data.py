@@ -32,7 +32,7 @@ for path in ("precip1.iarr", "precip2.iarr", "precip3.iarr"):
     if os.path.exists(path):
         ia.remove_urlpath(path)
 
-#ia.set_config(favor=ia.Favor.SPEED)
+#ia.set_config_defaults(favor=ia.Favor.SPEED)
 m_shape = precip_m0.shape
 ia_precip0 = ia.empty(m_shape, dtype=np.float32, urlpath="precip1.iarr")
 ia_precip1 = ia.empty(m_shape, dtype=np.float32, urlpath="precip2.iarr")

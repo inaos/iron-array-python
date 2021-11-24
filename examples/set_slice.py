@@ -6,7 +6,7 @@ import numpy as np
 
 dtype = np.float32
 
-ia.set_config(dtype=dtype)
+ia.set_config_defaults(dtype=dtype)
 
 a = ia.full((10, 10), 3.14, chunks=(4, 6), blocks=(3, 3))
 print(a.info)

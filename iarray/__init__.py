@@ -132,12 +132,13 @@ UFUNC_LIST = (
 from .config_params import (
     Config,
     Store,
-    set_config,
-    get_config,
+    set_config_defaults,
+    get_config_defaults,
     config,
     reset_config_defaults,
     get_ncores,
     partition_advice,
+    defaults as _defaults,
 )
 
 from .iarray_container import (

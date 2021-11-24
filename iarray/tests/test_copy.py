@@ -38,5 +38,12 @@ def test_copy(shape, chunks, blocks, dtype, contiguous, urlpath, urlpath2):
 
     np.testing.assert_allclose(an, bn, rtol=rtol)
 
+    c = a.copy(favor=ia.Favor.SPEED)
+    assert c.cfg.btune is True
+    with pytest.raises(ValueError):
+        a.copy(favor=ia.Favor.CRATIO, btune=False)
+    d = a.copy()
+    assert d.cfg.btune is False
+
     ia.remove_urlpath(urlpath)
     ia.remove_urlpath(urlpath2)

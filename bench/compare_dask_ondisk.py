@@ -15,7 +15,7 @@ NTHREADS = 8
 CLEVEL = 5
 CODEC = ia.Codec.LZ4
 
-ia.set_config(codec=CODEC, clevel=CLEVEL, nthreads=NTHREADS)
+ia.set_config_defaults(codec=CODEC, clevel=CLEVEL, nthreads=NTHREADS)
 compressor = Blosc(cname="lz4", clevel=CLEVEL, shuffle=Blosc.SHUFFLE)
 
 dtype = np.float64

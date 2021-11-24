@@ -18,7 +18,7 @@ sexpr = "(cos(x) - sin(y)) * (x - 1.35) * (y - 4.45)"
 # Create initial arrays.  You may opt to use automatic chunks and blocks,
 # but you typically get optimal results when you fine-tune them.
 store = ia.Store(chunks=[1000, 800], blocks=[100, 100])
-ia.set_config(store=store, fp_mantissa_bits=24, nthreads=nthreads)
+ia.set_config_defaults(store=store, fp_mantissa_bits=24, nthreads=nthreads)
 
 size = shape[0] * shape[1]
 np0 = np.linspace(0, 10, size, dtype=dtype).reshape(shape)

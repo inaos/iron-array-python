@@ -28,7 +28,7 @@ class Expr(ext.Expression):
 
     def __init__(self, shape, cfg=None, **kwargs):
         if cfg is None:
-            cfg = ia.get_config()
+            cfg = ia.get_config_defaults()
 
         with ia.config(cfg=cfg, shape=shape, **kwargs) as cfg:
             dtshape = ia.DTShape(shape, cfg.dtype)
@@ -57,7 +57,7 @@ def check_inputs(inputs: list, shape):
                 raise TypeError("Inputs should have the same dtype")
         return first_input.shape, first_input.dtype
     else:
-        cfg = ia.get_config()
+        cfg = ia.get_config_defaults()
         if shape is None:
             raise AttributeError("A shape is needed")
         return shape, cfg.dtype

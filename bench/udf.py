@@ -26,7 +26,7 @@ def poly_llvm(out: udf.Array(float64, 1), x: udf.Array(float64, 1)) -> int64:
 
 
 store = ia.Store(chunks, blocks)
-ia.set_config(codec=codec, clevel=clevel, nthreads=nthreads, store=store)
+ia.set_config_defaults(codec=codec, clevel=clevel, nthreads=nthreads, store=store)
 
 xa = ia.linspace(shape, 0.0, 10.0)
 

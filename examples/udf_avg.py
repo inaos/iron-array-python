@@ -18,7 +18,7 @@ shape = [20_000_000]
 dtype = np.float64
 
 # Most of modern computers can reach 8 threads
-ia.set_config(nthreads=8, dtype=dtype)
+ia.set_config_defaults(nthreads=8, dtype=dtype)
 
 
 @jit(verbose=0)

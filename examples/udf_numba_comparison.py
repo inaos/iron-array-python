@@ -20,7 +20,7 @@ shape = [10_000_000]
 nthreads = 8
 clevel = 9
 nrep = 5
-ia.set_config(nthreads=nthreads, clevel=clevel)
+ia.set_config_defaults(nthreads=nthreads, clevel=clevel)
 
 # Create the iarray object
 a1 = ia.linspace(shape, 0, 10)

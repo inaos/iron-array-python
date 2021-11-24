@@ -77,10 +77,11 @@ class IArray(ext.Container):
         ----------
         cfg : :class:`Config`
             The configuration for this operation.  If None (default), the
-            configuration from the array will be used instead of that of the current configuration.
+            configuration from self will be used instead of that of the current configuration.
         kwargs : dict
             A dictionary for setting some or all of the fields in the :class:`Config`
-            dataclass that should override the current configuration.
+            dataclass that should override the configuration.
+            By default, this function deactives btune unless it is specified.
 
         Returns
         -------
@@ -88,13 +89,20 @@ class IArray(ext.Container):
             The copy.
         """
         if cfg is None:
-            cfg = ia.get_config(self.cfg)
-
+            cfg = self.cfg
             # the urlpath should not be copied
             cfg.store.urlpath = None
             cfg.urlpath = None
 
-        with ia.config(shape=self.shape, cfg=cfg, **kwargs) as cfg:
+        # Generally we don't want btune to optimize, except if specified
+        btune = False
+        if "favor" in kwargs and "btune" not in kwargs:
+            btune = True
+        if "btune" in kwargs:
+            btune = kwargs["btune"]
+            kwargs.pop("btune")
+
+        with ia.config(shape=self.shape, cfg=cfg, btune=btune, **kwargs) as cfg:
             return ext.copy(cfg, self)
 
     def copyto(self, dest):
@@ -768,7 +776,7 @@ def reduce(
     shape = tuple([s for i, s in enumerate(a.shape) if i not in axis])
 
     if cfg is None:
-        cfg = ia.get_config()
+        cfg = ia.get_config_defaults()
 
     with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
         c = ext.reduce_multi(cfg, a, method, axis)
@@ -925,7 +933,7 @@ def opt_gemv(a: IArray, b: IArray, cfg=None, **kwargs):
     shape = (a.shape[0], b.shape[1]) if b.ndim == 2 else (a.shape[0],)
 
     if cfg is None:
-        cfg = ia.get_config()
+        cfg = ia.get_config_defaults()
 
     with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
         return ext.opt_gemv(cfg, a, b)
@@ -1139,7 +1147,7 @@ def matmul(a: IArray, b: IArray, cfg=None, **kwargs):
     shape = (a.shape[0], b.shape[1]) if b.ndim == 2 else (a.shape[0],)
 
     if cfg is None:
-        cfg = ia.get_config()
+        cfg = ia.get_config_defaults()
 
     if (
         a.chunks
@@ -1194,7 +1202,7 @@ def transpose(a: IArray, cfg=None, **kwargs):
         raise AttributeError("Array dimension must be 2")
 
     if cfg is None:
-        cfg = ia.get_config()
+        cfg = ia.get_config_defaults()
 
     with ia.config(cfg=cfg, **kwargs) as cfg:
         return ext.transpose(cfg, a)
