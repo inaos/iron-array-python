@@ -189,11 +189,7 @@ cdef class Config:
         # This should be fixed (probably at C iArray level and then propagating the change here).
         # At any rate, `filters` should be a list for displaying purposes in high level Config().
         for f in filters:
-            if f.value == ia.Filter.TRUNC_PREC.value:
-                if fp_mantissa_bits > 0:
-                    filter_flags |= f.value
-            else:
-                filter_flags |= f.value
+            filter_flags |= f.value
         self.config.filter_flags = filter_flags
 
         if eval_method == ia.Eval.AUTO:

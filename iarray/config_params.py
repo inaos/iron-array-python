@@ -149,7 +149,7 @@ class Defaults(object):
 
     contiguous: bool = None
 
-    # Keep track of the special params  set with default values to check concordance with btune
+    # Keep track of the special params set with default values for consistency checks with btune
     kwargs_params: set = field(default_factory=set)
     check: bool = True
 
@@ -230,12 +230,6 @@ class Defaults(object):
         self.filters = value.filters
         self.nthreads = value.nthreads
         self.fp_mantissa_bits = value.fp_mantissa_bits
-        # Activate TRUNC_PREC filter only if mantissa_bits > 0
-        if self.fp_mantissa_bits != 0 and ia.Filter.TRUNC_PREC not in self.filters:
-            self.filters.insert(0, ia.Filter.TRUNC_PREC)
-        # De-activate TRUNC_PREC filter if mantissa_bits == 0
-        if self.fp_mantissa_bits == 0 and ia.Filter.TRUNC_PREC in self.filters:
-            self.filters.pop(0)
         self.eval_method = value.eval_method
         self.seed = value.seed
         self.random_gen = value.random_gen
@@ -375,6 +369,7 @@ class Config(ext.Config):
         no precision is capped.  FYI, double precision have 52 bit in mantissa, whereas
         single precision has 23 bit.  For example, if you set this to 23 for doubles,
         you will be using a compressed store very close as if you were using singles.
+        This automatically activates the ia.Filter.TRUNC_PREC at the front of the filter list.
     use_dict : bool
         Whether Blosc should use a dictionary for enhanced compression (currently only
         supported by :py:obj:`Codec.ZSTD <Codec>`).  Default is False.
@@ -474,6 +469,13 @@ class Config(ext.Config):
             self.filters = (
                 [ia.Filter.BITSHUFFLE] if self.filters == default_filters() else self.filters
             )
+
+        # Activate TRUNC_PREC filter only if mantissa_bits > 0
+        if self.fp_mantissa_bits != 0 and ia.Filter.TRUNC_PREC not in self.filters:
+            self.filters.insert(0, ia.Filter.TRUNC_PREC)
+        # De-activate TRUNC_PREC filter if mantissa_bits == 0
+        if self.fp_mantissa_bits == 0 and ia.Filter.TRUNC_PREC in self.filters:
+            self.filters.pop(0)
 
         # Initialize the Cython counterpart
         super().__init__(
