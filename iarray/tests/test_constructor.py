@@ -112,6 +112,7 @@ def test_arange(start, stop, shape, chunks, blocks, dtype, contiguous, urlpath):
     ],
 )
 def test_from_file(start, stop, shape, chunks, blocks, dtype, contiguous, urlpath):
+    ia.remove_urlpath(urlpath)
     size = int(np.prod(shape))
     npdtype = np.float64 if dtype == np.float64 else np.float32
     a = np.linspace(start, stop, size, dtype=npdtype).reshape(shape)

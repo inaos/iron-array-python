@@ -47,7 +47,7 @@ def test_load_save(shape, chunks, blocks, dtype, func, contiguous):
     assert(b.dtype == a.dtype)
 
     c = ia.load(urlpath)
-    assert(c.cfg.contiguous == contiguous)
+    assert(c.cfg.contiguous == False)
     assert(c.cfg.urlpath == None)
     assert(c.cfg.chunks == a.chunks)
     assert(c.cfg.blocks == a.blocks)
