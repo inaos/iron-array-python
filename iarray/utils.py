@@ -74,13 +74,17 @@ def save(urlpath: str, iarr: ia.IArray, cfg: ia.Config = None, **kwargs) -> None
     open : Open an array from disk.
     """
     ia.remove_urlpath(urlpath)
-    if kwargs.get('contiguous', None) is None and cfg is None:
+    if kwargs.get('contiguous', None) is None and (cfg is None or cfg.contiguous is None):
         kwargs = dict(kwargs, contiguous=True)
     iarr.copy(cfg=cfg, urlpath=urlpath, **kwargs)
 
 
-def load(urlpath: str) -> ia.IArray:
+def load(urlpath: str, cfg: ia.Config = None, **kwargs) -> ia.IArray:
     """Open an array from a binary file in ironArray `.iarr` format and load data into memory.
+
+    The default for this function is `contiguous=False`.
+
+    `cfg` and `kwargs` are the same than for :func:`IArray.copy`.
 
     Parameters
     ----------
@@ -96,9 +100,11 @@ def load(urlpath: str) -> ia.IArray:
     --------
     save : Save an array to disk.
     """
-    cfg = ia.get_config_defaults()
-    with ia.config(cfg=cfg) as cfg:
-        return ext.load(cfg, urlpath)
+    if kwargs.get('contiguous', None) is None and (cfg is None or cfg.contiguous is None):
+        kwargs = dict(kwargs, contiguous=False)
+
+    iarr = ia.open(urlpath)
+    return iarr.copy(cfg=cfg, **kwargs)
 
 
 def open(urlpath: str) -> ia.IArray:
