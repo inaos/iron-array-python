@@ -49,10 +49,11 @@ conda install -c numba llvmdev
 conda install -c intel icc_rt   # SVML
 ```
 
-While you are at this, it is also wise to install numba for running tutorials and benchmarks:
+While you are at this, it is also wise to install numba and vmtouch util for running tutorials and benchmarks:
 
 ```bash
 conda install -c numba numba
+sudo apt install vmtouch
 ```
 
 We can proceed now with the compilation of the actual Python wrapper for iarray:
