@@ -124,13 +124,10 @@ Types and operations
 The supported numerical types are:
 
 - floats, `float32` and `float64`
-- integers, `int8`, `int16`, `int32` and `int64`
 
-This includes literals. If not annotated an integer literal will be interpreted
-as `int64`, and a float literal will be interpreted as `float64`. For example::
+This includes literals. If not annotated a float literal will be interpreted as
+`float64`. For example::
 
-    n = 5          # int64
-    n:int8 = 5     # int8
     n = 5.0        # float64
     n:float32 = 5  # float32
 
@@ -141,10 +138,8 @@ numerical types are `-`.
 The modulus operator `%` is supported as well, but only if at least one of the
 operands is a variable (i.e. ``i % 3`` works but ``7 % 3`` does not).
 
-In numerical expressions mixing an integer and a float, the integer value will
-be coerced to float. If mixing values with different size, the smaller one will
-be coerced to the larger one (e.g. int32 and int64, the int32 value will be
-coerced to int64).
+In numerical expressions mixing a float32 with a float64, the float32 value
+will be converted to float64.
 
 Comparisons are also supported, with the operators for: equality `=`, not
 equality `!=`, less than `<`, less than equal `<=`, greater than `>`, greater
