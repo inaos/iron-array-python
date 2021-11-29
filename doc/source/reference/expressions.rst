@@ -146,14 +146,15 @@ equality `!=`, less than `<`, less than equal `<=`, greater than `>`, greater
 than equal `>=`. And logical expressions with the `and`, `or` and `not`
 operators. But boolean literals are not supported.
 
-Finally, the conditional expression `x if condition else y` is supported.
+Finally, the conditional expression `x if condition else y` is supported also.
 
 Supported Python statements and functions
 -----------------------------------------
 
 The current supported statements are:
 
-- assignments, including augmented and annotated assignments
+- assignments, including augmented and annotated assignments (currently integers
+  are automatically cast to floats, whereas booleans raise an error)
 - loops, `for` and `while`
 - conditionals, `if/elif/else`
 
@@ -168,7 +169,7 @@ Supported math operations
 
 All the basic arithmetic operations (+, -, \*, /) are supported.  In addition,
 the whole set of mathematical functions in ironArray expressions are supported
-too (see :ref:`Math Functions`).
+as well (see :ref:`Math Functions`).
 
 Data window metainfo
 --------------------
@@ -191,4 +192,4 @@ array.
 window_strides
 ~~~~~~~~~~~~~~
 
-Number of elements to step in each dimension when traversing the window.
+Number of elements to step in each dimension for reaching the next element when traversing the window.
