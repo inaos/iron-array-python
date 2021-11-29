@@ -124,7 +124,7 @@ Types and operations
 The supported numerical types are:
 
 - floats, `float32` and `float64`
-- integers, `int8`, `int32` and `int64`
+- integers, `int8`, `int16`, `int32` and `int64`
 
 This includes literals. If not annotated an integer literal will be interpreted
 as `int64`, and a float literal will be interpreted as `float64`. For example::
@@ -158,7 +158,7 @@ Supported Python statements and functions
 
 The current supported statements are:
 
-- assignmets, including augmented and annotated assignments
+- assignments, including augmented and annotated assignments
 - loops, `for` and `while`
 - conditionals, `if/elif/else`
 
