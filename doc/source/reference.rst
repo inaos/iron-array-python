@@ -11,3 +11,4 @@ Library Reference
    reference/ufuncs
    reference/linalg
    reference/expressions
+   reference/udf

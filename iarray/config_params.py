@@ -357,11 +357,15 @@ class Config(ext.Config):
     clevel : int
         The compression level.  It can have values between 0 (no compression) and
         9 (max compression).  Default is 1.
+    btune: bool
+        Enable btune machinery. The default is True. When setting :paramref:`favor` `btune`
+        has to be enabled, whereas when setting :paramref:`clevel`, :paramref:`codec` or
+        :paramref:`filters`, it has to be disabled.
     favor : :class:`Favor`
         What favor when compressing. Possible values are :py:obj:`Favor.SPEED <Favor>`
         for better speed, :py:obj:`Favor.CRATIO <Favor>` for better compression ratios
         and :py:obj:`Favor.BALANCE <Favor>` for a balance among the two.  Default is :py:obj:`Favor.BALANCE <Favor>`.
-        For this to work properly, `btune` has to be activated (the default).
+        For this to work properly, :paramref:`btune` has to be enabled (the default).
     filters : :class:`Filter` list
         The list of filters for Blosc.  Default is [:py:obj:`Filter.BITSHUFFLE <Filter>`].
     fp_mantissa_bits : int
@@ -369,7 +373,8 @@ class Config(ext.Config):
         no precision is capped.  FYI, double precision have 52 bit in mantissa, whereas
         single precision has 23 bit.  For example, if you set this to 23 for doubles,
         you will be using a compressed store very close as if you were using singles.
-        This automatically activates the ia.Filter.TRUNC_PREC at the front of the filter list.
+        This automatically enables the ia.Filter.TRUNC_PREC at the front of the
+        :paramref:`filters` list.
     use_dict : bool
         Whether Blosc should use a dictionary for enhanced compression (currently only
         supported by :py:obj:`Codec.ZSTD <Codec>`).  Default is False.
@@ -386,8 +391,6 @@ class Config(ext.Config):
     random_gen : :class:`RandomGen`
         The random generator to be used.  The default is
         :py:obj:`RandomGen.MERSENNE_TWISTER <RandomGen>`.
-    btune: bool
-        Enable btune machinery. The default is True.
     dtype: (np.float32, np.float64)
         The data type to use. The default is np.float64.
     store : :class:`Store`

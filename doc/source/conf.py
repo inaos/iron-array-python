@@ -46,6 +46,7 @@ extensions = [
     "sphinx.ext.autosectionlabel",
     "nbsphinx",
     "numpydoc",
+    "sphinx_paramlinks",
 ]
 
 # Add any paths that contain templates here, relative to this directory.

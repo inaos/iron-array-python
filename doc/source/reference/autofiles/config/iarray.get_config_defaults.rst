@@ -1,5 +1,5 @@
-﻿iarray.get\_config
-==================
+﻿iarray.get\_config\_defaults
+============================
 
 .. currentmodule:: iarray
 
