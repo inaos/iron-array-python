@@ -96,15 +96,22 @@ cdef extern from "libiarray/iarray.h":
         IARRAY_EVAL_ENGINE_INTERPRETER
         IARRAY_EVAL_ENGINE_COMPILER
 
+    ctypedef enum iarray_split_mode_t:
+        IARRAY_ALWAYS_SPLIT = 1
+        IARRAY_NEVER_SPLIT = 2
+        IARRAY_AUTO_SPLIT = 3
+        IARRAY_FORWARD_COMPAT_SPLIT = 4
+
     ctypedef struct iarray_config_t:
         iarray_compression_codec_t compression_codec
         int compression_level
         iarray_compression_favor_t compression_favor
         int use_dict
+        int splitmode
         int filter_flags
-        int eval_method
+        unsigned int eval_method
         int max_num_threads
-        int8_t fp_mantissa_bits
+        uint8_t fp_mantissa_bits
         bool btune
 
     ctypedef struct iarray_storage_t:
