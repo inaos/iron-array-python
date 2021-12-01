@@ -205,6 +205,8 @@ cdef class Config:
         self.config.max_num_threads = max_num_threads
         self.config.fp_mantissa_bits = fp_mantissa_bits
         self.config.btune = btune
+        self.config.splitmode = ciarray.IARRAY_AUTO_SPLIT
+
     def _to_dict(self):
         return <object> self.config
 
