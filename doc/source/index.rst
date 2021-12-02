@@ -14,5 +14,5 @@ Welcome to ironArray for Python's documentation!
    two-level-chunking
    install
    tutorials
-   reference
    bench
+   reference

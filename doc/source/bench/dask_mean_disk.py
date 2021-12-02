@@ -6,10 +6,10 @@ import dask.array as da
 import zarr
 import os
 
-cmd = 'vmtouch -e precip-3m.zarr'
+cmd = 'vmtouch -e precip-3m-optimal.zarr'
 os.system(cmd)
 # Use a previous computation for getting metadata (shape, chunks...)
-precip = zarr.open("precip-3m.zarr")
+precip = zarr.open("precip-3m-optimal.zarr")
 shape = precip.shape[1:]
 dtype = np.float32
 clevel = ia.Config().clevel
@@ -19,11 +19,11 @@ compressor = zarr.Blosc(clevel=1, cname="zstd", shuffle=zarr.Blosc.BITSHUFFLE)
 #zarr.save("precip2.zarr", precip[1])
 #zarr.save("precip3.zarr", precip[2])
 
-cmd2 = 'vmtouch -e precip1.zarr precip2.zarr precip3.zarr'
+cmd2 = 'vmtouch -e precip1-op.zarr precip2-op.zarr precip3-op.zarr'
 os.system(cmd2)
-zprecip1 = zarr.open("precip1.zarr")
-zprecip2 = zarr.open("precip2.zarr")
-zprecip3 = zarr.open("precip3.zarr")
+zprecip1 = zarr.open("precip1-op.zarr")
+zprecip2 = zarr.open("precip2-op.zarr")
+zprecip3 = zarr.open("precip3-op.zarr")
 
 os.system(cmd2)
 precip1 = da.from_zarr(zprecip1)

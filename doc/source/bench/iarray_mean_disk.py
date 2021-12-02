@@ -4,10 +4,12 @@ import os
 t0 = time()
 import iarray as ia
 
+chunks = (360, 128, 1440)
+blocks = (8, 8, 720)
+ia.set_config_defaults(chunks=chunks, blocks=blocks)
 
 t = time() - t0
 print("iarray import time ->", round(t, 3))
-
 # ia_precip = ia.open("precip-3m.iarr")
 # chunks = ia_precip.chunks[1:]
 # blocks = ia_precip.blocks[1:]
@@ -30,12 +32,12 @@ print("iarray import time ->", round(t, 3))
 
 # @profile
 def iarray_open_data():
-    precip1 = ia.open("../tutorials/precip1.iarr")
-    precip2 = ia.open("../tutorials/precip2.iarr")
-    precip3 = ia.open("../tutorials/precip3.iarr")
+    precip1 = ia.open("../tutorials/precip1-speed.iarr")
+    precip2 = ia.open("../tutorials/precip2-speed.iarr")
+    precip3 = ia.open("../tutorials/precip3-speed.iarr")
     return precip1, precip2, precip3
 
-cmd = 'vmtouch -e ../tutorials/precip1.iarr ../tutorials/precip2.iarr ../tutorials/precip3.iarr'
+cmd = 'vmtouch -e ../tutorials/precip1-speed.iarr ../tutorials/precip2-speed.iarr ../tutorials/precip3-speed.iarr'
 os.system(cmd)
 t0 = time()
 precip1, precip2, precip3 = iarray_open_data()
