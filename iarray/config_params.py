@@ -107,6 +107,7 @@ class DefaultConfig:
     random_gen: Any
     btune: Any
     dtype: Any
+    split_mode: Any
 
 
 @dataclass
@@ -139,6 +140,7 @@ class Defaults(object):
     random_gen: ia.RandomGen = ia.RandomGen.MERSENNE_TWISTER
     btune: bool = True
     dtype: (np.float32, np.float64) = np.float64
+    split_mode: (ia.SplitMode) = ia.SplitMode.AUTO_SPLIT
 
     # Store
     _store = None
@@ -198,6 +200,9 @@ class Defaults(object):
     def _dtype(self):
         return self.dtype
 
+    def _split_mode(self):
+        return self.split_mode
+
     @property
     def config(self):
         if self._config is None:
@@ -216,6 +221,7 @@ class Defaults(object):
                 random_gen=self.random_gen,
                 btune=self.btune,
                 dtype=self.dtype,
+                split_mode=self.split_mode,
             )
         return self._config
 
@@ -235,6 +241,7 @@ class Defaults(object):
         self.random_gen = value.random_gen
         self.btune = value.btune
         self.dtype = value.dtype
+        self.split_mode = value.split_mode
         self._store = value.store
         self._config = value
         if self._store is not None:
@@ -352,7 +359,7 @@ class Config(ext.Config):
 
     Parameters
     ----------
-    codec : :class:`Codec`
+    codec: :class:`Codec`
         The codec to be used inside Blosc.  Default is :py:obj:`Codec.ZSTD <Codec>`.
     clevel : int
         The compression level.  It can have values between 0 (no compression) and
@@ -361,7 +368,7 @@ class Config(ext.Config):
         Enable btune machinery. The default is True. When setting :paramref:`favor` `btune`
         has to be enabled, whereas when setting :paramref:`clevel`, :paramref:`codec` or
         :paramref:`filters`, it has to be disabled.
-    favor : :class:`Favor`
+    favor: :class:`Favor`
         What favor when compressing. Possible values are :py:obj:`Favor.SPEED <Favor>`
         for better speed, :py:obj:`Favor.CRATIO <Favor>` for better compression ratios
         and :py:obj:`Favor.BALANCE <Favor>` for a balance among the two.  Default is :py:obj:`Favor.BALANCE <Favor>`.
@@ -393,6 +400,8 @@ class Config(ext.Config):
         :py:obj:`RandomGen.MERSENNE_TWISTER <RandomGen>`.
     dtype: (np.float32, np.float64)
         The data type to use. The default is np.float64.
+    codec: :class:`SplitMode`
+        The split mode to be used inside Blosc.  Default is :py:obj:`SplitMode.AUTO_SPLIT <SplitMode>`.
     store : :class:`Store`
         Store instance where you can specify different properties of the output
         store.  See :py:obj:`Store` docs for details.  For convenience, you can also
@@ -416,6 +425,7 @@ class Config(ext.Config):
     random_gen: ia.RandomGen = field(default_factory=defaults._random_gen)
     btune: bool = field(default_factory=defaults._btune)
     dtype: (np.float32, np.float64) = field(default_factory=defaults._dtype)
+    split_mode: ia.SplitMode = field(default_factory=defaults._split_mode)
     store: Store = None  # delayed initialization
 
     # These belong to Store, but we accept them in top level too
@@ -491,6 +501,7 @@ class Config(ext.Config):
             self.fp_mantissa_bits,
             self.eval_method,
             self.btune,
+            self.split_mode,
         )
 
     def _replace(self, **kwargs):
@@ -531,10 +542,14 @@ class Config(ext.Config):
             # Restore variable for next time
             defaults.compat_params = set()
             defaults.check_compat = True
-            raise ValueError(f"To set any flag in", btune_incompatible, "you need to disable `btune` explicitly.")
+            raise ValueError(
+                f"To set any flag in",
+                btune_incompatible,
+                "you need to disable `btune` explicitly.",
+            )
 
         # favor=something and btune=False
-        if kwargs !={}:
+        if kwargs != {}:
             if "favor" in kwargs and not btune:
                 # Restore variable for next time
                 defaults.compat_params = set()
@@ -606,9 +621,11 @@ def set_config_defaults(cfg: Config = None, shape=None, **kwargs):
     if kwargs != {}:
         cfg.check_config_params(**kwargs)
         # The default when creating frames on-disk is to use contiguous storage (mainly because of performance  reasons)
-        if (kwargs.get("contiguous", None) is None
+        if (
+            kwargs.get("contiguous", None) is None
             and cfg.contiguous is None
-            and kwargs.get("urlpath", None) is not None):
+            and kwargs.get("urlpath", None) is not None
+        ):
             cfg = cfg._replace(**dict(kwargs, contiguous=True))
         else:
             cfg = cfg._replace(**kwargs)
