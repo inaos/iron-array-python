@@ -7,7 +7,7 @@ import zarr
 
 
 # Use a previous computation for getting metadata (shape, chunks...)
-precip_disk = ia.open("precip-3m.iarr")
+precip_disk = ia.open("../tutorials/precip-3m.iarr")
 shape = precip_disk.shape[1:]
 dtype = np.float32
 clevel = ia.Config().clevel
@@ -18,9 +18,9 @@ compressor = zarr.Blosc(clevel=1, cname="zstd", shuffle=zarr.Blosc.BITSHUFFLE)
 #zprecip3 = precip_disk[2]
 #chunks = precip_disk.chunkshape[1:]
 
-zprecip1 = zarr.open("precip1.zarr")
-zprecip2 = zarr.open("precip2.zarr")
-zprecip3 = zarr.open("precip3.zarr")
+zprecip1 = zarr.open("precip1-op.zarr")
+zprecip2 = zarr.open("precip2-op.zarr")
+zprecip3 = zarr.open("precip3-op.zarr")
 chunks = zprecip1.chunks
 
 zarr_precip1 = zarr.create(shape=shape, chunks=chunks, dtype=dtype, compressor=compressor)

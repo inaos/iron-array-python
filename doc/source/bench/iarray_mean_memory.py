@@ -10,9 +10,9 @@ nthreads = 21
 # blocks = (16, 16, 180)
 # chunks = (180, 256, 1440)
 # block = (12, 16, 180)
-chunks = (45, 721, 1440)
-blocks = (45, 4, 180)
-
+chunks = (360, 128, 1440)
+blocks = (8, 8, 720)
+ia.set_config_defaults(chunks=chunks, blocks=blocks)
 
 # store = ia.Store(contiguous=contiguous, chunks=chunks, blocks=blocks)
 store = ia.Store(contiguous=contiguous)
@@ -38,9 +38,9 @@ print("cfg:", cfg)
 # print("save time ->", round(t, 3))
 
 t0 = time()
-precip1 = ia.load("../tutorials/precip1.iarr")
-precip2 = ia.load("../tutorials/precip2.iarr")
-precip3 = ia.load("../tutorials/precip3.iarr")
+precip1 = ia.load("../tutorials/precip1-speed.iarr")
+precip2 = ia.load("../tutorials/precip2-speed.iarr")
+precip3 = ia.load("../tutorials/precip3-speed.iarr")
 t = time() - t0
 print("load time ->", round(t, 3))
 
