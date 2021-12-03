@@ -39,33 +39,17 @@ ia_precip1 = ia.empty(m_shape, dtype=np.float32, urlpath="precip2.iarr")
 ia_precip2 = ia.empty(m_shape, dtype=np.float32, urlpath="precip3.iarr")
 ia_precip = ia.empty((3, ) + m_shape, dtype=np.float32, urlpath="precip-3m.iarr")
 
-# compressor = Blosc(cname='zstd', clevel=3, shuffle=Blosc.BITSHUFFLE)
-# compressor = Blosc()
-compressor = Blosc(cname='lz4', clevel=5, shuffle=Blosc.SHUFFLE)
-chunks = (360, 128, 1440)  # optimal chunks for precip1, precip2 and precip3
-chunks_3m = (1, 360, 128, 1440)  # optimal chunks for precip-3m
-za_precip0 = zarr.open('../bench/precip1-op.zarr', mode='w', shape=m_shape, dtype=np.float32, chunks=chunks, compressor=compressor)
-za_precip1 = zarr.open('../bench/precip2-op.zarr', mode='w', shape=m_shape, dtype=np.float32, chunks=chunks, compressor=compressor)
-za_precip2 = zarr.open('../bench/precip3-op.zarr', mode='w', shape=m_shape, dtype=np.float32, chunks=chunks, compressor=compressor)
-za_precip = zarr.open('../bench/precip-3m-optimal.zarr', mode='w', shape=(3,) + m_shape, dtype=np.float32, chunks=chunks_3m, compressor=compressor)
-
 print("Fetching and storing 1st month...")
 values = precip_m0.values
 ia_precip0[:] = values
 ia_precip[0] = values
-za_precip0[:] = values
-za_precip[0] = values
 
 print("Fetching and storing 2nd month...")
 values = precip_m1.values
 ia_precip1[:] = values
 ia_precip[1] = values
-za_precip1[:] = values
-za_precip[1] = values
 
 print("Fetching and storing 3rd month...")
 values = precip_m2.values
 ia_precip2[:] = values
 ia_precip[2] = values
-za_precip2[:] = values
-za_precip[2] = values
