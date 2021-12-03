@@ -42,6 +42,7 @@ class Codec(Enum):
     """
     Available codecs.
     """
+
     BLOSCLZ = 0
     LZ4 = 1
     LZ4HC = 2
@@ -55,6 +56,7 @@ class Filter(Enum):
     """
     Available filters.
     """
+
     NOFILTER = 0
     SHUFFLE = 1
     BITSHUFFLE = 2
@@ -67,9 +69,22 @@ class Favor(Enum):
     """
     Which computer resource to be favored.
     """
+
     BALANCE = 0
     SPEED = 1
     CRATIO = 2
+
+
+# Split mode
+class SplitMode(Enum):
+    """
+    Available split modes.
+    """
+
+    ALWAYS_SPLIT = 1
+    NEVER_SPLIT = 2
+    AUTO_SPLIT = 3
+    FORWARD_COMPAT_SPLIT = 4
 
 
 # Random generators
@@ -77,6 +92,7 @@ class RandomGen(Enum):
     """
     Available random generators.
     """
+
     MERSENNE_TWISTER = 0
     SOBOL = 1
 
@@ -96,6 +112,7 @@ class Reduce(Enum):
     """
     Available reduction operations.
     """
+
     MAX = 0
     MIN = 1
     SUM = 2

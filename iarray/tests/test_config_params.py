@@ -85,7 +85,9 @@ def test_global_config(clevel, codec, filters, chunks, blocks, contiguous, urlpa
     assert store2.urlpath == None
 
     # Or, we can use a mix of Config and keyword args
-    cfg = ia.Config(clevel=clevel, codec=codec, blocks=blocks, contiguous=False, urlpath=urlpath, btune=False)
+    cfg = ia.Config(
+        clevel=clevel, codec=codec, blocks=blocks, contiguous=False, urlpath=urlpath, btune=False
+    )
     ia.set_config_defaults(cfg, filters=filters, chunks=chunks)
     config = ia.get_config_defaults()
 
@@ -120,7 +122,9 @@ def test_global_favor(favor, chunks, blocks):
 @pytest.mark.parametrize(
     "favor",
     [
-        ia.Favor.BALANCE, ia.Favor.SPEED, ia.Favor.CRATIO,
+        ia.Favor.BALANCE,
+        ia.Favor.SPEED,
+        ia.Favor.CRATIO,
     ],
 )
 def test_favor_nobtune(favor):
@@ -216,7 +220,9 @@ def test_global_config_dtype(chunks, blocks, shape):
 def test_config_ctx(clevel, codec, filters, chunks, blocks):
     try:
         store = ia.Store(chunks, blocks)
-        with ia.config(clevel=clevel, codec=codec, filters=filters, store=store, btune=False) as cfg:
+        with ia.config(
+            clevel=clevel, codec=codec, filters=filters, store=store, btune=False
+        ) as cfg:
             assert cfg.clevel == clevel
             assert cfg.codec == codec
             assert cfg.btune == False
@@ -306,7 +312,7 @@ def test_nested_contexts():
         a = ia.numpy2iarray(b)
         assert a.cratio < 1
         # Enable compression in call
-        a = ia.numpy2iarray(b, clevel=1)
+        a = ia.numpy2iarray(b, clevel=1, split_mode=ia.SplitMode.NEVER_SPLIT)
         assert a.cratio > 1
         # Enable compression in nested context
         with ia.config(clevel=1):
@@ -327,9 +333,12 @@ def test_default_params():
     ia.remove_urlpath(urlpath)
 
     cfg = ia.get_config_defaults()
+    ia.set_config_defaults(split_mode=ia.SplitMode.ALWAYS_SPLIT)
     a = ia.linspace([10], start=0, stop=1, urlpath=urlpath, contiguous=False)
+    ia.set_config_defaults(split_mode=cfg.split_mode)
     cfg2 = ia.Config()
 
+    assert cfg.split_mode == cfg2.split_mode
     assert cfg.contiguous == cfg2.contiguous
     assert cfg.urlpath == cfg2.urlpath
     ia.remove_urlpath(urlpath)
