@@ -474,8 +474,6 @@ cdef class Expression:
                         equal = False
                         break
                 if equal:
-                    print(storage_0.chunkshape)
-                    print(chunks_0)
                     self.ia_expr.out_store_properties.chunkshape = storage_0.chunkshape
                     self.ia_expr.out_store_properties.blockshape = storage_0.blockshape
                     self.cfg.chunks = chunks_0

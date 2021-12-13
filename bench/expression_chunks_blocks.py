@@ -39,7 +39,7 @@ def test_expression(method, shape, xstore, ystore, zstore, dtype, expression):
         if ufunc in expression:
             idx = expression.find(ufunc)
             # Prevent replacing an ufunc with np.ufunc twice (not terribly solid, but else, test will crash)
-            if "np." not in expression[idx - len("np.arc") : idx]:
+            if "np." not in expression[idx - len("np.arc"): idx]:
                 expression = expression.replace(ufunc + "(", "np." + ufunc + "(")
     npout2 = eval(expression, {"x": npx, "y": npy, "np": numpy})
 
@@ -50,8 +50,6 @@ def test_expression(method, shape, xstore, ystore, zstore, dtype, expression):
     ia.remove_urlpath(ystore.urlpath)
     if zstore is not None:
         ia.remove_urlpath(zstore.urlpath)
-
-
 
 
 print("Expression with same chunks and blocks for all operands")
@@ -75,7 +73,7 @@ xstore = ia.Store(chunks=chunks, blocks=blocks, contiguous=xcontiguous, urlpath=
 ystore = ia.Store(chunks=chunks, blocks=blocks, contiguous=ycontiguous, urlpath=yurlpath)
 
 test_expression(method=method, shape=shape, xstore=xstore, ystore=ystore, zstore=None, dtype=dtype,
-           expression=expression)
+                expression=expression)
 
 
 print("Expression with different chunks anb blocks for the operands")
@@ -97,8 +95,7 @@ ystore = ia.Store(chunks=[40, 300, 300], blocks=blocks, contiguous=ycontiguous, 
 
 print("config defaults ", ia.get_config_defaults())
 test_expression(method=method, shape=shape, xstore=xstore, ystore=ystore, zstore=None, dtype=dtype,
-           expression=expression)
-
+                expression=expression)
 
 
 print("Expression with store parameters for the output")
@@ -122,4 +119,4 @@ zstore = ia.Store(
 )
 
 test_expression(method=method, shape=shape, xstore=xstore, ystore=ystore, zstore=zstore, dtype=dtype,
-           expression=expression)
+                expression=expression)

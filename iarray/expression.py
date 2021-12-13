@@ -31,7 +31,6 @@ class Expr(ext.Expression):
             cfg = ia.get_config_defaults()
 
         default_shapes = check_expr_config(cfg, **kwargs)
-
         with ia.config(cfg=cfg, shape=shape, **kwargs) as cfg:
             dtshape = ia.DTShape(shape, cfg.dtype)
             self.cfg = cfg

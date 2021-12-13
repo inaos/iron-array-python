@@ -355,7 +355,6 @@ class Store:
             raise ValueError("You can either specify both chunks and blocks or none of them.")
 
 
-
 @dataclass
 class Config(ext.Config):
     """Dataclass for hosting the different ironArray parameters.
@@ -586,7 +585,6 @@ class Config(ext.Config):
             self.store.__setattr__(key, value)
 
         super(Config, self).__setattr__(key, value)
-
 
 
 # Global config
