@@ -63,6 +63,9 @@ cdef extern from "libiarray/iarray.h":
     cdef enum:
         IARRAY_DIMENSION_MAX = 8
 
+    cdef enum:
+        IARRAY_EXPR_OPERANDS_MAX = 128
+
     ctypedef enum iarray_container_flags_t:
         IARRAY_CONTAINER_PERSIST = 0x1
 
@@ -127,9 +130,32 @@ cdef extern from "libiarray/iarray.h":
 
     ctypedef struct iarray_context_t
 
-    ctypedef struct iarray_container_t
+    ctypedef struct iarray_container_t:
+        iarray_dtshape_t *dtshape
+        # iarray_auxshape_t *auxshape;
+        # caterva_array_t *catarr;
+        iarray_storage_t *storage
+        bool view
+        bool transposed
+        #union { float f; double d; } scalar_value;
 
-    ctypedef struct iarray_expression_t
+    ctypedef struct _iarray_jug_var_t:
+        const char *var
+        iarray_container_t *c
+
+    ctypedef struct iarray_expression_t:
+        iarray_context_t *ctx
+        # ina_str_t expr;
+        int32_t typesize
+        int64_t nbytes
+        int nvars
+        int32_t max_out_len
+        # jug_expression_t *jug_expr;
+        uint64_t jug_expr_func
+        iarray_dtshape_t *out_dtshape
+        iarray_storage_t *out_store_properties
+        iarray_container_t *out
+        _iarray_jug_var_t vars[IARRAY_EXPR_OPERANDS_MAX]
 
 
     ina_rc_t iarray_init()

@@ -244,7 +244,7 @@ def test_expression(
         if ufunc in expression:
             idx = expression.find(ufunc)
             # Prevent replacing an ufunc with np.ufunc twice (not terribly solid, but else, test will crash)
-            if "np." not in expression[idx - len("np.arc") : idx]:
+            if "np." not in expression[idx - len("np.arc"): idx]:
                 expression = expression.replace(ufunc + "(", "np." + ufunc + "(")
     npout2 = eval(expression, {"x": npx, "y": npy, "np": numpy})
 
@@ -316,7 +316,7 @@ def test_ufuncs(ufunc, ia_expr, xcontiguous, xurlpath, ycontiguous, yurlpath):
 
     xstore = ia.Store(chunks=chunks, blocks=bshape, contiguous=xcontiguous, urlpath=xurlpath)
     ystore = ia.Store(chunks=chunks, blocks=bshape, contiguous=ycontiguous, urlpath=yurlpath)
-    if yurlpath != None:
+    if yurlpath is not None:
         zstore = ia.Store(
             chunks=chunks,
             blocks=bshape,
@@ -697,3 +697,60 @@ def test_expr_fusion(
     ia.remove_urlpath(tstore.urlpath)
     ia.remove_urlpath(z32store.urlpath)
     ia.remove_urlpath(t32store.urlpath)
+
+
+@pytest.mark.parametrize(
+    "expression, contiguous, zcontiguous, zurlpath",
+    [
+        (
+            "x + y",
+            True,
+            True,
+            None,
+
+        )
+    ])
+def test_chunks_blocks_params(expression, contiguous, zurlpath, zcontiguous):
+    shape = [200, 300]
+    chunks = [40, 50]
+    blocks = [20, 20]
+    ia.remove_urlpath(zurlpath)
+
+    # First with default chunks and blocks when operands chunks and blocks are equal
+    xstore = ia.Store(chunks=chunks, blocks=blocks, contiguous=contiguous)
+    ystore = ia.Store(chunks=chunks, blocks=blocks, contiguous=contiguous)
+    zstore = ia.Store(contiguous=zcontiguous, urlpath=zurlpath)
+
+    x = ia.linspace(shape, 0.1, 0.2, store=xstore)
+    y = ia.linspace(shape, 0, 1, store=ystore)
+
+    expr = ia.expr_from_string(expression, {"x": x, "y": y}, store=zstore)
+    iout = expr.eval()
+    assert(iout.cfg.chunks == chunks)
+    assert(iout.cfg.store.chunks == chunks)
+    assert(iout.cfg.store.blocks == blocks)
+    assert(iout.cfg.blocks == blocks)
+    ia.remove_urlpath(zstore.urlpath)
+
+    # Now with default chunks and blocks when operands chunks and blocks are not equal
+    ystore = ia.Store(chunks=[40, 49], blocks=blocks, contiguous=contiguous)
+    zstore = ia.Store(contiguous=zcontiguous, urlpath=zurlpath)
+    y = ia.linspace(shape, 0, 1, store=ystore)
+    expr = ia.expr_from_string(expression, {"x": x, "y": y}, store=zstore)
+    iout = expr.eval()
+    assert (iout.cfg.chunks != chunks)
+    assert (iout.cfg.store.chunks != chunks)
+    assert (iout.cfg.store.blocks != blocks)
+    assert (iout.cfg.blocks != blocks)
+    ia.remove_urlpath(zstore.urlpath)
+
+    # Check that the provided chunks and blocks are used
+    ystore = ia.Store(chunks=chunks, blocks=blocks, contiguous=contiguous)
+    zstore = ia.Store(chunks=[10, 10], blocks=[5, 5], contiguous=zcontiguous, urlpath=zurlpath)
+    y = ia.linspace(shape, 0, 1, store=ystore)
+    expr = ia.expr_from_string(expression, {"x": x, "y": y}, store=zstore)
+    iout = expr.eval()
+    assert (iout.cfg.chunks == zstore.chunks)
+    assert (iout.cfg.store.chunks == zstore.chunks)
+    assert (iout.cfg.store.blocks == zstore.blocks)
+    assert (iout.cfg.blocks == zstore.blocks)

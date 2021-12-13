@@ -30,11 +30,16 @@ class Expr(ext.Expression):
         if cfg is None:
             cfg = ia.get_config_defaults()
 
+        default_shapes = check_expr_config(cfg, **kwargs)
         with ia.config(cfg=cfg, shape=shape, **kwargs) as cfg:
             dtshape = ia.DTShape(shape, cfg.dtype)
             self.cfg = cfg
             super().__init__(self.cfg)
             super().bind_out_properties(dtshape, cfg.store)
+            if default_shapes:
+                # Set cfg chunks and blocks to None to detect that we want the default shapes when evaluating
+                self.cfg.chunks = None
+                self.cfg.blocks = None
 
     def eval(self) -> ia.IArray:
         """Evaluate the expression in self.
@@ -132,3 +137,16 @@ def expr_from_udf(udf: py2llvm.Function, inputs: list, shape=None, cfg=None, **k
         expr.bind("", i)
     expr.compile_udf(udf)
     return expr
+
+
+def check_expr_config(cfg=None, **kwargs):
+    # Check if the chunks and blocks are explicitly set
+    default_shapes = False
+    if (cfg is not None and cfg.chunks is None and cfg.blocks is None) or cfg is None:
+        shape_params = {"chunks", "blocks"}
+        if kwargs != {}:
+            not_kw_shapes = all(x not in kwargs for x in shape_params)
+            store = kwargs.get("store")
+            if not_kw_shapes and (store is None or store.chunks is None and store.blocks is None):
+                default_shapes = True
+    return default_shapes

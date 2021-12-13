@@ -443,13 +443,45 @@ cdef class Expression:
 
     def eval(self):
         cdef ciarray.iarray_container_t *c;
-        # Check that we are not unadvertently overwriting anything
+        # Check that we are not inadvertently overwriting anything
         ia._check_path_mode(self.cfg.store.urlpath, self.cfg.store.mode)
+        # Update the chunks and blocks with the correct values
+        self.update_chunks_blocks()
         with nogil:
             error = ciarray.iarray_eval(self.ia_expr, &c)
         iarray_check(error)
         c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
         return ia.IArray(self.context, c_c)
+
+    def update_chunks_blocks(self):
+        cdef int nvars = self.ia_expr.nvars;
+        cdef ciarray.int8_t ndim = <ciarray.int8_t> self.dtshape["ndim"]
+        cdef ciarray.iarray_storage_t storage_0
+        cdef ciarray.iarray_storage_t storage_i
+
+        if self.cfg.chunks is None:
+            # Set blocks and chunks to the ones from the operands in case all of them are equal
+            if nvars > 0:
+                equal = True
+                ciarray.iarray_get_storage(self.ia_expr.ctx, self.ia_expr.vars[0].c, &storage_0)
+                chunks_0 = list(storage_0.chunkshape)[:ndim]
+                blocks_0 = list(storage_0.blockshape)[:ndim]
+                for i in range(1, ndim):
+                    ciarray.iarray_get_storage(self.ia_expr.ctx, self.ia_expr.vars[i].c, &storage_i)
+                    chunks_i = list(storage_i.chunkshape)[:ndim]
+                    blocks_i = list(storage_i.blockshape)[:ndim]
+                    if chunks_i != chunks_0 or blocks_i != blocks_0:
+                        equal = False
+                        break
+                if equal:
+                    self.ia_expr.out_store_properties.chunkshape = storage_0.chunkshape
+                    self.ia_expr.out_store_properties.blockshape = storage_0.blockshape
+
+        chunks = list(self.ia_expr.out_store_properties.chunkshape)[:ndim]
+        blocks = list(self.ia_expr.out_store_properties.blockshape)[:ndim]
+        self.cfg.chunks = chunks
+        self.cfg.blocks = blocks
+
 
 #
 # Iarray container constructors
