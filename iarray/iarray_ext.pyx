@@ -455,7 +455,7 @@ cdef class Expression:
 
     def update_chunks_blocks(self):
         cdef int nvars = self.ia_expr.nvars;
-        cdef ciarray.int8_t ndim= <ciarray.int8_t> self.dtshape["ndim"]
+        cdef ciarray.int8_t ndim = <ciarray.int8_t> self.dtshape["ndim"]
         cdef ciarray.iarray_storage_t storage_0
         cdef ciarray.iarray_storage_t storage_i
 
@@ -476,18 +476,11 @@ cdef class Expression:
                 if equal:
                     self.ia_expr.out_store_properties.chunkshape = storage_0.chunkshape
                     self.ia_expr.out_store_properties.blockshape = storage_0.blockshape
-                    self.cfg.chunks = chunks_0
-                    self.cfg.blocks = blocks_0
-                    self.storage.chunks = chunks_0
-                    self.storage.blocks = blocks_0
-                    return
 
         chunks = list(self.ia_expr.out_store_properties.chunkshape)[:ndim]
         blocks = list(self.ia_expr.out_store_properties.blockshape)[:ndim]
         self.cfg.chunks = chunks
         self.cfg.blocks = blocks
-        self.storage.chunks = chunks
-        self.storage.blocks = blocks
 
 
 #
