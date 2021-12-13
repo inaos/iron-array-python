@@ -331,8 +331,11 @@ class Store:
         self.urlpath = (
             self.urlpath.encode("utf-8") if isinstance(self.urlpath, str) else self.urlpath
         )
-        if self.contiguous is None and self.urlpath is not None:
-            self.contiguous = True
+        if self.contiguous is None:
+            if self.urlpath is not None:
+                self.contiguous = True
+            else:
+                self.contiguous = False
         else:
             self.contiguous = self.contiguous
         self.mode = self.mode.encode("utf-8") if isinstance(self.mode, str) else self.mode
@@ -345,9 +348,12 @@ class Store:
             chunks_, blocks_ = partition_advice(shape, cfg=cfg)
             self.chunks = chunks_
             self.blocks = blocks_
+            if cfg is not None:
+                cfg.store = self
             return
         else:
             raise ValueError("You can either specify both chunks and blocks or none of them.")
+
 
 
 @dataclass
@@ -442,8 +448,11 @@ class Config(ext.Config):
         defaults.compat_params = set()
         defaults.check_compat = True
 
-        if self.urlpath is not None and self.contiguous is None:
-            self.contiguous = True
+        if self.contiguous is None:
+            if self.urlpath is not None:
+                self.contiguous = True
+            else:
+                self.contiguous = False
         global RANDOM_SEED
         # Increase the random seed each time so as to prevent re-using them
         if self.seed is None:
@@ -507,13 +516,14 @@ class Config(ext.Config):
     def _replace(self, **kwargs):
         # When a replace is done a new object from the class is created with all its params passed as kwargs
         defaults.check_compat = False
-        cfg_ = replace(self, **kwargs)
+
         if "store" in kwargs:
             store = kwargs["store"]
             if store is not None:
                 for field in fields(Store):
-                    setattr(cfg_, field.name, getattr(store, field.name))
-        else:  # avoid overwriting the store
+                    kwargs[field.name] = getattr(store, field.name)
+        cfg_ = replace(self, **kwargs)
+        if "store" not in kwargs:
             store_args = dict(
                 (field.name, kwargs[field.name]) for field in fields(Store) if field.name in kwargs
             )
@@ -561,6 +571,22 @@ class Config(ext.Config):
                 defaults.compat_params = set()
                 defaults.check_compat = True
                 raise ValueError(f"A `favor` argument needs `btune` enabled.")
+
+
+    def __setattr__(self, key, value):
+        if key == "store" and value is not None:
+            self.contiguous = value.contiguous
+            self.urlpath = value.urlpath
+            self.mode = value.mode
+            self.chunks = value.chunks
+            self.blocks = value.blocks
+
+        store_params = {"chunks", "blocks", "mode", "urlpath", "contiguous"}
+        if key in store_params and self.store is not None:
+            self.store.__setattr__(key, value)
+
+        super(Config, self).__setattr__(key, value)
+
 
 
 # Global config
@@ -622,14 +648,15 @@ def set_config_defaults(cfg: Config = None, shape=None, **kwargs):
         cfg.check_config_params(**kwargs)
         # The default when creating frames on-disk is to use contiguous storage (mainly because of performance  reasons)
         if (
-            kwargs.get("contiguous", None) is None
+            kwargs.get("store", None) is None
+            and kwargs.get("contiguous", None) is None
             and cfg.contiguous is None
             and kwargs.get("urlpath", None) is not None
         ):
             cfg = cfg._replace(**dict(kwargs, contiguous=True))
         else:
             cfg = cfg._replace(**kwargs)
-    if shape is not None:
+    if shape is not None and cfg.chunks is None and cfg.blocks is None:
         cfg.store._get_shape_advice(shape, cfg=cfg)
         cfg = cfg._replace(**{"store": cfg.store})
 
