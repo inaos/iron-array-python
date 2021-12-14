@@ -20,6 +20,8 @@ cn = np.matmul(an, bn)
 
 cn_2 = ia.iarray2numpy(c)
 
-rtol = 1e-6 if dtype == np.float32 else 1e-15
+rtol = 1e-6 if dtype == np.float32 else 1e-14
+atol = 1e-6 if dtype == np.float32 else 1e-13
 
-np.testing.assert_allclose(cn, cn_2, rtol=rtol)
+
+np.testing.assert_allclose(cn, cn_2, rtol=rtol, atol=atol)

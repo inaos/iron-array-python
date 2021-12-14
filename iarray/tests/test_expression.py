@@ -211,18 +211,14 @@ def test_expression(
     ia.remove_urlpath(yurlpath)
     ia.remove_urlpath("test_expression_zarray.iarr")
 
-    xstore = ia.Store(chunks=chunks, blocks=blocks, contiguous=xcontiguous, urlpath=xurlpath)
-    ystore = ia.Store(chunks=chunks, blocks=blocks, contiguous=ycontiguous, urlpath=yurlpath)
-    zstore = ia.Store(
-        chunks=chunks, blocks=blocks, contiguous=xcontiguous, urlpath="test_expression_zarray.iarr"
-    )
-
-    x = ia.linspace(shape, 0.1, 0.2, dtype=dtype, store=xstore)
-    y = ia.linspace(shape, 0, 1, dtype=dtype, store=ystore)
+    x = ia.linspace(shape, 0.1, 0.2, dtype=dtype, chunks=chunks, blocks=blocks, contiguous=xcontiguous,
+                    urlpath=xurlpath)
+    y = ia.linspace(shape, 0, 1, dtype=dtype, chunks=chunks, blocks=blocks, contiguous=ycontiguous, urlpath=yurlpath)
     npx = ia.iarray2numpy(x)
     npy = ia.iarray2numpy(y)
 
-    expr = ia.expr_from_string(expression, {"x": x, "y": y}, store=zstore, eval_method=method)
+    expr = ia.expr_from_string(expression, {"x": x, "y": y}, chunks=chunks, blocks=blocks, contiguous=xcontiguous,
+                               urlpath="test_expression_zarray.iarr", eval_method=method)
     iout = expr.eval()
     npout = ia.iarray2numpy(iout)
 
@@ -251,9 +247,9 @@ def test_expression(
     tol = 1e-6 if dtype is np.float32 else 1e-14
     np.testing.assert_allclose(npout, npout2, rtol=tol, atol=tol)
 
-    ia.remove_urlpath(xstore.urlpath)
-    ia.remove_urlpath(ystore.urlpath)
-    ia.remove_urlpath(zstore.urlpath)
+    ia.remove_urlpath(x.cfg.urlpath)
+    ia.remove_urlpath(y.cfg.urlpath)
+    ia.remove_urlpath(iout.cfg.urlpath)
 
 
 # ufuncs
@@ -314,30 +310,27 @@ def test_ufuncs(ufunc, ia_expr, xcontiguous, xurlpath, ycontiguous, yurlpath):
     chunks = [40, 40]
     bshape = [10, 17]
 
-    xstore = ia.Store(chunks=chunks, blocks=bshape, contiguous=xcontiguous, urlpath=xurlpath)
-    ystore = ia.Store(chunks=chunks, blocks=bshape, contiguous=ycontiguous, urlpath=yurlpath)
-    if yurlpath is not None:
-        zstore = ia.Store(
-            chunks=chunks,
-            blocks=bshape,
-            contiguous=ycontiguous,
-            urlpath="test_expression_res.iarr",
-        )
-    else:
-        zstore = ystore
 
-    ia.remove_urlpath(xstore.urlpath)
-    ia.remove_urlpath(ystore.urlpath)
-    ia.remove_urlpath(zstore.urlpath)
+    ia.remove_urlpath(xurlpath)
+    ia.remove_urlpath(yurlpath)
+    ia.remove_urlpath("test_expression_res.iarr")
 
     for dtype in np.float64, np.float32:
         # The ranges below are important for not overflowing operations
-        x = ia.linspace(shape, 0.1, 0.9, dtype=dtype, store=xstore)
-        y = ia.linspace(shape, 0, 1, dtype=dtype, store=ystore)
+        x = ia.linspace(shape, 0.1, 0.9, dtype=dtype, chunks=chunks, blocks=bshape, contiguous=xcontiguous,
+                        urlpath=xurlpath)
+        y = ia.linspace(shape, 0, 1, dtype=dtype, chunks=chunks, blocks=bshape, contiguous=ycontiguous,
+                        urlpath=yurlpath)
         npx = ia.iarray2numpy(x)
         npy = ia.iarray2numpy(y)
 
-        expr = ia.expr_from_string(ia_expr, {"x": x, "y": y}, store=zstore)
+        if y.cfg.urlpath is not None:
+            expr = ia.expr_from_string(ia_expr, {"x": x, "y": y}, chunks=chunks,
+                blocks=bshape,
+                contiguous=ycontiguous,
+                urlpath="test_expression_res.iarr")
+        else:
+            expr = ia.expr_from_string(ia_expr, {"x": x, "y": y}, y.cfg)
         iout = expr.eval()
         npout = ia.iarray2numpy(iout)
 
@@ -365,9 +358,9 @@ def test_ufuncs(ufunc, ia_expr, xcontiguous, xurlpath, ycontiguous, yurlpath):
         npout2 = eval("np." + ufunc, {"np": np, "x": npx, "y": npy})  # pure numpy
         np.testing.assert_allclose(npout, npout2, rtol=tol, atol=tol)
 
-        ia.remove_urlpath(xstore.urlpath)
-        ia.remove_urlpath(ystore.urlpath)
-        ia.remove_urlpath(zstore.urlpath)
+        ia.remove_urlpath(x.cfg.urlpath)
+        ia.remove_urlpath(y.cfg.urlpath)
+        ia.remove_urlpath(iout.cfg.urlpath)
 
 
 # ufuncs inside of expressions
@@ -406,28 +399,31 @@ def test_expr_ufuncs(ufunc, xcontiguous, xurlpath, ycontiguous, yurlpath):
     cshape = [40, 50]
     bshape = [20, 20]
 
-    xstore = ia.Store(chunks=cshape, blocks=bshape, contiguous=xcontiguous, urlpath=xurlpath)
-    x32store = ia.Store(chunks=cshape, blocks=bshape, contiguous=xcontiguous, urlpath="x32urlpath")
-    if xstore.urlpath is None:
-        x32store.urlpath = None
-    ystore = ia.Store(chunks=cshape, blocks=bshape, contiguous=ycontiguous, urlpath=yurlpath)
-    y32store = ia.Store(chunks=cshape, blocks=bshape, contiguous=ycontiguous, urlpath="y32urlpath")
-    if ystore.urlpath is None:
-        y32store.urlpath = None
+    xcfg = ia.Config(chunks=cshape, blocks=bshape, contiguous=xcontiguous, urlpath=xurlpath)
+    x32cfg = ia.Config(chunks=cshape, blocks=bshape, contiguous=xcontiguous,
+                    urlpath="x32urlpath")
+    if xcfg.urlpath is None:
+        x32cfg.urlpath = None
+    ycfg = ia.Config(chunks=cshape, blocks=bshape, contiguous=ycontiguous, urlpath=yurlpath)
+    y32cfg = ia.Config(chunks=cshape, blocks=bshape, contiguous=ycontiguous, urlpath="y32urlpath")
+    if ycfg.urlpath is None:
+        y32cfg.urlpath = None
 
-    ia.remove_urlpath(xstore.urlpath)
-    ia.remove_urlpath(ystore.urlpath)
-    ia.remove_urlpath(x32store.urlpath)
-    ia.remove_urlpath(y32store.urlpath)
+    ia.remove_urlpath(xcfg.urlpath)
+    ia.remove_urlpath(ycfg.urlpath)
+    ia.remove_urlpath(x32cfg.urlpath)
+    ia.remove_urlpath(y32cfg.urlpath)
 
     for dtype in np.float64, np.float32:
         # The ranges below are important for not overflowing operations
         if dtype == np.float32:
-            x = ia.linspace(shape, 0.1, 0.9, dtype=dtype, store=x32store)
-            y = ia.linspace(shape, 0.5, 1, dtype=dtype, store=y32store)
+            x = ia.linspace(shape, 0.1, 0.9, dtype=dtype, cfg=x32cfg)
+            assert x.cfg.dtype == dtype
+            y = ia.linspace(shape, 0.5, 1, dtype=dtype, cfg=y32cfg)
         else:
-            x = ia.linspace(shape, 0.1, 0.9, dtype=dtype, store=xstore)
-            y = ia.linspace(shape, 0.5, 1, dtype=dtype, store=ystore)
+            x = ia.linspace(shape, 0.1, 0.9, dtype=dtype, cfg=xcfg)
+            assert x.cfg.dtype == dtype
+            y = ia.linspace(shape, 0.5, 1, dtype=dtype, cfg=ycfg)
 
         # NumPy computation
         npx = ia.iarray2numpy(x)
@@ -448,10 +444,10 @@ def test_expr_ufuncs(ufunc, xcontiguous, xurlpath, ycontiguous, yurlpath):
         tol = 1e-5 if dtype is np.float32 else 1e-13
         np.testing.assert_allclose(npout, npout2, rtol=tol, atol=tol)
 
-    ia.remove_urlpath(xstore.urlpath)
-    ia.remove_urlpath(ystore.urlpath)
-    ia.remove_urlpath(x32store.urlpath)
-    ia.remove_urlpath(y32store.urlpath)
+    ia.remove_urlpath(xcfg.urlpath)
+    ia.remove_urlpath(ycfg.urlpath)
+    ia.remove_urlpath(x32cfg.urlpath)
+    ia.remove_urlpath(y32cfg.urlpath)
 
 
 # Different operand fusions inside expressions
@@ -635,44 +631,44 @@ def test_expr_fusion(
     chunks = [40, 50]
     bshape = [20, 20]
 
-    xstore = ia.Store(chunks=chunks, blocks=bshape, contiguous=xcontiguous, urlpath=xurlpath)
-    x32store = ia.Store(chunks=chunks, blocks=bshape, contiguous=xcontiguous, urlpath="x32urlpath")
-    ystore = ia.Store(chunks=chunks, blocks=bshape, contiguous=ycontiguous, urlpath=yurlpath)
-    y32store = ia.Store(chunks=chunks, blocks=bshape, contiguous=ycontiguous, urlpath="y32urlpath")
-    zstore = ia.Store(chunks=chunks, blocks=bshape, contiguous=zcontiguous, urlpath=zurlpath)
-    z32store = ia.Store(chunks=chunks, blocks=bshape, contiguous=zcontiguous, urlpath="z32urlpath")
-    tstore = ia.Store(chunks=chunks, blocks=bshape, contiguous=tcontiguous, urlpath=turlpath)
-    t32store = ia.Store(chunks=chunks, blocks=bshape, contiguous=tcontiguous, urlpath="t32urlpath")
-    if xstore.urlpath is None:
-        x32store.urlpath = None
-    if ystore.urlpath is None:
-        y32store.urlpath = None
-    if zstore.urlpath is None:
-        z32store.urlpath = None
-    if tstore.urlpath is None:
-        t32store.urlpath = None
+    xcfg = ia.Config(chunks=chunks, blocks=bshape, contiguous=xcontiguous, urlpath=xurlpath)
+    x32cfg = ia.Config(chunks=chunks, blocks=bshape, contiguous=xcontiguous, urlpath="x32urlpath")
+    ycfg = ia.Config(chunks=chunks, blocks=bshape, contiguous=ycontiguous, urlpath=yurlpath)
+    y32cfg = ia.Config(chunks=chunks, blocks=bshape, contiguous=ycontiguous, urlpath="y32urlpath")
+    zcfg = ia.Config(chunks=chunks, blocks=bshape, contiguous=zcontiguous, urlpath=zurlpath)
+    z32cfg = ia.Config(chunks=chunks, blocks=bshape, contiguous=zcontiguous, urlpath="z32urlpath")
+    tcfg = ia.Config(chunks=chunks, blocks=bshape, contiguous=tcontiguous, urlpath=turlpath)
+    t32cfg = ia.Config(chunks=chunks, blocks=bshape, contiguous=tcontiguous, urlpath="t32urlpath")
+    if xcfg.urlpath is None:
+        x32cfg.urlpath = None
+    if ycfg.urlpath is None:
+        y32cfg.urlpath = None
+    if zcfg.urlpath is None:
+        z32cfg.urlpath = None
+    if tcfg.urlpath is None:
+        t32cfg.urlpath = None
 
-    ia.remove_urlpath(xstore.urlpath)
-    ia.remove_urlpath(ystore.urlpath)
-    ia.remove_urlpath(x32store.urlpath)
-    ia.remove_urlpath(y32store.urlpath)
-    ia.remove_urlpath(zstore.urlpath)
-    ia.remove_urlpath(tstore.urlpath)
-    ia.remove_urlpath(z32store.urlpath)
-    ia.remove_urlpath(t32store.urlpath)
+    ia.remove_urlpath(xcfg.urlpath)
+    ia.remove_urlpath(ycfg.urlpath)
+    ia.remove_urlpath(x32cfg.urlpath)
+    ia.remove_urlpath(y32cfg.urlpath)
+    ia.remove_urlpath(zcfg.urlpath)
+    ia.remove_urlpath(tcfg.urlpath)
+    ia.remove_urlpath(z32cfg.urlpath)
+    ia.remove_urlpath(t32cfg.urlpath)
 
     for dtype in np.float64, np.float32:
         # The ranges below are important for not overflowing operations
         if dtype == np.float32:
-            x = ia.linspace(shape, 0.1, 0.9, dtype=dtype, store=x32store)
-            y = ia.linspace(shape, 0.5, 1, dtype=dtype, store=y32store)
-            z = ia.linspace(shape, 0.1, 0.9, dtype=dtype, store=z32store)
-            t = ia.linspace(shape, 0.5, 1, dtype=dtype, store=t32store)
+            x = ia.linspace(shape, 0.1, 0.9, dtype=dtype, cfg=x32cfg)
+            y = ia.linspace(shape, 0.5, 1, dtype=dtype, cfg=y32cfg)
+            z = ia.linspace(shape, 0.1, 0.9, dtype=dtype, cfg=z32cfg)
+            t = ia.linspace(shape, 0.5, 1, dtype=dtype, cfg=t32cfg)
         else:
-            x = ia.linspace(shape, 0.1, 0.9, dtype=dtype, store=xstore)
-            y = ia.linspace(shape, 0.5, 1, dtype=dtype, store=ystore)
-            z = ia.linspace(shape, 1.0, 2.0, dtype=dtype, store=zstore)
-            t = ia.linspace(shape, 1.5, 3.0, dtype=dtype, store=tstore)
+            x = ia.linspace(shape, 0.1, 0.9, dtype=dtype, cfg=xcfg)
+            y = ia.linspace(shape, 0.5, 1, dtype=dtype, cfg=ycfg)
+            z = ia.linspace(shape, 1.0, 2.0, dtype=dtype, cfg=zcfg)
+            t = ia.linspace(shape, 1.5, 3.0, dtype=dtype, cfg=tcfg)
 
         # NumPy computation
         npx = ia.iarray2numpy(x)
@@ -689,14 +685,14 @@ def test_expr_fusion(
         tol = 1e-6 if dtype is np.float32 else 1e-14
         np.testing.assert_allclose(npout, npout2, rtol=tol, atol=tol)
 
-    ia.remove_urlpath(xstore.urlpath)
-    ia.remove_urlpath(ystore.urlpath)
-    ia.remove_urlpath(x32store.urlpath)
-    ia.remove_urlpath(y32store.urlpath)
-    ia.remove_urlpath(zstore.urlpath)
-    ia.remove_urlpath(tstore.urlpath)
-    ia.remove_urlpath(z32store.urlpath)
-    ia.remove_urlpath(t32store.urlpath)
+    ia.remove_urlpath(xcfg.urlpath)
+    ia.remove_urlpath(ycfg.urlpath)
+    ia.remove_urlpath(x32cfg.urlpath)
+    ia.remove_urlpath(y32cfg.urlpath)
+    ia.remove_urlpath(zcfg.urlpath)
+    ia.remove_urlpath(tcfg.urlpath)
+    ia.remove_urlpath(z32cfg.urlpath)
+    ia.remove_urlpath(t32cfg.urlpath)
 
 
 @pytest.mark.parametrize(
@@ -717,40 +713,34 @@ def test_chunks_blocks_params(expression, contiguous, zurlpath, zcontiguous):
     ia.remove_urlpath(zurlpath)
 
     # First with default chunks and blocks when operands chunks and blocks are equal
-    xstore = ia.Store(chunks=chunks, blocks=blocks, contiguous=contiguous)
-    ystore = ia.Store(chunks=chunks, blocks=blocks, contiguous=contiguous)
-    zstore = ia.Store(contiguous=zcontiguous, urlpath=zurlpath)
+    xcfg = ia.Config(chunks=chunks, blocks=blocks, contiguous=contiguous)
+    ycfg = ia.Config(chunks=chunks, blocks=blocks, contiguous=contiguous)
+    zcfg = ia.Config(contiguous=zcontiguous, urlpath=zurlpath)
 
-    x = ia.linspace(shape, 0.1, 0.2, store=xstore)
-    y = ia.linspace(shape, 0, 1, store=ystore)
+    x = ia.linspace(shape, 0.1, 0.2, cfg=xcfg)
+    y = ia.linspace(shape, 0, 1, cfg=ycfg)
 
-    expr = ia.expr_from_string(expression, {"x": x, "y": y}, store=zstore)
+    expr = ia.expr_from_string(expression, {"x": x, "y": y}, cfg=zcfg)
     iout = expr.eval()
     assert(iout.cfg.chunks == chunks)
-    assert(iout.cfg.store.chunks == chunks)
-    assert(iout.cfg.store.blocks == blocks)
     assert(iout.cfg.blocks == blocks)
-    ia.remove_urlpath(zstore.urlpath)
+    ia.remove_urlpath(zcfg.urlpath)
 
     # Now with default chunks and blocks when operands chunks and blocks are not equal
-    ystore = ia.Store(chunks=[40, 49], blocks=blocks, contiguous=contiguous)
-    zstore = ia.Store(contiguous=zcontiguous, urlpath=zurlpath)
-    y = ia.linspace(shape, 0, 1, store=ystore)
-    expr = ia.expr_from_string(expression, {"x": x, "y": y}, store=zstore)
+    ycfg = ia.Config(chunks=[40, 49], blocks=blocks, contiguous=contiguous)
+    zcfg = ia.Config(contiguous=zcontiguous, urlpath=zurlpath)
+    y = ia.linspace(shape, 0, 1, cfg=ycfg)
+    expr = ia.expr_from_string(expression, {"x": x, "y": y}, cfg=zcfg)
     iout = expr.eval()
     assert (iout.cfg.chunks != chunks)
-    assert (iout.cfg.store.chunks != chunks)
-    assert (iout.cfg.store.blocks != blocks)
     assert (iout.cfg.blocks != blocks)
-    ia.remove_urlpath(zstore.urlpath)
+    ia.remove_urlpath(zcfg.urlpath)
 
     # Check that the provided chunks and blocks are used
-    ystore = ia.Store(chunks=chunks, blocks=blocks, contiguous=contiguous)
-    zstore = ia.Store(chunks=[10, 10], blocks=[5, 5], contiguous=zcontiguous, urlpath=zurlpath)
-    y = ia.linspace(shape, 0, 1, store=ystore)
-    expr = ia.expr_from_string(expression, {"x": x, "y": y}, store=zstore)
+    ycfg = ia.Config(chunks=chunks, blocks=blocks, contiguous=contiguous)
+    zcfg = ia.Config(chunks=[10, 10], blocks=[5, 5], contiguous=zcontiguous, urlpath=zurlpath)
+    y = ia.linspace(shape, 0, 1, cfg=ycfg)
+    expr = ia.expr_from_string(expression, {"x": x, "y": y}, cfg=zcfg)
     iout = expr.eval()
-    assert (iout.cfg.chunks == zstore.chunks)
-    assert (iout.cfg.store.chunks == zstore.chunks)
-    assert (iout.cfg.store.blocks == zstore.blocks)
-    assert (iout.cfg.blocks == zstore.blocks)
+    assert (iout.cfg.chunks == zcfg.chunks)
+    assert (iout.cfg.blocks == zcfg.blocks)

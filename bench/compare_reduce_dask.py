@@ -43,8 +43,8 @@ acompressor = Blosc(
 #ia.set_config_defaults(codec=CODEC, clevel=CLEVEL, nthreads=NTHREADS, dtype=DTYPE)
 ia.set_config_defaults()
 
-astore = ia.Store(achunks, ablocks)
-aia = ia.random.normal(ashape, 0, 1, store=astore)
+acfg = ia.Config(chunks=achunks, blocks=ablocks)
+aia = ia.random.normal(ashape, 0, 1, cfg=acfg)
 print(f"iarray cratio: {aia.cratio}")
 
 ccompressor = Blosc(

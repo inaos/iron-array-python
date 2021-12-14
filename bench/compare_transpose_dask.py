@@ -42,23 +42,23 @@ compressor = Blosc(
     shuffle=Blosc.SHUFFLE,
     blocksize=reduce(lambda x, y: x * y, ablocks),
 )
-ia.set_config_defaults(codec=CODEC, clevel=CLEVEL, nthreads=NTHREADS, dtype=DTYPE)
+ia.set_config_defaults(codec=CODEC, clevel=CLEVEL, nthreads=NTHREADS, dtype=DTYPE, btune=False)
 
-astore = ia.Store(achunks, ablocks)
-lia = ia.linspace(ashape, 0, 1, store=astore)
+acfg = ia.Config(chunks=achunks, blocks=ablocks)
+lia = ia.linspace(ashape, 0, 1, cfg=acfg)
 nia = ia.random.normal(
     ashape,
     0,
     0.0000001,
-    store=astore,
+    cfg=acfg,
 )
-aia = (lia + nia).eval(store=astore)
+aia = (lia + nia).eval(cfg=acfg)
 
-cstore = ia.Store(cchunks, cblocks)
+ccfg = ia.Config(chunks=cchunks, blocks=cblocks)
 
 
 def ia_transpose(aia):
-    return aia.T.copy(store=cstore)
+    return aia.T.copy(cfg=ccfg)
 
 
 mkl_set_num_threads(1)

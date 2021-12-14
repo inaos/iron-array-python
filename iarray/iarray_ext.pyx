@@ -46,15 +46,15 @@ IARRAY_ERR_EVAL_ENGINE_NOT_COMPILED = ciarray.IARRAY_ERR_EVAL_ENGINE_NOT_COMPILE
 IARRAY_ERR_EVAL_ENGINE_OUT_OF_RANGE  = ciarray.IARRAY_ERR_EVAL_ENGINE_OUT_OF_RANGE
 
 
-cdef set_storage(storage, ciarray.iarray_storage_t *cstore):
-    cstore.contiguous = storage.contiguous
-    for i in range(len(storage.chunks)):
-        cstore.chunkshape[i] = storage.chunks[i]
-        cstore.blockshape[i] = storage.blocks[i]
+cdef set_storage(cfg, ciarray.iarray_storage_t *cstore):
+    cstore.contiguous = cfg.contiguous
+    for i in range(len(cfg.chunks)):
+        cstore.chunkshape[i] = cfg.chunks[i]
+        cstore.blockshape[i] = cfg.blocks[i]
 
-    if storage.urlpath is not None:
-        urlpath = storage.urlpath.encode("utf-8") if isinstance(storage.urlpath, str) else storage.urlpath
-        cstore.urlpath = storage.urlpath
+    if cfg.urlpath is not None:
+        urlpath = cfg.urlpath.encode("utf-8") if isinstance(cfg.urlpath, str) else cfg.urlpath
+        cstore.urlpath = cfg.urlpath
     else:
         cstore.urlpath = NULL
 
@@ -392,7 +392,6 @@ cdef class Expression:
         iarray_check(ciarray.iarray_expr_new(self.context.ia_ctx, &e))
         self.ia_expr = e
         self.expression = None
-        self.storage = None
         self.dtshape = None
 
     def __dealloc__(self):
@@ -406,16 +405,15 @@ cdef class Expression:
             c.to_capsule(), "iarray_container_t*")
         iarray_check(ciarray.iarray_expr_bind(self.ia_expr, var2, c_))
 
-    def bind_out_properties(self, dtshape, storage):
+    def bind_out_properties(self, dtshape):
         dtshape = IaDTShape(dtshape).to_dict()
         cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
         cdef ciarray.iarray_storage_t store_
-        set_storage(storage, &store_)
+        set_storage(self.cfg, &store_)
 
         iarray_check(ciarray.iarray_expr_bind_out_properties(self.ia_expr, &dtshape_, &store_))
         self.dtshape = dtshape
-        self.storage = storage
 
     def compile(self, expr):
         # Try to support all the ufuncs in numpy
@@ -444,7 +442,7 @@ cdef class Expression:
     def eval(self):
         cdef ciarray.iarray_container_t *c;
         # Check that we are not inadvertently overwriting anything
-        ia._check_path_mode(self.cfg.store.urlpath, self.cfg.store.mode)
+        ia._check_path_mode(self.cfg.urlpath, self.cfg.mode)
         # Update the chunks and blocks with the correct values
         self.update_chunks_blocks()
         with nogil:
@@ -493,12 +491,12 @@ def copy(cfg, src):
         ctx.to_capsule(), "iarray_context_t*")
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(cfg.store, &store_)
+    set_storage(cfg, &store_)
 
-    cdef int flags = 0 if cfg.store.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
+    cdef int flags = 0 if cfg.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     # Check that we are not inadvertently overwriting anything
-    ia._check_path_mode(cfg.store.urlpath, cfg.store.mode)
+    ia._check_path_mode(cfg.urlpath, cfg.mode)
 
     cdef ciarray.iarray_container_t *c
     cdef ciarray.iarray_container_t *src_ = <ciarray.iarray_container_t *> PyCapsule_GetPointer(
@@ -521,15 +519,15 @@ def empty(cfg, dtshape):
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     # Check that we are not unadvertently overwriting anything
-    ia._check_path_mode(cfg.store.urlpath, cfg.store.mode)
+    ia._check_path_mode(cfg.urlpath, cfg.mode)
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(cfg.store, &store_)
+    set_storage(cfg, &store_)
 
-    flags = 0 if cfg.store.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     # Check that we are not unadvertently overwriting anything
-    ia._check_path_mode(cfg.store.urlpath, cfg.store.mode)
+    ia._check_path_mode(cfg.urlpath, cfg.mode)
 
     cdef ciarray.iarray_container_t *c
     iarray_check(ciarray.iarray_empty(ctx_, &dtshape_, &store_, flags, &c))
@@ -549,12 +547,12 @@ def arange(cfg, slice_, dtshape):
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(cfg.store, &store_)
+    set_storage(cfg, &store_)
 
-    flags = 0 if cfg.store.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
 
-    # Check that we are not unadvertently overwriting anything
-    ia._check_path_mode(cfg.store.urlpath, cfg.store.mode)
+    # Check that we are not inadvertently overwriting anything
+    ia._check_path_mode(cfg.urlpath, cfg.mode)
 
     cdef ciarray.iarray_container_t *c
     iarray_check(ciarray.iarray_arange(ctx_, &dtshape_, start, stop, step, &store_, flags, &c))
@@ -572,12 +570,12 @@ def linspace(cfg, start, stop, dtshape):
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(cfg.store, &store_)
+    set_storage(cfg, &store_)
 
-    flags = 0 if cfg.store.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     # Check that we are not unadvertently overwriting anything
-    ia._check_path_mode(cfg.store.urlpath, cfg.store.mode)
+    ia._check_path_mode(cfg.urlpath, cfg.mode)
 
     cdef ciarray.iarray_container_t *c
     iarray_check(ciarray.iarray_linspace(ctx_, &dtshape_, start, stop, &store_, flags, &c))
@@ -595,12 +593,12 @@ def zeros(cfg, dtshape):
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(cfg.store, &store_)
+    set_storage(cfg, &store_)
 
-    flags = 0 if cfg.store.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     # Check that we are not unadvertently overwriting anything
-    ia._check_path_mode(cfg.store.urlpath, cfg.store.mode)
+    ia._check_path_mode(cfg.urlpath, cfg.mode)
 
     cdef ciarray.iarray_container_t *c
     iarray_check(ciarray.iarray_zeros(ctx_, &dtshape_, &store_, flags, &c))
@@ -618,15 +616,15 @@ def ones(cfg, dtshape):
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(cfg.store, &store_)
+    set_storage(cfg, &store_)
 
-    flags = 0 if cfg.store.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     cdef ciarray.iarray_container_t *c
     iarray_check(ciarray.iarray_ones(ctx_, &dtshape_, &store_, flags, &c))
 
     # Check that we are not unadvertently overwriting anything
-    ia._check_path_mode(cfg.store.urlpath, cfg.store.mode)
+    ia._check_path_mode(cfg.urlpath, cfg.mode)
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     return ia.IArray(ctx, c_c)
@@ -641,12 +639,12 @@ def full(cfg, fill_value, dtshape):
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(cfg.store, &store_)
+    set_storage(cfg, &store_)
 
-    flags = 0 if cfg.store.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     # Check that we are not unadvertently overwriting anything
-    ia._check_path_mode(cfg.store.urlpath, cfg.store.mode)
+    ia._check_path_mode(cfg.urlpath, cfg.mode)
 
     cdef ciarray.iarray_container_t *c
     if dtshape["dtype"] == ciarray.IARRAY_DATA_TYPE_DOUBLE:
@@ -688,7 +686,6 @@ cdef get_cfg_from_container(cfg, ciarray.iarray_context_t *ctx, ciarray.iarray_c
     blocks = tuple(storage.blockshape[i] for i in range(dtshape.ndim))
 
     contiguous = storage.contiguous
-    store = ia.Store(chunks=chunks, blocks=blocks, urlpath=urlpath, contiguous=contiguous)
 
     # The config params should already have been checked
     ia._defaults.check_compat = False
@@ -705,7 +702,6 @@ cdef get_cfg_from_container(cfg, ciarray.iarray_context_t *ctx, ciarray.iarray_c
         random_gen=cfg.random_gen,
         btune=False,   # we have not used btune to load/open
         dtype=dtype,
-        store=store,
         chunks=chunks,
         blocks=blocks,
         urlpath=urlpath,
@@ -806,12 +802,10 @@ def get_slice(cfg, data, start, stop, squeeze_mask, view, storage):
                     blocks[i] = chunks[i]
             cfg.chunks = compress_squeeze(chunks, squeeze_mask)
             cfg.blocks = compress_squeeze(blocks, squeeze_mask)
-            cfg.store.chunks = cfg.chunks
-            cfg.store.blocks = cfg.blocks
 
         iarray_check(ciarray.iarray_get_slice(ctx_, data_, start_, stop_, view, NULL, flags, &c))
     else:
-        set_storage(storage, &store_)
+        set_storage(cfg, &store_)
         iarray_check(ciarray.iarray_get_slice(ctx_, data_, start_, stop_, view, &store_, flags, &c))
 
     cdef ciarray.bool squeeze_mask_[ciarray.IARRAY_DIMENSION_MAX]
@@ -839,9 +833,9 @@ def numpy2iarray(cfg, a, dtshape):
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(cfg.store, &store_)
+    set_storage(cfg, &store_)
 
-    flags = 0 if cfg.store.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     buffer_size = a.size * np.dtype(a.dtype).itemsize
 
@@ -891,12 +885,12 @@ def random_rand(cfg, dtshape):
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(cfg.store, &store_)
+    set_storage(cfg, &store_)
 
-    flags = 0 if cfg.store.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     # Check that we are not unadvertently overwriting anything
-    ia._check_path_mode(cfg.store.urlpath, cfg.store.mode)
+    ia._check_path_mode(cfg.urlpath, cfg.mode)
 
     cdef ciarray.iarray_container_t *c
     iarray_check(ciarray.iarray_random_rand(ctx_, &dtshape_, r_ctx_, &store_, flags, &c))
@@ -915,12 +909,12 @@ def random_randn(cfg, dtshape):
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(cfg.store, &store_)
+    set_storage(cfg, &store_)
 
-    flags = 0 if cfg.store.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     # Check that we are not unadvertently overwriting anything
-    ia._check_path_mode(cfg.store.urlpath, cfg.store.mode)
+    ia._check_path_mode(cfg.urlpath, cfg.mode)
 
     cdef ciarray.iarray_container_t *c
     iarray_check(ciarray.iarray_random_randn(ctx_, &dtshape_, r_ctx_, &store_, flags, &c))
@@ -946,12 +940,12 @@ def random_beta(cfg, alpha, beta, dtshape):
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(cfg.store, &store_)
+    set_storage(cfg, &store_)
 
-    flags = 0 if cfg.store.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     # Check that we are not unadvertently overwriting anything
-    ia._check_path_mode(cfg.store.urlpath, cfg.store.mode)
+    ia._check_path_mode(cfg.urlpath, cfg.mode)
 
     cdef ciarray.iarray_container_t *c
     iarray_check(ciarray.iarray_random_beta(ctx_, &dtshape_, r_ctx_, &store_, flags, &c))
@@ -977,12 +971,12 @@ def random_lognormal(cfg, mu, sigma, dtshape):
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(cfg.store, &store_)
+    set_storage(cfg, &store_)
 
-    flags = 0 if cfg.store.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     # Check that we are not unadvertently overwriting anything
-    ia._check_path_mode(cfg.store.urlpath, cfg.store.mode)
+    ia._check_path_mode(cfg.urlpath, cfg.mode)
 
     cdef ciarray.iarray_container_t *c
     iarray_check(ciarray.iarray_random_lognormal(ctx_, &dtshape_, r_ctx_, &store_, flags, &c))
@@ -1006,12 +1000,12 @@ def random_exponential(cfg, beta, dtshape):
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(cfg.store, &store_)
+    set_storage(cfg, &store_)
 
-    flags = 0 if cfg.store.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     # Check that we are not unadvertently overwriting anything
-    ia._check_path_mode(cfg.store.urlpath, cfg.store.mode)
+    ia._check_path_mode(cfg.urlpath, cfg.mode)
 
     cdef ciarray.iarray_container_t *c
     iarray_check(ciarray.iarray_random_exponential(ctx_, &dtshape_, r_ctx_, &store_, flags, &c))
@@ -1037,12 +1031,12 @@ def random_uniform(cfg, a, b, dtshape):
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(cfg.store, &store_)
+    set_storage(cfg, &store_)
 
-    flags = 0 if cfg.store.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     # Check that we are not unadvertently overwriting anything
-    ia._check_path_mode(cfg.store.urlpath, cfg.store.mode)
+    ia._check_path_mode(cfg.urlpath, cfg.mode)
 
     cdef ciarray.iarray_container_t *c
     iarray_check(ciarray.iarray_random_uniform(ctx_, &dtshape_, r_ctx_, &store_, flags, &c))
@@ -1068,12 +1062,12 @@ def random_normal(cfg, mu, sigma, dtshape):
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(cfg.store, &store_)
+    set_storage(cfg, &store_)
 
-    flags = 0 if cfg.store.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     # Check that we are not unadvertently overwriting anything
-    ia._check_path_mode(cfg.store.urlpath, cfg.store.mode)
+    ia._check_path_mode(cfg.urlpath, cfg.mode)
 
     cdef ciarray.iarray_container_t *c
     iarray_check(ciarray.iarray_random_normal(ctx_, &dtshape_, r_ctx_, &store_, flags, &c))
@@ -1097,12 +1091,12 @@ def random_bernoulli(cfg, p, dtshape):
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(cfg.store, &store_)
+    set_storage(cfg, &store_)
 
-    flags = 0 if cfg.store.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     # Check that we are not unadvertently overwriting anything
-    ia._check_path_mode(cfg.store.urlpath, cfg.store.mode)
+    ia._check_path_mode(cfg.urlpath, cfg.mode)
 
     cdef ciarray.iarray_container_t *c
     iarray_check(ciarray.iarray_random_bernoulli(ctx_, &dtshape_, r_ctx_, &store_, flags, &c))
@@ -1128,12 +1122,12 @@ def random_binomial(cfg, m, p, dtshape):
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(cfg.store, &store_)
+    set_storage(cfg, &store_)
 
-    flags = 0 if cfg.store.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     # Check that we are not unadvertently overwriting anything
-    ia._check_path_mode(cfg.store.urlpath, cfg.store.mode)
+    ia._check_path_mode(cfg.urlpath, cfg.mode)
 
     cdef ciarray.iarray_container_t *c
     iarray_check(ciarray.iarray_random_binomial(ctx_, &dtshape_, r_ctx_, &store_, flags, &c))
@@ -1157,12 +1151,12 @@ def random_poisson(cfg, l, dtshape):
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(cfg.store, &store_)
+    set_storage(cfg, &store_)
 
-    flags = 0 if cfg.store.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
+    flags = 0 if cfg.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
 
     # Check that we are not unadvertently overwriting anything
-    ia._check_path_mode(cfg.store.urlpath, cfg.store.mode)
+    ia._check_path_mode(cfg.urlpath, cfg.mode)
 
     cdef ciarray.iarray_container_t *c
     iarray_check(ciarray.iarray_random_poisson(ctx_, &dtshape_, r_ctx_, &store_, flags, &c))
@@ -1189,7 +1183,7 @@ def matmul(cfg, a, b):
     cdef ciarray.iarray_container_t *c
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(cfg.store, &store_)
+    set_storage(cfg, &store_)
 
     iarray_check(ciarray.iarray_linalg_matmul(ctx_, a_, b_, &store_, &c))
 
@@ -1205,7 +1199,7 @@ def opt_gemv(cfg, a, b):
     cdef ciarray.iarray_container_t *c
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(cfg.store, &store_)
+    set_storage(cfg, &store_)
 
     iarray_check(ciarray.iarray_opt_gemv(ctx_, a_, b_, &store_, &c))
 
@@ -1221,7 +1215,7 @@ def opt_gemm(cfg, a, b):
     cdef ciarray.iarray_container_t *c
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(cfg.store, &store_)
+    set_storage(cfg, &store_)
 
     iarray_check(ciarray.iarray_opt_gemm(ctx_, a_, b_, &store_, &c))
 
@@ -1237,7 +1231,7 @@ def opt_gemm_b(cfg, a, b):
     cdef ciarray.iarray_container_t *c
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(cfg.store, &store_)
+    set_storage(cfg, &store_)
 
     iarray_check(ciarray.iarray_opt_gemm_b(ctx_, a_, b_, &store_, &c))
 
@@ -1253,7 +1247,7 @@ def opt_gemm_a(cfg, a, b):
     cdef ciarray.iarray_container_t *c
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(cfg.store, &store_)
+    set_storage(cfg, &store_)
 
     iarray_check(ciarray.iarray_opt_gemm_a(ctx_, a_, b_, &store_, &c))
 
@@ -1292,7 +1286,7 @@ def reduce(cfg, a, method, axis):
     cdef ciarray.iarray_container_t *c
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(cfg.store, &store_)
+    set_storage(cfg, &store_)
 
     iarray_check(ciarray.iarray_reduce(ctx_, a_, func, axis, &store_, &c))
 
@@ -1313,7 +1307,7 @@ def reduce_multi(cfg, a, method, axis):
         axis_[i] = ax
 
     cdef ciarray.iarray_storage_t store_
-    set_storage(cfg.store, &store_)
+    set_storage(cfg, &store_)
     iarray_check(ciarray.iarray_reduce_multi(ctx_, a_, func, len(axis), axis_, &store_, &c))
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)

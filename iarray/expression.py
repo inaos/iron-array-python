@@ -35,7 +35,7 @@ class Expr(ext.Expression):
             dtshape = ia.DTShape(shape, cfg.dtype)
             self.cfg = cfg
             super().__init__(self.cfg)
-            super().bind_out_properties(dtshape, cfg.store)
+            super().bind_out_properties(dtshape)
             if default_shapes:
                 # Set cfg chunks and blocks to None to detect that we want the default shapes when evaluating
                 self.cfg.chunks = None
@@ -146,7 +146,8 @@ def check_expr_config(cfg=None, **kwargs):
         shape_params = {"chunks", "blocks"}
         if kwargs != {}:
             not_kw_shapes = all(x not in kwargs for x in shape_params)
-            store = kwargs.get("store")
-            if not_kw_shapes and (store is None or store.chunks is None and store.blocks is None):
+            if not_kw_shapes:
                 default_shapes = True
+        else:
+            default_shapes = True
     return default_shapes

@@ -29,17 +29,15 @@ import iarray as ia
     ],
 )
 def test_global_config(clevel, codec, filters, chunks, blocks, contiguous, urlpath):
-    store = ia.Store(chunks, blocks, contiguous=contiguous, urlpath=urlpath)
-    ia.set_config_defaults(clevel=clevel, codec=codec, filters=filters, store=store, btune=False)
+    ia.set_config_defaults(clevel=clevel, codec=codec, filters=filters, chunks=chunks, blocks=blocks, contiguous=contiguous, urlpath=urlpath, btune=False)
     config = ia.get_config_defaults()
     assert config.clevel == clevel
     assert config.codec == codec
     assert config.filters == filters
-    store2 = config.store
-    assert store2.chunks == chunks
-    assert store2.blocks == blocks
-    assert store2.contiguous == contiguous
-    assert store2.urlpath == urlpath
+    assert config.chunks == chunks
+    assert config.blocks == blocks
+    assert config.contiguous == contiguous
+    assert config.urlpath == urlpath
 
     # One can pass store parameters straight to config() dataclass too
     ia.set_config_defaults(
@@ -56,11 +54,10 @@ def test_global_config(clevel, codec, filters, chunks, blocks, contiguous, urlpa
     assert config.clevel == clevel
     assert config.codec == codec
     assert config.filters == filters
-    store2 = ia.Store()
-    assert store2.chunks == chunks
-    assert store2.blocks == blocks
-    assert store2.contiguous == False
-    assert store2.urlpath == None
+    assert config.chunks == chunks
+    assert config.blocks == blocks
+    assert config.contiguous is False
+    assert config.urlpath is None
 
     # Or, we can set defaults via Config (for better auto-completion)
     cfg = ia.Config(
@@ -78,11 +75,10 @@ def test_global_config(clevel, codec, filters, chunks, blocks, contiguous, urlpa
     assert config.clevel == clevel
     assert config.codec == codec
     assert config.filters == filters
-    store2 = ia.Store()
-    assert store2.chunks == chunks
-    assert store2.blocks == blocks
-    assert store2.contiguous == False
-    assert store2.urlpath == None
+    assert config.chunks == chunks
+    assert config.blocks == blocks
+    assert config.contiguous is False
+    assert config.urlpath is None
 
     # Or, we can use a mix of Config and keyword args
     cfg = ia.Config(
@@ -94,11 +90,10 @@ def test_global_config(clevel, codec, filters, chunks, blocks, contiguous, urlpa
     assert config.clevel == clevel
     assert config.codec == codec
     assert config.filters == filters
-    store2 = ia.Store()
-    assert store2.chunks == chunks
-    assert store2.blocks == blocks
-    assert store2.contiguous == False
-    assert store2.urlpath == urlpath
+    assert config.chunks == chunks
+    assert config.blocks == blocks
+    assert config.contiguous is False
+    assert config.urlpath is urlpath
 
 
 @pytest.mark.parametrize(
@@ -110,13 +105,12 @@ def test_global_config(clevel, codec, filters, chunks, blocks, contiguous, urlpa
     ],
 )
 def test_global_favor(favor, chunks, blocks):
-    store = ia.Store(chunks, blocks)
-    ia.set_config_defaults(favor=favor, store=store)
+    ia.set_config_defaults(favor=favor, chunks=chunks, blocks=blocks)
     config = ia.get_config_defaults()
     assert config.favor == favor
-    assert config.btune == True
-    assert config.store.chunks == chunks
-    assert config.store.blocks == blocks
+    assert config.btune is True
+    assert config.chunks == chunks
+    assert config.blocks == blocks
 
 
 @pytest.mark.parametrize(
@@ -171,17 +165,15 @@ def test_btune_incompat(clevel, codec, filters):
 )
 def test_global_config_dtype(chunks, blocks, shape):
     try:
-        store = ia.Store(chunks, blocks)
-        cfg = ia.set_config_defaults(shape=shape, store=store)
-        store2 = cfg.store
+        cfg = ia.set_config_defaults(shape=shape, chunks=chunks, blocks=blocks)
 
         if chunks is not None:
-            assert store2.chunks == chunks
-            assert store2.blocks == blocks
+            assert cfg.chunks == chunks
+            assert cfg.blocks == blocks
         else:
             # automatic partitioning
-            assert store2.chunks <= shape
-            assert store2.blocks <= store2.chunks
+            assert cfg.chunks <= shape
+            assert cfg.blocks <= cfg.chunks
     except ValueError:
         assert shape == ()
 
@@ -193,16 +185,15 @@ def test_global_config_dtype(chunks, blocks, shape):
             blocks=blocks,
             contiguous=True,
         )
-        store2 = cfg.store
 
         if chunks is not None:
-            assert store2.chunks == chunks
-            assert store2.blocks == blocks
+            assert cfg.chunks == chunks
+            assert cfg.blocks == blocks
         else:
             # automatic partitioning
-            assert store2.chunks <= shape
-            assert store2.blocks <= store2.chunks
-        assert store2.contiguous == True
+            assert cfg.chunks <= shape
+            assert cfg.blocks <= cfg.chunks
+        assert cfg.contiguous is True
     except ValueError:
         assert shape == ()
 
@@ -219,16 +210,15 @@ def test_global_config_dtype(chunks, blocks, shape):
 )
 def test_config_ctx(clevel, codec, filters, chunks, blocks):
     try:
-        store = ia.Store(chunks, blocks)
         with ia.config(
-            clevel=clevel, codec=codec, filters=filters, store=store, btune=False
+            clevel=clevel, codec=codec, filters=filters, chunks=chunks, blocks=blocks, btune=False
         ) as cfg:
             assert cfg.clevel == clevel
             assert cfg.codec == codec
-            assert cfg.btune == False
+            assert cfg.btune is False
             assert cfg.filters == filters
-            assert cfg.store.chunks == chunks
-            assert cfg.store.blocks == blocks
+            assert cfg.chunks == chunks
+            assert cfg.blocks == blocks
     except ValueError:
         assert chunks is not None
 
@@ -244,10 +234,10 @@ def test_config_ctx(clevel, codec, filters, chunks, blocks):
         ) as cfg:
             assert cfg.clevel == clevel
             assert cfg.codec == codec
-            assert cfg.btune == False
+            assert cfg.btune is False
             assert cfg.filters == filters
-            assert cfg.store.chunks == chunks
-            assert cfg.store.blocks == blocks
+            assert cfg.chunks == chunks
+            assert cfg.blocks == blocks
     except ValueError:
         assert chunks is not None
 
@@ -264,16 +254,14 @@ def test_config_ctx(clevel, codec, filters, chunks, blocks):
 )
 def test_config_ctx_dtype(chunks, blocks, shape):
     try:
-        store = ia.Store(chunks, blocks)
-        with ia.config(shape=shape, store=store) as cfg:
-            store2 = cfg.store
+        with ia.config(shape=shape, chunks=chunks, blocks=blocks) as cfg:
             if chunks is not None:
-                assert store2.chunks == chunks
-                assert store2.blocks == blocks
+                assert cfg.chunks == chunks
+                assert cfg.blocks == blocks
             else:
                 # automatic partitioning
-                assert store2.chunks <= shape
-                assert store2.blocks <= store2.chunks
+                assert cfg.chunks <= shape
+                assert cfg.blocks <= cfg.chunks
     except ValueError:
         assert shape == ()
 
@@ -285,15 +273,14 @@ def test_config_ctx_dtype(chunks, blocks, shape):
             blocks=blocks,
             contiguous=True,
         ) as cfg:
-            store2 = cfg.store
             if chunks is not None:
-                assert store2.chunks == chunks
-                assert store2.blocks == blocks
+                assert cfg.chunks == chunks
+                assert cfg.blocks == blocks
             else:
                 # automatic partitioning
-                assert store2.chunks <= shape
-                assert store2.blocks <= store2.chunks
-            assert store2.contiguous is True
+                assert cfg.chunks <= shape
+                assert cfg.blocks <= cfg.chunks
+            assert cfg.contiguous is True
     except ValueError:
         assert shape == ()
 

@@ -26,8 +26,7 @@ def test_copy(shape, chunks, blocks, dtype, contiguous, urlpath, urlpath2):
     ia.remove_urlpath(urlpath)
     ia.remove_urlpath(urlpath2)
 
-    store = ia.Store(chunks, blocks, contiguous=contiguous, urlpath=urlpath)
-    a_ = ia.linspace(shape, -10, 10, dtype=dtype, store=store)
+    a_ = ia.linspace(shape, -10, 10, dtype=dtype, chunks=chunks, blocks=blocks, contiguous=contiguous, urlpath=urlpath)
     sl = tuple([slice(0, s - 1) for s in shape])
     a = a_[sl]
     b = a.copy(urlpath=urlpath2)

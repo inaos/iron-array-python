@@ -38,7 +38,7 @@ blocks = [16 * 1024]
 size = int(np.prod(shape))
 sizeMB = int(np.prod(shape)) * 8 / 2 ** 20
 
-bstore = ia.Store(chunks, blocks)
+bcfg = ia.Config(chunks=chunks, blocks=blocks)
 
 
 def time_expr(expr, result):
@@ -91,7 +91,7 @@ for num_threads in range(1, max_num_threads + 1):
     res_i.append(np.mean(t))
 
     # Superchunk with compression and UDF
-    with ia.config(store=bstore, nthreads=num_threads):
+    with ia.config(cfg=bcfg, nthreads=num_threads):
         a1 = ia.linspace(shape, 0, 10)
         expr = ia.expr_from_udf(poly_udf, [a1])
         time_expr(expr, res_i)

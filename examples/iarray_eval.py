@@ -9,7 +9,7 @@ NITER = 5
 
 # Do lossy compression for improved compression ratio
 dtype = np.float64
-ia.set_config_defaults(clevel=9, fp_mantissa_bits=20, dtype=dtype)
+ia.set_config_defaults(btune=False, clevel=9, fp_mantissa_bits=20, dtype=dtype)
 
 # Vector sizes and partitions
 shape = [10_000_000]
@@ -32,7 +32,7 @@ print("Operand cratio:", round(xa.cratio, 2))
 ya = None
 
 t0 = time()
-expr = ia.expr_from_string("(x - 1.35) * (x - 4.45) * (x - 8.5)", {"x": xa}, favor=ia.Favor.SPEED)
+expr = ia.expr_from_string("(x - 1.35) * (x - 4.45) * (x - 8.5)", {"x": xa}, btune=True, favor=ia.Favor.SPEED)
 for i in range(NITER):
     ya = expr.eval()
 print("Block evaluate via iarray.eval:", round((time() - t0) / NITER, 4))

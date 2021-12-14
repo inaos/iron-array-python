@@ -12,19 +12,19 @@ cshape = [200 * 1000]
 bshape = [20 * 1000]
 dtype = np.float64
 
-store = ia.Store(cshape, bshape)
+cfg = ia.Config(chunks=cshape, blocks=bshape)
 
 # Create initial containers
-a1 = ia.linspace(shape, 0, 10, store=store, dtype=dtype)
+a1 = ia.linspace(shape, 0, 10, cfg=cfg, dtype=dtype)
 a2 = np.linspace(0, 10, shape[0], dtype=dtype).reshape(shape)
 
 
 print("iarray evaluation...")
 
 # And now, the expression
-expr = ia.Expr(shape=shape, eval_method=ia.Eval.ITERBLOSC, nthreads=1, store=store)
+expr = ia.Expr(shape=shape, eval_method=ia.Eval.ITERBLOSC, nthreads=1, cfg=cfg)
 expr.bind("x", a1)
-bc = open("examples/expression.bc", "rb").read()
+bc = open("expression.bc", "rb").read()
 expr.compile_bc(bc, "expr_func")
 for i in range(NITER):
     b1 = expr.eval()

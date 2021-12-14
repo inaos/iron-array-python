@@ -14,9 +14,9 @@ import numpy as np
 )
 def test_transpose(shape, chunks, blocks, dtype, contiguous, urlpath):
     ia.remove_urlpath(urlpath)
-    store = ia.Store(chunks, blocks, contiguous=contiguous, urlpath=urlpath)
+    cfg = ia.Config(chunks=chunks, blocks=blocks, contiguous=contiguous, urlpath=urlpath)
 
-    a = ia.linspace(shape, -10, 10, store=store, dtype=dtype)
+    a = ia.linspace(shape, -10, 10, cfg=cfg, dtype=dtype)
 
     b = ia.iarray2numpy(a)
     bn = b.T

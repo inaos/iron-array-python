@@ -6,13 +6,13 @@ import numpy as np
 from time import time
 
 
-def test_expression(method, shape, xstore, ystore, zstore, dtype, expression):
-    x = ia.linspace(shape, 0.1, 0.2, dtype=dtype, store=xstore)
-    y = ia.linspace(shape, 0, 1, dtype=dtype, store=ystore)
+def te_expression(method, shape, xcfg, ycfg, zcfg, dtype, expression):
+    x = ia.linspace(shape, 0.1, 0.2, dtype=dtype, cfg=xcfg)
+    y = ia.linspace(shape, 0, 1, dtype=dtype, cfg=ycfg)
     npx = ia.iarray2numpy(x)
     npy = ia.iarray2numpy(y)
 
-    expr = ia.expr_from_string(expression, {"x": x, "y": y}, store=zstore, eval_method=method)
+    expr = ia.expr_from_string(expression, {"x": x, "y": y}, cfg=zcfg, eval_method=method)
     t0 = time()
     iout = expr.eval()
     t1 = time()
@@ -46,10 +46,10 @@ def test_expression(method, shape, xstore, ystore, zstore, dtype, expression):
     tol = 1e-6 if dtype is np.float32 else 1e-14
     np.testing.assert_allclose(npout, npout2, rtol=tol, atol=tol)
 
-    ia.remove_urlpath(xstore.urlpath)
-    ia.remove_urlpath(ystore.urlpath)
-    if zstore is not None:
-        ia.remove_urlpath(zstore.urlpath)
+    ia.remove_urlpath(xcfg.urlpath)
+    ia.remove_urlpath(ycfg.urlpath)
+    if zcfg is not None:
+        ia.remove_urlpath(zcfg.urlpath)
 
 
 print("Expression with same chunks and blocks for all operands")
@@ -69,10 +69,10 @@ ia.remove_urlpath(xurlpath)
 ia.remove_urlpath(yurlpath)
 ia.remove_urlpath("test_expression_zarray.iarr")
 
-xstore = ia.Store(chunks=chunks, blocks=blocks, contiguous=xcontiguous, urlpath=xurlpath)
-ystore = ia.Store(chunks=chunks, blocks=blocks, contiguous=ycontiguous, urlpath=yurlpath)
+xcfg = ia.Config(chunks=chunks, blocks=blocks, contiguous=xcontiguous, urlpath=xurlpath)
+ycfg = ia.Config(chunks=chunks, blocks=blocks, contiguous=ycontiguous, urlpath=yurlpath)
 
-test_expression(method=method, shape=shape, xstore=xstore, ystore=ystore, zstore=None, dtype=dtype,
+te_expression(method=method, shape=shape, xcfg=xcfg, ycfg=ycfg, zcfg=None, dtype=dtype,
                 expression=expression)
 
 
@@ -90,15 +90,15 @@ ia.remove_urlpath(xurlpath)
 ia.remove_urlpath(yurlpath)
 ia.remove_urlpath("test_expression_zarray.iarr")
 
-xstore = ia.Store(chunks=chunks, blocks=blocks, contiguous=xcontiguous, urlpath=xurlpath)
-ystore = ia.Store(chunks=[40, 300, 300], blocks=blocks, contiguous=ycontiguous, urlpath=yurlpath)
+xcfg = ia.Config(chunks=chunks, blocks=blocks, contiguous=xcontiguous, urlpath=xurlpath)
+ycfg = ia.Config(chunks=[40, 300, 300], blocks=blocks, contiguous=ycontiguous, urlpath=yurlpath)
 
 print("config defaults ", ia.get_config_defaults())
-test_expression(method=method, shape=shape, xstore=xstore, ystore=ystore, zstore=None, dtype=dtype,
+te_expression(method=method, shape=shape, xcfg=xcfg, ycfg=ycfg, zcfg=None, dtype=dtype,
                 expression=expression)
 
 
-print("Expression with store parameters for the output")
+print("Expression with cfg parameters for the output")
 # Parameters
 method = ia.Eval.ITERCHUNK
 dtype = np.float32
@@ -112,11 +112,11 @@ ia.remove_urlpath(xurlpath)
 ia.remove_urlpath(yurlpath)
 ia.remove_urlpath("test_expression_zarray.iarr")
 
-xstore = ia.Store(chunks=chunks, blocks=blocks, contiguous=xcontiguous, urlpath=xurlpath)
-ystore = ia.Store(chunks=chunks, blocks=blocks, contiguous=ycontiguous, urlpath=yurlpath)
-zstore = ia.Store(
+xcfg = ia.Config(chunks=chunks, blocks=blocks, contiguous=xcontiguous, urlpath=xurlpath)
+ycfg = ia.Config(chunks=chunks, blocks=blocks, contiguous=ycontiguous, urlpath=yurlpath)
+zcfg = ia.Config(
     chunks=[40, 300, 300], blocks=[10, 100, 100], contiguous=xcontiguous, urlpath="test_expression_zarray.iarr"
 )
 
-test_expression(method=method, shape=shape, xstore=xstore, ystore=ystore, zstore=zstore, dtype=dtype,
+te_expression(method=method, shape=shape, xcfg=xcfg, ycfg=ycfg, zcfg=zcfg, dtype=dtype,
                 expression=expression)
