@@ -354,11 +354,8 @@ class Config(ext.Config):
         defaults.compat_params = set()
         defaults.check_compat = True
 
-        if self.contiguous is None:
-            if self.urlpath is not None:
-                self.contiguous = True
-            else:
-                self.contiguous = False
+        if self.contiguous is None and self.urlpath is not None:
+            self.contiguous = True
         self.urlpath = (self.urlpath.encode("utf-8") if isinstance(self.urlpath, str) else self.urlpath)
         self.mode = (self.mode.encode("utf-8") if isinstance(self.mode, str) else self.mode)
         global RANDOM_SEED

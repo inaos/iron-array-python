@@ -217,6 +217,9 @@ cdef class Context:
 
     def __init__(self, cfg):
         cdef ciarray.iarray_config_t cfg_ = cfg._to_dict()
+        # Set default contiguous correctly
+        if cfg.contiguous is None:
+            cfg.contiguous = False
         iarray_check(ciarray.iarray_context_new(&cfg_, &self.ia_ctx))
         self.cfg = cfg
 
