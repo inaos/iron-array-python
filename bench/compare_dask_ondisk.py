@@ -15,7 +15,7 @@ NTHREADS = 8
 CLEVEL = 5
 CODEC = ia.Codec.LZ4
 
-ia.set_config_defaults(codec=CODEC, clevel=CLEVEL, nthreads=NTHREADS)
+ia.set_config_defaults(codec=CODEC, clevel=CLEVEL, nthreads=NTHREADS, btune=False)
 compressor = Blosc(cname="lz4", clevel=CLEVEL, shuffle=Blosc.SHUFFLE)
 
 dtype = np.float64
@@ -33,8 +33,9 @@ for i, shape in enumerate(shapes):
     shape = (shape,)
     print("Using vector of length:", shape[0])
 
-    store_in = ia.Store(chunks, blocks, "iarray_infile.iarray")
-    ia.arange(shape, store=store_in, dtype=dtype)
+    cfg_in = ia.Config(chunks=chunks, blocks=blocks, urlpath="iarray_infile.iarray")
+    ia.remove_urlpath(cfg_in.urlpath)
+    ia.arange(shape, cfg=cfg_in, dtype=dtype)
 
     t0 = time()
     data = ia.open("iarray_infile.iarray")

@@ -16,8 +16,7 @@ print(a2[:10])
 
 b1 = np.random.uniform(0, 1, size).astype(np.float32)
 
-store = ia.Store(urlpath="random_dist.iarray")
-b2 = ia.numpy2iarray(b1, store=store)
+b2 = ia.numpy2iarray(b1, urlpath="random_dist.iarray")
 
 # Check that distributions are equal
 print(ia.random.kstest(a1, b2))

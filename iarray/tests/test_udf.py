@@ -30,13 +30,13 @@ def cmp_udf_np(f, start_stop, shape, partitions, dtype, cparams, f_np=None):
         start_stop = [start_stop]
 
     chunks, blocks = partitions
-    store = ia.Store(chunks, blocks)
+    cfg = ia.Config(chunks=chunks, blocks=blocks)
 
     inputs = [
-        ia.linspace(shape, start, stop, store=store, dtype=dtype, **cparams)
+        ia.linspace(shape, start, stop, cfg=cfg, dtype=dtype, **cparams)
         for start, stop in start_stop
     ]
-    expr = ia.expr_from_udf(f, inputs, shape=shape, store=store, **cparams)
+    expr = ia.expr_from_udf(f, inputs, shape=shape, cfg=cfg, **cparams)
     out = expr.eval()
 
     num = functools.reduce(lambda x, y: x * y, shape)
@@ -64,12 +64,13 @@ def cmp_udf_np_strict(f, start, stop, shape, partitions, dtype, cparams):
     chunks, blocks = partitions
     assert len(chunks) == 1
     assert len(blocks) == 1
-    store = ia.Store(chunks, blocks)
+    cfg = ia.Config(chunks=chunks, blocks=blocks)
 
-    x = ia.linspace(shape, start, stop, store=store, dtype=dtype, **cparams)
+    x = ia.linspace(shape, start, stop, cfg=cfg, dtype=dtype, **cparams)
+    assert x.cfg.dtype == dtype
     # Both functions should work, but we are encouraging ia.expr_from_udf()
-    # expr = f.create_expr([x], dtshape, store=store, **cparams)
-    expr = ia.expr_from_udf(f, [x], store=store, **cparams)
+    # expr = f.create_expr([x], dtshape, cfg=cfg, **cparams)
+    expr = ia.expr_from_udf(f, [x], cfg=cfg, **cparams)
 
     out = expr.eval()
 
@@ -307,9 +308,9 @@ def test_error(f):
     cparams = dict(nthreads=1)
     start, stop = 0, 10
 
-    store = ia.Store(chunks, blocks)
-    x = ia.linspace(shape, start, stop, store=store, dtype=dtype, **cparams)
-    expr = f.create_expr([x], store=store, **cparams)
+    cfg = ia.Config(chunks=chunks, blocks=blocks)
+    x = ia.linspace(shape, start, stop, cfg=cfg, dtype=dtype, **cparams)
+    expr = f.create_expr([x], cfg=cfg, **cparams)
 
     try:
         expr.eval()

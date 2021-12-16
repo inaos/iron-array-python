@@ -5,15 +5,6 @@ Configuration
 .. currentmodule:: iarray
 
 
-Storage properties
-==================
-
-.. autosummary::
-   :toctree: autofiles/config/
-   :nosignatures:
-
-   Store
-
 Configuration object
 ====================
 

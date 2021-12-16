@@ -53,29 +53,29 @@ compressor = Blosc(
     shuffle=Blosc.SHUFFLE,
     blocksize=reduce(lambda x, y: x * y, ablocks),
 )
-ia.set_config_defaults(codec=CODEC, clevel=CLEVEL, nthreads=NTHREADS, dtype=DTYPE)
+ia.set_config_defaults(codec=CODEC, clevel=CLEVEL, nthreads=NTHREADS, dtype=DTYPE, btune=False)
 
-astore = ia.Store(achunks, ablocks)
-lia = ia.linspace(ashape, 0, 1, store=astore)
+acfg = ia.Config(chunks=achunks, blocks=ablocks)
+lia = ia.linspace(ashape, 0, 1, cfg=acfg)
 nia = ia.random.normal(
     ashape,
     0,
     0.0000001,
-    store=astore,
+    cfg=acfg,
 )
-aia = (lia + nia).eval(store=astore)
+aia = (lia + nia).eval(cfg=acfg)
 
-bstore = ia.Store(bchunks, bblocks)
-lia = ia.linspace(bshape, 0, 1, store=bstore)
-nia = ia.random.normal(bshape, 0, 0.0000001, store=bstore)
-bia = (lia + nia).eval(store=bstore)
+bcfg = ia.Config(chunks=bchunks, blocks=bblocks)
+lia = ia.linspace(bshape, 0, 1, cfg=bcfg)
+nia = ia.random.normal(bshape, 0, 0.0000001, cfg=bcfg)
+bia = (lia + nia).eval(cfg=bcfg)
 
-cstore = ia.Store(cchunks, cblocks)
+ccfg = ia.Config(chunks=cchunks, blocks=cblocks)
 
 
 @profile
 def ia_matmul(aia, bia):
-    return ia.matmul(aia, bia, store=cstore)
+    return ia.matmul(aia, bia, cfg=ccfg)
 
 
 mkl_set_num_threads(1)

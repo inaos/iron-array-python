@@ -47,9 +47,8 @@ print("open time ->", round(t, 3))
 chunks = precip1.chunks
 blocks = precip1.blocks
 
-store = ia.Store(chunks=precip1.chunks, blocks=precip1.blocks)
-# cfg = ia.Config(nthreads=14, store=store, clevel=1, codec=ia.Codec.ZSTD, filters=[ia.Filter.BITSHUFFLE])
-cfg = ia.Config(store=store)
+# cfg = ia.Config(nthreads=14, chunks=precip1.chunks, blocks=precip1.blocks, clevel=1, codec=ia.Codec.ZSTD, filters=[ia.Filter.BITSHUFFLE])
+cfg = ia.Config(chunks=precip1.chunks, blocks=precip1.blocks)
 
 
 @profile

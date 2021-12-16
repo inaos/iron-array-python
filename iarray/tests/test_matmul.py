@@ -168,16 +168,16 @@ def test_matmul(
     ia.remove_urlpath(aurlpath)
     ia.remove_urlpath(burlpath)
     ia.remove_urlpath(curlpath)
-    astore = ia.Store(achunks, ablocks, contiguous=acontiguous, urlpath=aurlpath)
-    a = ia.linspace(ashape, -10, 1, dtype=dtype, store=astore)
+    acfg = ia.Config(chunks=achunks, blocks=ablocks, contiguous=acontiguous, urlpath=aurlpath)
+    a = ia.linspace(ashape, -10, 1, dtype=dtype, cfg=acfg)
     an = ia.iarray2numpy(a)
 
-    bstore = ia.Store(bchunks, bblocks, contiguous=bcontiguous, urlpath=burlpath)
-    b = ia.linspace(bshape, -1, 10, dtype=dtype, store=bstore)
+    bcfg = ia.Config(chunks=bchunks, blocks=bblocks, contiguous=bcontiguous, urlpath=burlpath)
+    b = ia.linspace(bshape, -1, 10, dtype=dtype, cfg=bcfg)
     bn = ia.iarray2numpy(b)
 
-    cstore = ia.Store(chunks=cchunks, blocks=cblocks, contiguous=ccontiguous, urlpath=curlpath)
-    c = ia.matmul(a, b, store=cstore)
+    ccfg = ia.Config(chunks=cchunks, blocks=cblocks, contiguous=ccontiguous, urlpath=curlpath)
+    c = ia.matmul(a, b, cfg=ccfg)
     cn_2 = ia.iarray2numpy(c)
 
     cn = np.matmul(an, bn)
@@ -392,24 +392,24 @@ def test_matmul_slice(
     ia.remove_urlpath(burlpath)
     ia.remove_urlpath(curlpath)
 
-    astore = ia.Store(achunks, ablocks, contiguous=acontiguous, urlpath=aurlpath)
-    a = ia.linspace(ashape, -1, -2, dtype=dtype, store=astore)
+    acfg = ia.Config(chunks=achunks, blocks=ablocks, contiguous=acontiguous, urlpath=aurlpath)
+    a = ia.linspace(ashape, -1, -2, dtype=dtype, cfg=acfg)
     an = ia.iarray2numpy(a)
     aslices = tuple(slice(astart[i], astop[i]) for i in range(len(astart)))
     if len(astart) == 1:
         aslices = aslices[0]
     asl = a[aslices]
 
-    bstore = ia.Store(bchunks, bblocks, contiguous=bcontiguous, urlpath=burlpath)
-    b = ia.linspace(bshape, 1, 200, dtype=dtype, store=bstore)
+    bcfg = ia.Config(chunks=bchunks, blocks=bblocks, contiguous=bcontiguous, urlpath=burlpath)
+    b = ia.linspace(bshape, 1, 200, dtype=dtype, cfg=bcfg)
     bn = ia.iarray2numpy(b)
     bslices = tuple(slice(bstart[i], bstop[i]) for i in range(len(bstart)))
     if len(bstart) == 1:
         bslices = bslices[0]
     bsl = b[bslices]
 
-    cstore = ia.Store(chunks=cchunks, blocks=cblocks, contiguous=ccontiguous, urlpath=curlpath)
-    c = ia.matmul(asl, bsl, store=cstore)
+    ccfg = ia.Config(chunks=cchunks, blocks=cblocks, contiguous=ccontiguous, urlpath=curlpath)
+    c = ia.matmul(asl, bsl, cfg=ccfg)
     cn = np.matmul(an[aslices], bn[bslices])
 
     cn_2 = ia.iarray2numpy(c)
@@ -467,12 +467,12 @@ def test_matmul_opt(ashape, bshape, dtype, acontiguous, aurlpath, bcontiguous, b
     ia.remove_urlpath(aurlpath)
     ia.remove_urlpath(burlpath)
 
-    astore = ia.Store(achunks, ablocks, contiguous=acontiguous, urlpath=aurlpath)
-    a = ia.linspace(ashape, -10, 1, dtype=dtype, store=astore)
+    acfg = ia.Config(chunks=achunks, blocks=ablocks, contiguous=acontiguous, urlpath=aurlpath)
+    a = ia.linspace(ashape, -10, 1, dtype=dtype, cfg=acfg)
     an = ia.iarray2numpy(a)
 
-    bstore = ia.Store(bchunks, bblocks, contiguous=bcontiguous, urlpath=burlpath)
-    b = ia.linspace(bshape, -1, 10, dtype=dtype, store=bstore)
+    bcfg = ia.Config(chunks=bchunks, blocks=bblocks,  contiguous=bcontiguous, urlpath=burlpath)
+    b = ia.linspace(bshape, -1, 10, dtype=dtype, cfg=bcfg)
     bn = ia.iarray2numpy(b)
 
     c = ia.matmul(a, b)

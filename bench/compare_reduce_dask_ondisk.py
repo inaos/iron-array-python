@@ -44,14 +44,14 @@ acompressor = Blosc(
     blocksize=reduce(lambda x, y: x * y, ablocks) * 8,
 )
 
-ia.set_config_defaults(codec=CODEC, clevel=CLEVEL, nthreads=NTHREADS)
+ia.set_config_defaults(codec=CODEC, clevel=CLEVEL, nthreads=NTHREADS, btune=False)
 print("iA config: ", ia.get_config_defaults())
 
 if os.path.exists("iarray_reduce.iarr"):
     aia = ia.open("iarray_reduce.iarr")
 else:
-    astore = ia.Store(achunks, ablocks, urlpath="iarray_reduce.iarr")
-    aia = ia.random.normal(ashape, 0, 1, store=astore, dtype=DTYPE)
+    acfg = ia.Config(chunks=achunks, blocks=ablocks, urlpath="iarray_reduce.iarr")
+    aia = ia.random.normal(ashape, 0, 1, cfg=acfg, dtype=DTYPE)
 
 print(f"iarray cratio: {aia.cratio}")
 

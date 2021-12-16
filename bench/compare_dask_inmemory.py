@@ -33,8 +33,8 @@ t_ratio = []
 for i, shape in enumerate(shapes):
     shape = (shape,)
     print("Using vector of length:", shape[0])
-    store = ia.Store(chunks, blocks)
-    data = ia.linspace(shape, 0, 1, store=store, dtype=dtype)
+    cfg = ia.Config(chunks=chunks, blocks=blocks)
+    data = ia.linspace(shape, 0, 1, cfg=cfg, dtype=dtype)
 
     t0 = time()
     expr = ia.expr_from_string(sexpr, {"x": data})

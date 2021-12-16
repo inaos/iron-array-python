@@ -22,14 +22,14 @@ rand_data = [
     rand_data,
 )
 def test_rand(shape, chunks, blocks, dtype):
-    store = ia.Store(chunks, blocks)
+    cfg = ia.Config(chunks=chunks, blocks=blocks)
     size = int(np.prod(shape))
 
     i = 0
     while i < 5:
-        a = ia.random.random_sample(shape, store=store, dtype=dtype)
+        a = ia.random.random_sample(shape, cfg=cfg, dtype=dtype)
         b = np.random.rand(size).reshape(shape).astype(dtype)
-        c = ia.numpy2iarray(b, store=store)
+        c = ia.numpy2iarray(b, cfg=cfg)
 
         if not ia.random.kstest(a, c):
             i += 1
@@ -44,14 +44,14 @@ def test_rand(shape, chunks, blocks, dtype):
     rand_data,
 )
 def test_randn(shape, chunks, blocks, dtype):
-    store = ia.Store(chunks, blocks)
+    cfg = ia.Config(chunks=chunks, blocks=blocks)
     size = int(np.prod(shape))
 
     i = 0
     while i < 5:
-        a = ia.random.standard_normal(shape, store=store, dtype=dtype)
+        a = ia.random.standard_normal(shape, cfg=cfg, dtype=dtype)
         b = np.random.standard_normal(size).reshape(shape).astype(dtype)
-        c = ia.numpy2iarray(b, store=store)
+        c = ia.numpy2iarray(b, cfg=cfg)
 
         if not ia.random.kstest(a, c):
             i += 1
@@ -73,14 +73,14 @@ def test_randn(shape, chunks, blocks, dtype):
     rand_data,
 )
 def test_beta(alpha, beta, shape, chunks, blocks, dtype):
-    store = ia.Store(chunks, blocks)
+    cfg = ia.Config(chunks=chunks, blocks=blocks)
     size = int(np.prod(shape))
 
     i = 0
     while i < 5:
-        a = ia.random.beta(shape, alpha, beta, store=store, dtype=dtype)
+        a = ia.random.beta(shape, alpha, beta, cfg=cfg, dtype=dtype)
         b = np.random.beta(alpha, beta, size).reshape(shape).astype(dtype)
-        c = ia.numpy2iarray(b, store=store)
+        c = ia.numpy2iarray(b, cfg=cfg)
 
         if not ia.random.kstest(a, c):
             i += 1
@@ -102,14 +102,14 @@ def test_beta(alpha, beta, shape, chunks, blocks, dtype):
     rand_data,
 )
 def test_lognormal(mu, sigma, shape, chunks, blocks, dtype):
-    store = ia.Store(chunks, blocks)
+    cfg = ia.Config(chunks=chunks, blocks=blocks)
     size = int(np.prod(shape))
 
     i = 0
     while i < 5:
-        a = ia.random.lognormal(shape, mu, sigma, store=store, dtype=dtype)
+        a = ia.random.lognormal(shape, mu, sigma, cfg=cfg, dtype=dtype)
         b = np.random.lognormal(mu, sigma, size).reshape(shape).astype(dtype)
-        c = ia.numpy2iarray(b, store=store)
+        c = ia.numpy2iarray(b, cfg=cfg)
 
         if not ia.random.kstest(a, c):
             i += 1
@@ -131,14 +131,14 @@ def test_lognormal(mu, sigma, shape, chunks, blocks, dtype):
     rand_data,
 )
 def test_exponential(beta, shape, chunks, blocks, dtype):
-    store = ia.Store(chunks, blocks)
+    cfg = ia.Config(chunks=chunks, blocks=blocks)
     size = int(np.prod(shape))
 
     i = 0
     while i < 5:
-        a = ia.random.exponential(shape, beta, store=store, dtype=dtype)
+        a = ia.random.exponential(shape, beta, cfg=cfg, dtype=dtype)
         b = np.random.exponential(beta, size).reshape(shape).astype(dtype)
-        c = ia.numpy2iarray(b, store=store)
+        c = ia.numpy2iarray(b, cfg=cfg)
 
         if not ia.random.kstest(a, c):
             i += 1
@@ -160,14 +160,14 @@ def test_exponential(beta, shape, chunks, blocks, dtype):
     rand_data,
 )
 def test_uniform(a_, b_, shape, chunks, blocks, dtype):
-    store = ia.Store(chunks, blocks)
+    cfg = ia.Config(chunks=chunks, blocks=blocks)
     size = int(np.prod(shape))
 
     i = 0
     while i < 5:
-        a = ia.random.uniform(shape, a_, b_, store=store, dtype=dtype)
+        a = ia.random.uniform(shape, a_, b_, cfg=cfg, dtype=dtype)
         b = np.random.uniform(a_, b_, size).reshape(shape).astype(dtype)
-        c = ia.numpy2iarray(b, store=store)
+        c = ia.numpy2iarray(b, cfg=cfg)
 
         if not ia.random.kstest(a, c):
             i += 1
@@ -189,14 +189,14 @@ def test_uniform(a_, b_, shape, chunks, blocks, dtype):
     rand_data,
 )
 def test_normal(mu, sigma, shape, chunks, blocks, dtype):
-    store = ia.Store(chunks, blocks)
+    cfg = ia.Config(chunks=chunks, blocks=blocks)
     size = int(np.prod(shape))
 
     i = 0
     while i < 5:
-        a = ia.random.normal(shape, mu, sigma, store=store, dtype=dtype)
+        a = ia.random.normal(shape, mu, sigma, cfg=cfg, dtype=dtype)
         b = np.random.normal(mu, sigma, size).reshape(shape).astype(dtype)
-        c = ia.numpy2iarray(b, store=store)
+        c = ia.numpy2iarray(b, cfg=cfg)
 
         if not ia.random.kstest(a, c):
             i += 1
@@ -215,14 +215,14 @@ def test_normal(mu, sigma, shape, chunks, blocks, dtype):
     rand_data,
 )
 def test_bernoulli(p, shape, chunks, blocks, dtype):
-    store = ia.Store(chunks, blocks)
+    cfg = ia.Config(chunks=chunks, blocks=blocks)
     size = int(np.prod(shape))
 
     i = 0
     while i < 5:
-        a = ia.random.bernoulli(shape, p, store=store, dtype=dtype)
+        a = ia.random.bernoulli(shape, p, cfg=cfg, dtype=dtype)
         b = np.random.binomial(1, p, size).reshape(shape).astype(dtype)
-        c = ia.numpy2iarray(b, store=store)
+        c = ia.numpy2iarray(b, cfg=cfg)
 
         if not ia.random.kstest(a, c):
             i += 1
@@ -244,16 +244,16 @@ def test_bernoulli(p, shape, chunks, blocks, dtype):
     rand_data,
 )
 def test_binomial(n, p, shape, chunks, blocks, dtype):
-    store = ia.Store(chunks, blocks)
+    cfg = ia.Config(chunks=chunks, blocks=blocks)
     size = int(np.prod(shape))
 
     i = 0
     while i < 5:
         a = ia.random.binomial(
-            shape, n, p, store=store, random_gen=ia.RandomGen.MERSENNE_TWISTER, dtype=dtype
+            shape, n, p, cfg=cfg, random_gen=ia.RandomGen.MERSENNE_TWISTER, dtype=dtype
         )
         b = np.random.binomial(n, p, size).reshape(shape).astype(dtype)
-        c = ia.numpy2iarray(b, store=store)
+        c = ia.numpy2iarray(b, cfg=cfg)
 
         if not ia.random.kstest(a, c):
             i += 1
@@ -272,14 +272,14 @@ def test_binomial(n, p, shape, chunks, blocks, dtype):
     rand_data,
 )
 def test_poisson(lamb, shape, chunks, blocks, dtype):
-    store = ia.Store(chunks, blocks)
+    cfg = ia.Config(chunks=chunks, blocks=blocks)
     size = int(np.prod(shape))
 
     i = 0
     while i < 5:
-        a = ia.random.poisson(shape, lamb, store=store, random_gen=ia.RandomGen.SOBOL, dtype=dtype)
+        a = ia.random.poisson(shape, lamb, cfg=cfg, random_gen=ia.RandomGen.SOBOL, dtype=dtype)
         b = np.random.poisson(lamb, size).reshape(shape).astype(dtype)
-        c = ia.numpy2iarray(b, store=store)
+        c = ia.numpy2iarray(b, cfg=cfg)
 
         if not ia.random.kstest(a, c):
             i += 1

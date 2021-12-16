@@ -10,8 +10,8 @@ mkl_get_max_threads = mkl_rt.MKL_Get_Max_Threads
 
 nthreads = 4
 
-a = ia.arange([2000, 1000], clevel=0)
-b = ia.arange([2000, 1000], clevel=0)
+a = ia.arange([2000, 1000], clevel=0, btune=False)
+b = ia.arange([2000, 1000], clevel=0, btune=False)
 
 an = ia.iarray2numpy(a)
 

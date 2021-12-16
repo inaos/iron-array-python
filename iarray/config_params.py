@@ -101,22 +101,12 @@ class DefaultConfig:
     filters: Any
     nthreads: Any
     fp_mantissa_bits: Any
-    store: Any
     eval_method: Any
     seed: Any
     random_gen: Any
     btune: Any
     dtype: Any
     split_mode: Any
-
-
-@dataclass
-class DefaultStore:
-    chunks: Any
-    blocks: Any
-    urlpath: Any
-    mode: Any
-    contiguous: Any
 
 
 def default_filters():
@@ -141,9 +131,6 @@ class Defaults(object):
     btune: bool = True
     dtype: (np.float32, np.float64) = np.float64
     split_mode: (ia.SplitMode) = ia.SplitMode.AUTO_SPLIT
-
-    # Store
-    _store = None
     chunks: Sequence = None
     blocks: Sequence = None
     urlpath: str = None
@@ -215,7 +202,6 @@ class Defaults(object):
                 filters=self.filters,
                 nthreads=self.nthreads,
                 fp_mantissa_bits=self.fp_mantissa_bits,
-                store=self.store,
                 eval_method=self.eval_method,
                 seed=self.seed,
                 random_gen=self.random_gen,
@@ -242,10 +228,7 @@ class Defaults(object):
         self.btune = value.btune
         self.dtype = value.dtype
         self.split_mode = value.split_mode
-        self._store = value.store
         self._config = value
-        if self._store is not None:
-            self.set_store(self._store)
 
     def _chunks(self):
         return self.chunks
@@ -262,97 +245,9 @@ class Defaults(object):
     def _contiguous(self):
         return self.contiguous
 
-    @property
-    def store(self):
-        if self._store is None:
-            # Bootstrap the defaults
-            return DefaultStore(
-                chunks=self.chunks,
-                blocks=self.blocks,
-                urlpath=self.urlpath,
-                mode=self.mode,
-                contiguous=self.contiguous,
-            )
-        return self._store
-
-    def set_store(self, value):
-        if not hasattr(value, "chunks"):
-            raise ValueError(f"You need to use a `Store` instance")
-        self.chunks = value.chunks
-        self.blocks = value.blocks
-        self.urlpath = value.urlpath
-        self.mode = value.mode
-        self.contiguous = value.contiguous
-        self._store = value
-
 
 # Global variable where the defaults for config params are stored
 defaults = Defaults()
-
-
-@dataclass
-class Store:
-    """Dataclass for hosting different store properties.
-
-    All the parameters below are optional.  In case you don't specify one, a
-    sensible default (see below) is used.
-
-    Parameters
-    ----------
-    chunks : list, tuple
-        The chunk shape for the output array.  If None (the default), a sensible default
-        will be used based on the shape of the array and the size of caches in the current
-        processor.
-    blocks : list, tuple
-        The block shape for the output array.  If None (the default), a sensible default
-        will be used based on the shape of the array and the size of caches in the current
-        processor.
-    urlpath : str
-        The name of the file for persistently storing the output array.  If None (the default),
-        the output array will be stored in-memory.
-    mode : str
-        Persistence mode: 'r' means read only (must exist); 'r+' means read/write (must exist);
-        'a' means read/write (create if doesn’t exist); 'w' means create (overwrite if exists);
-        'w-' means create (fail if exists).  Default is 'r'.
-    contiguous : bool
-        If True, the output array will be stored contiguously, even when in-memory.  If False,
-        the store will be sparse. The default value is False for in-memory and True for persistent
-        storage.
-    """
-
-    global defaults
-    chunks: Union[Sequence, None] = field(default_factory=defaults._chunks)
-    blocks: Union[Sequence, None] = field(default_factory=defaults._blocks)
-    urlpath: bytes or str = field(default_factory=defaults._urlpath)
-    mode: bytes or str = field(default_factory=defaults._mode)
-    contiguous: bool = field(default_factory=defaults._contiguous)
-
-    def __post_init__(self):
-        self.urlpath = (
-            self.urlpath.encode("utf-8") if isinstance(self.urlpath, str) else self.urlpath
-        )
-        if self.contiguous is None:
-            if self.urlpath is not None:
-                self.contiguous = True
-            else:
-                self.contiguous = False
-        else:
-            self.contiguous = self.contiguous
-        self.mode = self.mode.encode("utf-8") if isinstance(self.mode, str) else self.mode
-
-    def _get_shape_advice(self, shape, cfg=None):
-        chunks, blocks = self.chunks, self.blocks
-        if chunks is not None and blocks is not None:
-            return
-        if chunks is None and blocks is None:
-            chunks_, blocks_ = partition_advice(shape, cfg=cfg)
-            self.chunks = chunks_
-            self.blocks = blocks_
-            if cfg is not None:
-                cfg.store = self
-            return
-        else:
-            raise ValueError("You can either specify both chunks and blocks or none of them.")
 
 
 @dataclass
@@ -407,10 +302,25 @@ class Config(ext.Config):
         The data type to use. The default is np.float64.
     codec: :class:`SplitMode`
         The split mode to be used inside Blosc.  Default is :py:obj:`SplitMode.AUTO_SPLIT <SplitMode>`.
-    store : :class:`Store`
-        Store instance where you can specify different properties of the output
-        store.  See :py:obj:`Store` docs for details.  For convenience, you can also
-        pass all the Store parameters directly in this constructor too.
+    chunks : list, tuple
+        The chunk shape for the output array.  If None (the default), a sensible default
+        will be used based on the shape of the array and the size of caches in the current
+        processor.
+    blocks : list, tuple
+        The block shape for the output array.  If None (the default), a sensible default
+        will be used based on the shape of the array and the size of caches in the current
+        processor.
+    urlpath : str
+        The name of the file for persistently storing the output array.  If None (the default),
+        the output array will be stored in-memory.
+    mode : str
+        Persistence mode: 'r' means read only (must exist); 'r+' means read/write (must exist);
+        'a' means read/write (create if doesn’t exist); 'w' means create (overwrite if exists);
+        'w-' means create (fail if exists).  Default is 'r'.
+    contiguous : bool
+        If True, the output array will be stored contiguously, even when in-memory.  If False,
+        the store will be sparse. The default value is False for in-memory and True for persistent
+        storage.
 
     See Also
     --------
@@ -431,9 +341,6 @@ class Config(ext.Config):
     btune: bool = field(default_factory=defaults._btune)
     dtype: (np.float32, np.float64) = field(default_factory=defaults._dtype)
     split_mode: ia.SplitMode = field(default_factory=defaults._split_mode)
-    store: Store = None  # delayed initialization
-
-    # These belong to Store, but we accept them in top level too
     chunks: Union[Sequence, None] = field(default_factory=defaults._chunks)
     blocks: Union[Sequence, None] = field(default_factory=defaults._blocks)
     urlpath: bytes or str = field(default_factory=defaults._urlpath)
@@ -447,11 +354,10 @@ class Config(ext.Config):
         defaults.compat_params = set()
         defaults.check_compat = True
 
-        if self.contiguous is None:
-            if self.urlpath is not None:
-                self.contiguous = True
-            else:
-                self.contiguous = False
+        if self.contiguous is None and self.urlpath is not None:
+            self.contiguous = True
+        self.urlpath = (self.urlpath.encode("utf-8") if isinstance(self.urlpath, str) else self.urlpath)
+        self.mode = (self.mode.encode("utf-8") if isinstance(self.mode, str) else self.mode)
         global RANDOM_SEED
         # Increase the random seed each time so as to prevent re-using them
         if self.seed is None:
@@ -460,14 +366,6 @@ class Config(ext.Config):
                 RANDOM_SEED = 0
             RANDOM_SEED += 1
             self.seed = RANDOM_SEED
-        if self.store is None:
-            self.store = Store(
-                chunks=self.chunks,
-                blocks=self.blocks,
-                urlpath=self.urlpath,
-                mode=self.mode,
-                contiguous=self.contiguous,
-            )
 
         # Once we have all the settings and hints from the user, we can proceed
         # with some fine tuning.
@@ -515,24 +413,11 @@ class Config(ext.Config):
     def _replace(self, **kwargs):
         # When a replace is done a new object from the class is created with all its params passed as kwargs
         defaults.check_compat = False
-
-        if "store" in kwargs:
-            store = kwargs["store"]
-            if store is not None:
-                for field in fields(Store):
-                    kwargs[field.name] = getattr(store, field.name)
         cfg_ = replace(self, **kwargs)
-        if "store" not in kwargs:
-            store_args = dict(
-                (field.name, kwargs[field.name]) for field in fields(Store) if field.name in kwargs
-            )
-            cfg_.store = replace(cfg_.store, **store_args)
         return cfg_
 
     def __deepcopy__(self, memodict={}):
         kwargs = asdict(self)
-        # asdict is recursive, but we need the store kwarg as a Store object
-        kwargs["store"] = Store(**kwargs["store"])
         defaults.check_compat = False
         cfg = Config(**kwargs)
         return cfg
@@ -572,19 +457,17 @@ class Config(ext.Config):
                 raise ValueError(f"A `favor` argument needs `btune` enabled.")
 
 
-    def __setattr__(self, key, value):
-        if key == "store" and value is not None:
-            self.contiguous = value.contiguous
-            self.urlpath = value.urlpath
-            self.mode = value.mode
-            self.chunks = value.chunks
-            self.blocks = value.blocks
-
-        store_params = {"chunks", "blocks", "mode", "urlpath", "contiguous"}
-        if key in store_params and self.store is not None:
-            self.store.__setattr__(key, value)
-
-        super(Config, self).__setattr__(key, value)
+    def _get_shape_advice(self, shape):
+        chunks, blocks = self.chunks, self.blocks
+        if chunks is not None and blocks is not None:
+            return
+        if chunks is None and blocks is None:
+            chunks_, blocks_ = partition_advice(shape, cfg=self)
+            self.chunks = chunks_
+            self.blocks = blocks_
+            return
+        else:
+            raise ValueError("You can either specify both chunks and blocks or none of them.")
 
 
 # Global config
@@ -646,8 +529,7 @@ def set_config_defaults(cfg: Config = None, shape=None, **kwargs):
         cfg.check_config_params(**kwargs)
         # The default when creating frames on-disk is to use contiguous storage (mainly because of performance  reasons)
         if (
-            kwargs.get("store", None) is None
-            and kwargs.get("contiguous", None) is None
+            kwargs.get("contiguous", None) is None
             and cfg.contiguous is None
             and kwargs.get("urlpath", None) is not None
         ):
@@ -655,8 +537,7 @@ def set_config_defaults(cfg: Config = None, shape=None, **kwargs):
         else:
             cfg = cfg._replace(**kwargs)
     if shape is not None and cfg.chunks is None and cfg.blocks is None:
-        cfg.store._get_shape_advice(shape, cfg=cfg)
-        cfg = cfg._replace(**{"store": cfg.store})
+        cfg._get_shape_advice(shape)
 
     global_config = cfg
     defaults.config = cfg
@@ -705,17 +586,17 @@ def reset_config_defaults():
 if __name__ == "__main__":
     cfg_ = get_config_defaults()
     print("Defaults:", cfg_)
-    assert cfg_.store.contiguous is False
+    assert cfg_.contiguous is False
 
-    set_config_defaults(store=Store(contiguous=True))
+    set_config_defaults(contiguous=True)
     cfg = get_config_defaults()
     print("1st form:", cfg)
-    assert cfg.store.contiguous is True
+    assert cfg.contiguous is True
 
     set_config_defaults(contiguous=False)
     cfg = get_config_defaults()
     print("2nd form:", cfg)
-    assert cfg.store.contiguous is False
+    assert cfg.contiguous is False
 
     set_config_defaults(Config(clevel=5))
     cfg = get_config_defaults()
@@ -724,7 +605,7 @@ if __name__ == "__main__":
 
     with config(clevel=0, contiguous=True) as cfg_new:
         print("Context form:", cfg_new)
-        assert cfg_new.store.contiguous is True
+        assert cfg_new.contiguous is True
         assert get_config_defaults().clevel == 0
 
     cfg = ia.Config(codec=ia.Codec.BLOSCLZ)

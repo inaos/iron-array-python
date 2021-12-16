@@ -15,15 +15,14 @@ import iarray as ia
 )
 def test_btune(start, stop, shape, chunks, blocks, dtype, contiguous, urlpath):
 
-    store = ia.Store(chunks, blocks, contiguous=contiguous, urlpath=urlpath)
     ia.remove_urlpath(urlpath)
     with ia.config(favor=ia.Favor.SPEED, btune=True):
-        a = ia.linspace(shape, start, stop, dtype=dtype, store=store)
+        a = ia.linspace(shape, start, stop, dtype=dtype, chunks=chunks, blocks=blocks, contiguous=contiguous, urlpath=urlpath)
         c1 = a.cratio
 
     ia.remove_urlpath(urlpath)
     with ia.config(favor=ia.Favor.CRATIO, btune=True):
-        a = ia.linspace(shape, start, stop, dtype=dtype, store=store)
+        a = ia.linspace(shape, start, stop, dtype=dtype, chunks=chunks, blocks=blocks, contiguous=contiguous, urlpath=urlpath)
         c2 = a.cratio
 
     # Sometimes, depending on the machine and its state, SPEED can get better cratios :-/

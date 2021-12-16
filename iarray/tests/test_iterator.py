@@ -91,15 +91,15 @@ from itertools import zip_longest as izip
 def test_iterator(
     shape, chunks, blocks, itershape, dtype, acontiguous, aurlpath, bcontiguous, burlpath
 ):
-    astore = ia.Store(chunks, blocks, contiguous=acontiguous, urlpath=aurlpath)
-    bstore = ia.Store(chunks, blocks, contiguous=bcontiguous, urlpath=burlpath)
+    acfg = ia.Config(chunks=chunks, blocks=blocks, contiguous=acontiguous, urlpath=aurlpath)
+    bcfg = ia.Config(chunks=chunks, blocks=blocks, contiguous=bcontiguous, urlpath=burlpath)
 
     ia.remove_urlpath(aurlpath)
     ia.remove_urlpath(burlpath)
-    a = ia.linspace(shape, -10, 10, dtype=dtype, store=astore)
+    a = ia.linspace(shape, -10, 10, dtype=dtype, cfg=acfg)
     an = ia.iarray2numpy(a)
 
-    b = ia.empty(shape, dtype=dtype, store=bstore)
+    b = ia.empty(shape, dtype=dtype, cfg=bcfg)
 
     zip = izip(a.iter_read_block(itershape), b.iter_write_block(itershape))
     for i, ((ainfo, aslice), (_, bslice)) in enumerate(zip):

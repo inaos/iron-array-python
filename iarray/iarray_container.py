@@ -91,7 +91,6 @@ class IArray(ext.Container):
         if cfg is None:
             cfg = self.cfg
             # the urlpath should not be copied
-            cfg.store.urlpath = None
             cfg.urlpath = None
 
         # Generally we don't want btune to optimize, except if specified

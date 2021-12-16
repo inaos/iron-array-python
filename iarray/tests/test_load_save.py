@@ -21,8 +21,8 @@ def test_load_save(shape, chunks, blocks, dtype, func, contiguous):
 
     ia.remove_urlpath(urlpath)
 
-    store = ia.Store(chunks, blocks, contiguous=contiguous)
-    a = ia.linspace(shape, -10, 10, dtype=dtype, store=store, fp_mantissa_bits=20)
+    cfg = ia.Config(chunks=chunks, blocks=blocks, contiguous=contiguous)
+    a = ia.linspace(shape, -10, 10, dtype=dtype, cfg=cfg, fp_mantissa_bits=20)
     an = ia.iarray2numpy(a)
 
     ia.save(urlpath, a, contiguous=contiguous)

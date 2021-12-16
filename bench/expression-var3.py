@@ -59,12 +59,12 @@ def f3(
 
 # Create initial containers
 if PROFILE:
-    a1_store = None  # avoid a warning
+    a1_cfg = None  # avoid a warning
     a1_fname = "a1.iarr"
     if not os.path.isfile(a1_fname):
         print(f"Creating {a1_fname}")
-        a1_store = ia.Store(urlpath=a1_fname)
-        a1 = ia.linspace(shape, 0, 10, store=a1_store)
+        a1_cfg = ia.Config(urlpath=a1_fname)
+        a1 = ia.linspace(shape, 0, 10, cfg=a1_cfg)
     else:
         print(f"Reading {a1_fname}")
         a1 = ia.load(a1_fname)

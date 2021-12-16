@@ -21,8 +21,8 @@ def test_reduce(shape, chunks, blocks, axis, dtype, rfunc, contiguous, urlpath):
 
     ia.remove_urlpath(urlpath)
     ia.remove_urlpath("test_reduce_res.iarr")
-    store = ia.Store(chunks, blocks, contiguous=contiguous, urlpath=urlpath)
-    a1 = ia.linspace(shape, -1, 0, dtype=dtype, store=store)
+    cfg = ia.Config(chunks=chunks, blocks=blocks, contiguous=contiguous, urlpath=urlpath)
+    a1 = ia.linspace(shape, -1, 0, dtype=dtype, cfg=cfg)
     a2 = a1.data
 
     b2 = getattr(np, rfunc)(a2, axis=axis)

@@ -31,38 +31,38 @@ else:
     burlpath = None
     curlpath = None
 
-astore = ia.Store(chunks, blocks, urlpath=aurlpath)
-bstore = ia.Store(chunks, blocks, urlpath=burlpath)
-cstore = ia.Store(chunks, blocks, urlpath=curlpath)
+acfg = ia.Config(chunks=chunks, blocks=blocks, urlpath=aurlpath)
+bcfg = ia.Config(chunks=chunks, blocks=blocks, urlpath=burlpath)
+ccfg = ia.Config(chunks=chunks, blocks=blocks, urlpath=curlpath)
 
-ia.set_config_defaults(codec=codec, clevel=clevel, nthreads=nthreads, dtype=np.float64)
+ia.set_config_defaults(codec=codec, clevel=clevel, nthreads=nthreads, dtype=np.float64, btune=False)
 cfg = ia.get_config_defaults()
 
 print("(Re-)Generating operand A")
 if persistent:
     if not os.path.exists(aurlpath):
-        aia = ia.linspace(shape, -1, 1, store=astore)
+        aia = ia.linspace(shape, -1, 1, cfg=acfg)
     else:
         aia = ia.open("a.iarr")
         if aia.shape != shape or aia.chunks != chunks or aia.blocks != blocks:
             # Ooops, we cannot use the array on-disk.  Regenerate it.
             ia.remove_urlpath(aurlpath)
-            aia = ia.linspace(shape, -1, 1, store=astore)
+            aia = ia.linspace(shape, -1, 1, cfg=acfg)
 else:
-    aia = ia.linspace(shape, -1, 1, store=astore)
+    aia = ia.linspace(shape, -1, 1, cfg=acfg)
 
 print("(Re-)Generating operand B")
 if persistent:
     if not os.path.exists(burlpath):
-        bia = ia.linspace(shape, -1, 1, store=bstore)
+        bia = ia.linspace(shape, -1, 1, cfg=bcfg)
     else:
         bia = ia.open("b.iarr")
         if bia.shape != shape or bia.chunks != chunks or bia.blocks != blocks:
             # Ooops, we cannot use the array on-disk.  Regenerate it.
             ia.remove_urlpath(burlpath)
-            bia = ia.linspace(shape, -1, 1, store=bstore)
+            bia = ia.linspace(shape, -1, 1, cfg=bcfg)
 else:
-    bia = ia.linspace(shape, -1, 1, store=bstore)
+    bia = ia.linspace(shape, -1, 1, cfg=bcfg)
 
 if persistent:
     if os.path.exists(curlpath):
@@ -70,7 +70,7 @@ if persistent:
 
 print(f"Start actual matmul with nthreads = {cfg.nthreads}")
 t0 = time()
-cia = ia.matmul(aia, bia, store=cstore)
+cia = ia.matmul(aia, bia, cfg=ccfg)
 print("Time for iarray matmul:", round((time() - t0), 3))
 
 if persistent:
