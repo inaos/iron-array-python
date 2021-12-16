@@ -134,9 +134,10 @@ def do_regular_evaluation():
 
 def do_block_evaluation():
     print(f"Block evaluation")
+    cfg = ia.Config(chunks=chunks, blocks=blocks)
     # ia.set_config_defaults(codec=ia.Codec.LZ4, clevel=clevel, nthreads=nthreads, chunks=chunks, blocks=blocks)
     # The latest versions of BTune work much better for 1-dim arrays
-    ia.set_config_defaults(favor=ia.Favor.SPEED)
+    ia.set_config_defaults(cfg=cfg, favor=ia.Favor.SPEED)
     print(ia.get_config_defaults())
 
     xa = ia.linspace(shape, 0.0, 10.0)
