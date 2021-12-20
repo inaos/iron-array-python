@@ -133,9 +133,8 @@ class Defaults(object):
     split_mode: (ia.SplitMode) = ia.SplitMode.AUTO_SPLIT
     chunks: Sequence = None
     blocks: Sequence = None
-    urlpath: str = None
-    mode: str = "r"
-
+    urlpath: bytes or str = None
+    mode: str = "w-"
     contiguous: bool = None
 
     # Keep track of the special params set with default values for consistency checks with btune
@@ -316,7 +315,7 @@ class Config(ext.Config):
     mode : str
         Persistence mode: 'r' means read only (must exist); 'r+' means read/write (must exist);
         'a' means read/write (create if doesn’t exist); 'w' means create (overwrite if exists);
-        'w-' means create (fail if exists).  Default is 'r'.
+        'w-' means create (fail if exists).  Default is 'a' for opening/loading and 'w-' otherwise.
     contiguous : bool
         If True, the output array will be stored contiguously, even when in-memory.  If False,
         the store will be sparse. The default value is False for in-memory and True for persistent
@@ -344,7 +343,7 @@ class Config(ext.Config):
     chunks: Union[Sequence, None] = field(default_factory=defaults._chunks)
     blocks: Union[Sequence, None] = field(default_factory=defaults._blocks)
     urlpath: bytes or str = field(default_factory=defaults._urlpath)
-    mode: bytes or str = field(default_factory=defaults._mode)
+    mode: str = field(default_factory=defaults._mode)
     contiguous: bool = field(default_factory=defaults._contiguous)
 
     def __post_init__(self):
@@ -357,7 +356,6 @@ class Config(ext.Config):
         if self.contiguous is None and self.urlpath is not None:
             self.contiguous = True
         self.urlpath = (self.urlpath.encode("utf-8") if isinstance(self.urlpath, str) else self.urlpath)
-        self.mode = (self.mode.encode("utf-8") if isinstance(self.mode, str) else self.mode)
         global RANDOM_SEED
         # Increase the random seed each time so as to prevent re-using them
         if self.seed is None:
@@ -455,7 +453,6 @@ class Config(ext.Config):
                 defaults.compat_params = set()
                 defaults.check_compat = True
                 raise ValueError(f"A `favor` argument needs `btune` enabled.")
-
 
     def _get_shape_advice(self, shape):
         chunks, blocks = self.chunks, self.blocks

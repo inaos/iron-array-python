@@ -29,7 +29,8 @@ import iarray as ia
     ],
 )
 def test_global_config(clevel, codec, filters, chunks, blocks, contiguous, urlpath):
-    ia.set_config_defaults(clevel=clevel, codec=codec, filters=filters, chunks=chunks, blocks=blocks, contiguous=contiguous, urlpath=urlpath, btune=False)
+    ia.set_config_defaults(clevel=clevel, codec=codec, filters=filters, chunks=chunks, blocks=blocks,
+                           contiguous=contiguous, urlpath=urlpath, btune=False)
     config = ia.get_config_defaults()
     assert config.clevel == clevel
     assert config.codec == codec
@@ -320,7 +321,7 @@ def test_default_params():
     ia.remove_urlpath(urlpath)
 
     cfg = ia.get_config_defaults()
-    ia.set_config_defaults(split_mode=ia.SplitMode.ALWAYS_SPLIT)
+    ia.set_config_defaults(split_mode=ia.SplitMode.ALWAYS_SPLIT, mode="w")
     a = ia.linspace([10], start=0, stop=1, urlpath=urlpath, contiguous=False)
     ia.set_config_defaults(split_mode=cfg.split_mode)
     cfg2 = ia.Config()
@@ -328,6 +329,7 @@ def test_default_params():
     assert cfg.split_mode == cfg2.split_mode
     assert cfg.contiguous == cfg2.contiguous
     assert cfg.urlpath == cfg2.urlpath
+    assert cfg.mode == cfg2.mode
     ia.remove_urlpath(urlpath)
 
 

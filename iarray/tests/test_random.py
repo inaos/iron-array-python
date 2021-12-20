@@ -25,9 +25,15 @@ def test_rand(shape, chunks, blocks, dtype):
     cfg = ia.Config(chunks=chunks, blocks=blocks)
     size = int(np.prod(shape))
 
+    modes = ["r", "r+", "a", "w", "w-"]
     i = 0
     while i < 5:
-        a = ia.random.random_sample(shape, cfg=cfg, dtype=dtype)
+        mode = modes[i]
+        if mode in ["r", "r+"]:
+            with pytest.raises(IOError):
+                a = ia.random.random_sample(shape, cfg=cfg, dtype=dtype, mode=mode)
+            mode = "w"
+        a = ia.random.random_sample(shape, cfg=cfg, dtype=dtype, mode=mode)
         b = np.random.rand(size).reshape(shape).astype(dtype)
         c = ia.numpy2iarray(b, cfg=cfg)
 
@@ -47,9 +53,15 @@ def test_randn(shape, chunks, blocks, dtype):
     cfg = ia.Config(chunks=chunks, blocks=blocks)
     size = int(np.prod(shape))
 
+    modes = ["r", "r+", "a", "w", "w-"]
     i = 0
     while i < 5:
-        a = ia.random.standard_normal(shape, cfg=cfg, dtype=dtype)
+        mode = modes[i]
+        if mode in ["r", "r+"]:
+            with pytest.raises(IOError):
+                a = ia.random.standard_normal(shape, cfg=cfg, dtype=dtype, mode=mode)
+            mode = "w-"
+        a = ia.random.standard_normal(shape, cfg=cfg, dtype=dtype, mode=mode)
         b = np.random.standard_normal(size).reshape(shape).astype(dtype)
         c = ia.numpy2iarray(b, cfg=cfg)
 
@@ -76,9 +88,15 @@ def test_beta(alpha, beta, shape, chunks, blocks, dtype):
     cfg = ia.Config(chunks=chunks, blocks=blocks)
     size = int(np.prod(shape))
 
+    modes = ["r", "r+", "a", "w", "w-"]
     i = 0
     while i < 5:
-        a = ia.random.beta(shape, alpha, beta, cfg=cfg, dtype=dtype)
+        mode = modes[i]
+        if mode in ["r", "r+"]:
+            with pytest.raises(IOError):
+                a = ia.random.beta(shape, alpha, beta, cfg=cfg, dtype=dtype, mode=mode)
+            mode = "w-"
+        a = ia.random.beta(shape, alpha, beta, cfg=cfg, dtype=dtype, mode=mode)
         b = np.random.beta(alpha, beta, size).reshape(shape).astype(dtype)
         c = ia.numpy2iarray(b, cfg=cfg)
 
@@ -105,9 +123,15 @@ def test_lognormal(mu, sigma, shape, chunks, blocks, dtype):
     cfg = ia.Config(chunks=chunks, blocks=blocks)
     size = int(np.prod(shape))
 
+    modes = ["r", "r+", "a", "w", "w-"]
     i = 0
     while i < 5:
-        a = ia.random.lognormal(shape, mu, sigma, cfg=cfg, dtype=dtype)
+        mode = modes[i]
+        if mode in ["r", "r+"]:
+            with pytest.raises(IOError):
+                a = ia.random.lognormal(shape, mu, sigma, cfg=cfg, dtype=dtype, mode=mode)
+            mode = "a"
+        a = ia.random.lognormal(shape, mu, sigma, cfg=cfg, dtype=dtype, mode=mode)
         b = np.random.lognormal(mu, sigma, size).reshape(shape).astype(dtype)
         c = ia.numpy2iarray(b, cfg=cfg)
 
@@ -134,9 +158,15 @@ def test_exponential(beta, shape, chunks, blocks, dtype):
     cfg = ia.Config(chunks=chunks, blocks=blocks)
     size = int(np.prod(shape))
 
+    modes = ["r", "r+", "a", "w", "w-"]
     i = 0
     while i < 5:
-        a = ia.random.exponential(shape, beta, cfg=cfg, dtype=dtype)
+        mode = modes[i]
+        if mode in ["r", "r+"]:
+            with pytest.raises(IOError):
+                a = ia.random.exponential(shape, beta, cfg=cfg, dtype=dtype, mode=mode)
+            mode = "w"
+        a = ia.random.exponential(shape, beta, cfg=cfg, dtype=dtype, mode=mode)
         b = np.random.exponential(beta, size).reshape(shape).astype(dtype)
         c = ia.numpy2iarray(b, cfg=cfg)
 
@@ -163,9 +193,15 @@ def test_uniform(a_, b_, shape, chunks, blocks, dtype):
     cfg = ia.Config(chunks=chunks, blocks=blocks)
     size = int(np.prod(shape))
 
+    modes = ["r", "r+", "a", "w", "w-"]
     i = 0
     while i < 5:
-        a = ia.random.uniform(shape, a_, b_, cfg=cfg, dtype=dtype)
+        mode = modes[i]
+        if mode in ["r", "r+"]:
+            with pytest.raises(IOError):
+                a = ia.random.uniform(shape, a_, b_, cfg=cfg, dtype=dtype, mode=mode)
+            mode = "w-"
+        a = ia.random.uniform(shape, a_, b_, cfg=cfg, dtype=dtype, mode=mode)
         b = np.random.uniform(a_, b_, size).reshape(shape).astype(dtype)
         c = ia.numpy2iarray(b, cfg=cfg)
 
@@ -192,9 +228,15 @@ def test_normal(mu, sigma, shape, chunks, blocks, dtype):
     cfg = ia.Config(chunks=chunks, blocks=blocks)
     size = int(np.prod(shape))
 
+    modes = ["r", "r+", "a", "w", "w-"]
     i = 0
     while i < 5:
-        a = ia.random.normal(shape, mu, sigma, cfg=cfg, dtype=dtype)
+        mode = modes[i]
+        if mode in ["r", "r+"]:
+            with pytest.raises(IOError):
+                a = ia.random.normal(shape, mu, sigma, cfg=cfg, dtype=dtype, mode=mode)
+            mode = "a"
+        a = ia.random.normal(shape, mu, sigma, cfg=cfg, dtype=dtype, mode=mode)
         b = np.random.normal(mu, sigma, size).reshape(shape).astype(dtype)
         c = ia.numpy2iarray(b, cfg=cfg)
 
@@ -218,9 +260,15 @@ def test_bernoulli(p, shape, chunks, blocks, dtype):
     cfg = ia.Config(chunks=chunks, blocks=blocks)
     size = int(np.prod(shape))
 
+    modes = ["r", "r+", "a", "w", "w-"]
     i = 0
     while i < 5:
-        a = ia.random.bernoulli(shape, p, cfg=cfg, dtype=dtype)
+        mode = modes[i]
+        if mode in ["r", "r+"]:
+            with pytest.raises(IOError):
+                a = ia.random.bernoulli(shape, p, cfg=cfg, dtype=dtype, mode=mode)
+            mode = "w"
+        a = ia.random.bernoulli(shape, p, cfg=cfg, dtype=dtype, mode=mode)
         b = np.random.binomial(1, p, size).reshape(shape).astype(dtype)
         c = ia.numpy2iarray(b, cfg=cfg)
 
@@ -247,11 +295,15 @@ def test_binomial(n, p, shape, chunks, blocks, dtype):
     cfg = ia.Config(chunks=chunks, blocks=blocks)
     size = int(np.prod(shape))
 
+    modes = ["r", "r+", "a", "w", "w-"]
     i = 0
     while i < 5:
-        a = ia.random.binomial(
-            shape, n, p, cfg=cfg, random_gen=ia.RandomGen.MERSENNE_TWISTER, dtype=dtype
-        )
+        mode = modes[i]
+        if mode in ["r", "r+"]:
+            with pytest.raises(IOError):
+                a = ia.random.binomial(shape, n, p, cfg=cfg, random_gen=ia.RandomGen.MERSENNE_TWISTER, dtype=dtype, mode=mode)
+            mode = "a"
+        a = ia.random.binomial(shape, n, p, cfg=cfg, random_gen=ia.RandomGen.MERSENNE_TWISTER, dtype=dtype, mode=mode)
         b = np.random.binomial(n, p, size).reshape(shape).astype(dtype)
         c = ia.numpy2iarray(b, cfg=cfg)
 
@@ -275,9 +327,15 @@ def test_poisson(lamb, shape, chunks, blocks, dtype):
     cfg = ia.Config(chunks=chunks, blocks=blocks)
     size = int(np.prod(shape))
 
+    modes = ["r", "r+", "a", "w", "w-"]
     i = 0
     while i < 5:
-        a = ia.random.poisson(shape, lamb, cfg=cfg, random_gen=ia.RandomGen.SOBOL, dtype=dtype)
+        mode = modes[i]
+        if mode in ["r", "r+"]:
+            with pytest.raises(IOError):
+                a = ia.random.poisson(shape, lamb, cfg=cfg,  random_gen=ia.RandomGen.SOBOL, dtype=dtype, mode=mode)
+            mode = "w"
+        a = ia.random.poisson(shape, lamb, cfg=cfg,  random_gen=ia.RandomGen.SOBOL, dtype=dtype, mode=mode)
         b = np.random.poisson(lamb, size).reshape(shape).astype(dtype)
         c = ia.numpy2iarray(b, cfg=cfg)
 

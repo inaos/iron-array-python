@@ -4,15 +4,15 @@ import numpy as np
 
 
 @pytest.mark.parametrize(
-    "shape, chunks, blocks, dtype, contiguous, urlpath",
+    "shape, chunks, blocks, dtype, contiguous, urlpath, mode",
     [
-        ([100, 100], [50, 50], [20, 20], np.float32, False, None),
-        ([100, 100], [20, 20], [10, 10], np.float64, True, "test_transpose_contiguous.iarr"),
-        ([100, 500], [50, 70], [20, 20], np.float32, False, "test_transpose_sparse.iarr"),
-        ([1453, 266], [100, 200], [30, 20], np.float64, True, None),
+        ([100, 100], [50, 50], [20, 20], np.float32, False, None, "r"),
+        ([100, 100], [20, 20], [10, 10], np.float64, True, "test_transpose_contiguous.iarr", "r+"),
+        ([100, 500], [50, 70], [20, 20], np.float32, False, "test_transpose_sparse.iarr", "w"),
+        ([1453, 266], [100, 200], [30, 20], np.float64, True, None, "w-"),
     ],
 )
-def test_transpose(shape, chunks, blocks, dtype, contiguous, urlpath):
+def test_transpose(shape, chunks, blocks, dtype, contiguous, urlpath, mode):
     ia.remove_urlpath(urlpath)
     cfg = ia.Config(chunks=chunks, blocks=blocks, contiguous=contiguous, urlpath=urlpath)
 
@@ -27,11 +27,21 @@ def test_transpose(shape, chunks, blocks, dtype, contiguous, urlpath):
     an = ia.iarray2numpy(at)
     np.testing.assert_allclose(an, bn, rtol=rtol)
 
-    at = a.transpose()
+    if mode in ["r", "r+"]:
+        with pytest.raises(IOError):
+            at = a.transpose(mode=mode)
+        at = a.transpose()
+    else:
+        at = a.transpose(mode=mode)
     an = ia.iarray2numpy(at)
     np.testing.assert_allclose(an, bn, rtol=rtol)
 
-    at = ia.transpose(a)
+    if mode in ["r", "r+"]:
+        with pytest.raises(IOError):
+            at = ia.transpose(a, mode=mode)
+        at = ia.transpose(a)
+    else:
+        at = ia.transpose(a, mode=mode)
 
     an = ia.iarray2numpy(at)
     np.testing.assert_allclose(an, bn, rtol=rtol)

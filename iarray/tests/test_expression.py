@@ -219,6 +219,14 @@ def test_expression(
 
     expr = ia.expr_from_string(expression, {"x": x, "y": y}, chunks=chunks, blocks=blocks, contiguous=xcontiguous,
                                urlpath="test_expression_zarray.iarr", eval_method=method)
+
+    with pytest.raises(IOError):
+        expr.cfg.mode = "r"
+        expr.eval()
+    with pytest.raises(IOError):
+        expr.cfg.mode = "r+"
+        expr.eval()
+    expr.cfg.mode = "w-"
     iout = expr.eval()
     npout = ia.iarray2numpy(iout)
 

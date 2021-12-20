@@ -291,6 +291,8 @@ def test_overwrite(contiguous):
     ia.remove_urlpath(fname)
     a = ia.arange([10, 20, 10, 14], contiguous=contiguous, urlpath=fname)
     b = ia.arange([10, 20, 10, 14], contiguous=contiguous, urlpath=fname, mode="w")
+    with pytest.raises(IOError):
+        b = ia.arange([10, 20, 10, 14], contiguous=contiguous, urlpath=fname, mode="w-")
 
     ia.remove_urlpath(fname)
 
