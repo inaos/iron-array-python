@@ -134,7 +134,7 @@ class Defaults(object):
     chunks: Sequence = None
     blocks: Sequence = None
     urlpath: bytes or str = None
-    mode: bytes or str = b"w-"
+    mode: str = "w-"
     contiguous: bool = None
 
     # Keep track of the special params set with default values for consistency checks with btune
@@ -343,7 +343,7 @@ class Config(ext.Config):
     chunks: Union[Sequence, None] = field(default_factory=defaults._chunks)
     blocks: Union[Sequence, None] = field(default_factory=defaults._blocks)
     urlpath: bytes or str = field(default_factory=defaults._urlpath)
-    mode: bytes or str = field(default_factory=defaults._mode)
+    mode: str = field(default_factory=defaults._mode)
     contiguous: bool = field(default_factory=defaults._contiguous)
 
     def __post_init__(self):
@@ -356,7 +356,6 @@ class Config(ext.Config):
         if self.contiguous is None and self.urlpath is not None:
             self.contiguous = True
         self.urlpath = (self.urlpath.encode("utf-8") if isinstance(self.urlpath, str) else self.urlpath)
-        self.mode = (self.mode.encode("utf-8") if isinstance(self.mode, str) else self.mode)
         global RANDOM_SEED
         # Increase the random seed each time so as to prevent re-using them
         if self.seed is None:

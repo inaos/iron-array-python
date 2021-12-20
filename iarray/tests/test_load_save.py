@@ -45,7 +45,7 @@ def test_load_save(shape, chunks, blocks, dtype, func, contiguous):
     assert(b.cfg.filters == a.cfg.filters)
     assert(b.cfg.fp_mantissa_bits == a.cfg.fp_mantissa_bits)
     assert(b.dtype == a.dtype)
-    assert(b.cfg.mode == b"a")
+    assert(b.cfg.mode == "a")
 
     c = ia.load(urlpath)
     assert(c.cfg.contiguous is False)
@@ -56,6 +56,6 @@ def test_load_save(shape, chunks, blocks, dtype, func, contiguous):
     assert(c.cfg.filters == a.cfg.filters)
     assert(c.cfg.fp_mantissa_bits == a.cfg.fp_mantissa_bits)
     assert(c.dtype == a.dtype)
-    assert(c.cfg.mode == b"a")
+    assert(c.cfg.mode == "a")
 
     ia.remove_urlpath(urlpath)
