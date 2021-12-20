@@ -195,7 +195,7 @@ def test_matmul(
 @pytest.mark.parametrize(
     "ashape, achunks, ablocks, astart, astop, acontiguous, aurlpath,"
     "bshape, bchunks, bblocks, bstart, bstop,bcontiguous, burlpath,"
-    "cchunks, cblocks, dtype, ccontiguous, curlpath,",
+    "cchunks, cblocks, dtype, ccontiguous, curlpath, mode",
     [
         (
             [100, 100],
@@ -217,6 +217,7 @@ def test_matmul(
             np.float64,
             True,
             None,
+            "a",
         ),
         (
             [100, 100],
@@ -238,6 +239,7 @@ def test_matmul(
             np.float32,
             False,
             None,
+            "r+"
         ),
         (
             [100, 100],
@@ -259,6 +261,7 @@ def test_matmul(
             np.float64,
             True,
             "test_matmul_ccontiguous.iarr",
+            "w-"
         ),
         (
             [100, 100],
@@ -280,6 +283,7 @@ def test_matmul(
             np.float32,
             False,
             "test_matmul_csparse.iarr",
+            "w"
         ),
         (
             [100, 100],
@@ -301,6 +305,7 @@ def test_matmul(
             np.float64,
             True,
             None,
+            "r",
         ),
         (
             [100, 100],
@@ -322,6 +327,7 @@ def test_matmul(
             np.float32,
             False,
             "test_matmul_csparse.iarr",
+            "a",
         ),
         (
             [1000, 500],
@@ -343,6 +349,7 @@ def test_matmul(
             np.float64,
             False,
             "test_matmul_csparse.iarr",
+            "w-"
         ),
         (
             [1000, 1000],
@@ -364,6 +371,7 @@ def test_matmul(
             np.float32,
             True,
             "test_matmul_ccontiguous.iarr",
+            "a",
         ),
     ],
 )
@@ -387,6 +395,7 @@ def test_matmul_slice(
     dtype,
     ccontiguous,
     curlpath,
+    mode,
 ):
     ia.remove_urlpath(aurlpath)
     ia.remove_urlpath(burlpath)
@@ -408,7 +417,11 @@ def test_matmul_slice(
         bslices = bslices[0]
     bsl = b[bslices]
 
-    ccfg = ia.Config(chunks=cchunks, blocks=cblocks, contiguous=ccontiguous, urlpath=curlpath)
+    ccfg = ia.Config(chunks=cchunks, blocks=cblocks, contiguous=ccontiguous, urlpath=curlpath, mode=mode)
+    if mode in ["r", "r+"]:
+        with pytest.raises(IOError):
+            c = ia.matmul(asl, bsl, cfg=ccfg)
+        ccfg.mode = "a"
     c = ia.matmul(asl, bsl, cfg=ccfg)
     cn = np.matmul(an[aslices], bn[bslices])
 

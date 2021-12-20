@@ -44,5 +44,10 @@ def test_copy(shape, chunks, blocks, dtype, contiguous, urlpath, urlpath2):
     d = a.copy()
     assert d.cfg.btune is False
 
+    with pytest.raises(IOError):
+        a.copy(mode="r")
+    with pytest.raises(IOError):
+        a.copy(mode="r+")
+
     ia.remove_urlpath(urlpath)
     ia.remove_urlpath(urlpath2)

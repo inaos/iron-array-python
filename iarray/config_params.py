@@ -133,9 +133,8 @@ class Defaults(object):
     split_mode: (ia.SplitMode) = ia.SplitMode.AUTO_SPLIT
     chunks: Sequence = None
     blocks: Sequence = None
-    urlpath: str = None
-    mode: str = "r"
-
+    urlpath: bytes or str = None
+    mode: bytes or str = b"w-"
     contiguous: bool = None
 
     # Keep track of the special params set with default values for consistency checks with btune
@@ -316,7 +315,7 @@ class Config(ext.Config):
     mode : str
         Persistence mode: 'r' means read only (must exist); 'r+' means read/write (must exist);
         'a' means read/write (create if doesn’t exist); 'w' means create (overwrite if exists);
-        'w-' means create (fail if exists).  Default is 'r'.
+        'w-' means create (fail if exists).  Default is 'a' for opening/loading and 'w-' otherwise.
     contiguous : bool
         If True, the output array will be stored contiguously, even when in-memory.  If False,
         the store will be sparse. The default value is False for in-memory and True for persistent
@@ -455,7 +454,6 @@ class Config(ext.Config):
                 defaults.compat_params = set()
                 defaults.check_compat = True
                 raise ValueError(f"A `favor` argument needs `btune` enabled.")
-
 
     def _get_shape_advice(self, shape):
         chunks, blocks = self.chunks, self.blocks

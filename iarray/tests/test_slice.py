@@ -35,7 +35,7 @@ def test_slice(slices, shape, chunks, blocks, dtype, acontiguous, aurlpath):
     ia.remove_urlpath(aurlpath)
     cfg = ia.Config(chunks=chunks, blocks=blocks, contiguous=acontiguous, urlpath=aurlpath)
 
-    a = ia.linspace(shape, -10, 10, cfg=cfg, dtype=dtype)
+    a = ia.linspace(shape, -10, 10, cfg=cfg, mode="w", dtype=dtype)
     an = ia.iarray2numpy(a)
 
     a[slices] = 0
@@ -71,7 +71,7 @@ def test_double_slice(shape, chunks, blocks, dtype, acontiguous, aurlpath):
     ia.remove_urlpath(aurlpath)
     cfg = ia.Config(chunks=chunks, blocks=blocks, contiguous=acontiguous, urlpath=aurlpath)
 
-    a = ia.linspace(shape, -10, 10, cfg=cfg, dtype=dtype)
+    a = ia.linspace(shape, -10, 10, cfg=cfg, mode="a", dtype=dtype)
     b1 = a[4]
     b2 = a[4]
     np.testing.assert_almost_equal(b1.data, b2.data)

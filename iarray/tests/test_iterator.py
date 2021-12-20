@@ -6,9 +6,9 @@ from itertools import zip_longest as izip
 
 # Expression
 @pytest.mark.parametrize(
-    "shape, chunks, blocks, itershape, dtype, acontiguous, aurlpath, bcontiguous, burlpath",
+    "shape, chunks, blocks, itershape, dtype, acontiguous, aurlpath, bcontiguous, burlpath, mode",
     [
-        ([100, 100], [20, 20], [10, 10], [20, 20], np.float64, True, None, True, None),
+        ([100, 100], [20, 20], [10, 10], [20, 20], np.float64, True, None, True, None, "r"),
         (
             [100, 100],
             [15, 15],
@@ -19,6 +19,7 @@ from itertools import zip_longest as izip
             "test_iter_acontiguous.iarr",
             True,
             "test_iter_bcontiguous.iarr",
+            "w-",
         ),
         (
             [10, 10, 10],
@@ -30,6 +31,7 @@ from itertools import zip_longest as izip
             "test_iter_asparse.iarr",
             False,
             "test_iter_bsparse.iarr",
+            "w",
         ),
         (
             [10, 10, 10, 10],
@@ -41,6 +43,7 @@ from itertools import zip_longest as izip
             None,
             False,
             None,
+            "r",
         ),
         (
             [100, 100],
@@ -52,6 +55,7 @@ from itertools import zip_longest as izip
             "test_iter_asparse.iarr",
             True,
             None,
+            "r+",
         ),
         (
             [100, 100],
@@ -63,6 +67,7 @@ from itertools import zip_longest as izip
             None,
             True,
             "test_iter_bcontiguous.iarr",
+            "a",
         ),
         (
             [10, 10, 10],
@@ -74,6 +79,7 @@ from itertools import zip_longest as izip
             "test_iter_asparse.iarr",
             True,
             "test_iter_bsparse.iarr",
+            "a",
         ),
         (
             [10, 10, 10, 10],
@@ -85,14 +91,15 @@ from itertools import zip_longest as izip
             None,
             False,
             None,
+            "w",
         ),
     ],
 )
 def test_iterator(
-    shape, chunks, blocks, itershape, dtype, acontiguous, aurlpath, bcontiguous, burlpath
+    shape, chunks, blocks, itershape, dtype, acontiguous, aurlpath, bcontiguous, burlpath, mode
 ):
     acfg = ia.Config(chunks=chunks, blocks=blocks, contiguous=acontiguous, urlpath=aurlpath)
-    bcfg = ia.Config(chunks=chunks, blocks=blocks, contiguous=bcontiguous, urlpath=burlpath)
+    bcfg = ia.Config(chunks=chunks, blocks=blocks, contiguous=bcontiguous, urlpath=burlpath, mode="a")
 
     ia.remove_urlpath(aurlpath)
     ia.remove_urlpath(burlpath)
@@ -100,6 +107,12 @@ def test_iterator(
     an = ia.iarray2numpy(a)
 
     b = ia.empty(shape, dtype=dtype, cfg=bcfg)
+    mode2 = b.cfg.mode
+    b.cfg.mode = mode
+    if mode in ["r", "w-"]:
+        with pytest.raises(IOError):
+            izip(a.iter_read_block(itershape), b.iter_write_block(itershape))
+        b.cfg.mode = mode2
 
     zip = izip(a.iter_read_block(itershape), b.iter_write_block(itershape))
     for i, ((ainfo, aslice), (_, bslice)) in enumerate(zip):

@@ -207,7 +207,7 @@ from .utils import (
     cmp_arrays,
     iarray2numpy,
     numpy2iarray,
-    _check_path_mode,
+    _check_access_mode,
     remove_urlpath,
 )
 

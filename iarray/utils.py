@@ -17,13 +17,27 @@ import os
 import shutil
 
 
-# TODO: complete support for all possible values of mode
-def _check_path_mode(urlpath, mode):
+def _check_access_mode(urlpath, mode, update=False):
     """
     Based on `urlpath` and `mode`, remove the possible underlying storage.
+
+    Call this function only when modifying/creating an array.
     """
-    if urlpath is not None and mode == b"w" and os.path.exists(urlpath):
-        ia.remove_urlpath(urlpath)
+    supported_modes = [b"r", b"r+", b"w-", b"w", b"a"]
+    mode = mode.encode("utf-8") if isinstance(mode, str) else mode
+    supported = any(x == mode for x in supported_modes)
+    if not supported:
+        raise NotImplementedError("The mode is not supported yet.")
+    if mode == b"r":
+        raise IOError("Cannot do the requested operation with the actual mode.")
+    if mode == b"r+" and not update:
+        raise IOError("Cannot do the requested operation with the actual mode.")
+    if urlpath is not None:
+        if mode == b"w":
+            if not update:
+                ia.remove_urlpath(urlpath)
+        elif os.path.exists(urlpath) and mode == b"w-":
+            raise IOError(f"The writing mode cannot overwrite the already existing array '{urlpath}'.")
 
 
 def cmp_arrays(a, b, success=None) -> None:
@@ -82,7 +96,7 @@ def save(urlpath: str, iarr: ia.IArray, cfg: ia.Config = None, **kwargs) -> None
 def load(urlpath: str, cfg: ia.Config = None, **kwargs) -> ia.IArray:
     """Open an array from a binary file in ironArray `.iarr` format and load data into memory.
 
-    The default for this function is `contiguous=False`.
+    The default for this function is `contiguous=False` and `mode='a'`.
 
     `cfg` and `kwargs` are the same than for :func:`IArray.copy`.
 
@@ -102,12 +116,16 @@ def load(urlpath: str, cfg: ia.Config = None, **kwargs) -> ia.IArray:
     """
     if kwargs.get('contiguous', None) is None and (cfg is None or cfg.contiguous is None):
         kwargs = dict(kwargs, contiguous=False)
-
-    iarr = ia.open(urlpath)
+    if kwargs.get('mode', None) is not None:
+        iarr = ia.open(urlpath, mode=kwargs.get("mode", None))
+    elif cfg is not None:
+        iarr = ia.open(urlpath, mode=cfg.mode)
+    else:
+        iarr = ia.open(urlpath)
     return iarr.copy(cfg=cfg, **kwargs)
 
 
-def open(urlpath: str) -> ia.IArray:
+def open(urlpath: str, mode='a') -> ia.IArray:
     """Open an array from a binary file in ironArray `.iarr` format.
 
     The array data will lazily be read when necessary.
@@ -116,6 +134,8 @@ def open(urlpath: str) -> ia.IArray:
     ----------
     urlpath : str
         The url path to read.
+    mode : str
+        The open mode. This parameter supersedes the mode in the default :class:`Config`.
 
     Returns
     -------
@@ -127,7 +147,9 @@ def open(urlpath: str) -> ia.IArray:
     save : Save an array to disk.
     """
     cfg = ia.get_config_defaults()
-    with ia.config(cfg=cfg) as cfg:
+    if not os.path.exists(urlpath):
+        raise IOError("The file does not exist.")
+    with ia.config(cfg=cfg, mode=mode) as cfg:
         return ext.open(cfg, urlpath)
 
 
