@@ -8,6 +8,7 @@ Library Reference
    reference/config
    reference/iarray
    reference/constructors
+   reference/convenience_functions
    reference/ufuncs
    reference/linalg
    reference/expressions
