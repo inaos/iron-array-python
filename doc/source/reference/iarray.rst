@@ -74,19 +74,3 @@ Mathematical methods
 .. seealso::
 
    :ref:`Mathematical Functions`
-
-Utilities
-=========
-
-.. autosummary::
-   :toctree: autofiles/ndarray
-   :nosignatures:
-
-   load
-   open
-   save
-   cmp_arrays
-   iarray2numpy
-   numpy2iarray
-   get_ncores
-   partition_advice

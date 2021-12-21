@@ -69,7 +69,7 @@ def check_inputs(inputs: list, shape):
 
 
 def expr_from_string(sexpr: str, inputs: dict, cfg: ia.Config = None, **kwargs) -> Expr:
-    """Create an :class:`Expr` instance from a expression in string form.
+    """Create an :class:`Expr` instance from an expression in string form.
 
     Parameters
     ----------
