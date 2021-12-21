@@ -6,10 +6,10 @@ import dask.array as da
 import zarr
 import os
 
-cmd = 'vmtouch -e precip-3m-optimal.zarr'
+cmd = 'vmtouch -e precip-3m.zarr'
 os.system(cmd)
 # Use a previous computation for getting metadata (shape, chunks...)
-precip = zarr.open("precip-3m-optimal.zarr")
+precip = zarr.open("precip-3m.zarr")
 shape = precip.shape[1:]
 dtype = np.float32
 clevel = ia.Config().clevel

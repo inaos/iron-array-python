@@ -2,24 +2,24 @@ import iarray as ia
 from time import time
 
 
-contiguous = False
-nthreads = 21
+# contiguous = False
+# nthreads = 21
 
 # Some experiments lead to these chunk and block shapes
 # chunks = (128, 256, 1440)
 # blocks = (16, 16, 180)
 # chunks = (180, 256, 1440)
 # block = (12, 16, 180)
-chunks = (360, 128, 1440)
-blocks = (8, 8, 720)
-ia.set_config_defaults(chunks=chunks, blocks=blocks)
+# chunks = (360, 128, 1440)
+# blocks = (8, 8, 720)
+# ia.set_config_defaults(chunks=chunks, blocks=blocks)
 
 # cfg = ia.Config(contiguous=contiguous, chunks=chunks, blocks=blocks)
 # cfg = ia.Config(nthreads=nthreads, store=store, clevel=1, codec=ia.Codec.ZSTD, filters=[ia.Filter.BITSHUFFLE])
 # cfg = ia.Config(store=store, clevel=1, codec=ia.Codec.ZSTD, filters=[ia.Filter.BITSHUFFLE])
 # cfg = ia.Config(nthreads=0, store=store, clevel=1, codec=ia.Codec.ZSTD, filters=[ia.Filter.BITSHUFFLE])
-cfg = ia.Config(contiguous=contiguous)
-print("cfg:", cfg)
+# cfg = ia.Config(contiguous=contiguous)
+# print("cfg:", cfg)
 
 # t0 = time()
 # ia_precip = ia.open("precip-3m.iarr")
@@ -37,9 +37,9 @@ print("cfg:", cfg)
 # print("save time ->", round(t, 3))
 
 t0 = time()
-precip1 = ia.load("../tutorials/precip1-speed.iarr")
-precip2 = ia.load("../tutorials/precip2-speed.iarr")
-precip3 = ia.load("../tutorials/precip3-speed.iarr")
+precip1 = ia.load("../tutorials/precip1.iarr")
+precip2 = ia.load("../tutorials/precip2.iarr")
+precip3 = ia.load("../tutorials/precip3.iarr")
 t = time() - t0
 print("load time ->", round(t, 3))
 
@@ -56,7 +56,7 @@ print("cratio:", round(precip1.cratio, 3))
 
 @profile
 def iarray_mean_memory(expr):
-    expr_val = expr.eval(cfg=cfg)
+    expr_val = expr.eval()
     return expr_val
 
 
@@ -69,7 +69,7 @@ print("mean time ->", round(t, 3))
 
 @profile
 def iarray_trans_memory(expr):
-    expr_val = expr.eval(cfg=cfg)
+    expr_val = expr.eval()
     return expr_val
 
 

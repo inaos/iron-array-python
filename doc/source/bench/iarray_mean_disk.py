@@ -4,9 +4,9 @@ import os
 t0 = time()
 import iarray as ia
 
-chunks = (360, 128, 1440)
-blocks = (8, 8, 720)
-ia.set_config_defaults(chunks=chunks, blocks=blocks)
+# chunks = (360, 128, 1440)
+# blocks = (8, 8, 720)
+# ia.set_config_defaults(chunks=chunks, blocks=blocks)
 
 t = time() - t0
 print("iarray import time ->", round(t, 3))
@@ -32,12 +32,12 @@ print("iarray import time ->", round(t, 3))
 
 # @profile
 def iarray_open_data():
-    precip1 = ia.open("../tutorials/precip1-speed.iarr")
-    precip2 = ia.open("../tutorials/precip2-speed.iarr")
-    precip3 = ia.open("../tutorials/precip3-speed.iarr")
+    precip1 = ia.open("../tutorials/precip1.iarr")
+    precip2 = ia.open("../tutorials/precip2.iarr")
+    precip3 = ia.open("../tutorials/precip3.iarr")
     return precip1, precip2, precip3
 
-cmd = 'vmtouch -e ../tutorials/precip1-speed.iarr ../tutorials/precip2-speed.iarr ../tutorials/precip3-speed.iarr'
+cmd = 'vmtouch -e ../tutorials/precip1.iarr ../tutorials/precip2.iarr ../tutorials/precip3.iarr'
 os.system(cmd)
 t0 = time()
 precip1, precip2, precip3 = iarray_open_data()
@@ -48,12 +48,12 @@ chunks = precip1.chunks
 blocks = precip1.blocks
 
 # cfg = ia.Config(nthreads=14, chunks=precip1.chunks, blocks=precip1.blocks, clevel=1, codec=ia.Codec.ZSTD, filters=[ia.Filter.BITSHUFFLE])
-cfg = ia.Config(chunks=precip1.chunks, blocks=precip1.blocks)
+# cfg = ia.Config(chunks=precip1.chunks, blocks=precip1.blocks)
 
 
 @profile
 def iarray_mean_disk(expr):
-    with ia.config(urlpath="mean-3m.iarr", cfg=cfg):
+    with ia.config(urlpath="mean-3m.iarr"):
         expr_val = expr.eval(mode="w")
     return expr_val
 
@@ -73,7 +73,7 @@ mean_disk.info
 
 @profile
 def iarray_trans_disk(expr):
-    with ia.config(urlpath="trans-3m.iarr", cfg=cfg):
+    with ia.config(urlpath="trans-3m.iarr"):
         expr_val = expr.eval(mode="w")
     return expr_val
 
