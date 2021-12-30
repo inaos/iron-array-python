@@ -2,3 +2,6 @@
 	path = iarray/iarray-c-develop
 	url = https://github.com/inaos/iron-array.git
 	branch = develop
+[submodule "iron-array-notebooks"]
+	path = iron-array-notebooks
+	url = git@github.com:ironArray/iron-array-notebooks.git
