@@ -5,7 +5,7 @@ import numpy as np
 
 # Test load, open and save
 @pytest.mark.parametrize("contiguous", [True, False])
-@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+@pytest.mark.parametrize("dtype", [np.float32, np.float64, np.int32, np.uint32])
 @pytest.mark.parametrize(
     "shape, chunks, blocks",
     [
@@ -22,7 +22,11 @@ def test_load_save(shape, chunks, blocks, dtype, func, contiguous):
     ia.remove_urlpath(urlpath)
 
     cfg = ia.Config(chunks=chunks, blocks=blocks, contiguous=contiguous)
-    a = ia.linspace(shape, -10, 10, dtype=dtype, cfg=cfg, fp_mantissa_bits=20)
+    max = 1
+    if dtype not in [np.float64, np.float32]:
+        for i in range(len(shape)):
+            max *= shape[i]
+    a = ia.arange(shape, 0, max, dtype=dtype, cfg=cfg)
     an = ia.iarray2numpy(a)
 
     ia.save(urlpath, a, contiguous=contiguous)
@@ -30,8 +34,10 @@ def test_load_save(shape, chunks, blocks, dtype, func, contiguous):
     b = func(urlpath)
     bn = ia.iarray2numpy(b)
 
-    # Test only the 3 first digits (we are using the TRUNC_PREC filter via fp_mantissa_bits above)
-    np.testing.assert_almost_equal(an, bn, decimal=3)
+    if dtype in [np.float64, np.float32]:
+        np.testing.assert_almost_equal(an, bn)
+    else:
+        np.testing.assert_array_equal(an, bn)
 
     # Overwrite existing array
     ia.save(urlpath, a, contiguous=contiguous)

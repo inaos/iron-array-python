@@ -69,15 +69,15 @@ def test_linspace(start, stop, shape, chunks, blocks, dtype, contiguous, urlpath
         ),
         (
             0,
-            10,
+            10 * 12 * 5,
             [10, 12, 5],
             [5, 5, 5],
             [2, 1, 2],
-            np.float64,
+            np.uint64,
             True,
             "test_arange_contiguous.iarr",
         ),
-        (-0.1, -0.2, [4, 3, 5, 2], [2, 2, 2, 2], [2, 2, 2, 2], np.float32, False, None),
+        (-0.1, -0.2, [4, 3, 5, 2], [2, 2, 2, 2], [2, 2, 2, 2], np.int32, False, None),
     ],
 )
 def test_arange(start, stop, shape, chunks, blocks, dtype, contiguous, urlpath):
@@ -86,7 +86,7 @@ def test_arange(start, stop, shape, chunks, blocks, dtype, contiguous, urlpath):
     ia.remove_urlpath(urlpath)
     a = ia.arange(shape, start, stop, step, dtype=dtype, chunks=chunks, blocks=blocks, contiguous=contiguous, urlpath=urlpath)
     b = ia.iarray2numpy(a)
-    npdtype = np.float64 if dtype == np.float64 else np.float32
+    npdtype = dtype
     c = np.arange(start, stop, step, dtype=npdtype).reshape(shape)
     np.testing.assert_almost_equal(b, c)
     ia.remove_urlpath(urlpath)
@@ -149,23 +149,23 @@ def test_from_file(start, stop, shape, chunks, blocks, dtype, contiguous, urlpat
         ),
         (
             0,
-            10,
+            10 * 12 * 5,
             (slice(2, 4), slice(5, 10), slice(1, 2)),
             [10, 12, 5],
             [5, 6, 5],
             [5, 6, 5],
-            np.float64,
+            np.uint32,
             True,
             "test_slice_contiguous.iarr",
         ),
         (
-            -0.1,
-            -0.2,
+            -120 * 160,
+            0,
             (slice(2, 4), slice(7, 12)),
             [120, 160],
             [120, 40],
             [30, 20],
-            np.float64,
+            np.int16,
             False,
             None,
         ),
@@ -179,10 +179,12 @@ def test_slice(start, stop, slice, shape, chunks, blocks, dtype, contiguous, url
                   urlpath=urlpath)
     b = a[slice]
     c = ia.iarray2numpy(b)
-    npdtype = np.float64 if dtype == np.float64 else np.float32
+    npdtype = dtype
     d = np.arange(start, stop, step, dtype=npdtype).reshape(shape)[slice]
-    np.testing.assert_allclose(c, d)
-
+    if dtype in [np.float64, np.float32]:
+        np.testing.assert_allclose(c, d)
+    else:
+        np.testing.assert_array_equal(c, d)
     ia.remove_urlpath(urlpath)
 
 
@@ -192,8 +194,8 @@ def test_slice(start, stop, slice, shape, chunks, blocks, dtype, contiguous, url
     [
         ([55, 123, 72], [10, 12, 25], [2, 3, 7], np.float64, True, None),
         ([10, 12, 5], [10, 12, 1], [5, 12, 1], np.float32, False, "test_empty_sparse.iarr"),
-        ([55, 123, 72], [10, 12, 25], [2, 3, 7], np.float64, True, "test_empty_contiguous.iarr"),
-        ([10, 12, 5], [5, 12, 5], [2, 12, 5], np.float32, False, None),
+        ([55, 123, 72], [10, 12, 25], [2, 3, 7], np.bool, True, "test_empty_contiguous.iarr"),
+        ([10, 12, 5], [5, 12, 5], [2, 12, 5], np.int64, False, None),
     ],
 )
 def test_empty(shape, chunks, blocks, dtype, contiguous, urlpath):
@@ -201,7 +203,7 @@ def test_empty(shape, chunks, blocks, dtype, contiguous, urlpath):
     with ia.config(chunks=chunks, blocks=blocks, contiguous=contiguous, urlpath=urlpath):
         a = ia.empty(shape, dtype=dtype)
     b = ia.iarray2numpy(a)
-    npdtype = np.float64 if dtype == np.float64 else np.float32
+    npdtype = dtype
     assert b.dtype == npdtype
     assert b.shape == tuple(shape)
 
@@ -221,17 +223,20 @@ def test_empty(shape, chunks, blocks, dtype, contiguous, urlpath):
             "test_zeros_contiguous.iarr",
         ),
         ([456, 431], [102, 16], [12, 7], np.float32, False, "test_zeros_sparse.iarr"),
-        ([10, 12, 5], [10, 1, 1], [10, 1, 1], np.float64, False, None),
-        ([12, 16], [1, 16], [1, 16], np.float32, True, None),
+        ([10, 12, 5], [10, 1, 1], [10, 1, 1], np.int16, False, None),
+        ([12, 16], [1, 16], [1, 16], np.uint8, True, None),
     ],
 )
 def test_zeros(shape, chunks, blocks, dtype, contiguous, urlpath):
     ia.remove_urlpath(urlpath)
     a = ia.zeros(shape, dtype=dtype, chunks=chunks, blocks=blocks, contiguous=contiguous, urlpath=urlpath)
     b = ia.iarray2numpy(a)
-    npdtype = np.float64 if dtype == np.float64 else np.float32
+    npdtype = dtype
     c = np.zeros(shape, dtype=npdtype)
-    np.testing.assert_almost_equal(b, c)
+    if dtype in [np.float64, np.float32]:
+        np.testing.assert_almost_equal(b, c)
+    else:
+        np.testing.assert_array_equal(b, c)
 
     ia.remove_urlpath(urlpath)
 
@@ -242,17 +247,20 @@ def test_zeros(shape, chunks, blocks, dtype, contiguous, urlpath):
     [
         ([456, 12, 234], [55, 6, 21], [12, 3, 5], np.float64, False, None),
         ([1024, 55], [66, 22], [12, 3], np.float32, True, "test_ones_contiguous.iarr"),
-        ([10, 12, 5], [5, 6, 5], [5, 3, 5], np.float64, True, None),
-        ([120, 130], [45, 64], [33, 12], np.float32, False, "test_ones_sparse.iarr"),
+        ([10, 12, 5], [5, 6, 5], [5, 3, 5], np.int8, True, None),
+        ([120, 130], [45, 64], [33, 12], np.uint16, False, "test_ones_sparse.iarr"),
     ],
 )
 def test_ones(shape, chunks, blocks, dtype, contiguous, urlpath):
     ia.remove_urlpath(urlpath)
     a = ia.ones(shape, dtype=dtype, chunks=chunks, blocks=blocks, contiguous=contiguous, urlpath=urlpath)
     b = ia.iarray2numpy(a)
-    npdtype = np.float64 if dtype == np.float64 else np.float32
+    npdtype = dtype
     c = np.ones(shape, dtype=npdtype)
-    np.testing.assert_almost_equal(b, c)
+    if dtype in [np.float64, np.float32]:
+        np.testing.assert_almost_equal(b, c)
+    else:
+        np.testing.assert_array_equal(b, c)
 
     ia.remove_urlpath(urlpath)
 
@@ -263,17 +271,20 @@ def test_ones(shape, chunks, blocks, dtype, contiguous, urlpath):
     [
         (8.34, [123, 432, 222], [24, 31, 15], [6, 6, 6], np.float64, True, None),
         (2.00001, [567, 375], [52, 16], [9, 7], np.float32, False, "test_full_sparse.iarr"),
-        (8.34, [10, 12, 5], [5, 5, 5], [5, 5, 5], np.float64, True, "test_full_contiguous.iarr"),
-        (2.00001, [12, 16], [12, 16], [10, 10], np.float32, False, None),
+        (8, [10, 12, 5], [5, 5, 5], [5, 5, 5], np.int32, True, "test_full_contiguous.iarr"),
+        (True, [12, 16], [12, 16], [10, 10], np.bool, False, None),
     ],
 )
 def test_full(fill_value, shape, chunks, blocks, dtype, contiguous, urlpath):
     ia.remove_urlpath(urlpath)
     a = ia.full(shape, fill_value, dtype=dtype, chunks=chunks, blocks=blocks, contiguous=contiguous, urlpath=urlpath)
     b = ia.iarray2numpy(a)
-    npdtype = np.float64 if dtype == np.float64 else np.float32
+    npdtype = dtype
     c = np.full(shape, fill_value, dtype=npdtype)
-    np.testing.assert_almost_equal(b, c)
+    if dtype in [np.float64, np.float32]:
+        np.testing.assert_almost_equal(b, c)
+    else:
+        np.testing.assert_array_equal(b, c)
 
     ia.remove_urlpath(urlpath)
 
@@ -340,7 +351,7 @@ def test_fortran(shape, dtype, contiguous, urlpath):
     a = np.linspace(0, 1, nelems, dtype=dtype).reshape(shape)
     a_fortran = a.copy(order="F")
     b = ia.numpy2iarray(a_fortran, cfg=cfg)
-    npdtype = np.float64 if dtype == np.float64 else np.float32
+    npdtype = dtype
     assert b.dtype == npdtype
     assert b.shape == a.shape
     assert b.shape == a_fortran.shape

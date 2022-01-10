@@ -72,6 +72,15 @@ cdef extern from "libiarray/iarray.h":
     ctypedef enum iarray_data_type_t:
         IARRAY_DATA_TYPE_DOUBLE
         IARRAY_DATA_TYPE_FLOAT
+        IARRAY_DATA_TYPE_INT64
+        IARRAY_DATA_TYPE_INT32
+        IARRAY_DATA_TYPE_INT16
+        IARRAY_DATA_TYPE_INT8
+        IARRAY_DATA_TYPE_UINT64
+        IARRAY_DATA_TYPE_UINT32
+        IARRAY_DATA_TYPE_UINT16
+        IARRAY_DATA_TYPE_UINT8
+        IARRAY_DATA_TYPE_BOOL
         IARRAY_DATA_TYPE_MAX
 
     ctypedef enum iarray_compression_codec_t:
@@ -125,6 +134,7 @@ cdef extern from "libiarray/iarray.h":
 
     ctypedef struct iarray_dtshape_t:
         iarray_data_type_t dtype
+        int32_t dtype_size
         int8_t ndim
         int64_t shape[IARRAY_DIMENSION_MAX]
 
@@ -218,19 +228,12 @@ cdef extern from "libiarray/iarray.h":
                          int flags,
                          iarray_container_t **container)
 
-    ina_rc_t iarray_fill_float(iarray_context_t *ctx,
-                               iarray_dtshape_t *dtshape,
-                               float value,
-                               iarray_storage_t *storage,
-                               int flags,
-                               iarray_container_t **container)
-
-    ina_rc_t iarray_fill_double(iarray_context_t *ctx,
-                                     iarray_dtshape_t *dtshape,
-                                     double value,
-                                     iarray_storage_t *storage,
-                                     int flags,
-                                     iarray_container_t **container)
+    ina_rc_t iarray_fill(iarray_context_t *ctx,
+                         iarray_dtshape_t *dtshape,
+                         void *value,
+                         iarray_storage_t *storage,
+                         int flags,
+                         iarray_container_t ** container)
 
     ina_rc_t iarray_copy(iarray_context_t *ctx,
                               iarray_container_t *src,
