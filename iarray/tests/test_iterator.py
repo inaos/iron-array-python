@@ -38,7 +38,7 @@ from itertools import zip_longest as izip
             [3, 4, 3, 4],
             [2, 2, 2, 2],
             [3, 4, 3, 4],
-            np.float32,
+            np.int32,
             False,
             None,
             False,
@@ -50,7 +50,7 @@ from itertools import zip_longest as izip
             [50, 50],
             [20, 20],
             [50, 50],
-            np.float64,
+            np.uint64,
             False,
             "test_iter_asparse.iarr",
             True,
@@ -62,7 +62,7 @@ from itertools import zip_longest as izip
             [23, 35],
             [21, 33],
             [23, 35],
-            np.float32,
+            np.uint16,
             False,
             None,
             True,
@@ -74,7 +74,7 @@ from itertools import zip_longest as izip
             [10, 10, 10],
             [5, 5, 5],
             [10, 10, 10],
-            np.float64,
+            np.int16,
             True,
             "test_iter_asparse.iarr",
             True,
@@ -103,7 +103,11 @@ def test_iterator(
 
     ia.remove_urlpath(aurlpath)
     ia.remove_urlpath(burlpath)
-    a = ia.linspace(shape, -10, 10, dtype=dtype, cfg=acfg)
+    max = 1
+    if dtype not in [np.float64, np.float32]:
+        for i in range(len(shape)):
+            max *= shape[i]
+    a = ia.arange(shape, 0, max, dtype=dtype, cfg=acfg)
     an = ia.iarray2numpy(a)
 
     b = ia.empty(shape, dtype=dtype, cfg=bcfg)
@@ -120,7 +124,10 @@ def test_iterator(
         start = ainfo.elemindex
         stop = tuple(ainfo.elemindex[i] + ainfo.shape[i] for i in range(len(ainfo.elemindex)))
         slices = tuple(slice(start[i], stop[i]) for i in range(len(start)))
-        np.testing.assert_almost_equal(aslice, an[slices])
+        if dtype in [np.float64, np.float32]:
+            np.testing.assert_almost_equal(aslice, an[slices])
+        else:
+            np.testing.assert_array_equal(aslice, an[slices])
 
     bn = ia.iarray2numpy(b)
 

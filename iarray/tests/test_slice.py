@@ -26,7 +26,7 @@ slice_data = [
         (..., slice(5, 6)),
     ],
 )
-@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+@pytest.mark.parametrize("dtype", [np.float32, np.float64, np.int64, np.int32, np.uint64, np.uint32])
 @pytest.mark.parametrize(
     "shape, chunks, blocks, acontiguous, aurlpath",
     slice_data,
@@ -34,8 +34,11 @@ slice_data = [
 def test_slice(slices, shape, chunks, blocks, dtype, acontiguous, aurlpath):
     ia.remove_urlpath(aurlpath)
     cfg = ia.Config(chunks=chunks, blocks=blocks, contiguous=acontiguous, urlpath=aurlpath)
-
-    a = ia.linspace(shape, -10, 10, cfg=cfg, mode="w", dtype=dtype)
+    max = 1
+    if dtype not in [np.float64, np.float32]:
+        for i in range(len(shape)):
+            max *= shape[i]
+    a = ia.arange(shape, 0, max, cfg=cfg, mode="w", dtype=dtype)
     an = ia.iarray2numpy(a)
 
     a[slices] = 0

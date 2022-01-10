@@ -76,10 +76,7 @@ cdef class ReadBlockIter:
             block_[i] = block[i]
 
         iarray_check(ciarray.iarray_iter_read_block_new(self.container.context.ia_ctx, &self.ia_read_iter, self.container.ia_container, block_, &self.ia_block_val, False))
-        if self.container.dtype == np.float64:
-            self.dtype = 0
-        else:
-            self.dtype = 1
+        self.dtype = get_key_from_dict(dtypes, self.container.dtype)
         self.Info = namedtuple('Info', 'index elemindex nblock shape size slice')
 
     def __dealloc__(self):
@@ -95,10 +92,28 @@ cdef class ReadBlockIter:
         iarray_check(ciarray.iarray_iter_read_block_next(self.ia_read_iter, NULL, 0))
         shape = tuple(self.ia_block_val.block_shape[i] for i in range(self.container.ndim))
         size = np.prod(shape)
-        if self.dtype == 0:
+        if self.dtype == ciarray.IARRAY_DATA_TYPE_DOUBLE:
             view = <np.float64_t[:size]> self.ia_block_val.block_pointer
-        else:
+        elif self.dtype == ciarray.IARRAY_DATA_TYPE_FLOAT:
             view = <np.float32_t[:size]> self.ia_block_val.block_pointer
+        elif self.dtype == ciarray.IARRAY_DATA_TYPE_INT64:
+                    view = <np.int64_t[:size]> self.ia_block_val.block_pointer
+        elif self.dtype == ciarray.IARRAY_DATA_TYPE_INT32:
+                    view = <np.int32_t[:size]> self.ia_block_val.block_pointer
+        elif self.dtype == ciarray.IARRAY_DATA_TYPE_INT16:
+                    view = <np.int16_t[:size]> self.ia_block_val.block_pointer
+        elif self.dtype == ciarray.IARRAY_DATA_TYPE_INT8:
+                    view = <np.int8_t[:size]> self.ia_block_val.block_pointer
+        elif self.dtype == ciarray.IARRAY_DATA_TYPE_UINT64:
+                    view = <np.uint64_t[:size]> self.ia_block_val.block_pointer
+        elif self.dtype == ciarray.IARRAY_DATA_TYPE_UINT32:
+                    view = <np.uint32_t[:size]> self.ia_block_val.block_pointer
+        elif self.dtype == ciarray.IARRAY_DATA_TYPE_UINT16:
+                    view = <np.uint16_t[:size]> self.ia_block_val.block_pointer
+        elif self.dtype == ciarray.IARRAY_DATA_TYPE_UINT8:
+                    view = <np.uint8_t[:size]> self.ia_block_val.block_pointer
+        elif self.dtype == ciarray.IARRAY_DATA_TYPE_BOOL:
+                    view = <ciarray.bool[:size]> self.ia_block_val.block_pointer
         a = np.asarray(view)
 
         elem_index = tuple(self.ia_block_val.elem_index[i] for i in range(self.container.ndim))
@@ -138,10 +153,7 @@ cdef class WriteBlockIter:
                                                          &self.ia_block_val,
                                                          False))
 
-        if self.container.dtype == np.float64:
-            self.dtype = 0
-        else:
-            self.dtype = 1
+        self.dtype = get_key_from_dict(dtypes, self.container.dtype)
         self.Info = namedtuple('Info', 'index elemindex nblock shape size')
 
     def __dealloc__(self):
@@ -160,10 +172,28 @@ cdef class WriteBlockIter:
         iarray_check(ciarray.iarray_iter_write_block_next(self.ia_write_iter, NULL, 0))
         shape = tuple(self.ia_block_val.block_shape[i] for i in range(self.container.ndim))
         size = np.prod(shape)
-        if self.dtype == 0:
+        if self.dtype == ciarray.IARRAY_DATA_TYPE_DOUBLE:
             view = <np.float64_t[:size]> self.ia_block_val.block_pointer
-        else:
+        elif self.dtype == ciarray.IARRAY_DATA_TYPE_FLOAT:
             view = <np.float32_t[:size]> self.ia_block_val.block_pointer
+        elif self.dtype == ciarray.IARRAY_DATA_TYPE_INT64:
+                    view = <np.int64_t[:size]> self.ia_block_val.block_pointer
+        elif self.dtype == ciarray.IARRAY_DATA_TYPE_INT32:
+                    view = <np.int32_t[:size]> self.ia_block_val.block_pointer
+        elif self.dtype == ciarray.IARRAY_DATA_TYPE_INT16:
+                    view = <np.int16_t[:size]> self.ia_block_val.block_pointer
+        elif self.dtype == ciarray.IARRAY_DATA_TYPE_INT8:
+                    view = <np.int8_t[:size]> self.ia_block_val.block_pointer
+        elif self.dtype == ciarray.IARRAY_DATA_TYPE_UINT64:
+                    view = <np.uint64_t[:size]> self.ia_block_val.block_pointer
+        elif self.dtype == ciarray.IARRAY_DATA_TYPE_UINT32:
+                    view = <np.uint32_t[:size]> self.ia_block_val.block_pointer
+        elif self.dtype == ciarray.IARRAY_DATA_TYPE_UINT16:
+                    view = <np.uint16_t[:size]> self.ia_block_val.block_pointer
+        elif self.dtype == ciarray.IARRAY_DATA_TYPE_UINT8:
+                    view = <np.uint8_t[:size]> self.ia_block_val.block_pointer
+        elif self.dtype == ciarray.IARRAY_DATA_TYPE_BOOL:
+                    view = <ciarray.bool[:size]> self.ia_block_val.block_pointer
         a = np.asarray(view)
 
         elem_index = tuple(self.ia_block_val.elem_index[i] for i in range(self.container.ndim))
@@ -236,16 +266,24 @@ cdef class Context:
     def to_capsule(self):
         return PyCapsule_New(self.ia_ctx, "iarray_context_t*", NULL)
 
+# Type data equivalences between C and Python
+dtypes = {ciarray.IARRAY_DATA_TYPE_DOUBLE: np.float64, ciarray.IARRAY_DATA_TYPE_FLOAT: np.float32,
+                 ciarray.IARRAY_DATA_TYPE_INT64: np.int64, ciarray.IARRAY_DATA_TYPE_INT32: np.int32,
+                 ciarray.IARRAY_DATA_TYPE_INT16: np.int16, ciarray.IARRAY_DATA_TYPE_INT8: np.int8,
+                 ciarray.IARRAY_DATA_TYPE_UINT64: np.uint64, ciarray.IARRAY_DATA_TYPE_UINT32: np.uint32,
+                 ciarray.IARRAY_DATA_TYPE_UINT16: np.uint16, ciarray.IARRAY_DATA_TYPE_UINT8: np.uint8,
+                 ciarray.IARRAY_DATA_TYPE_BOOL: np.bool}
+def get_key_from_dict(dic, val):
+    for key, value in dic.items():
+        if val == value:
+            return key
 
 cdef class IaDTShape:
     cdef ciarray.iarray_dtshape_t ia_dtshape
 
     def __cinit__(self, dtshape):
         self.ia_dtshape.ndim = len(dtshape.shape)
-        if dtshape.dtype == np.float64:
-            self.ia_dtshape.dtype = ciarray.IARRAY_DATA_TYPE_DOUBLE
-        elif dtshape.dtype == np.float32:
-            self.ia_dtshape.dtype = ciarray.IARRAY_DATA_TYPE_FLOAT
+        self.ia_dtshape.dtype = get_key_from_dict(dtypes, dtshape.dtype)
         for i in range(len(dtshape.shape)):
             self.ia_dtshape.shape[i] = dtshape.shape[i]
 
@@ -258,8 +296,7 @@ cdef class IaDTShape:
 
     @property
     def dtype(self):
-        dtype = [np.float64, np.float32]
-        return dtype[self.ia_dtshape.dtype]
+        return dtypes[self.ia_dtshape.dtype]
 
     @property
     def shape(self):
@@ -356,10 +393,9 @@ cdef class Container:
     @property
     def dtype(self):
         """Data-type of the array’s elements."""
-        dtype = [np.float64, np.float32]
         cdef ciarray.iarray_dtshape_t dtshape
         iarray_check(ciarray.iarray_get_dtshape(self.context.ia_ctx, self.ia_container, &dtshape))
-        return dtype[dtshape.dtype]
+        return dtypes[dtshape.dtype]
 
     @property
     def dtshape(self):
@@ -662,10 +698,12 @@ def full(cfg, fill_value, dtshape):
     ia._check_access_mode(cfg.urlpath, cfg.mode)
 
     cdef ciarray.iarray_container_t *c
-    if dtshape["dtype"] == ciarray.IARRAY_DATA_TYPE_DOUBLE:
-        iarray_check(ciarray.iarray_fill_double(ctx_, &dtshape_, fill_value, &store_, flags, &c))
-    else:
-        iarray_check(ciarray.iarray_fill_float(ctx_, &dtshape_, fill_value, &store_, flags, &c))
+    dtype = dtypes[dtshape_.dtype]
+    # The ciarray.iarray_fill function requires a void pointer
+    nparr = np.array([fill_value], dtype=dtype)
+    cdef Py_buffer *val = <Py_buffer *> malloc(sizeof(Py_buffer))
+    PyObject_GetBuffer(nparr, val, PyBUF_SIMPLE)
+    iarray_check(ciarray.iarray_fill(ctx_, &dtshape_, val.buf, &store_, flags, &c))
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
     return ia.IArray(ctx, c_c)
@@ -692,7 +730,7 @@ cdef get_cfg_from_container(cfg, ciarray.iarray_context_t *ctx, ciarray.iarray_c
     cdef ciarray.iarray_dtshape_t dtshape;
     ciarray.iarray_get_dtshape(ctx, c, &dtshape)
 
-    dtype = np.float64 if dtshape.dtype == ciarray.IARRAY_DATA_TYPE_DOUBLE else np.float32
+    dtype = dtypes[dtshape.dtype]
 
     cdef ciarray.iarray_storage_t storage;
     ciarray.iarray_get_storage(ctx, c, &storage)
@@ -883,7 +921,7 @@ def iarray2numpy(cfg, c):
         shape.append(dtshape.shape[i])
     size = np.prod(shape, dtype=np.int64)
 
-    dtype = np.float64 if dtshape.dtype == ciarray.IARRAY_DATA_TYPE_DOUBLE else np.float32
+    dtype = dtypes[dtshape.dtype]
     if ciarray.iarray_is_empty(c_):
         # Return an empty array.  Another possibility would be to raise an exception here?  Let's wait for a use case...
         return np.empty(size, dtype=dtype).reshape(shape)
@@ -954,9 +992,11 @@ def random_beta(cfg, alpha, beta, dtshape):
     if dtshape.dtype == np.float64:
         ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_ALPHA, alpha)
         ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_BETA, beta)
-    else:
+    elif dtshape.dtype == np.float32:
         ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_ALPHA, alpha)
         ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_BETA, beta)
+    else:
+        raise ValueError("Cannot use this data type for this operation")
 
     dtshape = IaDTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
@@ -985,9 +1025,11 @@ def random_lognormal(cfg, mu, sigma, dtshape):
     if dtshape.dtype == np.float64:
         ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_MU, mu)
         ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_SIGMA, sigma)
-    else:
+    elif dtshape.dtype == np.float32:
         ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_MU, mu)
         ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_SIGMA, sigma)
+    else:
+        raise ValueError("Cannot use this data type for this operation")
 
     dtshape = IaDTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
@@ -1015,8 +1057,10 @@ def random_exponential(cfg, beta, dtshape):
 
     if dtshape.dtype == np.float64:
         iarray_check(ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_BETA, beta))
-    else:
+    elif dtshape.dtype == np.float32:
         iarray_check(ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_BETA, beta))
+    else:
+        raise ValueError("Cannot use this data type for this operation")
 
     dtshape = IaDTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
@@ -1045,9 +1089,11 @@ def random_uniform(cfg, a, b, dtshape):
     if dtshape.dtype == np.float64:
         iarray_check(ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_A, a))
         iarray_check(ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_B, b))
-    else:
+    elif dtshape.dtype == np.float32:
         iarray_check(ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_A, a))
         iarray_check(ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_B, b))
+    else:
+        raise ValueError("Cannot use this data type for this operation")
 
     dtshape = IaDTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
@@ -1076,9 +1122,11 @@ def random_normal(cfg, mu, sigma, dtshape):
     if dtshape.dtype == np.float64:
         iarray_check(ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_MU, mu))
         iarray_check(ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_SIGMA, sigma))
-    else:
+    elif dtshape.dtype == np.float32:
         iarray_check(ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_MU, mu))
         iarray_check(ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_SIGMA, sigma))
+    else:
+        raise ValueError("Cannot use this data type for this operation")
 
     dtshape = IaDTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
@@ -1106,8 +1154,10 @@ def random_bernoulli(cfg, p, dtshape):
 
     if dtshape.dtype == np.float64:
         iarray_check(ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_P, p))
-    else:
+    elif dtshape.dtype == np.float32:
         iarray_check(ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_P, p))
+    else:
+        raise ValueError("Cannot use this data type for this operation")
 
     dtshape = IaDTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
@@ -1136,9 +1186,11 @@ def random_binomial(cfg, m, p, dtshape):
     if dtshape.dtype == np.float64:
         iarray_check(ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_P, p))
         iarray_check(ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_M, m))
-    else:
+    elif dtshape.dtype == np.float32:
         iarray_check(ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_P, p))
         iarray_check(ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_M, m))
+    else:
+        raise ValueError("Cannot use this data type for this operation")
 
     dtshape = IaDTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
@@ -1166,8 +1218,10 @@ def random_poisson(cfg, l, dtshape):
 
     if dtshape.dtype == np.float64:
         iarray_check(ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_LAMBDA, l))
-    else:
+    elif dtshape.dtype == np.float32:
         iarray_check(ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_LAMBDA, l))
+    else:
+        raise ValueError("Cannot use this data type for this operation")
 
     dtshape = IaDTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
