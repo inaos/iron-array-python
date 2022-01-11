@@ -272,7 +272,7 @@ dtypes = {ciarray.IARRAY_DATA_TYPE_DOUBLE: np.float64, ciarray.IARRAY_DATA_TYPE_
                  ciarray.IARRAY_DATA_TYPE_INT16: np.int16, ciarray.IARRAY_DATA_TYPE_INT8: np.int8,
                  ciarray.IARRAY_DATA_TYPE_UINT64: np.uint64, ciarray.IARRAY_DATA_TYPE_UINT32: np.uint32,
                  ciarray.IARRAY_DATA_TYPE_UINT16: np.uint16, ciarray.IARRAY_DATA_TYPE_UINT8: np.uint8,
-                 ciarray.IARRAY_DATA_TYPE_BOOL: np.bool}
+                 ciarray.IARRAY_DATA_TYPE_BOOL: np.bool_}
 def get_key_from_dict(dic, val):
     for key, value in dic.items():
         if val == value:

@@ -194,7 +194,7 @@ def test_slice(start, stop, slice, shape, chunks, blocks, dtype, contiguous, url
     [
         ([55, 123, 72], [10, 12, 25], [2, 3, 7], np.float64, True, None),
         ([10, 12, 5], [10, 12, 1], [5, 12, 1], np.float32, False, "test_empty_sparse.iarr"),
-        ([55, 123, 72], [10, 12, 25], [2, 3, 7], np.bool, True, "test_empty_contiguous.iarr"),
+        ([55, 123, 72], [10, 12, 25], [2, 3, 7], np.bool_, True, "test_empty_contiguous.iarr"),
         ([10, 12, 5], [5, 12, 5], [2, 12, 5], np.int64, False, None),
     ],
 )
@@ -272,7 +272,7 @@ def test_ones(shape, chunks, blocks, dtype, contiguous, urlpath):
         (8.34, [123, 432, 222], [24, 31, 15], [6, 6, 6], np.float64, True, None),
         (2.00001, [567, 375], [52, 16], [9, 7], np.float32, False, "test_full_sparse.iarr"),
         (8, [10, 12, 5], [5, 5, 5], [5, 5, 5], np.int32, True, "test_full_contiguous.iarr"),
-        (True, [12, 16], [12, 16], [10, 10], np.bool, False, None),
+        (True, [12, 16], [12, 16], [10, 10], np.bool_, False, None),
     ],
 )
 def test_full(fill_value, shape, chunks, blocks, dtype, contiguous, urlpath):
