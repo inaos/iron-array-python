@@ -97,23 +97,23 @@ cdef class ReadBlockIter:
         elif self.dtype == ciarray.IARRAY_DATA_TYPE_FLOAT:
             view = <np.float32_t[:size]> self.ia_block_val.block_pointer
         elif self.dtype == ciarray.IARRAY_DATA_TYPE_INT64:
-                    view = <np.int64_t[:size]> self.ia_block_val.block_pointer
+            view = <np.int64_t[:size]> self.ia_block_val.block_pointer
         elif self.dtype == ciarray.IARRAY_DATA_TYPE_INT32:
-                    view = <np.int32_t[:size]> self.ia_block_val.block_pointer
+            view = <np.int32_t[:size]> self.ia_block_val.block_pointer
         elif self.dtype == ciarray.IARRAY_DATA_TYPE_INT16:
-                    view = <np.int16_t[:size]> self.ia_block_val.block_pointer
+            view = <np.int16_t[:size]> self.ia_block_val.block_pointer
         elif self.dtype == ciarray.IARRAY_DATA_TYPE_INT8:
-                    view = <np.int8_t[:size]> self.ia_block_val.block_pointer
+            view = <np.int8_t[:size]> self.ia_block_val.block_pointer
         elif self.dtype == ciarray.IARRAY_DATA_TYPE_UINT64:
-                    view = <np.uint64_t[:size]> self.ia_block_val.block_pointer
+            view = <np.uint64_t[:size]> self.ia_block_val.block_pointer
         elif self.dtype == ciarray.IARRAY_DATA_TYPE_UINT32:
-                    view = <np.uint32_t[:size]> self.ia_block_val.block_pointer
+            view = <np.uint32_t[:size]> self.ia_block_val.block_pointer
         elif self.dtype == ciarray.IARRAY_DATA_TYPE_UINT16:
-                    view = <np.uint16_t[:size]> self.ia_block_val.block_pointer
+            view = <np.uint16_t[:size]> self.ia_block_val.block_pointer
         elif self.dtype == ciarray.IARRAY_DATA_TYPE_UINT8:
-                    view = <np.uint8_t[:size]> self.ia_block_val.block_pointer
+            view = <np.uint8_t[:size]> self.ia_block_val.block_pointer
         elif self.dtype == ciarray.IARRAY_DATA_TYPE_BOOL:
-                    view = <ciarray.bool[:size]> self.ia_block_val.block_pointer
+            view = <ciarray.bool[:size]> self.ia_block_val.block_pointer
         a = np.asarray(view)
 
         elem_index = tuple(self.ia_block_val.elem_index[i] for i in range(self.container.ndim))
@@ -177,23 +177,23 @@ cdef class WriteBlockIter:
         elif self.dtype == ciarray.IARRAY_DATA_TYPE_FLOAT:
             view = <np.float32_t[:size]> self.ia_block_val.block_pointer
         elif self.dtype == ciarray.IARRAY_DATA_TYPE_INT64:
-                    view = <np.int64_t[:size]> self.ia_block_val.block_pointer
+            view = <np.int64_t[:size]> self.ia_block_val.block_pointer
         elif self.dtype == ciarray.IARRAY_DATA_TYPE_INT32:
-                    view = <np.int32_t[:size]> self.ia_block_val.block_pointer
+            view = <np.int32_t[:size]> self.ia_block_val.block_pointer
         elif self.dtype == ciarray.IARRAY_DATA_TYPE_INT16:
-                    view = <np.int16_t[:size]> self.ia_block_val.block_pointer
+            view = <np.int16_t[:size]> self.ia_block_val.block_pointer
         elif self.dtype == ciarray.IARRAY_DATA_TYPE_INT8:
-                    view = <np.int8_t[:size]> self.ia_block_val.block_pointer
+            view = <np.int8_t[:size]> self.ia_block_val.block_pointer
         elif self.dtype == ciarray.IARRAY_DATA_TYPE_UINT64:
-                    view = <np.uint64_t[:size]> self.ia_block_val.block_pointer
+            view = <np.uint64_t[:size]> self.ia_block_val.block_pointer
         elif self.dtype == ciarray.IARRAY_DATA_TYPE_UINT32:
-                    view = <np.uint32_t[:size]> self.ia_block_val.block_pointer
+            view = <np.uint32_t[:size]> self.ia_block_val.block_pointer
         elif self.dtype == ciarray.IARRAY_DATA_TYPE_UINT16:
-                    view = <np.uint16_t[:size]> self.ia_block_val.block_pointer
+            view = <np.uint16_t[:size]> self.ia_block_val.block_pointer
         elif self.dtype == ciarray.IARRAY_DATA_TYPE_UINT8:
-                    view = <np.uint8_t[:size]> self.ia_block_val.block_pointer
+            view = <np.uint8_t[:size]> self.ia_block_val.block_pointer
         elif self.dtype == ciarray.IARRAY_DATA_TYPE_BOOL:
-                    view = <ciarray.bool[:size]> self.ia_block_val.block_pointer
+            view = <ciarray.bool[:size]> self.ia_block_val.block_pointer
         a = np.asarray(view)
 
         elem_index = tuple(self.ia_block_val.elem_index[i] for i in range(self.container.ndim))
