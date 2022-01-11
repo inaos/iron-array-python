@@ -118,7 +118,7 @@ steps:
 - script: |
       pip install pytest pytest-azurepipelines pytest-cov pytest-cov
       PATH=%PATH%;C:\Miniconda/envs/iArrayEnv/Library/bin
-      pytest -vv -s --test-run-title="Windows test suite" --cov-config=.coveragerc --cov=iarray --cov-report=xml --cov-report=html
+      pytest -vv -s --test-run-title="Windows test suite" --cov-config=.coveragerc --cov=iarray --cov-report=xml --cov-report=html iarray/tests/
   displayName: 'Run Tests'
   condition:
     eq( variables['Agent.OS'], 'Windows_NT' )
