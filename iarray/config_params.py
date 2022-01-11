@@ -130,7 +130,7 @@ class Defaults(object):
     random_gen: ia.RandomGen = ia.RandomGen.MERSENNE_TWISTER
     btune: bool = True
     dtype: (np.float64, np.float32, np.int64, np.int32, np.int16, np.int8, np.uint64, np.uint32, np.uint16,
-            np.uint8, np.bool) = np.float64
+            np.uint8, np.bool_) = np.float64
     split_mode: (ia.SplitMode) = ia.SplitMode.AUTO_SPLIT
     chunks: Sequence = None
     blocks: Sequence = None
@@ -299,7 +299,7 @@ class Config(ext.Config):
         The random generator to be used.  The default is
         :py:obj:`RandomGen.MERSENNE_TWISTER <RandomGen>`.
     dtype: (np.float64, np.float32, np.int64, np.int32, np.int16, np.int8, np.uint64, np.uint32, np.uint16,
-        np.uint8, np.bool)
+        np.uint8, np.bool_)
         The data type to use. The default is np.float64.
     codec: :class:`SplitMode`
         The split mode to be used inside Blosc.  Default is :py:obj:`SplitMode.AUTO_SPLIT <SplitMode>`.
@@ -341,7 +341,7 @@ class Config(ext.Config):
     random_gen: ia.RandomGen = field(default_factory=defaults._random_gen)
     btune: bool = field(default_factory=defaults._btune)
     dtype: (np.float64, np.float32, np.int64, np.int32, np.int16, np.int8, np.uint64, np.uint32, np.uint16,
-            np.uint8, np.bool) = field(default_factory=defaults._dtype)
+            np.uint8, np.bool_) = field(default_factory=defaults._dtype)
     split_mode: ia.SplitMode = field(default_factory=defaults._split_mode)
     chunks: Union[Sequence, None] = field(default_factory=defaults._chunks)
     blocks: Union[Sequence, None] = field(default_factory=defaults._blocks)

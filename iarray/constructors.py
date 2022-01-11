@@ -26,13 +26,13 @@ class DTShape:
     shape: list, tuple
         The shape of the array.
     dtype: (np.float64, np.float32, np.int64, np.int32, np.int16, np.int8, np.uint64, np.uint32, np.uint16,
-        np.uint8, np.bool)
+        np.uint8, np.bool_)
         The data type of the elements in the array.  The default is np.float64.
     """
 
     shape: Sequence
     dtype: (np.float64, np.float32, np.int64, np.int32, np.int16, np.int8, np.uint64, np.uint32, np.uint16,
-        np.uint8, np.bool) = np.float64
+        np.uint8, np.bool_) = np.float64
 
     def __post_init__(self):
         if self.shape is None:
