@@ -11,6 +11,7 @@ The results shown here have been rendered on a specific server for your convenie
 
    bench/03.Slicing_Datasets_and_Creating_Views
    bench/05.Reductions_InMemory
+   bench/05.Reductions_InMemoryInt64
    bench/05.Reductions_OnDisk
    bench/06.Expression_Evaluation_(In-Memory)
    bench/07.Expression_Evaluation_(User_Defined_Functions)
