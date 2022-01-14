@@ -225,6 +225,7 @@ def test_empty(shape, chunks, blocks, dtype, contiguous, urlpath):
         ([456, 431], [102, 16], [12, 7], np.float32, False, "test_zeros_sparse.iarr"),
         ([10, 12, 5], [10, 1, 1], [10, 1, 1], np.int16, False, None),
         ([12, 16], [1, 16], [1, 16], np.uint8, True, None),
+        ([12, 16], [1, 16], [1, 16], np.bool_, True, "test_zeros_contiguous.iarr"),
     ],
 )
 def test_zeros(shape, chunks, blocks, dtype, contiguous, urlpath):
@@ -249,6 +250,7 @@ def test_zeros(shape, chunks, blocks, dtype, contiguous, urlpath):
         ([1024, 55], [66, 22], [12, 3], np.float32, True, "test_ones_contiguous.iarr"),
         ([10, 12, 5], [5, 6, 5], [5, 3, 5], np.int8, True, None),
         ([120, 130], [45, 64], [33, 12], np.uint16, False, "test_ones_sparse.iarr"),
+        ([10, 12, 5], [5, 6, 5], [5, 3, 5], np.bool_, True, None),
     ],
 )
 def test_ones(shape, chunks, blocks, dtype, contiguous, urlpath):

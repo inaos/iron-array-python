@@ -1412,7 +1412,8 @@ def reduce_multi(cfg, a, method, axis):
     iarray_check(ciarray.iarray_reduce_multi(ctx_, a_, func, len(axis), axis_, &store_, &c))
 
     c_c = PyCapsule_New(c, "iarray_container_t*", NULL)
-    return ia.IArray(ctx, c_c)
+    cfg2 = get_cfg_from_container(cfg, ctx_, c, cfg.urlpath)
+    return ia.IArray(Context(cfg2), c_c)
 
 
 def get_ncores(max_ncores):

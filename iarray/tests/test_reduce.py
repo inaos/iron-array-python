@@ -10,6 +10,7 @@ params_data = [
     ([10, 10, 10, 10], [4, 4, 4, 4], [2, 2, 2, 2], 1, np.int16, "w"),
     ([70, 45, 56, 34], [20, 23, 30, 34], [9, 7, 8, 7], (0, 3), np.int64, "w-"),
     ([10, 10, 10, 10], [10, 10, 10, 10], [10, 10, 10, 10], None, np.uint32, "a"),
+    ([10, 10, 10, 10], [4, 4, 4, 4], [2, 2, 2, 2], 1, np.bool_, "w"),
 ]
 
 
@@ -26,7 +27,7 @@ def test_reduce(shape, chunks, blocks, axis, dtype, rfunc, contiguous, urlpath, 
     if dtype not in [np.float64, np.float32]:
         for i in range(len(shape)):
             stop *= shape[i]
-    a1 = ia.arange(shape, 0, stop, dtype=dtype, cfg=cfg)
+    a1 = ia.ones(shape, dtype=dtype, cfg=cfg)
     a2 = a1.data
 
     b2 = getattr(np, rfunc)(a2, axis=axis)

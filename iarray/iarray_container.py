@@ -777,10 +777,13 @@ def reduce(
     if cfg is None:
         cfg = ia.get_config_defaults()
 
+    dtype = kwargs.get("dtype")
     with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
         c = ext.reduce_multi(cfg, a, method, axis)
+        if dtype is not None and dtype != c.dtype:
+            raise RuntimeError("Cannot set the result's data type")
         if c.ndim == 0:
-            c = float(ia.iarray2numpy(c))
+            c = c.dtype(ia.iarray2numpy(c))
         return c
 
 
@@ -806,8 +809,8 @@ def max(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwar
     Returns
     -------
     max : :ref:`IArray` or float
-        Maximum of a. If axis is None, the result is a float value. If axis is given, the result is
-        an array of dimension a.ndim - len(axis).
+        Maximum of a. If axis is None, the result is a value. If axis is given, the result is
+        an array of dimension a.ndim - len(axis). The `dtype` is always the `dtype` of :paramref:`a`.
     """
 
     return reduce(a, ia.Reduce.MAX, axis, cfg, **kwargs)
@@ -835,8 +838,8 @@ def min(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwar
     Returns
     -------
     min : :ref:`IArray` or float
-        Minimum of a. If axis is None, the result is a float value. If axis is given, the result is
-        an array of dimension a.ndim - len(axis).
+        Minimum of a. If axis is None, the result is a value. If axis is given, the result is
+        an array of dimension a.ndim - len(axis). The `dtype` is always the `dtype` of :paramref:`a`.
     """
     return reduce(a, ia.Reduce.MIN, axis, cfg, **kwargs)
 
@@ -863,8 +866,9 @@ def sum(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwar
     Returns
     -------
     sum : :ref:`IArray` or float
-        Sum of a. If axis is None, the result is a float value. If axis is given, the result is
-        an array of dimension a.ndim - len(axis).
+        Sum of a. If axis is None, the result is a value. If axis is given, the result is
+        an array of dimension a.ndim - len(axis). Its `dtype` is `np.int64` for integers and bools,
+        `np.uint64` for unsigned integers and the `dtype` of :paramref:`a` otherwise.
     """
     return reduce(a, ia.Reduce.SUM, axis, cfg, **kwargs)
 
@@ -891,8 +895,9 @@ def prod(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwa
     Returns
     -------
     prod : :ref:`IArray` or float
-        Product of a. If axis is None, the result is a float value. If axis is given, the result is
-        an array of dimension a.ndim - len(axis).
+        Product of a. If axis is None, the result is a value. If axis is given, the result is
+        an array of dimension a.ndim - len(axis). Its `dtype` is `np.int64` for integers and bools,
+        `np.uint64` for unsigned integers and the `dtype` of :paramref:`a` otherwise.
     """
     return reduce(a, ia.Reduce.PROD, axis, cfg, **kwargs)
 
@@ -919,8 +924,9 @@ def mean(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwa
     Returns
     -------
     mean : :ref:`IArray` or float
-        Mean of a. If axis is None, the result is a float value. If axis is given, the result is
-        an array of dimension a.ndim - len(axis).
+        Mean of a. If axis is None, the result is a value. If axis is given, the result is
+        an array of dimension a.ndim - len(axis). Its `dtype` is `np.float32` when the `dtype` of
+        :paramref:`a` is `np.float32` and `np.float64` otherwise.
     """
     return reduce(a, ia.Reduce.MEAN, axis, cfg, **kwargs)
 
