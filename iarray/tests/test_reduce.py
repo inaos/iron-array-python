@@ -23,10 +23,6 @@ def test_reduce(shape, chunks, blocks, axis, dtype, rfunc, contiguous, urlpath, 
     ia.remove_urlpath(urlpath)
     ia.remove_urlpath("test_reduce_res.iarr")
     cfg = ia.Config(chunks=chunks, blocks=blocks, contiguous=contiguous, urlpath=urlpath)
-    stop = 1
-    if dtype not in [np.float64, np.float32]:
-        for i in range(len(shape)):
-            stop *= shape[i]
     a1 = ia.ones(shape, dtype=dtype, cfg=cfg)
     a2 = a1.data
 
