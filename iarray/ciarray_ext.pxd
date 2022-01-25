@@ -263,6 +263,9 @@ cdef extern from "libiarray/iarray.h":
                                    void *buffer,
                                    int64_t buflen)
 
+    ina_rc_t iarray_container_resize(iarray_container_t *container,
+                                    int64_t *new_shape)
+
     ina_rc_t iarray_squeeze_index(iarray_context_t *ctx,
                                   iarray_container_t *container,
                                   bool *index)

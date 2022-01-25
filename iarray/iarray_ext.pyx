@@ -880,6 +880,15 @@ def get_slice(cfg, data, start, stop, squeeze_mask, view, storage):
 
     return b
 
+def resize(container, new_shape):
+    cdef ciarray.iarray_container_t *container_ = <ciarray.iarray_container_t *> PyCapsule_GetPointer(
+        container.to_capsule(), "iarray_container_t*")
+    cdef int ndim = len(new_shape)
+    cdef ciarray.int64_t new_shape_[ciarray.IARRAY_DIMENSION_MAX]
+    for i in range(ndim):
+        new_shape_[i] = new_shape[i]
+
+    iarray_check(ciarray.iarray_container_resize(container_, new_shape_))
 
 def numpy2iarray(cfg, a, dtshape):
     ctx = Context(cfg)
