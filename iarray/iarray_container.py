@@ -125,7 +125,7 @@ class IArray(ext.Container):
         Parameters
         ----------
         newshape : tuple or list
-            The new shape of the array container. It should have the same dimension
+            The new shape of the array container. It should have the same dimensions
             as `self`.
 
         Notes
