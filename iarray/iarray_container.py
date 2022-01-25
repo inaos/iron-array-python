@@ -119,6 +119,22 @@ class IArray(ext.Container):
         for info, block in self.iter_read_block():
             dest[info.slice] = block[:]
 
+    def resize(self, newshape):
+        """Change the shape of the array by growing one or more dimensions.
+
+        Parameters
+        ----------
+        newshape : tuple or list
+            The new shape of the array container. It should have the same dimensions
+            as `self`.
+
+        Notes
+        -----
+        The array values corresponding to the added positions are not initialized.
+        Thus, the user is in charge of initializing them.
+        """
+        ext.resize(self, newshape)
+
     def iter_read_block(self, iterblock: tuple = None):
         if iterblock is None:
             if self.chunks is not None:
