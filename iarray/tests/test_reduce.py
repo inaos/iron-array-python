@@ -18,12 +18,17 @@ params_data = [
 @pytest.mark.parametrize("rfunc", ["mean", "sum", "prod", "max", "min"])
 @pytest.mark.parametrize("contiguous", [True, False])
 @pytest.mark.parametrize("urlpath", [None, "test_reduce.iarr"])
-def test_reduce(shape, chunks, blocks, axis, dtype, rfunc, contiguous, urlpath, mode):
+@pytest.mark.parametrize("view", [True, False])
+def test_reduce(shape, chunks, blocks, axis, dtype, rfunc, contiguous, urlpath, mode, view):
 
     ia.remove_urlpath(urlpath)
     ia.remove_urlpath("test_reduce_res.iarr")
     cfg = ia.Config(chunks=chunks, blocks=blocks, contiguous=contiguous, urlpath=urlpath)
     a1 = ia.ones(shape, dtype=dtype, cfg=cfg)
+    if view:
+        slices = tuple([slice(np.random.randint(1, s)) for s in a1.shape])
+        a1 = a1[slices]
+
     a2 = a1.data
 
     b2 = getattr(np, rfunc)(a2, axis=axis)
@@ -33,7 +38,7 @@ def test_reduce(shape, chunks, blocks, axis, dtype, rfunc, contiguous, urlpath, 
         mode = "a"
     b1 = getattr(ia, rfunc)(a1, axis=axis, urlpath="test_reduce_res.iarr", mode=mode)
 
-    if dtype in [np.float64, np.float32] or rfunc == 'mean':
+    if dtype in [np.float64, np.float32] or rfunc == "mean":
         rtol = 1e-6 if dtype == np.float32 else 1e-14
         if b2.ndim == 0:
             isclose(b1, b2, rel_tol=rtol, abs_tol=0.0)
