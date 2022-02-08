@@ -9,6 +9,8 @@
 # Information and shall use it only in accordance with the terms of the license agreement.
 ###########################################################################################
 
+from typing import Optional
+
 import iarray as ia
 from iarray import iarray_ext as ext
 from iarray import py2llvm
@@ -103,7 +105,9 @@ def expr_from_string(sexpr: str, inputs: dict, cfg: ia.Config = None, **kwargs) 
     return expr
 
 
-def expr_from_udf(udf: py2llvm.Function, inputs: list, shape=None, cfg=None, **kwargs) -> Expr:
+def expr_from_udf(
+    udf: py2llvm.Function, inputs: list, params: Optional[list] = None, shape=None, cfg=None, **kwargs
+) -> Expr:
     """Create an :class:`Expr` instance from an UDF function.
 
     Parameters
@@ -113,6 +117,9 @@ def expr_from_udf(udf: py2llvm.Function, inputs: list, shape=None, cfg=None, **k
     inputs : list
         List of arrays whose values are passed as arguments, after the output,
         to the UDF function.
+    params : list
+        List user parameters, other than the input arrays, passed to the user
+        defined function.
     cfg : :class:`Config`
         The configuration for running the expression.
         If None (default), global defaults are used.
@@ -135,6 +142,8 @@ def expr_from_udf(udf: py2llvm.Function, inputs: list, shape=None, cfg=None, **k
     expr = Expr(shape=shape, cfg=cfg, **kwargs)
     for i in inputs:
         expr.bind("", i)
+#   for p in params:
+#       expr.bind("", p)
     expr.compile_udf(udf)
     return expr
 

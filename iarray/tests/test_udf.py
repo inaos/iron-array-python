@@ -359,3 +359,33 @@ def test_math2(f):
     start, stop = 0, 10
 
     cmp_udf_np(f, [(start, stop), (start, stop)], shape, (chunks, blocks), dtype, cparams)
+
+
+"""
+@udf.jit(verbose=2)
+def f_user_params(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1), multiplier: udf.float64):
+    n = out.shape[0]
+    for i in range(n):
+        out[i] = x[i] * multiplier
+
+    return 0
+
+
+@pytest.mark.parametrize("f", [f_user_params])
+def test_user_params(f):
+    shape = [10 * 1000]
+    chunks = [3 * 1000]
+    blocks = [3 * 100]
+    dtype = np.float64
+    cparams = dict(nthreads=16)
+    start, stop = 0, 10
+
+    cmp_udf_np(f, (start, stop), shape, (chunks, blocks), dtype, cparams)
+
+    # For the test function to return the same output as the Python function
+    # the partition size must be multiple of 3. This is just an example of
+    # how the result is not always the same as in the Python function.
+    blocks = [4 * 100]
+    with pytest.raises(AssertionError):
+        cmp_udf_np(f, (start, stop), shape, (chunks, blocks), dtype, cparams)
+"""

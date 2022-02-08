@@ -16,6 +16,7 @@ assert math  # Silence pyflakes warning
 
 # From iarray/iarray-c-develop/src/iarray_expression.c
 IARRAY_EXPR_OPERANDS_MAX = 128
+IARRAY_EXPR_USER_PARAMS_MAX = 128
 
 
 class udf_type(types.StructType):
@@ -32,6 +33,7 @@ class udf_type(types.StructType):
         ("window_shape", int32p),
         ("window_start", int64p),
         ("window_strides", int32p),
+        ("user_params", ir.ArrayType(int32, IARRAY_EXPR_USER_PARAMS_MAX)), # XXX type is a union...
     ]
 
 
@@ -119,10 +121,43 @@ def Array(dtype, ndim):
 
 
 class Function(py2llvm.Function):
+
+    @staticmethod
+    def is_complex_param(param):
+        return type(param.type) is type and issubclass(param.type, types.ComplexType)
+
     def get_py_signature(self, signature):
+        """
+        The Python signature of the user defined function is as follows:
+
+        - 1 output array
+        - 1..n input arrays
+        - 0..n user parameters (scalars)
+
+        Here we store the indexes of the parameters as they are found in the
+        signature, because we will need them to load from iarray_eval_pparams_t.
+
+        We assign the indexes this way:
+
+        - 0 for the output array
+        - 1..n for the input arrays
+        - 0..n for the user parameters
+
+        I think it may be better to store the user parameters in the same
+        struct member as the input arrays (using a union type). But at least
+        for now user parameters (scalars) are handle as an added feature, to
+        reduce the risk of breaking current behaviour.
+        """
         signature = super().get_py_signature(signature)
-        for i, param in enumerate(signature.parameters):
+
+        i = 0
+        for param in signature.parameters:
+            if not self.is_complex_param(param) and self.is_complex_param(signature.parameters[i-1]):
+                i = 0
+
             param.type.idx = i
+            i += 1
+
         return signature
 
     def get_ir_signature(self, node, verbose=0, *args):
@@ -136,7 +171,7 @@ class Function(py2llvm.Function):
         params = args["params"]
         self.params_ptr = builder.load(params)  # iarray_eval_pparams_t*
         # self._ninputs = self.load_field(builder, 0, name='ninputs')
-        # self._inputs = self.load_field(builder, 1, name='ninputs')                  # i8**
+        # self._inputs = self.load_field(builder, 1, name='inputs')                   # i8**
         # self._input_typesizes = self.load_field(builder, 2, name='input_typesizes') # i8*
         # self._user_data = self.load_field(builder, 3, name='user_data')             # i8*
         self._out = self.load_field(builder, 4, name="out")  # i8*
@@ -146,6 +181,19 @@ class Function(py2llvm.Function):
         self._shape = self.load_field(builder, 8, name="window_shape")  # i32*
         self._start = self.load_field(builder, 9, name="window_start")  # i64*
         self._strides = self.load_field(builder, 10, name="window_strides")  # i32*
+        # self._user_params = self.load_field(builder, 11, name='user_params')  # XXX union*
+
+    def preamble_for_param(self, builder, param, args):
+        # .user_params[i]
+        indices = [
+            types.zero32,
+            ir.Constant(int32, 11),
+            ir.Constant(int32, param.type.idx),
+        ]
+        ptr = builder.gep(self.params_ptr, indices)#, name=param.name)
+        ptr = builder.load(ptr, name=param.name)
+        # XXX bitcast?
+        return ptr
 
     def get_field(self, builder, idx, name=""):
         idx = ir.Constant(int32, idx)

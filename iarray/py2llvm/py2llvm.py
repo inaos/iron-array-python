@@ -449,13 +449,14 @@ class BlockVisitor(NodeVisitor):
         # Every Python argument is a local variable
         locals_ = node.locals
         for param in self.function.py_signature.parameters:
-            if type(param.type) is type and issubclass(param.type, types.ComplexType):
+            if self.function.is_complex_param(param):
                 value = param.type(self.function, param.name, args)
                 # The params can inject IR at the beginning
                 value.preamble(builder)
             else:
-                value = args[param.name]
+                value = self.function.preamble_for_param(builder, param, args)
 
+            # Ok
             locals_[param.name] = value
 
         # Create the second block, this is where the code proper will start,
