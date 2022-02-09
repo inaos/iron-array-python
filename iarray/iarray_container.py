@@ -120,7 +120,7 @@ class IArray(ext.Container):
             dest[info.slice] = block[:]
 
     def resize(self, newshape):
-        """Change the shape of the array by growing one or more dimensions.
+        """Change the shape of the array by growing or shrinking one or more dimensions.
 
         Parameters
         ----------

@@ -5,8 +5,8 @@ import numpy as np
 array_data = [
     ([30, 100], [20, 20], [10, 13], [30, 100], True, None),
     ([30, 130], [50, 50], [20, 25], [40, 130], False, None),
-    ([10, 78, 55, 21], [3, 30, 30, 21], [3, 12, 6, 21], [11, 80, 60, 30], True, "test_resize_acontiguous.iarr"),
-    ([30, 100], [30, 44], [30, 2], [30, 150], False, "test_resize_asparse.iarr"),
+    ([10, 78, 55, 21], [3, 30, 30, 21], [3, 12, 6, 21], [5, 80, 10, 21], True, "test_resize_acontiguous.iarr"),
+    ([30, 100], [30, 44], [30, 2], [30, 10], False, "test_resize_asparse.iarr"),
 ]
 
 
@@ -23,7 +23,23 @@ def test_resize(shape, chunks, blocks, newshape, dtype, acontiguous, aurlpath):
         for i in range(len(shape)):
             max *= shape[i]
     a = ia.arange(shape, 0, max, cfg=cfg, mode="w", dtype=dtype)
+    npa = ia.iarray2numpy(a)
     a.resize(newshape)
     assert a.shape == tuple(newshape)
+
+    data_shape = []
+    for i in range(len(shape)):
+        if shape[i] >= newshape[i]:
+            data_shape.append(newshape[i])
+        else:
+            data_shape.append(shape[i])
+
+    npb = ia.iarray2numpy(a)
+    slice_ = tuple(slice(0, i) for i in data_shape)
+    if dtype in [np.float64, np.float32]:
+        rtol = 1e-6 if dtype == np.float32 else 1e-14
+        np.testing.assert_allclose(npa[slice_], npb[slice_], rtol=rtol, atol=0)
+    else:
+        np.testing.assert_equal(npa[slice_], npb[slice_])
 
     ia.remove_urlpath(aurlpath)

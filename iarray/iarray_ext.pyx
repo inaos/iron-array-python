@@ -888,7 +888,11 @@ def resize(container, new_shape):
     for i in range(ndim):
         new_shape_[i] = new_shape[i]
 
-    iarray_check(ciarray.iarray_container_resize(container_, new_shape_))
+    ctx = Context(container.cfg)
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t *> PyCapsule_GetPointer(
+        ctx.to_capsule(), "iarray_context_t*")
+
+    iarray_check(ciarray.iarray_container_resize(ctx_, container_, new_shape_))
 
 def numpy2iarray(cfg, a, dtshape):
     ctx = Context(cfg)
