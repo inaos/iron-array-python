@@ -1,8 +1,8 @@
-setuptools==60.5.0
+setuptools
 wheel
-scikit-build==0.12.0
-cmake==3.22.1
-cython==0.29.26
+scikit-build
+cmake
+cython
 ninja
 numpy
 llvmlite
