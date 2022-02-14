@@ -7,6 +7,7 @@ from llvmlite import ir
 from . import py2llvm
 from .py2llvm import float32, float64, void
 from .py2llvm import int8, int8p, int16, int32, int64, int32p, int64p
+from .py2llvm import int1 as bool
 from .py2llvm import types
 
 from . import iarray_ext
@@ -194,9 +195,9 @@ class Function(py2llvm.Function):
             ir.Constant(int32, 11),
             ir.Constant(int32, param.idx),
         ]
-        ptr = builder.gep(self.params_ptr, indices)#, name=param.name)
+        ptr = builder.gep(self.params_ptr, indices)
+        ptr = builder.bitcast(ptr, param.type.as_pointer())
         ptr = builder.load(ptr, name=param.name)
-        # XXX bitcast?
         return ptr
 
     def get_field(self, builder, idx, name=""):

@@ -464,10 +464,16 @@ cdef class Expression:
     def bind_param(self, value, type_):
         cdef ciarray.iarray_user_param_t user_param;
 
-        if type_ is udf.int64:
-            user_param.i64 = value
-        elif type_ is udf.float64:
+        if type_ is udf.float64:
             user_param.f64 = value
+        elif type_ is udf.float32:
+            user_param.f32 = value
+        elif type_ is udf.int64:
+            user_param.i64 = value
+        elif type_ is udf.int32:
+            user_param.i32 = value
+        elif type_ is udf.bool:
+            user_param.b = value
 
         iarray_check(
             ciarray.iarray_expr_bind_param(self.ia_expr, user_param)

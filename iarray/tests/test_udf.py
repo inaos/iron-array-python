@@ -43,7 +43,8 @@ def cmp_udf_np(f, start_stop, shape, partitions, dtype, cparams, f_np=None, user
     num = functools.reduce(lambda x, y: x * y, shape)
     out_ref = np.empty(num, dtype=dtype).reshape(shape)
     args = [
-        np.linspace(start, stop, num, dtype=dtype).reshape(shape) for start, stop in start_stop
+        np.linspace(start, stop, num, dtype=dtype).reshape(shape)
+        for start, stop in start_stop
     ]
     if user_params is not None:
         args += user_params
@@ -370,10 +371,14 @@ def f_user_params(
     x: udf.Array(udf.float64, 1),
     a: udf.float64,
     b: udf.float64,
+    divide: udf.bool
 ):
     n = out.shape[0]
     for i in range(n):
-        out[i] = x[i] * a + b
+        if divide:
+            out[i] = x[i] / a + b
+        else:
+            out[i] = x[i] * a + b
 
     return 0
 
@@ -387,4 +392,13 @@ def test_user_params(f):
     cparams = dict(nthreads=16)
     start, stop = 0, 10
 
-    cmp_udf_np(f, (start, stop), shape, (chunks, blocks), dtype, cparams, user_params=[2.5, 1])
+    user_params = [2.5, 1, True]
+    cmp_udf_np(
+        f,
+        (start, stop),
+        shape,
+        (chunks, blocks),
+        dtype,
+        cparams,
+        user_params=user_params
+    )
