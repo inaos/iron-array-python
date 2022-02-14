@@ -33,7 +33,7 @@ class udf_type(types.StructType):
         ("window_shape", int32p),
         ("window_start", int64p),
         ("window_strides", int32p),
-        ("user_params", ir.ArrayType(int32, IARRAY_EXPR_USER_PARAMS_MAX)), # XXX type is a union...
+        ("user_params", ir.ArrayType(float64, IARRAY_EXPR_USER_PARAMS_MAX)), # XXX type is a union...
     ]
 
 
@@ -150,13 +150,17 @@ class Function(py2llvm.Function):
         """
         signature = super().get_py_signature(signature)
 
-        i = 0
-        for param in signature.parameters:
-            if not self.is_complex_param(param) and self.is_complex_param(signature.parameters[i-1]):
-                i = 0
+        idx = 0
+        for i, param in enumerate(signature.parameters):
+            if self.is_complex_param(param):
+                param.type.idx = idx
+            else:
+                if self.is_complex_param(signature.parameters[i-1]):
+                    idx = 0
 
-            param.type.idx = i
-            i += 1
+                param.idx = idx
+
+            idx += 1
 
         return signature
 
@@ -188,7 +192,7 @@ class Function(py2llvm.Function):
         indices = [
             types.zero32,
             ir.Constant(int32, 11),
-            ir.Constant(int32, param.type.idx),
+            ir.Constant(int32, param.idx),
         ]
         ptr = builder.gep(self.params_ptr, indices)#, name=param.name)
         ptr = builder.load(ptr, name=param.name)

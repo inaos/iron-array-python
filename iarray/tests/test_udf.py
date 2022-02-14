@@ -365,10 +365,15 @@ def test_math2(f):
 
 
 @udf.jit
-def f_user_params(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1), multiplier: udf.float64):
+def f_user_params(
+    out: udf.Array(udf.float64, 1),
+    x: udf.Array(udf.float64, 1),
+    a: udf.float64,
+    b: udf.float64,
+):
     n = out.shape[0]
     for i in range(n):
-        out[i] = x[i] * multiplier
+        out[i] = x[i] * a + b
 
     return 0
 
@@ -382,4 +387,4 @@ def test_user_params(f):
     cparams = dict(nthreads=16)
     start, stop = 0, 10
 
-    cmp_udf_np(f, (start, stop), shape, (chunks, blocks), dtype, cparams, user_params=[3])
+    cmp_udf_np(f, (start, stop), shape, (chunks, blocks), dtype, cparams, user_params=[2.5, 1.2])

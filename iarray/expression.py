@@ -106,7 +106,12 @@ def expr_from_string(sexpr: str, inputs: dict, cfg: ia.Config = None, **kwargs) 
 
 
 def expr_from_udf(
-    udf: py2llvm.Function, inputs: list, params: Optional[list] = None, shape=None, cfg=None, **kwargs
+    udf: py2llvm.Function,
+    inputs: list,
+    params: Optional[list] = None,
+    shape=None,
+    cfg=None,
+    **kwargs
 ) -> Expr:
     """Create an :class:`Expr` instance from an UDF function.
 

@@ -462,7 +462,7 @@ cdef class Expression:
     def bind_param(self, value):
         cdef ciarray.iarray_user_param_t user_param;
         if type(value) is int:
-            user_param.i32 = value
+            user_param.i64 = value
         elif type(value) is float:
             user_param.f64 = value
 

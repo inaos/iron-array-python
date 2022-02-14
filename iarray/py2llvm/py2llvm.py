@@ -1020,7 +1020,10 @@ class GenVisitor(NodeVisitor):
         return self.builder.call(func, args)
 
 
-Parameter = collections.namedtuple("Parameter", ["name", "type"])
+class Parameter:
+    def __init__(self, name, type):
+        self.name = name
+        self.type = type
 
 
 class Signature:
@@ -1126,8 +1129,8 @@ class Function:
         Return whether we have the argument types, so we can compile the
         function.
         """
-        for name, type_ in self.py_signature.parameters:
-            if type_ is inspect._empty:
+        for param in self.py_signature.parameters:
+            if param.type is inspect._empty:
                 return False
 
         return True
@@ -1208,7 +1211,7 @@ class Function:
 
         # (6) The IR module and function
         f_type = ir.FunctionType(
-            ir_signature.return_type, tuple(type_ for name, type_ in ir_signature.parameters)
+            ir_signature.return_type, tuple(param.type for param in ir_signature.parameters)
         )
         ir_function = ir.Function(self.ir_module, f_type, self.name)
 
