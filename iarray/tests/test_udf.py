@@ -9,7 +9,7 @@ from iarray import udf
 from iarray.udf import int32
 
 
-def cmp_udf_np(f, start_stop, shape, partitions, dtype, cparams, f_np=None):
+def cmp_udf_np(f, start_stop, shape, partitions, dtype, cparams, f_np=None, user_params=None):
     """Helper function that compares UDF against numpy.
 
     Parameters:
@@ -21,6 +21,7 @@ def cmp_udf_np(f, start_stop, shape, partitions, dtype, cparams, f_np=None):
         dtype      : Data type.
         cparams    : Configuration parameters for ironArray.
         f_np       : An equivalent function for NumPy (for incompatible UDFs).
+        user_params: user params (scalars)
 
     Function results must not depend on chunks/blocks, otherwise the
     comparison with numpy will fail.
@@ -36,18 +37,20 @@ def cmp_udf_np(f, start_stop, shape, partitions, dtype, cparams, f_np=None):
         ia.linspace(shape, start, stop, cfg=cfg, dtype=dtype, **cparams)
         for start, stop in start_stop
     ]
-    expr = ia.expr_from_udf(f, inputs, shape=shape, cfg=cfg, **cparams)
+    expr = ia.expr_from_udf(f, inputs, user_params, shape=shape, cfg=cfg, **cparams)
     out = expr.eval()
 
     num = functools.reduce(lambda x, y: x * y, shape)
-    inputs_ref = [
+    out_ref = np.empty(num, dtype=dtype).reshape(shape)
+    args = [
         np.linspace(start, stop, num, dtype=dtype).reshape(shape) for start, stop in start_stop
     ]
-    out_ref = np.empty(num, dtype=dtype).reshape(shape)
+    if user_params is not None:
+        args += user_params
     if f_np is None:
-        f.py_function(out_ref, *inputs_ref)
+        f.py_function(out_ref, *args)
     else:
-        f_np(out_ref, *inputs_ref)
+        f_np(out_ref, *args)
 
     ia.cmp_arrays(out, out_ref)
 
@@ -361,8 +364,7 @@ def test_math2(f):
     cmp_udf_np(f, [(start, stop), (start, stop)], shape, (chunks, blocks), dtype, cparams)
 
 
-"""
-@udf.jit(verbose=2)
+@udf.jit
 def f_user_params(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1), multiplier: udf.float64):
     n = out.shape[0]
     for i in range(n):
@@ -380,12 +382,4 @@ def test_user_params(f):
     cparams = dict(nthreads=16)
     start, stop = 0, 10
 
-    cmp_udf_np(f, (start, stop), shape, (chunks, blocks), dtype, cparams)
-
-    # For the test function to return the same output as the Python function
-    # the partition size must be multiple of 3. This is just an example of
-    # how the result is not always the same as in the Python function.
-    blocks = [4 * 100]
-    with pytest.raises(AssertionError):
-        cmp_udf_np(f, (start, stop), shape, (chunks, blocks), dtype, cparams)
-"""
+    cmp_udf_np(f, (start, stop), shape, (chunks, blocks), dtype, cparams, user_params=[3])

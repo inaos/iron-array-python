@@ -460,10 +460,11 @@ cdef class Expression:
         iarray_check(ciarray.iarray_expr_bind(self.ia_expr, var2, c_))
 
     def bind_param(self, value):
-        assert type(value) is int # int32
-
         cdef ciarray.iarray_user_param_t user_param;
-        user_param.i32 = value
+        if type(value) is int:
+            user_param.i32 = value
+        elif type(value) is float:
+            user_param.f64 = value
 
         iarray_check(
             ciarray.iarray_expr_bind_param(self.ia_expr, user_param)
