@@ -132,7 +132,7 @@ class Function(py2llvm.Function):
 
         - 1 output array
         - 1..n input arrays
-        - 0..n user parameters (scalars)
+        - 0..m user parameters (scalars)
 
         Here we store the indexes of the parameters as they are found in the
         signature, because we will need them to load from iarray_eval_pparams_t.
@@ -141,7 +141,7 @@ class Function(py2llvm.Function):
 
         - 0 for the output array
         - 1..n for the input arrays
-        - 0..n for the user parameters
+        - 0..m for the user parameters
 
         I think it may be better to store the user parameters in the same
         struct member as the input arrays (using a union type). But at least

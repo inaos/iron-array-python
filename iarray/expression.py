@@ -142,8 +142,8 @@ def expr_from_udf(
     expr = Expr(shape=shape, cfg=cfg, **kwargs)
     for i in inputs:
         expr.bind("", i)
-#   for p in params:
-#       expr.bind("", p)
+    for p in params:
+        expr.bind_param(p)
     expr.compile_udf(udf)
     return expr
 

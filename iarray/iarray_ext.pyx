@@ -459,6 +459,16 @@ cdef class Expression:
             c.to_capsule(), "iarray_container_t*")
         iarray_check(ciarray.iarray_expr_bind(self.ia_expr, var2, c_))
 
+    def bind_param(self, value):
+        assert type(value) is int # int32
+
+        cdef ciarray.iarray_user_param_t user_param;
+        user_param.i32 = value
+
+        iarray_check(
+            ciarray.iarray_expr_bind_param(self.ia_expr, user_param)
+        )
+
     def bind_out_properties(self, dtshape):
         dtshape = IaDTShape(dtshape).to_dict()
         cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape

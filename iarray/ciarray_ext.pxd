@@ -66,6 +66,9 @@ cdef extern from "libiarray/iarray.h":
     cdef enum:
         IARRAY_EXPR_OPERANDS_MAX = 128
 
+    cdef enum:
+        IARRAY_EXPR_USER_PARAMS_MAX = 128
+
     ctypedef enum iarray_container_flags_t:
         IARRAY_CONTAINER_PERSIST = 0x1
 
@@ -153,6 +156,13 @@ cdef extern from "libiarray/iarray.h":
         const char *var
         iarray_container_t *c
 
+    ctypedef union iarray_user_param_t:
+        float f32
+        double f64
+        int32_t i32
+        int64_t i64
+        bool b
+
     ctypedef struct iarray_expression_t:
         iarray_context_t *ctx
         # ina_str_t expr;
@@ -166,7 +176,8 @@ cdef extern from "libiarray/iarray.h":
         iarray_storage_t *out_store_properties
         iarray_container_t *out
         _iarray_jug_var_t vars[IARRAY_EXPR_OPERANDS_MAX]
-
+        iarray_user_param_t user_params[IARRAY_EXPR_USER_PARAMS_MAX]
+        int nuser_params
 
     ina_rc_t iarray_init()
 
@@ -318,6 +329,7 @@ cdef extern from "libiarray/iarray.h":
                           iarray_expression_t **e)
 
     ina_rc_t iarray_expr_bind(iarray_expression_t *e, const char *var, iarray_container_t *val)
+    ina_rc_t iarray_expr_bind_param(iarray_expression_t *e, iarray_user_param_t val)
     ina_rc_t iarray_expr_bind_out_properties(iarray_expression_t *e,
                                              iarray_dtshape_t *dtshape,
                                              iarray_storage_t *store);
