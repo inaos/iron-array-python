@@ -141,14 +141,29 @@ def expr_from_udf(
     --------
     expr_from_string
     """
+    if params is None:
+        params = []
+
+    # Build expression
     with ia.config(cfg, shape=shape, **kwargs):
         shape, dtype = check_inputs(inputs, shape)
+
     kwargs["dtype"] = dtype
     expr = Expr(shape=shape, cfg=cfg, **kwargs)
+
+    # Bind input arrays
     for i in inputs:
         expr.bind("", i)
-    for p in params or []:
-        expr.bind_param(p)
+
+    # Bind input scalars
+    sig_params = udf.py_signature.parameters[1:] # The first param is the output array
+    sig_params = sig_params[len(inputs):] # Next come the input arrays
+    assert len(params) == len(sig_params) # What is left are the user params (scalars)
+
+    for value, sig_param in zip(params, sig_params):
+        expr.bind_param(value, sig_param.type)
+
+    # Compile
     expr.compile_udf(udf)
     return expr
 

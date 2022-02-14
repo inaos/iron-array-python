@@ -387,4 +387,4 @@ def test_user_params(f):
     cparams = dict(nthreads=16)
     start, stop = 0, 10
 
-    cmp_udf_np(f, (start, stop), shape, (chunks, blocks), dtype, cparams, user_params=[2.5, 1.2])
+    cmp_udf_np(f, (start, stop), shape, (chunks, blocks), dtype, cparams, user_params=[2.5, 1])

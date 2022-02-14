@@ -12,6 +12,8 @@
 # Information and shall use it only in accordance with the terms of the license agreement.
 ###########################################################################################
 
+from collections import namedtuple
+
 from . cimport ciarray_ext as ciarray
 import numpy as np
 cimport numpy as np
@@ -19,7 +21,7 @@ import cython
 from cpython.pycapsule cimport PyCapsule_New, PyCapsule_GetPointer
 from libc.stdlib cimport malloc, free
 import iarray as ia
-from collections import namedtuple
+from iarray import udf
 
 from cpython cimport (
     PyObject_GetBuffer, PyBuffer_Release,
@@ -459,11 +461,12 @@ cdef class Expression:
             c.to_capsule(), "iarray_container_t*")
         iarray_check(ciarray.iarray_expr_bind(self.ia_expr, var2, c_))
 
-    def bind_param(self, value):
+    def bind_param(self, value, type_):
         cdef ciarray.iarray_user_param_t user_param;
-        if type(value) is int:
+
+        if type_ is udf.int64:
             user_param.i64 = value
-        elif type(value) is float:
+        elif type_ is udf.float64:
             user_param.f64 = value
 
         iarray_check(
