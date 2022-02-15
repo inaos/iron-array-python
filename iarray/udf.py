@@ -150,7 +150,7 @@ class Function(py2llvm.Function):
 
         I think it may be better to store the user parameters in the same
         struct member as the input arrays (using a union type). But at least
-        for now user parameters (scalars) are handle as an added feature, to
+        for now user parameters (scalars) are handled as an added feature, to
         reduce the risk of breaking current behaviour.
         """
         signature = super().get_py_signature(signature)
