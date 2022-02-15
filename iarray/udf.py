@@ -34,7 +34,11 @@ class udf_type(types.StructType):
         ("window_shape", int32p),
         ("window_start", int64p),
         ("window_strides", int32p),
-        ("user_params", ir.ArrayType(float64, IARRAY_EXPR_USER_PARAMS_MAX)), # XXX type is a union...
+        # In iron-array user_params is a union type (iarray_user_param_t). Here
+        # we only need the type's size (float64) to be as big as the size of
+        # iarray_user_param_t. The pointer will be cast to the right member
+        # type in IR.
+        ("user_params", ir.ArrayType(float64, IARRAY_EXPR_USER_PARAMS_MAX)),
     ]
 
 
@@ -186,7 +190,7 @@ class Function(py2llvm.Function):
         self._shape = self.load_field(builder, 8, name="window_shape")  # i32*
         self._start = self.load_field(builder, 9, name="window_start")  # i64*
         self._strides = self.load_field(builder, 10, name="window_strides")  # i32*
-        # self._user_params = self.load_field(builder, 11, name='user_params')  # XXX union*
+        # self._user_params = self.load_field(builder, 11, name='user_params')
 
     def preamble_for_param(self, builder, param, args):
         # .user_params[i]
