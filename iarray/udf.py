@@ -7,6 +7,7 @@ from llvmlite import ir
 from . import py2llvm
 from .py2llvm import float32, float64, void
 from .py2llvm import int8, int8p, int16, int32, int64, int32p, int64p
+from .py2llvm import int1 as bool
 from .py2llvm import types
 
 from . import iarray_ext
@@ -16,6 +17,7 @@ assert math  # Silence pyflakes warning
 
 # From iarray/iarray-c-develop/src/iarray_expression.c
 IARRAY_EXPR_OPERANDS_MAX = 128
+IARRAY_EXPR_USER_PARAMS_MAX = 128
 
 
 class udf_type(types.StructType):
@@ -32,6 +34,11 @@ class udf_type(types.StructType):
         ("window_shape", int32p),
         ("window_start", int64p),
         ("window_strides", int32p),
+        # In iron-array user_params is a union type (iarray_user_param_t). Here
+        # we only need the type's size (float64) to be as big as the size of
+        # iarray_user_param_t. The pointer will be cast to the right member
+        # type in IR.
+        ("user_params", ir.ArrayType(float64, IARRAY_EXPR_USER_PARAMS_MAX)),
     ]
 
 
@@ -119,10 +126,47 @@ def Array(dtype, ndim):
 
 
 class Function(py2llvm.Function):
+
+    @staticmethod
+    def is_complex_param(param):
+        return type(param.type) is type and issubclass(param.type, types.ComplexType)
+
     def get_py_signature(self, signature):
+        """
+        The Python signature of the user defined function is as follows:
+
+        - 1 output array
+        - 1..n input arrays
+        - 0..m user parameters (scalars)
+
+        Here we store the indexes of the parameters as they are found in the
+        signature, because we will need them to load from iarray_eval_pparams_t.
+
+        We assign the indexes this way:
+
+        - 0 for the output array
+        - 1..n for the input arrays
+        - 0..m for the user parameters
+
+        I think it may be better to store the user parameters in the same
+        struct member as the input arrays (using a union type). But at least
+        for now user parameters (scalars) are handled as an added feature, to
+        reduce the risk of breaking current behaviour.
+        """
         signature = super().get_py_signature(signature)
+
+        idx = 0
         for i, param in enumerate(signature.parameters):
-            param.type.idx = i
+            if self.is_complex_param(param):
+                param.type.idx = idx
+            else:
+                if self.is_complex_param(signature.parameters[i-1]):
+                    idx = 0
+
+                param.idx = idx
+
+            idx += 1
+
         return signature
 
     def get_ir_signature(self, node, verbose=0, *args):
@@ -136,7 +180,7 @@ class Function(py2llvm.Function):
         params = args["params"]
         self.params_ptr = builder.load(params)  # iarray_eval_pparams_t*
         # self._ninputs = self.load_field(builder, 0, name='ninputs')
-        # self._inputs = self.load_field(builder, 1, name='ninputs')                  # i8**
+        # self._inputs = self.load_field(builder, 1, name='inputs')                   # i8**
         # self._input_typesizes = self.load_field(builder, 2, name='input_typesizes') # i8*
         # self._user_data = self.load_field(builder, 3, name='user_data')             # i8*
         self._out = self.load_field(builder, 4, name="out")  # i8*
@@ -146,6 +190,19 @@ class Function(py2llvm.Function):
         self._shape = self.load_field(builder, 8, name="window_shape")  # i32*
         self._start = self.load_field(builder, 9, name="window_start")  # i64*
         self._strides = self.load_field(builder, 10, name="window_strides")  # i32*
+        # self._user_params = self.load_field(builder, 11, name='user_params')
+
+    def preamble_for_param(self, builder, param, args):
+        # .user_params[i]
+        indices = [
+            types.zero32,
+            ir.Constant(int32, 11),
+            ir.Constant(int32, param.idx),
+        ]
+        ptr = builder.gep(self.params_ptr, indices)
+        ptr = builder.bitcast(ptr, param.type.as_pointer())
+        ptr = builder.load(ptr, name=param.name)
+        return ptr
 
     def get_field(self, builder, idx, name=""):
         idx = ir.Constant(int32, idx)

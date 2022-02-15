@@ -9,7 +9,7 @@ from iarray import udf
 from iarray.udf import int32
 
 
-def cmp_udf_np(f, start_stop, shape, partitions, dtype, cparams, f_np=None):
+def cmp_udf_np(f, start_stop, shape, partitions, dtype, cparams, f_np=None, user_params=None):
     """Helper function that compares UDF against numpy.
 
     Parameters:
@@ -21,6 +21,7 @@ def cmp_udf_np(f, start_stop, shape, partitions, dtype, cparams, f_np=None):
         dtype      : Data type.
         cparams    : Configuration parameters for ironArray.
         f_np       : An equivalent function for NumPy (for incompatible UDFs).
+        user_params: user params (scalars)
 
     Function results must not depend on chunks/blocks, otherwise the
     comparison with numpy will fail.
@@ -36,18 +37,21 @@ def cmp_udf_np(f, start_stop, shape, partitions, dtype, cparams, f_np=None):
         ia.linspace(shape, start, stop, cfg=cfg, dtype=dtype, **cparams)
         for start, stop in start_stop
     ]
-    expr = ia.expr_from_udf(f, inputs, shape=shape, cfg=cfg, **cparams)
+    expr = ia.expr_from_udf(f, inputs, user_params, shape=shape, cfg=cfg, **cparams)
     out = expr.eval()
 
     num = functools.reduce(lambda x, y: x * y, shape)
-    inputs_ref = [
-        np.linspace(start, stop, num, dtype=dtype).reshape(shape) for start, stop in start_stop
-    ]
     out_ref = np.empty(num, dtype=dtype).reshape(shape)
+    args = [
+        np.linspace(start, stop, num, dtype=dtype).reshape(shape)
+        for start, stop in start_stop
+    ]
+    if user_params is not None:
+        args += user_params
     if f_np is None:
-        f.py_function(out_ref, *inputs_ref)
+        f.py_function(out_ref, *args)
     else:
-        f_np(out_ref, *inputs_ref)
+        f_np(out_ref, *args)
 
     ia.cmp_arrays(out, out_ref)
 
@@ -359,3 +363,42 @@ def test_math2(f):
     start, stop = 0, 10
 
     cmp_udf_np(f, [(start, stop), (start, stop)], shape, (chunks, blocks), dtype, cparams)
+
+
+@udf.jit
+def f_user_params(
+    out: udf.Array(udf.float64, 1),
+    x: udf.Array(udf.float64, 1),
+    a: udf.float64,
+    b: udf.float64,
+    divide: udf.bool
+):
+    n = out.shape[0]
+    for i in range(n):
+        if divide:
+            out[i] = x[i] / a + b
+        else:
+            out[i] = x[i] * a + b
+
+    return 0
+
+
+@pytest.mark.parametrize("f", [f_user_params])
+def test_user_params(f):
+    shape = [10 * 1000]
+    chunks = [3 * 1000]
+    blocks = [3 * 100]
+    dtype = np.float64
+    cparams = dict(nthreads=16)
+    start, stop = 0, 10
+
+    user_params = [2.5, 1, True]
+    cmp_udf_np(
+        f,
+        (start, stop),
+        shape,
+        (chunks, blocks),
+        dtype,
+        cparams,
+        user_params=user_params
+    )
