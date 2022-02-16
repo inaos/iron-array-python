@@ -77,7 +77,8 @@ cdef class ReadBlockIter:
         for i in range(len(block)):
             block_[i] = block[i]
 
-        iarray_check(ciarray.iarray_iter_read_block_new(self.container.context.ia_ctx, &self.ia_read_iter, self.container.ia_container, block_, &self.ia_block_val, False))
+        iarray_check(ciarray.iarray_iter_read_block_new(self.container.context.ia_ctx, &self.ia_read_iter,
+                                                        self.container.ia_container, block_, &self.ia_block_val, False))
         self.dtype = get_key_from_dict(dtypes, self.container.dtype)
         self.Info = namedtuple('Info', 'index elemindex nblock shape size slice')
 
@@ -338,7 +339,7 @@ cdef class RandomContext:
 cdef class Container:
     cdef ciarray.iarray_container_t *ia_container
     cdef Context context
-    cdef vlmeta vlmeta_
+    cdef Vlmeta vlmeta
 
     def __init__(self, ctx, c):
         if ctx is None:
@@ -349,7 +350,7 @@ cdef class Container:
         cdef ciarray.iarray_container_t* c_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(
             c, <char*>"iarray_container_t*")
         self.ia_container = c_
-        self.vlmeta_ = vlmeta(self)
+        self.vlmeta = Vlmeta(c, ctx)
 
     def __dealloc__(self):
         if self.context is not None and self.context.ia_ctx != NULL:
@@ -427,10 +428,11 @@ cdef class Container:
 
     @property
     def vlmeta(self):
-        """A dictionary with the variable length metalayers.
+        return self.vlmeta
 
-        This works as a dictionary"""
-        return self.vlmeta_
+    @vlmeta.setter
+    def vlmeta(self, value):
+        self._vlmeta = value
 
     def __getitem__(self, key):
         # key has been massaged already
@@ -443,6 +445,7 @@ cdef class Container:
         cdef ciarray.bool view
         iarray_check(ciarray.iarray_is_view(self.context.ia_ctx, self.ia_container, &view))
         return view
+
 
 
 cdef class Expression:
@@ -832,10 +835,10 @@ def set_slice(cfg, data, start, stop, buffer):
     ia._check_access_mode(cfg.urlpath, cfg.mode, True)
 
     ctx = Context(cfg)
-    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
-        ctx.to_capsule(), <char*>"iarray_context_t*")
-    cdef ciarray.iarray_container_t *data_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(
-        data.to_capsule(), <char*>"iarray_container_t*")
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(),
+                                                                                           <char*>"iarray_context_t*")
+    cdef ciarray.iarray_container_t *data_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(data.to_capsule(),
+                                                                                                <char*>"iarray_container_t*")
 
     cdef Py_buffer *buf = <Py_buffer *> malloc(sizeof(Py_buffer))
     PyObject_GetBuffer(buffer, buf, PyBUF_SIMPLE)
@@ -979,8 +982,10 @@ def iarray2numpy(cfg, c):
 def random_rand(cfg, dtshape):
     ctx = Context(cfg)
     r_ctx = RandomContext(ctx, cfg.seed, cfg.random_gen)
-    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), <char*>"iarray_context_t*")
-    cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(), <char*>"iarray_random_ctx_t*")
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(),
+                                                                                           <char*>"iarray_context_t*")
+    cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(),
+                                                                                                   <char*>"iarray_random_ctx_t*")
 
     dtshape = IaDTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
@@ -1003,8 +1008,10 @@ def random_rand(cfg, dtshape):
 def random_randn(cfg, dtshape):
     ctx = Context(cfg)
     r_ctx = RandomContext(ctx, cfg.seed, cfg.random_gen)
-    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), <char*>"iarray_context_t*")
-    cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(), <char*>"iarray_random_ctx_t*")
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(),
+                                                                                           <char*>"iarray_context_t*")
+    cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(),
+                                                                                                   <char*>"iarray_random_ctx_t*")
 
     dtshape = IaDTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
@@ -1027,8 +1034,10 @@ def random_randn(cfg, dtshape):
 def random_beta(cfg, alpha, beta, dtshape):
     ctx = Context(cfg)
     r_ctx = RandomContext(ctx, cfg.seed, cfg.random_gen)
-    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), <char*>"iarray_context_t*")
-    cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(), <char*>"iarray_random_ctx_t*")
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(),
+                                                                                           <char*>"iarray_context_t*")
+    cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(),
+                                                                                                   <char*>"iarray_random_ctx_t*")
 
     if dtshape.dtype == np.float64:
         ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_ALPHA, alpha)
@@ -1060,8 +1069,10 @@ def random_beta(cfg, alpha, beta, dtshape):
 def random_lognormal(cfg, mu, sigma, dtshape):
     ctx = Context(cfg)
     r_ctx = RandomContext(ctx, cfg.seed, cfg.random_gen)
-    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), <char*>"iarray_context_t*")
-    cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(), <char*>"iarray_random_ctx_t*")
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(),
+                                                                                           <char*>"iarray_context_t*")
+    cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(),
+                                                                                                   <char*>"iarray_random_ctx_t*")
 
     if dtshape.dtype == np.float64:
         ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_MU, mu)
@@ -1093,8 +1104,10 @@ def random_lognormal(cfg, mu, sigma, dtshape):
 def random_exponential(cfg, beta, dtshape):
     ctx = Context(cfg)
     r_ctx = RandomContext(ctx, cfg.seed, cfg.random_gen)
-    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), <char*>"iarray_context_t*")
-    cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(), <char*>"iarray_random_ctx_t*")
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(),
+                                                                                           <char*>"iarray_context_t*")
+    cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(),
+                                                                                                   <char*>"iarray_random_ctx_t*")
 
     if dtshape.dtype == np.float64:
         iarray_check(ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_BETA, beta))
@@ -1124,8 +1137,10 @@ def random_exponential(cfg, beta, dtshape):
 def random_uniform(cfg, a, b, dtshape):
     ctx = Context(cfg)
     r_ctx = RandomContext(ctx, cfg.seed, cfg.random_gen)
-    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), <char*>"iarray_context_t*")
-    cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(), <char*>"iarray_random_ctx_t*")
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(),
+                                                                                           <char*>"iarray_context_t*")
+    cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(),
+                                                                                                   <char*>"iarray_random_ctx_t*")
 
     if dtshape.dtype == np.float64:
         iarray_check(ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_A, a))
@@ -1157,8 +1172,10 @@ def random_uniform(cfg, a, b, dtshape):
 def random_normal(cfg, mu, sigma, dtshape):
     ctx = Context(cfg)
     r_ctx = RandomContext(ctx, cfg.seed, cfg.random_gen)
-    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), <char*>"iarray_context_t*")
-    cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(), <char*>"iarray_random_ctx_t*")
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(),
+                                                                                           <char*>"iarray_context_t*")
+    cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(),
+                                                                                                   <char*>"iarray_random_ctx_t*")
 
     if dtshape.dtype == np.float64:
         iarray_check(ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_MU, mu))
@@ -1190,8 +1207,10 @@ def random_normal(cfg, mu, sigma, dtshape):
 def random_bernoulli(cfg, p, dtshape):
     ctx = Context(cfg)
     r_ctx = RandomContext(ctx, cfg.seed, cfg.random_gen)
-    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), <char*>"iarray_context_t*")
-    cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(), <char*>"iarray_random_ctx_t*")
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(),
+                                                                                           <char*>"iarray_context_t*")
+    cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(),
+                                                                                                   <char*>"iarray_random_ctx_t*")
 
     if dtshape.dtype == np.float64:
         iarray_check(ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_P, p))
@@ -1221,8 +1240,10 @@ def random_bernoulli(cfg, p, dtshape):
 def random_binomial(cfg, m, p, dtshape):
     ctx = Context(cfg)
     r_ctx = RandomContext(ctx, cfg.seed, cfg.random_gen)
-    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), <char*>"iarray_context_t*")
-    cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(), <char*>"iarray_random_ctx_t*")
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(),
+                                                                                           <char*>"iarray_context_t*")
+    cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(),
+                                                                                                   <char*>"iarray_random_ctx_t*")
 
     if dtshape.dtype == np.float64:
         iarray_check(ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_P, p))
@@ -1254,8 +1275,10 @@ def random_binomial(cfg, m, p, dtshape):
 def random_poisson(cfg, l, dtshape):
     ctx = Context(cfg)
     r_ctx = RandomContext(ctx, cfg.seed, cfg.random_gen)
-    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), <char*>"iarray_context_t*")
-    cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(), <char*>"iarray_random_ctx_t*")
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(),
+                                                                                           <char*>"iarray_context_t*")
+    cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(),
+                                                                                                   <char*>"iarray_random_ctx_t*")
 
     if dtshape.dtype == np.float64:
         iarray_check(ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_LAMBDA, l))
@@ -1284,9 +1307,12 @@ def random_poisson(cfg, l, dtshape):
 
 def random_kstest(cfg, a, b):
     ctx = Context(cfg)
-    cdef ciarray.iarray_container_t *a_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(a.to_capsule(), <char*>"iarray_container_t*")
-    cdef ciarray.iarray_container_t *b_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(b.to_capsule(), <char*>"iarray_container_t*")
-    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), <char*>"iarray_context_t*")
+    cdef ciarray.iarray_container_t *a_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(a.to_capsule(),
+                                                                                             <char*>"iarray_container_t*")
+    cdef ciarray.iarray_container_t *b_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(b.to_capsule(),
+                                                                                             <char*>"iarray_container_t*")
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(),
+                                                                                           <char*>"iarray_context_t*")
     cdef ciarray.bool res;
     iarray_check(ciarray.iarray_random_kstest(ctx_, a_, b_, &res))
     return res
@@ -1294,9 +1320,12 @@ def random_kstest(cfg, a, b):
 
 def matmul(cfg, a, b):
     ctx = Context(cfg)
-    cdef ciarray.iarray_container_t *a_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(a.to_capsule(), <char*>"iarray_container_t*")
-    cdef ciarray.iarray_container_t *b_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(b.to_capsule(), <char*>"iarray_container_t*")
-    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), <char*>"iarray_context_t*")
+    cdef ciarray.iarray_container_t *a_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(a.to_capsule(),
+                                                                                             <char*>"iarray_container_t*")
+    cdef ciarray.iarray_container_t *b_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(b.to_capsule(),
+                                                                                             <char*>"iarray_container_t*")
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(),
+                                                                                           <char*>"iarray_context_t*")
     cdef ciarray.iarray_container_t *c
 
     cdef ciarray.iarray_storage_t store_
@@ -1313,9 +1342,12 @@ def matmul(cfg, a, b):
 
 def opt_gemv(cfg, a, b):
     ctx = Context(cfg)
-    cdef ciarray.iarray_container_t *a_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(a.to_capsule(), <char*>"iarray_container_t*")
-    cdef ciarray.iarray_container_t *b_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(b.to_capsule(), <char*>"iarray_container_t*")
-    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), <char*>"iarray_context_t*")
+    cdef ciarray.iarray_container_t *a_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(a.to_capsule(),
+                                                                                             <char*>"iarray_container_t*")
+    cdef ciarray.iarray_container_t *b_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(b.to_capsule(),
+                                                                                             <char*>"iarray_container_t*")
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(),
+                                                                                           <char*>"iarray_context_t*")
     cdef ciarray.iarray_container_t *c
 
     cdef ciarray.iarray_storage_t store_
@@ -1332,9 +1364,12 @@ def opt_gemv(cfg, a, b):
 
 def opt_gemm(cfg, a, b):
     ctx = Context(cfg)
-    cdef ciarray.iarray_container_t *a_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(a.to_capsule(), <char*>"iarray_container_t*")
-    cdef ciarray.iarray_container_t *b_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(b.to_capsule(), <char*>"iarray_container_t*")
-    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), <char*>"iarray_context_t*")
+    cdef ciarray.iarray_container_t *a_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(a.to_capsule(),
+                                                                                             <char*>"iarray_container_t*")
+    cdef ciarray.iarray_container_t *b_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(b.to_capsule(),
+                                                                                             <char*>"iarray_container_t*")
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(),
+                                                                                           <char*>"iarray_context_t*")
     cdef ciarray.iarray_container_t *c
 
     cdef ciarray.iarray_storage_t store_
@@ -1351,9 +1386,12 @@ def opt_gemm(cfg, a, b):
 
 def opt_gemm_b(cfg, a, b):
     ctx = Context(cfg)
-    cdef ciarray.iarray_container_t *a_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(a.to_capsule(), <char*>"iarray_container_t*")
-    cdef ciarray.iarray_container_t *b_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(b.to_capsule(), <char*>"iarray_container_t*")
-    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), <char*>"iarray_context_t*")
+    cdef ciarray.iarray_container_t *a_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(a.to_capsule(),
+                                                                                             <char*>"iarray_container_t*")
+    cdef ciarray.iarray_container_t *b_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(b.to_capsule(),
+                                                                                             <char*>"iarray_container_t*")
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(),
+                                                                                           <char*>"iarray_context_t*")
     cdef ciarray.iarray_container_t *c
 
     cdef ciarray.iarray_storage_t store_
@@ -1370,9 +1408,12 @@ def opt_gemm_b(cfg, a, b):
 
 def opt_gemm_a(cfg, a, b):
     ctx = Context(cfg)
-    cdef ciarray.iarray_container_t *a_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(a.to_capsule(), <char*>"iarray_container_t*")
-    cdef ciarray.iarray_container_t *b_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(b.to_capsule(), <char*>"iarray_container_t*")
-    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), <char*>"iarray_context_t*")
+    cdef ciarray.iarray_container_t *a_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(a.to_capsule(),
+                                                                                             <char*>"iarray_container_t*")
+    cdef ciarray.iarray_container_t *b_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(b.to_capsule(),
+                                                                                             <char*>"iarray_container_t*")
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(),
+                                                                                           <char*>"iarray_context_t*")
     cdef ciarray.iarray_container_t *c
 
     cdef ciarray.iarray_storage_t store_
@@ -1389,8 +1430,10 @@ def opt_gemm_a(cfg, a, b):
 
 def transpose(cfg, a):
     ctx = Context(cfg)
-    cdef ciarray.iarray_container_t *a_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(a.to_capsule(), <char*>"iarray_container_t*")
-    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), <char*>"iarray_context_t*")
+    cdef ciarray.iarray_container_t *a_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(a.to_capsule(),
+                                                                                             <char*>"iarray_container_t*")
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(),
+                                                                                           <char*>"iarray_context_t*")
     cdef ciarray.iarray_container_t *c
 
     # Check that we are not inadvertently overwriting anything
@@ -1416,8 +1459,10 @@ def reduce(cfg, a, method, axis):
     ctx = Context(cfg)
 
     cdef ciarray.iarray_reduce_func_t func = reduce_to_c[method]
-    cdef ciarray.iarray_container_t *a_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(a.to_capsule(), <char*>"iarray_container_t*")
-    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), <char*>"iarray_context_t*")
+    cdef ciarray.iarray_container_t *a_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(a.to_capsule(),
+                                                                                             <char*>"iarray_container_t*")
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(),
+                                                                                           <char*>"iarray_context_t*")
     cdef ciarray.iarray_container_t *c
 
     cdef ciarray.iarray_storage_t store_
@@ -1436,8 +1481,10 @@ def reduce_multi(cfg, a, method, axis):
     ctx = Context(cfg)
 
     cdef ciarray.iarray_reduce_func_t func = reduce_to_c[method]
-    cdef ciarray.iarray_container_t *a_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(a.to_capsule(), <char*>"iarray_container_t*")
-    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), <char*>"iarray_context_t*")
+    cdef ciarray.iarray_container_t *a_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(a.to_capsule(),
+                                                                                             <char*>"iarray_container_t*")
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(),
+                                                                                           <char*>"iarray_context_t*")
     cdef ciarray.iarray_container_t *c
 
     cdef ciarray.int8_t axis_[ciarray.IARRAY_DIMENSION_MAX]
@@ -1472,7 +1519,8 @@ def partition_advice(dtshape, min_chunksize, max_chunksize, min_blocksize, max_b
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> _dtshape
 
     ctx = Context(cfg)
-    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(), <char*>"iarray_context_t*")
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(),
+                                                                                           <char*>"iarray_context_t*")
 
     # Create a storage struct and initialize it.  Do we really need a store for this (maybe a frame info)?
     cdef ciarray.iarray_storage_t store
@@ -1491,30 +1539,32 @@ def partition_advice(dtshape, min_chunksize, max_chunksize, min_blocksize, max_b
 
 # Vlmetalayers
 
-cdef class vlmeta:
-    cdef Container iarray
+
+cdef class Vlmeta:
+    cdef ciarray.iarray_container_t *c_
+    cdef ciarray.iarray_context_t *ctx_
     cdef dict vlmeta_
+
+    def __init__(self, iarray, ctx):
+        cdef ciarray.iarray_container_t * c_ = <ciarray.iarray_container_t *> PyCapsule_GetPointer(iarray,
+                                                                                        <char*>"iarray_container_t*")
+        self.c_ = c_
+        cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t *> PyCapsule_GetPointer(ctx.to_capsule(),
+                                                                                                <char*>"iarray_context_t*")
+        self.ctx_ = ctx_
+        self.vlmeta_ = {}
 
     @property
     def vlmeta(self):
         return self.vlmeta_
 
-    def __init__(self, iarray):
-        self.vlmeta_ = {}
-        self.iarray = iarray
-
     def __setitem__(self, name, content):
         self.vlmeta_[name] = content
 
-        ctx = Context(self.iarray.cfg)
-        cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t *> PyCapsule_GetPointer(ctx.to_capsule(),
-                                                                                                <char*>"iarray_context_t*")
-        cdef ciarray.iarray_container_t *c_ = <ciarray.iarray_container_t *> PyCapsule_GetPointer(
-            self.iarray.to_capsule(),
-            <char*>"iarray_container_t*")
+
         name = name.encode("utf-8") if isinstance(name, str) else name
         cdef ciarray.bool exists
-        rc = ciarray.iarray_vlmeta_exists(ctx_, c_, name, &exists)
+        rc = ciarray.iarray_vlmeta_exists(self.ctx_, self.c_, name, &exists)
         if rc < 0:
             raise RuntimeError
 
@@ -1527,9 +1577,9 @@ cdef class vlmeta:
         meta.size = len_content
         meta.sdata = content
         if exists:
-            rc = ciarray.iarray_vlmeta_update(ctx_, c_, &meta)
+            rc = ciarray.iarray_vlmeta_update(self.ctx_, self.c_, &meta)
         else:
-            rc = ciarray.iarray_vlmeta_add(ctx_, c_, &meta)
+            rc = ciarray.iarray_vlmeta_add(self.ctx_, self.c_, &meta)
 
         if rc < 0:
             raise RuntimeError
@@ -1537,25 +1587,21 @@ cdef class vlmeta:
     def __getitem__(self, name):
         return self.vlmeta_[name]
 
+    def __delitem__(self, name):
+        del self.vlmeta_[name]
+
+        name = name.encode("utf-8") if isinstance(name, str) else name
+
+        name = name.encode("utf-8") if isinstance(name, str) else name
+        rc = ciarray.iarray_vlmeta_delete(self.ctx_, self.c_, name)
+        if rc < 0:
+            raise RuntimeError("Could not delete the vlmeta")
+
     def __len__(self):
         return len(self.vlmeta_)
 
     def __contains__(self, name):
         return name in self.vlmeta_
-
-    def __delitem__(self, name):
-        del self.vlmeta_[name]
-
-        name = name.encode("utf-8") if isinstance(name, str) else name
-        ctx = Context(self.iarray.cfg)
-        cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t *> PyCapsule_GetPointer(ctx.to_capsule(),
-                                                                                                <char*>"iarray_context_t*")
-        cdef ciarray.iarray_container_t *c_ = <ciarray.iarray_container_t *> PyCapsule_GetPointer(self.iarray.to_capsule(),
-                                                                                                  <char*>"iarray_container_t*")
-        name = name.encode("utf-8") if isinstance(name, str) else name
-        rc = ciarray.iarray_vlmeta_delete(ctx_, c_, name)
-        if rc < 0:
-            raise RuntimeError("Could not delete the vlmeta")
 
     def getall(self):
         return self.vlmeta_.copy()
