@@ -425,11 +425,12 @@ cdef class Container:
     def mode(self):
         return self.context.cfg.mode
 
-
     @property
     def vlmeta(self):
-        return self.vlmeta_
+        """A dictionary with the variable length metalayers.
 
+        This works as a dictionary"""
+        return self.vlmeta_
 
     def __getitem__(self, key):
         # key has been massaged already
