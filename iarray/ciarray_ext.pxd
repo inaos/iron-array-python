@@ -572,3 +572,16 @@ cdef extern from "libiarray/iarray.h":
                                        iarray_container_t *container1,
                                        iarray_container_t *container2,
                                        bool *res)
+
+    # Vlmetalayers
+
+    ctypedef struct iarray_metalayer_t:
+        char *name;
+        uint8_t *sdata;
+        int32_t size;
+
+    ina_rc_t iarray_vlmeta_exists(iarray_context_t *ctx, iarray_container_t *c, const char *name, bool *exists);
+    ina_rc_t iarray_vlmeta_add(iarray_context_t *ctx, iarray_container_t *c, iarray_metalayer_t *meta);
+    ina_rc_t iarray_vlmeta_update(iarray_context_t *ctx, iarray_container_t *c, iarray_metalayer_t *meta);
+    ina_rc_t iarray_vlmeta_get(iarray_context_t *ctx, iarray_container_t *c, const char *name, iarray_metalayer_t *meta);
+    ina_rc_t iarray_vlmeta_delete(iarray_context_t *ctx, iarray_container_t *c, const char *name);
