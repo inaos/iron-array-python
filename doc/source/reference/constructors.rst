@@ -12,6 +12,7 @@ Basic constructors
    :nosignatures:
 
    empty
+   uninit
    ones
    zeros
    full

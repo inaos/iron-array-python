@@ -199,6 +199,7 @@ from .constructors import (
     zeros,
     ones,
     full,
+    uninit,
 )
 
 from .utils import (
