@@ -102,27 +102,21 @@ steps:
 
 
 - script: |
-      python -m pip install pytest pytest-azurepipelines pytest-cov
-  # Needed for the vlmetalayers test
-      python -m pip install msgpack
+      python -m pip install pytest pytest-azurepipelines pytest-cov msgpack
       LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA/envs/iArrayEnv/lib pytest -vv -s --test-run-title="Linux test suite" --cov-config=.coveragerc --cov=iarray --cov-report=xml --cov-report=html
   displayName: 'Run Tests'
   condition:
     eq( variables['Agent.OS'], 'Linux' )
 
 - script: |
-      pip install pytest pytest-azurepipelines pytest-cov
-  # Needed for the vlmetalayers test
-      pip install msgpack
+      pip install pytest pytest-azurepipelines pytest-cov msgpack
       LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/miniconda/envs/iArrayEnv/lib pytest -vv -s --test-run-title="Mac test suite" --cov-config=.coveragerc --cov=iarray --cov-report=xml --cov-report=html
   displayName: 'Run Tests'
   condition:
     eq( variables['Agent.OS'], 'Darwin' )
 
 - script: |
-      pip install pytest pytest-azurepipelines pytest-cov pytest-cov
-  # Needed for the vlmetalayers test
-      pip install msgpack
+      pip install pytest pytest-azurepipelines pytest-cov pytest-cov msgpack
       PATH=%PATH%;C:\Miniconda/envs/iArrayEnv/Library/bin
       pytest -vv -s --test-run-title="Windows test suite" --cov-config=.coveragerc --cov=iarray --cov-report=xml --cov-report=html iarray/tests/
   displayName: 'Run Tests'
