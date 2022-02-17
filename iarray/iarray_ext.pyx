@@ -1512,6 +1512,15 @@ def get_ncores(max_ncores):
     return ncores
 
 
+def get_l2_size():
+    cdef ciarray.uint64_t l2_size
+    try:
+        iarray_check(ciarray.iarray_get_L2_size(&l2_size))
+    except IArrayError:
+        return -1
+    return l2_size
+
+
 def partition_advice(dtshape, min_chunksize, max_chunksize, min_blocksize, max_blocksize, cfg):
     _dtshape = IaDTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> _dtshape

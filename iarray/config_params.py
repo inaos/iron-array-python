@@ -22,6 +22,25 @@ import copy
 RANDOM_SEED = 0
 
 
+def get_l2_size():
+    """
+    Get the L2 size of the system.
+
+    Returns
+    -------
+    The L2 size discovered in the system.
+    """
+    l2_size = ext.get_l2_size()
+    if l2_size < 0:
+        l2_size = 256 * 1024
+        warnings.warn(
+            "Error getting the l2 size of this system (please report this)."
+            f"Returning {l2_size} bytes",
+            UserWarning,
+        )
+    return l2_size
+
+
 def get_ncores(max_ncores=0):
     """Get the number of logical cores in the system.
 
@@ -129,8 +148,19 @@ class Defaults(object):
     seed: int = None
     random_gen: ia.RandomGen = ia.RandomGen.MERSENNE_TWISTER
     btune: bool = True
-    dtype: (np.float64, np.float32, np.int64, np.int32, np.int16, np.int8, np.uint64, np.uint32, np.uint16,
-            np.uint8, np.bool_) = np.float64
+    dtype: (
+        np.float64,
+        np.float32,
+        np.int64,
+        np.int32,
+        np.int16,
+        np.int8,
+        np.uint64,
+        np.uint32,
+        np.uint16,
+        np.uint8,
+        np.bool_,
+    ) = np.float64
     split_mode: (ia.SplitMode) = ia.SplitMode.AUTO_SPLIT
     chunks: Sequence = None
     blocks: Sequence = None
@@ -340,8 +370,19 @@ class Config(ext.Config):
     seed: int = field(default_factory=defaults._seed)
     random_gen: ia.RandomGen = field(default_factory=defaults._random_gen)
     btune: bool = field(default_factory=defaults._btune)
-    dtype: (np.float64, np.float32, np.int64, np.int32, np.int16, np.int8, np.uint64, np.uint32, np.uint16,
-            np.uint8, np.bool_) = field(default_factory=defaults._dtype)
+    dtype: (
+        np.float64,
+        np.float32,
+        np.int64,
+        np.int32,
+        np.int16,
+        np.int8,
+        np.uint64,
+        np.uint32,
+        np.uint16,
+        np.uint8,
+        np.bool_,
+    ) = field(default_factory=defaults._dtype)
     split_mode: ia.SplitMode = field(default_factory=defaults._split_mode)
     chunks: Union[Sequence, None] = field(default_factory=defaults._chunks)
     blocks: Union[Sequence, None] = field(default_factory=defaults._blocks)
@@ -358,7 +399,9 @@ class Config(ext.Config):
 
         if self.contiguous is None and self.urlpath is not None:
             self.contiguous = True
-        self.urlpath = (self.urlpath.encode("utf-8") if isinstance(self.urlpath, str) else self.urlpath)
+        self.urlpath = (
+            self.urlpath.encode("utf-8") if isinstance(self.urlpath, str) else self.urlpath
+        )
         global RANDOM_SEED
         # Increase the random seed each time so as to prevent re-using them
         if self.seed is None:

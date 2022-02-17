@@ -239,7 +239,7 @@ def test_matmul(
             np.float32,
             False,
             None,
-            "r+"
+            "r+",
         ),
         (
             [100, 100],
@@ -261,7 +261,7 @@ def test_matmul(
             np.float64,
             True,
             "test_matmul_ccontiguous.iarr",
-            "w-"
+            "w-",
         ),
         (
             [100, 100],
@@ -283,7 +283,7 @@ def test_matmul(
             np.float32,
             False,
             "test_matmul_csparse.iarr",
-            "w"
+            "w",
         ),
         (
             [100, 100],
@@ -349,7 +349,7 @@ def test_matmul(
             np.float64,
             False,
             "test_matmul_csparse.iarr",
-            "w-"
+            "w-",
         ),
         (
             [1000, 1000],
@@ -417,7 +417,9 @@ def test_matmul_slice(
         bslices = bslices[0]
     bsl = b[bslices]
 
-    ccfg = ia.Config(chunks=cchunks, blocks=cblocks, contiguous=ccontiguous, urlpath=curlpath, mode=mode)
+    ccfg = ia.Config(
+        chunks=cchunks, blocks=cblocks, contiguous=ccontiguous, urlpath=curlpath, mode=mode
+    )
     if mode in ["r", "r+"]:
         with pytest.raises(IOError):
             c = ia.matmul(asl, bsl, cfg=ccfg)
@@ -473,7 +475,7 @@ def test_matmul_slice(
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
 def test_matmul_opt(ashape, bshape, dtype, acontiguous, aurlpath, bcontiguous, burlpath):
 
-    params = ia.matmul_params(ashape, bshape, l2_size=1024, chunk_size=16 * 1024)
+    params = ia.matmul_params(ashape, bshape, chunk_size=16 * 1024)
 
     achunks, ablocks, bchunks, bblocks = params
 
@@ -484,7 +486,7 @@ def test_matmul_opt(ashape, bshape, dtype, acontiguous, aurlpath, bcontiguous, b
     a = ia.linspace(ashape, -10, 1, dtype=dtype, cfg=acfg)
     an = ia.iarray2numpy(a)
 
-    bcfg = ia.Config(chunks=bchunks, blocks=bblocks,  contiguous=bcontiguous, urlpath=burlpath)
+    bcfg = ia.Config(chunks=bchunks, blocks=bblocks, contiguous=bcontiguous, urlpath=burlpath)
     b = ia.linspace(bshape, -1, 10, dtype=dtype, cfg=bcfg)
     bn = ia.iarray2numpy(b)
 

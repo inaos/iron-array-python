@@ -960,7 +960,7 @@ def opt_gemv(a: IArray, b: IArray, cfg=None, **kwargs):
         return ext.opt_gemv(cfg, a, b)
 
 
-def matmul_params(ashape, bshape, itemsize=8, l2_size=512 * 1024, chunk_size=128 * 1024 * 1024):
+def matmul_params(ashape, bshape, dtype=None, l2_size=None, chunk_size=128 * 1024 * 1024):
     """
     Given a matrix multiplication of two arrays, it computes the chunks and the blocks of the operands
     to use an optimized version of the matmul algorithm.
@@ -971,8 +971,8 @@ def matmul_params(ashape, bshape, itemsize=8, l2_size=512 * 1024, chunk_size=128
         The shape of the operand a.
     bshape: tuple or list
         The shape of the operand b.
-    itemsize:
-        The size of each item.
+    dtype:
+        The dtype of each item.
     l2_size: int
         The size of the l2 cache. It is used to compute the size of the blocks.
     chunk_size: int
@@ -984,6 +984,14 @@ def matmul_params(ashape, bshape, itemsize=8, l2_size=512 * 1024, chunk_size=128
         A tuple specifying the chunks and the blocks of the matmul operands a and b
         (achunks, ablocks, bchunks, bblocks).
     """
+
+    if not dtype:
+        dtype = ia.get_config_defaults().dtype
+    itemsize = np.dtype(dtype).itemsize
+
+    if not l2_size:
+        l2_size = ia.get_l2_size()
+
     if len(ashape) != 2:
         raise AttributeError("The dimension of a must be 2")
     if len(bshape) != 1 and len(bshape) != 2:

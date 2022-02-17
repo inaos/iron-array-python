@@ -192,6 +192,8 @@ cdef extern from "libiarray/iarray.h":
 
     ina_rc_t iarray_get_ncores(int *ncores, int64_t max_ncores);
 
+    ina_rc_t iarray_get_L2_size(uint64_t *l2_size);
+
     ina_rc_t iarray_partition_advice(iarray_context_t *ctx, iarray_dtshape_t *dtshape,
                                      iarray_storage_t *storage,
                                      int64_t min_chunksize, int64_t max_chunksize,
