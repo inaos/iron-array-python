@@ -617,6 +617,29 @@ def empty(cfg, dtshape):
     return ia.IArray(ctx, c_c)
 
 
+def uninit(cfg, dtshape):
+    ctx = Context(cfg)
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(),
+                                                                                           <char*>"iarray_context_t*")
+
+    dtshape = IaDTShape(dtshape).to_dict()
+    cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
+
+    # Check that we are not inadvertently overwriting anything
+    ia._check_access_mode(cfg.urlpath, cfg.mode)
+
+    cdef ciarray.iarray_storage_t store_
+    set_storage(cfg, &store_)
+
+    flags = 0 if cfg.urlpath is None else ciarray.IARRAY_CONTAINER_PERSIST
+
+    cdef ciarray.iarray_container_t *c
+    iarray_check(ciarray.iarray_uninit(ctx_, &dtshape_, &store_, flags, &c))
+
+    c_c = PyCapsule_New(c, <char*>"iarray_container_t*", NULL)
+    return ia.IArray(ctx, c_c)
+
+
 def arange(cfg, slice_, dtshape):
     ctx = Context(cfg)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(),

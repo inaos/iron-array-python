@@ -205,6 +205,12 @@ cdef extern from "libiarray/iarray.h":
                                        int flags,
                                        iarray_container_t **container)
 
+    ina_rc_t iarray_uninit(iarray_context_t *ctx,
+                           iarray_dtshape_t *dtshape,
+                           iarray_storage_t *storage,
+                           int flags,
+                           iarray_container_t ** container)
+
     void iarray_container_free(iarray_context_t *ctx,
                                iarray_container_t **container)
 

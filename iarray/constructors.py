@@ -69,6 +69,36 @@ def empty(shape: Sequence, cfg: ia.Config = None, **kwargs) -> ia.IArray:
         return ext.empty(cfg, dtshape)
 
 
+def uninit(shape: Sequence, cfg: ia.Config = None, **kwargs) -> ia.IArray:
+    """Return an uninitialized array.
+
+    An uninitialized array has no data and needs to be filled via a write iterator.
+
+    Parameters
+    ----------
+    shape : tuple, list
+        The shape of the array to be created.
+    cfg : :class:`Config`
+        The configuration for running the expression.
+        If None (default), global defaults are used.
+    kwargs : dict
+        A dictionary for setting some or all of the fields in the :class:`Config`
+        dataclass that should override the current configuration.
+
+    Returns
+    -------
+    :ref:`IArray`
+        The new array.
+    """
+
+    if cfg is None:
+        cfg = ia.get_config_defaults()
+
+    with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
+        dtshape = ia.DTShape(shape, cfg.dtype)
+        return ext.uninit(cfg, dtshape)
+
+
 def arange(
     shape: Sequence, start=None, stop=None, step=None, cfg: ia.Config = None, **kwargs
 ) -> ia.IArray:
