@@ -5,9 +5,9 @@
 
 .. autoattribute:: IArray.vlmeta
 
-Instance to a vlmeta object to access the variable length metalayers of an `IArray`.
+Instance to a vlmeta object to manage the variable length metalayers of an `IArray`.
 This class behaves very similarly to a dictionary, and variable length
-metalayers can be appended in the typical way::
+metalayers can be appended in the usual way::
 
     iarr.vlmeta['vlmeta1'] = 'something'
 

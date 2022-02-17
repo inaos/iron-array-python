@@ -347,9 +347,7 @@ cdef class Container:
         if c is None:
             raise ValueError("You must pass a Capsule to the C container struct of the Container constructor")
         self.context = ctx
-        cdef ciarray.iarray_container_t* c_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(
-            c, <char*>"iarray_container_t*")
-        self.ia_container = c_
+        self.ia_container = <ciarray.iarray_container_t*> PyCapsule_GetPointer(c, <char*>"iarray_container_t*")
         self.vlmeta = Vlmeta(c, ctx)
 
     def __dealloc__(self):
@@ -432,7 +430,7 @@ cdef class Container:
 
     @vlmeta.setter
     def vlmeta(self, value):
-        self._vlmeta = value
+        self.vlmeta = value
 
     def __getitem__(self, key):
         # key has been massaged already
@@ -621,8 +619,8 @@ def empty(cfg, dtshape):
 
 def arange(cfg, slice_, dtshape):
     ctx = Context(cfg)
-    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
-        ctx.to_capsule(), <char*>"iarray_context_t*")
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(),
+                                                                                           <char*>"iarray_context_t*")
 
     start, stop, step = slice_.start, slice_.stop, slice_.step
 
@@ -646,8 +644,8 @@ def arange(cfg, slice_, dtshape):
 
 def linspace(cfg, start, stop, dtshape):
     ctx = Context(cfg)
-    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
-        ctx.to_capsule(), <char*>"iarray_context_t*")
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(),
+                                                                                           <char*>"iarray_context_t*")
 
     dtshape = IaDTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
@@ -669,8 +667,8 @@ def linspace(cfg, start, stop, dtshape):
 
 def zeros(cfg, dtshape):
     ctx = Context(cfg)
-    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
-        ctx.to_capsule(), <char*>"iarray_context_t*")
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(),
+                                                                                           <char*>"iarray_context_t*")
 
     dtshape = IaDTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
@@ -692,8 +690,8 @@ def zeros(cfg, dtshape):
 
 def ones(cfg, dtshape):
     ctx = Context(cfg)
-    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
-        ctx.to_capsule(), <char*>"iarray_context_t*")
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(),
+                                                                                           <char*>"iarray_context_t*")
 
     dtshape = IaDTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
@@ -715,8 +713,8 @@ def ones(cfg, dtshape):
 
 def full(cfg, fill_value, dtshape):
     ctx = Context(cfg)
-    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
-        ctx.to_capsule(), <char*>"iarray_context_t*")
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(),
+                                                                                           <char*>"iarray_context_t*")
 
     dtshape = IaDTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
@@ -798,8 +796,8 @@ cdef get_cfg_from_container(cfg, ciarray.iarray_context_t *ctx, ciarray.iarray_c
 
 def load(cfg, urlpath):
     ctx = Context(cfg)
-    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
-        ctx.to_capsule(), <char*>"iarray_context_t*")
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(),
+                                                                                           <char*>"iarray_context_t*")
 
     urlpath = urlpath.encode("utf-8") if isinstance(urlpath, str) else urlpath
 
@@ -815,8 +813,8 @@ def load(cfg, urlpath):
 
 def open(cfg, urlpath):
     ctx = Context(cfg)
-    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
-        ctx.to_capsule(), <char*>"iarray_context_t*")
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(),
+                                                                                           <char*>"iarray_context_t*")
 
     urlpath = urlpath.encode("utf-8") if isinstance(urlpath, str) else urlpath
 
@@ -858,10 +856,10 @@ def set_slice(cfg, data, start, stop, buffer):
 
 def get_slice(cfg, data, start, stop, squeeze_mask, view, storage):
     ctx = Context(cfg)
-    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
-        ctx.to_capsule(), <char*>"iarray_context_t*")
-    cdef ciarray.iarray_container_t *data_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(
-        data.to_capsule(), <char*>"iarray_container_t*")
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(),
+                                                                                           <char*>"iarray_context_t*")
+    cdef ciarray.iarray_container_t *data_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(data.to_capsule(),
+                                                                                                <char*>"iarray_container_t*")
 
     shape = [sp%s - st%s for sp, st, s in zip(stop, start, data.shape)]
     dtshape = ia.DTShape(shape, data.dtype)
@@ -913,11 +911,12 @@ def get_slice(cfg, data, start, stop, squeeze_mask, view, storage):
     return b
 
 def resize(container, new_shape):
-    cdef ciarray.iarray_container_t *container_ = <ciarray.iarray_container_t *> PyCapsule_GetPointer(
-        container.to_capsule(), <char*>"iarray_container_t*")
+    cdef ciarray.iarray_container_t *container_
+    container_ = <ciarray.iarray_container_t *> PyCapsule_GetPointer(container.to_capsule(),
+                                                                     <char*>"iarray_container_t*")
     ctx = Context(container.cfg)
-    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t *> PyCapsule_GetPointer(
-        ctx.to_capsule(), <char*>"iarray_context_t*")
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t *> PyCapsule_GetPointer(ctx.to_capsule(),
+                                                                                            <char*>"iarray_context_t*")
     cdef int ndim = len(new_shape)
     cdef ciarray.int64_t new_shape_[ciarray.IARRAY_DIMENSION_MAX]
     for i in range(ndim):
@@ -927,8 +926,8 @@ def resize(container, new_shape):
 
 def numpy2iarray(cfg, a, dtshape):
     ctx = Context(cfg)
-    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
-        ctx.to_capsule(), <char*>"iarray_context_t*")
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(),
+                                                                                           <char*>"iarray_context_t*")
 
     dtshape = IaDTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
@@ -952,11 +951,10 @@ def numpy2iarray(cfg, a, dtshape):
 
 def iarray2numpy(cfg, c):
     ctx = Context(cfg)
-    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
-        ctx.to_capsule(), <char*>"iarray_context_t*")
-    cdef ciarray.iarray_container_t *c_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(
-        c.to_capsule(), <char*>"iarray_container_t*")
-
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(),
+                                                                                           <char*>"iarray_context_t*")
+    cdef ciarray.iarray_container_t *c_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(c.to_capsule(),
+                                                                                             <char*>"iarray_container_t*")
 
     cdef ciarray.iarray_dtshape_t dtshape
     iarray_check(ciarray.iarray_get_dtshape(ctx_, c_, &dtshape))
@@ -1537,8 +1535,8 @@ def partition_advice(dtshape, min_chunksize, max_chunksize, min_blocksize, max_b
     blocks = tuple(store.blockshape[i] for i in range(len(dtshape.shape)))
     return chunks, blocks
 
-# Vlmetalayers
 
+# Vlmetalayers
 
 cdef class Vlmeta:
     cdef ciarray.iarray_container_t *c_
@@ -1546,12 +1544,8 @@ cdef class Vlmeta:
     cdef dict vlmeta_
 
     def __init__(self, iarray, ctx):
-        cdef ciarray.iarray_container_t * c_ = <ciarray.iarray_container_t *> PyCapsule_GetPointer(iarray,
-                                                                                        <char*>"iarray_container_t*")
-        self.c_ = c_
-        cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t *> PyCapsule_GetPointer(ctx.to_capsule(),
-                                                                                                <char*>"iarray_context_t*")
-        self.ctx_ = ctx_
+        self.c_ = <ciarray.iarray_container_t *> PyCapsule_GetPointer(iarray, <char*>"iarray_container_t*")
+        self.ctx_ = <ciarray.iarray_context_t *> PyCapsule_GetPointer(ctx.to_capsule(), <char*>"iarray_context_t*")
         self.vlmeta_ = {}
 
     @property
@@ -1560,7 +1554,6 @@ cdef class Vlmeta:
 
     def __setitem__(self, name, content):
         self.vlmeta_[name] = content
-
 
         name = name.encode("utf-8") if isinstance(name, str) else name
         cdef ciarray.bool exists
@@ -1589,8 +1582,6 @@ cdef class Vlmeta:
 
     def __delitem__(self, name):
         del self.vlmeta_[name]
-
-        name = name.encode("utf-8") if isinstance(name, str) else name
 
         name = name.encode("utf-8") if isinstance(name, str) else name
         rc = ciarray.iarray_vlmeta_delete(self.ctx_, self.c_, name)
