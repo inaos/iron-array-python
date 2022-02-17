@@ -4,11 +4,13 @@ from time import time
 import numpy as np
 
 
-_ = ia.set_config_defaults(clevel=1, codec=ia.Codec.LZ4, btune=False, nthreads=8, dtype=np.float64, seed=0)
+_ = ia.set_config_defaults(
+    clevel=1, codec=ia.Codec.LZ4, btune=False, nthreads=8, dtype=np.float64, seed=0
+)
 
 shape = (50_000, 13_859)
 
-params = ia.matmul_params(shape, (shape[1],), l2_size=512 * 1024)
+params = ia.matmul_params(shape, (shape[1],))
 a_chunks, a_blocks, b_chunks, b_blocks = params
 
 aia = ia.random.normal(

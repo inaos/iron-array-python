@@ -153,6 +153,7 @@ from .config_params import (
     config,
     reset_config_defaults,
     get_ncores,
+    get_l2_size,
     partition_advice,
     defaults as _defaults,
 )
