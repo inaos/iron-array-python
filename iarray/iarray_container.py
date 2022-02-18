@@ -992,6 +992,16 @@ def matmul_params(ashape, bshape, dtype=None, l2_size=None, chunk_size=128 * 102
     if not l2_size:
         l2_size = ia.get_l2_size()
 
+    l2_size = l2_size // 2
+    # The above operation is based on the following results:
+    # Matmul performance on Intel(R) Core(TM) i9-10940X CPU @ 3.30GHz (14 cores, 28 logical)
+    # Time (L2 size = 65536) 4.27 s
+    # Time (L2 size = 131072) 2.53 s
+    # Time (L2 size = 262144) 1.81 s
+    # Time (L2 size = 524288) 1.89 s
+    # Time (L2 size = 1048576) 4.68 s  <- CPU L2 size
+    # Time (L2 size = 2097152) 4.06 s
+
     if len(ashape) != 2:
         raise AttributeError("The dimension of a must be 2")
     if len(bshape) != 1 and len(bshape) != 2:
