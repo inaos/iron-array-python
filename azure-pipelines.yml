@@ -18,7 +18,7 @@ strategy:
       imageName: 'windows-2019'
       VSINSTALL: "Microsoft Visual Studio\\2019\\Enterprise\\VC\\Auxiliary\\Build"
       MSVC_PLATFORM: amd64
-      python.version: '3.7'
+      python.version: '3.9'
 
 pool:
   vmImage: $(imageName)
