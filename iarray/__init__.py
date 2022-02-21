@@ -200,6 +200,7 @@ from .constructors import (
     ones,
     full,
     uninit,
+    zarr_proxy,
 )
 
 from .utils import (

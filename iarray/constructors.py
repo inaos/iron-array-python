@@ -10,6 +10,7 @@
 ###########################################################################################
 
 import numpy as np
+import zarr
 
 import iarray as ia
 from iarray import iarray_ext as ext
@@ -237,3 +238,19 @@ def full(shape: Sequence, fill_value: float, cfg: ia.Config = None, **kwargs) ->
     with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
         dtshape = ia.DTShape(shape, cfg.dtype)
         return ext.full(cfg, fill_value, dtshape)
+
+
+zarr_to_iarray_dtypes = {'int8': np.int8, 'int16': np.int16, 'int32': np.int32, 'int64': np.int64,
+                         'uint8': np.uint8, 'uint16': np.uint16, 'uint32': np.uint32, 'uint64': np.uint64,
+                         'f4': np.float, 'f8': np.double, 'b': np.bool_}
+
+def zarr_proxy(zarr_urlpath):
+    z = zarr.open(zarr_urlpath)
+    # Create iarray
+    dtype = zarr_to_iarray_dtypes[str(z.dtype)]
+    a = uninit(shape=z.shape, dtype=dtype, chunks=[6,6], blocks=[3,3])
+    # Set special vlmeta to identify zarr_proxy
+    a.vlmeta["proxy_urlpath"] = zarr_urlpath
+    # Assign postfilter
+    ext.set_zproxy_postfilter(a)
+    return a
