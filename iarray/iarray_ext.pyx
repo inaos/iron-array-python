@@ -17,9 +17,11 @@ from collections import namedtuple
 from . cimport ciarray_ext as ciarray
 import numpy as np
 cimport numpy as np
+import zarr
 import cython
 from cpython.pycapsule cimport PyCapsule_New, PyCapsule_GetPointer
 from libc.stdlib cimport malloc, free
+from libc.string cimport memcpy
 import iarray as ia
 from iarray import udf
 
@@ -1628,6 +1630,32 @@ cdef class Vlmeta:
 
     def getall(self):
         return self.vlmeta_.copy()
+
+
+# Zarr proxy
+
+cdef void zarr_handler(char *zarr_urlpath, ciarray.int64_t *slice_start, ciarray.int64_t *slice_stop,
+                       ciarray.uint8_t *dest)with gil:
+    path = zarr_urlpath.decode()
+    z_ = zarr.open(path)
+    cdef int ndim = z_.ndim
+    slice_ = tuple(slice(slice_start[i], slice_stop[i]) for i in range(ndim))
+    data = z_[slice_]
+    cdef Py_buffer *buf = <Py_buffer *> malloc(sizeof(Py_buffer))
+    PyObject_GetBuffer(data, buf, PyBUF_SIMPLE)
+    memcpy(dest, buf.buf, buf.len)
+    PyBuffer_Release(buf)
+
+
+def set_zproxy_postfilter(iarr):
+    cdef ciarray.iarray_container_t *c
+    c = <ciarray.iarray_container_t *> PyCapsule_GetPointer(iarr.to_capsule(), <char *> "iarray_container_t*")
+    cdef ciarray.zhandler_ptr func = zarr_handler
+    urlpath = iarr.vlmeta["proxy_urlpath"]
+    urlpath = urlpath.encode("utf-8") if isinstance(urlpath, str) else urlpath
+
+    iarray_check(ciarray.iarray_add_zproxy_postfilter(c, urlpath, func))
+
 
 #
 # TODO: the next functions are just for benchmarking purposes and should be moved to its own extension

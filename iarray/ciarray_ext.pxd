@@ -593,3 +593,9 @@ cdef extern from "libiarray/iarray.h":
     ina_rc_t iarray_vlmeta_update(iarray_context_t *ctx, iarray_container_t *c, iarray_metalayer_t *meta);
     ina_rc_t iarray_vlmeta_get(iarray_context_t *ctx, iarray_container_t *c, const char *name, iarray_metalayer_t *meta);
     ina_rc_t iarray_vlmeta_delete(iarray_context_t *ctx, iarray_container_t *c, const char *name);
+
+
+    # Zarr proxy
+
+    ctypedef void (*zhandler_ptr) (char *zarr_urlpath, int64_t *slice_start, int64_t *slice_stop, uint8_t *dest)
+    ina_rc_t iarray_add_zproxy_postfilter(iarray_container_t *src, char *zarr_urlpath, zhandler_ptr zhandler)
