@@ -35,7 +35,7 @@ if(NOT EXISTS "${CMAKE_BINARY_DIR}/inac.cmake")
 endif()
 include("${CMAKE_BINARY_DIR}/inac.cmake")
 # We need this only for the extension to find iarray headers
-inac_add_dependency(inac "1.0.10")
+inac_add_dependency(inac "1.0.22")
 
 # The Python wrapper is the iarray directory
 add_subdirectory(iarray)
