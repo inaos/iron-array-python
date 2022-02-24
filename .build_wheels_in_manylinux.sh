@@ -86,9 +86,8 @@ for version in "${versions[@]}"; do
   conda create --yes -n test-wheels python=$python_version
   conda activate test-wheels
   cd /tmp/
-  python -m pip install iarray --user --no-cache-dir --no-index -f /work/dist/
+  python -m pip install iarray --user --no-cache-dir -f /work/dist/
   cd /work/
-  python -m pip install -r requirements-runtime.txt
   python -m pytest iarray/tests
   conda deactivate
 done

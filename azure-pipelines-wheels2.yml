@@ -139,7 +139,6 @@ jobs:
 
   - script: |
       source activate iArrayEnv
-      # python -m pip install pytest numexpr llvmlite
       python -m pip install iarray --force-reinstall --no-cache-dir -f ./dist/
       python -m pytest iarray/tests
     displayName: 'Test wheel'
@@ -254,8 +253,7 @@ jobs:
       targetPath: './dist'
 
   - script: |
-      python -m pip install pytest numexpr llvmlite
-      python -m pip install iarray --force-reinstall --no-index --no-cache-dir -f ./dist/
+      python -m pip install iarray --force-reinstall --no-cache-dir -f ./dist/
       python -m pytest iarray/tests
     displayName: 'Test wheel'
 
