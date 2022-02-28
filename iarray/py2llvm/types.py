@@ -198,7 +198,7 @@ class ArrayType(ComplexType):
             # stride = self.strides.get(visitor.builder, dim)
             stride = self.strides_cache[dim]
             idx = slice[dim]
-            idx = value_to_ir_value(builder, idx)
+            idx = value_to_ir_value(builder, idx, type_=stride.type)
             offset = builder.mul(idx, stride)
             if DEBUG:
                 printf(builder, "%d * %d = %d\n", idx, stride, offset)
