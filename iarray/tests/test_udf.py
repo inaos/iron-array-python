@@ -41,7 +41,7 @@ def cmp_udf_np(f, start_stop, shape, partitions, dtype, cparams, f_np=None, user
     out = expr.eval()
 
     num = functools.reduce(lambda x, y: x * y, shape)
-    out_ref = np.empty(num, dtype=dtype).reshape(shape)
+    out_ref = np.zeros(num, dtype=dtype).reshape(shape)
     args = [
         np.linspace(start, stop, num, dtype=dtype).reshape(shape)
         for start, stop in start_stop
@@ -80,7 +80,7 @@ def cmp_udf_np_strict(f, start, stop, shape, partitions, dtype, cparams):
 
     num = functools.reduce(lambda x, y: x * y, shape)
     x_ref = np.linspace(start, stop, num, dtype=dtype).reshape(shape)
-    out_ref = np.empty(num, dtype=dtype).reshape(shape)
+    out_ref = np.zeros(num, dtype=dtype).reshape(shape)
     indices = range(0, num, blocks[0])
     for out_ref_slice, x_ref_slice in zip(
         np.array_split(out_ref, indices), np.array_split(x_ref, indices)
@@ -402,3 +402,46 @@ def test_user_params(f):
         cparams,
         user_params=user_params
     )
+
+
+#
+# https://github.com/inaos/iron-array/issues/502
+#
+
+@udf.jit
+def f_idx_const(
+    out: udf.Array(udf.float64, 1),
+    x: udf.Array(udf.float64, 1)
+):
+    n = out.shape[0]
+    for i in range(n):
+        out[i] = 0
+        out[0] = x[i]
+
+    return 0
+
+
+@udf.jit
+def f_idx_var(
+    out: udf.Array(udf.float64, 1),
+    x: udf.Array(udf.float64, 1)
+):
+    var = 0
+    n = out.shape[0]
+    for i in range(n):
+        out[i] = 0
+        out[var] = x[i]
+
+    return 0
+
+
+@pytest.mark.parametrize("f", [f_idx_const, f_idx_var])
+def test_idx(f):
+    shape = [1000]
+    chunks = [100]
+    blocks = [10]
+    dtype = np.float64
+    cparams = dict(nthreads=16)
+    start, stop = 1, 1000
+
+    cmp_udf_np_strict(f, start, stop, shape, (chunks, blocks), dtype, cparams)
