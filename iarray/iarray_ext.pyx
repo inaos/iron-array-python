@@ -548,7 +548,7 @@ cdef class Expression:
                 ciarray.iarray_get_storage(self.ia_expr.ctx, self.ia_expr.vars[0].c, &storage_0)
                 chunks_0 = list(storage_0.chunkshape)[:ndim]
                 blocks_0 = list(storage_0.blockshape)[:ndim]
-                for i in range(1, ndim):
+                for i in range(1, nvars):
                     ciarray.iarray_get_storage(self.ia_expr.ctx, self.ia_expr.vars[i].c, &storage_i)
                     chunks_i = list(storage_i.chunkshape)[:ndim]
                     blocks_i = list(storage_i.blockshape)[:ndim]

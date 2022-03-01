@@ -715,9 +715,9 @@ def test_expr_fusion(
         )
     ])
 def test_chunks_blocks_params(expression, contiguous, zurlpath, zcontiguous):
-    shape = [200, 300]
-    chunks = [40, 50]
-    blocks = [20, 20]
+    shape = [200]
+    chunks = [40]
+    blocks = [20]
     ia.remove_urlpath(zurlpath)
 
     # First with default chunks and blocks when operands chunks and blocks are equal
@@ -735,7 +735,7 @@ def test_chunks_blocks_params(expression, contiguous, zurlpath, zcontiguous):
     ia.remove_urlpath(zcfg.urlpath)
 
     # Now with default chunks and blocks when operands chunks and blocks are not equal
-    ycfg = ia.Config(chunks=[40, 49], blocks=blocks, contiguous=contiguous)
+    ycfg = ia.Config(chunks=[30], blocks=blocks, contiguous=contiguous)
     zcfg = ia.Config(contiguous=zcontiguous, urlpath=zurlpath)
     y = ia.linspace(shape, 0, 1, cfg=ycfg)
     expr = ia.expr_from_string(expression, {"x": x, "y": y}, cfg=zcfg)
@@ -746,7 +746,7 @@ def test_chunks_blocks_params(expression, contiguous, zurlpath, zcontiguous):
 
     # Check that the provided chunks and blocks are used
     ycfg = ia.Config(chunks=chunks, blocks=blocks, contiguous=contiguous)
-    zcfg = ia.Config(chunks=[10, 10], blocks=[5, 5], contiguous=zcontiguous, urlpath=zurlpath)
+    zcfg = ia.Config(chunks=[10], blocks=[5], contiguous=zcontiguous, urlpath=zurlpath)
     y = ia.linspace(shape, 0, 1, cfg=ycfg)
     expr = ia.expr_from_string(expression, {"x": x, "y": y}, cfg=zcfg)
     iout = expr.eval()
