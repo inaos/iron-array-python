@@ -242,15 +242,46 @@ def full(shape: Sequence, fill_value: float, cfg: ia.Config = None, **kwargs) ->
 
 zarr_to_iarray_dtypes = {'int8': np.int8, 'int16': np.int16, 'int32': np.int32, 'int64': np.int64,
                          'uint8': np.uint8, 'uint16': np.uint16, 'uint32': np.uint32, 'uint64': np.uint64,
-                         'f4': np.float, 'f8': np.double, 'b': np.bool_}
+                         'float32': np.float32, 'float64': np.float64, 'bool': np.bool_}
 
-def zarr_proxy(zarr_urlpath):
+def zarr_proxy(zarr_urlpath, cfg: ia.Config = None, **kwargs) -> ia.IArray:
+    """Return a zarr proxy array.
+
+
+    `cfg` and `kwargs` are the same than for :func:`empty`.
+
+    Returns
+    -------
+    :ref:`IArray`
+        The zarr proxy array.
+
+    See Also
+    --------
+    empty : Create an empty array.
+    """
     z = zarr.open(zarr_urlpath)
     # Create iarray
     dtype = zarr_to_iarray_dtypes[str(z.dtype)]
-    a = uninit(shape=z.shape, dtype=dtype, chunks=[6,6], blocks=[3,3])
+
+    if cfg is None:
+        cfg = ia.get_config_defaults()
+
+    if kwargs != {}:
+        if "dtype" in kwargs:
+            if kwargs.pop("dtype") != dtype:
+                raise AttributeError("dtype cannot differ from the original array")
+        if "chunks" in kwargs:
+            if tuple(kwargs.pop("chunks")) != z.chunks:
+                raise AttributeError("chunks cannot differ from the original array")
+        if "blocks" in kwargs:
+            if tuple(kwargs.pop("blocks")) != z.chunks:
+                raise AttributeError("blocks cannot differ from chunks")
+
+    with ia.config(cfg=cfg, dtype=dtype, chunks=z.chunks, blocks=z.chunks, **kwargs) as cfg:
+        a = uninit(shape=z.shape, cfg=cfg)
+
     # Set special vlmeta to identify zarr_proxy
-    a.vlmeta["proxy_urlpath"] = zarr_urlpath
+    a.vlmeta["zproxy_urlpath"] = zarr_urlpath
     # Assign postfilter
     ext.set_zproxy_postfilter(a)
     return a
