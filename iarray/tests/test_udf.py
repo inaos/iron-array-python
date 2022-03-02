@@ -415,7 +415,6 @@ def f_idx_const(
 ):
     n = out.shape[0]
     for i in range(n):
-        out[i] = 0
         out[0] = x[i]
 
     return 0
@@ -429,7 +428,6 @@ def f_idx_var(
     var = 0
     n = out.shape[0]
     for i in range(n):
-        out[i] = 0
         out[var] = x[i]
 
     return 0
