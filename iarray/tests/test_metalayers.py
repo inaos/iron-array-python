@@ -37,7 +37,7 @@ def test_metalayers(shape, chunks, blocks, urlpath, contiguous, dtype):
     assert (a.vlmeta["test"] == test_meta)
 
     del a.vlmeta["test"]
-    assert (len(a.vlmeta) == 1)
+    assert ("test" not in a.vlmeta)
 
     # Remove file on disk
     ia.remove_urlpath(urlpath)

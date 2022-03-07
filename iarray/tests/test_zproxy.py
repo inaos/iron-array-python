@@ -43,6 +43,7 @@ def test_linspace(start, stop, shape, chunks, dtype, contiguous, urlpath):
     np.testing.assert_almost_equal(b, c)
 
     ia.remove_urlpath(urlpath)
+    ia.remove_urlpath('test_linspace.zarr')
 
 
 # arange
@@ -92,8 +93,9 @@ def test_arange(start, stop, shape, chunks, dtype, contiguous, urlpath):
     c = np.arange(start, stop, step, dtype=npdtype).reshape(shape)
     np.testing.assert_almost_equal(b, c)
     ia.remove_urlpath(urlpath)
+    ia.remove_urlpath('test_arange.zarr')
 
-"""
+
 # from_file
 @pytest.mark.parametrize(
     "start, stop, shape, chunks, dtype, contiguous, urlpath",
@@ -125,8 +127,9 @@ def test_from_file(start, stop, shape, chunks, dtype, contiguous, urlpath):
     np.testing.assert_almost_equal(c, d)
 
     ia.remove_urlpath(urlpath)
+    ia.remove_urlpath('test_linspace.zarr')
 
-"""
+
 # get_slice
 @pytest.mark.parametrize(
     "start, stop, slice, shape, chunks, dtype, contiguous, urlpath",
@@ -192,6 +195,7 @@ def test_slice(start, stop, slice, shape, chunks, dtype, contiguous, urlpath):
         np.testing.assert_array_equal(c, d)
 
     ia.remove_urlpath(urlpath)
+    ia.remove_urlpath('test_slice.zarr')
 
 
 # zeros
@@ -227,6 +231,7 @@ def test_zeros(shape, chunks, dtype, contiguous, urlpath):
         np.testing.assert_array_equal(b, c)
 
     ia.remove_urlpath(urlpath)
+    ia.remove_urlpath('test_zeros.zarr')
 
 
 # ones
@@ -256,6 +261,7 @@ def test_ones(shape, chunks, dtype, contiguous, urlpath):
         np.testing.assert_array_equal(b, c)
 
     ia.remove_urlpath(urlpath)
+    ia.remove_urlpath('test_ones.zarr')
 
 
 # full
@@ -284,24 +290,59 @@ def test_full(fill_value, shape, chunks, dtype, contiguous, urlpath):
         np.testing.assert_array_equal(b, c)
 
     ia.remove_urlpath(urlpath)
+    ia.remove_urlpath('test_full.zarr')
 
-"""
-# TODO: Update this when persistent sparse would be supported
+
 @pytest.mark.parametrize(
-    "contiguous",
+    "shape, chunks",
     [
-        (True,),
-        (False,),
+        ([100, 100], [50, 50]),
+        ([20, 60, 30, 50], [10, 40, 10, 11]),
     ],
 )
-def test_overwrite(contiguous):
-    fname = "pepe.iarr"
-    ia.remove_urlpath(fname)
-    a = ia.arange([10, 20, 10, 14], contiguous=contiguous, urlpath=fname)
-    b = ia.arange([10, 20, 10, 14], contiguous=contiguous, urlpath=fname, mode="w")
+@pytest.mark.parametrize("dtype", [np.float32, np.int64, np.uint16])
+@pytest.mark.parametrize(
+    "contiguous, urlpath, urlpath2",
+    [
+        (False, None, None),
+        (False, None, None),
+        (True, None, None),
+        (True, "test_copy.iarr", "test_copy2.ziarr"),
+        (False, "test_copy.iarr", "test_copy2.ziarr"),
+    ],
+)
+def test_copy(shape, chunks, dtype, contiguous, urlpath, urlpath2):
+    ia.remove_urlpath(urlpath)
+    ia.remove_urlpath(urlpath2)
+
+    z = zarr.open('test_copy.zarr', mode='w', shape=shape, chunks=chunks, dtype=dtype)
+    z[:] = np.arange(start=0, stop=np.prod(shape), dtype=z.dtype).reshape(shape)
+
+    a_ = ia.zarr_proxy('test_copy.zarr', chunks=chunks, contiguous=contiguous, urlpath=urlpath)
+    sl = tuple([slice(0, s - 1) for s in shape])
+    a = a_[sl]
+    b = a.copy(urlpath=urlpath2)
+    an = ia.iarray2numpy(a)
+    bn = ia.iarray2numpy(b)
+
+    if dtype in [np.float64, np.float32]:
+        rtol = 1e-6 if dtype == np.float32 else 1e-14
+        np.testing.assert_allclose(an, bn, rtol=rtol)
+    else:
+        np.testing.assert_array_equal(an, bn)
+
+    c = a.copy(favor=ia.Favor.SPEED)
+    assert c.cfg.btune is True
+    with pytest.raises(ValueError):
+        a.copy(favor=ia.Favor.CRATIO, btune=False)
+    d = a.copy()
+    assert d.cfg.btune is False
+
     with pytest.raises(IOError):
-        b = ia.arange([10, 20, 10, 14], contiguous=contiguous, urlpath=fname, mode="w-")
+        a.copy(mode="r")
+    with pytest.raises(IOError):
+        a.copy(mode="r+")
 
-    ia.remove_urlpath(fname)
-
-"""
+    ia.remove_urlpath(urlpath)
+    ia.remove_urlpath(urlpath2)
+    ia.remove_urlpath('test_copy.zarr')

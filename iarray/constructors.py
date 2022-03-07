@@ -250,14 +250,14 @@ def zarr_proxy(zarr_urlpath, cfg: ia.Config = None, **kwargs) -> ia.IArray:
 
     `cfg` and `kwargs` are the same than for :func:`empty`.
 
+    The data type and chunks must not differ from the original zarr array. Furthermore,
+    chunks must be equal to blocks.
+
     Returns
     -------
     :ref:`IArray`
         The zarr proxy array.
 
-    See Also
-    --------
-    empty : Create an empty array.
     """
     z = zarr.open(zarr_urlpath)
     # Create iarray
