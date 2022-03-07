@@ -430,10 +430,6 @@ cdef class Container:
     def vlmeta(self):
         return self.vlmeta
 
-    @vlmeta.setter
-    def vlmeta(self, value):
-        self.vlmeta = value
-
     def __getitem__(self, key):
         # key has been massaged already
         start, stop, squeeze_mask = key
@@ -588,8 +584,11 @@ def copy(cfg, src):
     cdef ciarray.iarray_container_t *src_ = <ciarray.iarray_container_t *> PyCapsule_GetPointer(
         src.to_capsule(), <char*>"iarray_container_t*")
 
-    with nogil:
+    if "zproxy_urlpath" in src.vlmeta:
         error = ciarray.iarray_copy(ctx_, src_, False, &store_, flags, &c)
+    else :
+        with nogil:
+            error = ciarray.iarray_copy(ctx_, src_, False, &store_, flags, &c)
     iarray_check(error)
 
     c_c = PyCapsule_New(c, <char*>"iarray_container_t*", NULL)
@@ -850,8 +849,10 @@ def open(cfg, urlpath):
     c_cfg = get_cfg_from_container(cfg, ctx_, c, urlpath)
 
     c_c = PyCapsule_New(c, <char*>"iarray_container_t*", NULL)
-    return ia.IArray(Context(c_cfg), c_c)
-
+    iarr = ia.IArray(Context(c_cfg), c_c)
+    if "zproxy_urlpath" in iarr.vlmeta:
+        set_zproxy_postfilter(iarr)
+    return iarr
 
 def set_slice(cfg, data, start, stop, buffer):
     # Check that we are not inadvertently overwriting anything
@@ -1575,61 +1576,48 @@ def partition_advice(dtshape, min_chunksize, max_chunksize, min_blocksize, max_b
 cdef class Vlmeta:
     cdef ciarray.iarray_container_t *c_
     cdef ciarray.iarray_context_t *ctx_
-    cdef dict vlmeta_
 
     def __init__(self, iarray, ctx):
         self.c_ = <ciarray.iarray_container_t *> PyCapsule_GetPointer(iarray, <char*>"iarray_container_t*")
         self.ctx_ = <ciarray.iarray_context_t *> PyCapsule_GetPointer(ctx.to_capsule(), <char*>"iarray_context_t*")
-        self.vlmeta_ = {}
-
-    @property
-    def vlmeta(self):
-        return self.vlmeta_
 
     def __setitem__(self, name, content):
-        self.vlmeta_[name] = content
-
         name = name.encode("utf-8") if isinstance(name, str) else name
         cdef ciarray.bool exists
-        rc = ciarray.iarray_vlmeta_exists(self.ctx_, self.c_, name, &exists)
-        if rc < 0:
-            raise RuntimeError
+        iarray_check(ciarray.iarray_vlmeta_exists(self.ctx_, self.c_, name, &exists))
 
         # Fill meta
         cdef ciarray.iarray_metalayer_t meta
-
         content = content.encode("utf-8") if isinstance(content, str) else content
         cdef ciarray.uint32_t len_content = <ciarray.uint32_t> len(content)
         meta.name = name
         meta.size = len_content
         meta.sdata = content
         if exists:
-            rc = ciarray.iarray_vlmeta_update(self.ctx_, self.c_, &meta)
+            iarray_check(ciarray.iarray_vlmeta_update(self.ctx_, self.c_, &meta))
         else:
-            rc = ciarray.iarray_vlmeta_add(self.ctx_, self.c_, &meta)
-
-        if rc < 0:
-            raise RuntimeError
+            iarray_check(ciarray.iarray_vlmeta_add(self.ctx_, self.c_, &meta))
 
     def __getitem__(self, name):
-        return self.vlmeta_[name]
+        name = name.encode("utf-8") if isinstance(name, str) else name
+        cdef ciarray.bool exists
+        iarray_check(ciarray.iarray_vlmeta_exists(self.ctx_, self.c_, name, &exists))
+        if not exists:
+            raise KeyError("vlmeta does not exist")
+        cdef ciarray.iarray_metalayer_t meta
+        iarray_check(ciarray.iarray_vlmeta_get(self.ctx_, self.c_, name, &meta))
+
+        return meta.sdata[:meta.size]
 
     def __delitem__(self, name):
-        del self.vlmeta_[name]
-
         name = name.encode("utf-8") if isinstance(name, str) else name
-        rc = ciarray.iarray_vlmeta_delete(self.ctx_, self.c_, name)
-        if rc < 0:
-            raise RuntimeError("Could not delete the vlmeta")
-
-    def __len__(self):
-        return len(self.vlmeta_)
+        iarray_check(ciarray.iarray_vlmeta_delete(self.ctx_, self.c_, name))
 
     def __contains__(self, name):
-        return name in self.vlmeta_
-
-    def getall(self):
-        return self.vlmeta_.copy()
+        name = name.encode("utf-8") if isinstance(name, str) else name
+        cdef ciarray.bool exists
+        iarray_check(ciarray.iarray_vlmeta_exists(self.ctx_, self.c_, name, &exists))
+        return exists
 
 
 # Zarr proxy

@@ -1,5 +1,5 @@
-﻿iarray.empty
-============
+﻿iarray.uninit
+=============
 
 .. currentmodule:: iarray
 

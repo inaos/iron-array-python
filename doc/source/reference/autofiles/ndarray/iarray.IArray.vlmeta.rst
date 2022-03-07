@@ -19,6 +19,5 @@ Once added, a vlmeta can be deleted with::
 
     del iarr.vlmeta['vlmeta1']
 
-This class also honors the `__contains__` and `__len__` special
-functions.  Moreover, a `getall()` method returns all the
-variable length metalayers as a dictionary.
+This class also honors the `__contains__` special
+function.
