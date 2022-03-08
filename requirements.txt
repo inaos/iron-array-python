@@ -8,3 +8,4 @@ numpy
 llvmlite
 pytest
 ndindex
+zarr

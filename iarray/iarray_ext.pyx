@@ -341,7 +341,7 @@ cdef class RandomContext:
 cdef class Container:
     cdef ciarray.iarray_container_t *ia_container
     cdef Context context
-    cdef Vlmeta vlmeta
+    cdef Attrs attrs
 
     def __init__(self, ctx, c):
         if ctx is None:
@@ -350,7 +350,7 @@ cdef class Container:
             raise ValueError("You must pass a Capsule to the C container struct of the Container constructor")
         self.context = ctx
         self.ia_container = <ciarray.iarray_container_t*> PyCapsule_GetPointer(c, <char*>"iarray_container_t*")
-        self.vlmeta = Vlmeta(c, ctx)
+        self.attrs = Attrs(c, ctx)
 
     def __dealloc__(self):
         if self.context is not None and self.context.ia_ctx != NULL:
@@ -427,8 +427,8 @@ cdef class Container:
         return self.context.cfg.mode
 
     @property
-    def vlmeta(self):
-        return self.vlmeta
+    def attrs(self):
+        return self.attrs
 
     def __getitem__(self, key):
         # key has been massaged already
@@ -584,9 +584,9 @@ def copy(cfg, src):
     cdef ciarray.iarray_container_t *src_ = <ciarray.iarray_container_t *> PyCapsule_GetPointer(
         src.to_capsule(), <char*>"iarray_container_t*")
 
-    if "zproxy_urlpath" in src.vlmeta:
+    if "zproxy_urlpath" in src.attrs:
         error = ciarray.iarray_copy(ctx_, src_, False, &store_, flags, &c)
-    else :
+    else:
         with nogil:
             error = ciarray.iarray_copy(ctx_, src_, False, &store_, flags, &c)
     iarray_check(error)
@@ -850,7 +850,7 @@ def open(cfg, urlpath):
 
     c_c = PyCapsule_New(c, <char*>"iarray_container_t*", NULL)
     iarr = ia.IArray(Context(c_cfg), c_c)
-    if "zproxy_urlpath" in iarr.vlmeta:
+    if "zproxy_urlpath" in iarr.attrs:
         set_zproxy_postfilter(iarr)
     return iarr
 
@@ -1573,7 +1573,7 @@ def partition_advice(dtshape, min_chunksize, max_chunksize, min_blocksize, max_b
 
 # Vlmetalayers
 
-cdef class Vlmeta:
+cdef class Attrs:
     cdef ciarray.iarray_container_t *c_
     cdef ciarray.iarray_context_t *ctx_
 
@@ -1603,7 +1603,7 @@ cdef class Vlmeta:
         cdef ciarray.bool exists
         iarray_check(ciarray.iarray_vlmeta_exists(self.ctx_, self.c_, name, &exists))
         if not exists:
-            raise KeyError("vlmeta does not exist")
+            raise KeyError("attr does not exist")
         cdef ciarray.iarray_metalayer_t meta
         iarray_check(ciarray.iarray_vlmeta_get(self.ctx_, self.c_, name, &meta))
 
@@ -1640,7 +1640,7 @@ def set_zproxy_postfilter(iarr):
     cdef ciarray.iarray_container_t *c
     c = <ciarray.iarray_container_t *> PyCapsule_GetPointer(iarr.to_capsule(), <char *> "iarray_container_t*")
     cdef ciarray.zhandler_ptr func = zarr_handler
-    urlpath = iarr.vlmeta["zproxy_urlpath"]
+    urlpath = iarr.attrs["zproxy_urlpath"]
     urlpath = urlpath.encode("utf-8") if isinstance(urlpath, str) else urlpath
 
     iarray_check(ciarray.iarray_add_zproxy_postfilter(c, urlpath, func))
