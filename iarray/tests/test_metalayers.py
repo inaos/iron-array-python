@@ -23,21 +23,21 @@ def test_metalayers(shape, chunks, blocks, urlpath, contiguous, dtype):
 
     a = ia.empty(shape, dtype=dtype, chunks=chunks, blocks=blocks,
                   urlpath=urlpath, contiguous=contiguous)
-    a.vlmeta["numpy"] = numpy_meta
-    a.vlmeta["test"] = test_meta
+    a.attrs["numpy"] = numpy_meta
+    a.attrs["test"] = test_meta
 
-    assert ("numpy" in a.vlmeta)
-    assert ("error" not in a.vlmeta)
-    assert (a.vlmeta["numpy"] == numpy_meta)
-    assert ("test" in a.vlmeta)
-    assert (a.vlmeta["test"] == test_meta)
+    assert ("numpy" in a.attrs)
+    assert ("error" not in a.attrs)
+    assert (a.attrs["numpy"] == numpy_meta)
+    assert ("test" in a.attrs)
+    assert (a.attrs["test"] == test_meta)
 
     test_meta = packb({b"lorem": 4231})
-    a.vlmeta["test"] = test_meta
-    assert (a.vlmeta["test"] == test_meta)
+    a.attrs["test"] = test_meta
+    assert (a.attrs["test"] == test_meta)
 
-    del a.vlmeta["test"]
-    assert ("test" not in a.vlmeta)
+    del a.attrs["test"]
+    assert ("test" not in a.attrs)
 
     # Remove file on disk
     ia.remove_urlpath(urlpath)

@@ -280,8 +280,8 @@ def zarr_proxy(zarr_urlpath, cfg: ia.Config = None, **kwargs) -> ia.IArray:
     with ia.config(cfg=cfg, dtype=dtype, chunks=z.chunks, blocks=z.chunks, **kwargs) as cfg:
         a = uninit(shape=z.shape, cfg=cfg)
 
-    # Set special vlmeta to identify zarr_proxy
-    a.vlmeta["zproxy_urlpath"] = zarr_urlpath
+    # Set special attr to identify zarr_proxy
+    a.attrs["zproxy_urlpath"] = zarr_urlpath
     # Assign postfilter
     ext.set_zproxy_postfilter(a)
     return a

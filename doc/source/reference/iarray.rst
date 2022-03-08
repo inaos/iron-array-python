@@ -25,7 +25,7 @@ Attributes
    IArray.ndim
    IArray.shape
    IArray.info
-   IArray.vlmeta
+   IArray.attrs
 
 
 Methods
