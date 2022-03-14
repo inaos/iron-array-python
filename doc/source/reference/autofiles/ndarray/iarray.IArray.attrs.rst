@@ -5,20 +5,20 @@
 
 .. autoattribute:: IArray.attrs
 
-Instance to a `Blosc2 <https://c-blosc2.readthedocs.io/en/latest/ >`_ variable length metalayer object to
-manage the variable length metalayers of an `IArray`.
-This class behaves very similarly to a dictionary, and variable length
-metalayers can be appended in the usual way::
+Instance to a `Blosc2 <https://c-blosc2.readthedocs.io/en/latest/ >`_ Attrs class to
+manage the attributes of an `IArray`.
+This class behaves very similarly to a dictionary, and attributes
+can be appended in the usual way::
 
-    iarr.attrs['vlmeta1'] = 'something'
+    iarr.attrs['attr1'] = 'something'
 
 And can be retrieved similarly::
 
-    value = iarr.attrs['vlmeta1']
+    value = iarr.attrs['attr1']
 
-Once added, a vlmeta can be deleted with::
+Once added, an attribute can be deleted with::
 
-    del iarr.attrs['vlmeta1']
+    del iarr.attrs['attr1']
 
 This class also honors the `__contains__` special
 function.
