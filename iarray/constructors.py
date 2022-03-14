@@ -246,7 +246,7 @@ zarr_to_iarray_dtypes = {'int8': np.int8, 'int16': np.int16, 'int32': np.int32, 
                          'float32': np.float32, 'float64': np.float64, 'bool': np.bool_}
 
 def zarr_proxy(zarr_urlpath, cfg: ia.Config = None, **kwargs) -> ia.IArray:
-    """Return a Zarr proxy array.
+    """Return a read-only Zarr proxy array.
 
     `cfg` and `kwargs` are the same than for :func:`empty`.
 
@@ -266,10 +266,10 @@ def zarr_proxy(zarr_urlpath, cfg: ia.Config = None, **kwargs) -> ia.IArray:
 
     Notes
     -----
-    If a :func:`save` is done, a copy will be made and a new and usual :ref:`IArray`
-    will be created with all the data on it. Instead, the :paramref:`zarr_urlpath` can be set
-    to store the proxy on disk.
-
+    As a proxy, this array does not contain the data from the original array, it only reads it when needed.
+    But if a :func:`save` is done, a copy of all the data will be made and assigned to a new
+    and usual on disk :ref:`IArray`. To create a persistent proxy on-disk,
+    you can specificy the :paramref:`urlpath` during :func:`zarr_proxy` execution time.
     """
     if ext._is_s3_store(zarr_urlpath):
         s3 = s3fs.S3FileSystem(anon=True)

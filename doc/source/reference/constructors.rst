@@ -37,13 +37,3 @@ Random distributions
    random.bernoulli
    random.binomial
    random.poisson
-
-
-Zarr proxy
-==========
-.. autosummary::
-   :toctree: autofiles/constructors/
-   :nosignatures:
-
-
-   zarr_proxy

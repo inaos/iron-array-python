@@ -31,7 +31,7 @@ import iarray as ia
         (-0.1, -0.2, [4, 3, 5, 2], [4, 3, 5, 2], 'f4', False, None),
     ],
 )
-def test_linspace(start, stop, shape, chunks, dtype, contiguous, urlpath):
+def test_linspace_zproxy(start, stop, shape, chunks, dtype, contiguous, urlpath):
     size = np.prod(shape)
     z = zarr.open('test_linspace.zarr', mode='w', shape=shape, chunks=chunks, dtype=dtype)
     z[:] = np.linspace(start, stop, size, dtype=z.dtype).reshape(shape)
@@ -81,7 +81,7 @@ def test_linspace(start, stop, shape, chunks, dtype, contiguous, urlpath):
         (-0.1, -0.2, [4, 3, 5, 2], [2, 2, 2, 2], 'i4', False, None),
     ],
 )
-def test_arange(start, stop, shape, chunks, dtype, contiguous, urlpath):
+def test_arange_zproxy(start, stop, shape, chunks, dtype, contiguous, urlpath):
     size = int(np.prod(shape))
     step = (stop - start) / size
     z = zarr.open('test_arange.zarr', mode='w', shape=shape, chunks=chunks, dtype=dtype)
@@ -113,7 +113,7 @@ def test_arange(start, stop, shape, chunks, dtype, contiguous, urlpath):
         ),
     ],
 )
-def test_from_file(start, stop, shape, chunks, dtype, contiguous, urlpath):
+def test_from_file_zproxy(start, stop, shape, chunks, dtype, contiguous, urlpath):
     size = np.prod(shape)
     z = zarr.open('test_linspace.zarr', mode='w', shape=shape, chunks=chunks, dtype=dtype)
     z[:] = np.linspace(start, stop, size, dtype=z.dtype).reshape(shape)
@@ -126,6 +126,10 @@ def test_from_file(start, stop, shape, chunks, dtype, contiguous, urlpath):
     npdtype = np.float64 if z.dtype == 'float64' else np.float32
     d = np.linspace(start, stop, size, dtype=npdtype).reshape(shape)
     np.testing.assert_almost_equal(c, d)
+
+    e = ia.open(urlpath)
+    f = ia.iarray2numpy(e)
+    np.testing.assert_almost_equal(f, d)
 
     ia.remove_urlpath(urlpath)
     ia.remove_urlpath('test_linspace.zarr')
@@ -177,7 +181,7 @@ def test_from_file(start, stop, shape, chunks, dtype, contiguous, urlpath):
         ),
     ],
 )
-def test_slice(start, stop, slice, shape, chunks, dtype, contiguous, urlpath):
+def test_slice_zproxy(start, stop, slice, shape, chunks, dtype, contiguous, urlpath):
     size = int(np.prod(shape))
     step = (stop - start) / size
     z = zarr.open('test_slice.zarr', mode='w', shape=shape, chunks=chunks, dtype=dtype)
@@ -216,7 +220,7 @@ def test_slice(start, stop, slice, shape, chunks, dtype, contiguous, urlpath):
         ([12, 16], [1, 16], 'b', True, "test_zeros_contiguous.iarr"),
     ],
 )
-def test_zeros(shape, chunks, dtype, contiguous, urlpath):
+def test_zeros_zproxy(shape, chunks, dtype, contiguous, urlpath):
     z = zarr.open('test_zeros.zarr', mode='w', shape=shape, chunks=chunks, dtype=dtype)
     z[:] = np.zeros(shape=shape, dtype=z.dtype)
 
@@ -246,7 +250,7 @@ def test_zeros(shape, chunks, dtype, contiguous, urlpath):
         ([10, 12, 5], [5, 6, 5], np.bool_, True, None),
     ],
 )
-def test_ones(shape, chunks, dtype, contiguous, urlpath):
+def test_ones_zproxy(shape, chunks, dtype, contiguous, urlpath):
     z = zarr.open('test_ones.zarr', mode='w', shape=shape, chunks=chunks, dtype=dtype)
     z[:] = np.ones(shape=shape, dtype=z.dtype)
 
@@ -275,7 +279,7 @@ def test_ones(shape, chunks, dtype, contiguous, urlpath):
         (True, [12, 16], [12, 16], np.bool_, False, None),
     ],
 )
-def test_full(fill_value, shape, chunks, dtype, contiguous, urlpath):
+def test_full_zproxy(fill_value, shape, chunks, dtype, contiguous, urlpath):
     z = zarr.open('test_full.zarr', mode='w', shape=shape, chunks=chunks, dtype=dtype)
     z[:] = np.full(shape, fill_value, dtype=z.dtype)
 
@@ -312,7 +316,7 @@ def test_full(fill_value, shape, chunks, dtype, contiguous, urlpath):
         (False, "test_copy.iarr", "test_copy2.iarr"),
     ],
 )
-def test_copy(shape, chunks, dtype, contiguous, urlpath, urlpath2):
+def test_copy_zproxy(shape, chunks, dtype, contiguous, urlpath, urlpath2):
     ia.remove_urlpath(urlpath)
     ia.remove_urlpath(urlpath2)
 
@@ -361,7 +365,7 @@ def test_copy(shape, chunks, dtype, contiguous, urlpath, urlpath2):
         ),
     ],
 )
-def test_cloud_array(zarr_path, contiguous, urlpath):
+def test_cloud_zproxy(zarr_path, contiguous, urlpath):
     ia.remove_urlpath(urlpath)
     a = ia.zarr_proxy(zarr_path, contiguous=contiguous, urlpath=urlpath)
     b = ia.iarray2numpy(a[:5, :5, :5])
