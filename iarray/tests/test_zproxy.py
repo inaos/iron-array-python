@@ -1,5 +1,6 @@
 import pytest
 import numpy as np
+import s3fs
 import zarr
 import iarray as ia
 
@@ -15,9 +16,9 @@ import iarray as ia
             [33, 21, 34],
             'f8',
             False,
-            "test_linspace_sparse.ziarr",
+            "test_linspace_sparse.iarr",
         ),
-       (-0.1, -0.2, [40, 39, 52, 12], [12, 17, 6, 5], 'float32', True, None),
+        (-0.1, -0.2, [40, 39, 52, 12], [12, 17, 6, 5], 'float32', True, None),
         (
             0,
             10,
@@ -25,7 +26,7 @@ import iarray as ia
             [55, 24, 15],
             'float64',
             True,
-            "test_linspace_contiguous.ziarr",
+            "test_linspace_contiguous.iarr",
         ),
         (-0.1, -0.2, [4, 3, 5, 2], [4, 3, 5, 2], 'f4', False, None),
     ],
@@ -57,7 +58,7 @@ def test_linspace(start, stop, shape, chunks, dtype, contiguous, urlpath):
             [12, 14, 22],
             'float64',
             False,
-            "test_arange_sparse.ziarr",
+            "test_arange_sparse.iarr",
         ),
         (
             0,
@@ -75,7 +76,7 @@ def test_linspace(start, stop, shape, chunks, dtype, contiguous, urlpath):
             [5, 5, 5],
             'uint64',
             True,
-            "test_arange_contiguous.ziarr",
+            "test_arange_contiguous.iarr",
         ),
         (-0.1, -0.2, [4, 3, 5, 2], [2, 2, 2, 2], 'i4', False, None),
     ],
@@ -100,7 +101,7 @@ def test_arange(start, stop, shape, chunks, dtype, contiguous, urlpath):
 @pytest.mark.parametrize(
     "start, stop, shape, chunks, dtype, contiguous, urlpath",
     [
-        (0, 10, [1234], [123], 'float64', False, "test.fromfile0.ziarr"),
+        (0, 10, [1234], [123], 'float64', False, "test.fromfile0.iarr"),
         (
             -0.1,
             -0.10,
@@ -108,7 +109,7 @@ def test_arange(start, stop, shape, chunks, dtype, contiguous, urlpath):
             [4, 3, 5, 5, 2],
             'float32',
             True,
-            "test.fromfile1.ziarr",
+            "test.fromfile1.iarr",
         ),
     ],
 )
@@ -118,7 +119,7 @@ def test_from_file(start, stop, shape, chunks, dtype, contiguous, urlpath):
     z[:] = np.linspace(start, stop, size, dtype=z.dtype).reshape(shape)
 
     ia.remove_urlpath(urlpath)
-    a = ia.zarr_proxy('test_linspace.zarr', contiguous=contiguous, urlpath=urlpath)
+    ia.zarr_proxy('test_linspace.zarr', contiguous=contiguous, urlpath=urlpath)
 
     b = ia.load(urlpath)
     c = ia.iarray2numpy(b)
@@ -152,7 +153,7 @@ def test_from_file(start, stop, shape, chunks, dtype, contiguous, urlpath):
             [12, 16],
             'float32',
             False,
-            "test_slice_sparse.ziarr",
+            "test_slice_sparse.iarr",
         ),
         (
             0,
@@ -162,7 +163,7 @@ def test_from_file(start, stop, shape, chunks, dtype, contiguous, urlpath):
             [5, 6, 5],
             np.uint32,
             True,
-            "test_slice_contiguous.ziarr",
+            "test_slice_contiguous.iarr",
         ),
         (
             -120 * 160,
@@ -207,12 +208,12 @@ def test_slice(start, stop, slice, shape, chunks, dtype, contiguous, urlpath):
             [10, 25, 35],
             np.float64,
             True,
-            "test_zeros_contiguous.ziarr",
+            "test_zeros_contiguous.iarr",
         ),
-        ([456, 431], [102, 16], np.float32, False, "test_zeros_sparse.ziarr"),
+        ([456, 431], [102, 16], np.float32, False, "test_zeros_sparse.iarr"),
         ([10, 12, 5], [10, 1, 1], np.int16, False, None),
         ([12, 16], [1, 16], np.uint8, True, None),
-        ([12, 16], [1, 16], 'b', True, "test_zeros_contiguous.ziarr"),
+        ([12, 16], [1, 16], 'b', True, "test_zeros_contiguous.iarr"),
     ],
 )
 def test_zeros(shape, chunks, dtype, contiguous, urlpath):
@@ -239,9 +240,9 @@ def test_zeros(shape, chunks, dtype, contiguous, urlpath):
     "shape, chunks, dtype, contiguous, urlpath",
     [
         ([456, 12, 234], [55, 6, 21], np.float64, False, None),
-        ([1024, 55], [66, 22], np.float32, True, "test_ones_contiguous.ziarr"),
+        ([1024, 55], [66, 22], np.float32, True, "test_ones_contiguous.iarr"),
         ([10, 12, 5], [5, 6, 5], np.int8, True, None),
-        ([120, 130], [45, 64], np.uint16, False, "test_ones_sparse.ziarr"),
+        ([120, 130], [45, 64], np.uint16, False, "test_ones_sparse.iarr"),
         ([10, 12, 5], [5, 6, 5], np.bool_, True, None),
     ],
 )
@@ -269,8 +270,8 @@ def test_ones(shape, chunks, dtype, contiguous, urlpath):
     "fill_value, shape, chunks, dtype, contiguous, urlpath",
     [
         (8.34, [123, 432, 222], [24, 31, 15], np.float64, True, None),
-        (2.00001, [567, 375], [52, 16], np.float32, False, "test_full_sparse.ziarr"),
-        (8, [10, 12, 5], [5, 5, 5], np.int32, True, "test_full_contiguous.ziarr"),
+        (2.00001, [567, 375], [52, 16], np.float32, False, "test_full_sparse.iarr"),
+        (8, [10, 12, 5], [5, 5, 5], np.int32, True, "test_full_contiguous.iarr"),
         (True, [12, 16], [12, 16], np.bool_, False, None),
     ],
 )
@@ -307,8 +308,8 @@ def test_full(fill_value, shape, chunks, dtype, contiguous, urlpath):
         (False, None, None),
         (False, None, None),
         (True, None, None),
-        (True, "test_copy.iarr", "test_copy2.ziarr"),
-        (False, "test_copy.iarr", "test_copy2.ziarr"),
+        (True, "test_copy.iarr", "test_copy2.iarr"),
+        (False, "test_copy.iarr", "test_copy2.iarr"),
     ],
 )
 def test_copy(shape, chunks, dtype, contiguous, urlpath, urlpath2):
@@ -346,3 +347,27 @@ def test_copy(shape, chunks, dtype, contiguous, urlpath, urlpath2):
     ia.remove_urlpath(urlpath)
     ia.remove_urlpath(urlpath2)
     ia.remove_urlpath('test_copy.zarr')
+
+
+# cloud array
+@pytest.mark.parametrize(
+    "zarr_path, contiguous, urlpath",
+    [
+        (
+            "s3://era5-pds/zarr/1987/10/data/" +
+            "precipitation_amount_1hour_Accumulation.zarr/precipitation_amount_1hour_Accumulation",
+            False,
+            "test_cloud_proxy.iarr",
+        ),
+    ],
+)
+def test_cloud_array(zarr_path, contiguous, urlpath):
+    ia.remove_urlpath(urlpath)
+    a = ia.zarr_proxy(zarr_path, contiguous=contiguous, urlpath=urlpath)
+    b = ia.iarray2numpy(a[:5, :5, :5])
+    s3 = s3fs.S3FileSystem(anon=True)
+    store = s3fs.S3Map(root=zarr_path, s3=s3, check=False)
+    z = zarr.open(store)
+    z1 = z[:5, :5, :5]
+    np.testing.assert_almost_equal(b, z1)
+    ia.remove_urlpath(urlpath)

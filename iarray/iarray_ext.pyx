@@ -18,6 +18,7 @@ from . cimport ciarray_ext as ciarray
 import numpy as np
 cimport numpy as np
 import zarr
+import s3fs
 import cython
 from cpython.pycapsule cimport PyCapsule_New, PyCapsule_GetPointer
 from libc.stdlib cimport malloc, free
@@ -337,11 +338,15 @@ cdef class RandomContext:
     def to_capsule(self):
         return PyCapsule_New(self.random_ctx, <char*>"iarray_random_ctx_t*", NULL)
 
+def _is_s3_store(urlpath):
+    if urlpath[:5] == "s3://":
+        return True
+    return False
 
 cdef class Container:
     cdef ciarray.iarray_container_t *ia_container
     cdef Context context
-    cdef Attrs attrs
+    cdef Attributes attrs
 
     def __init__(self, ctx, c):
         if ctx is None:
@@ -350,7 +355,7 @@ cdef class Container:
             raise ValueError("You must pass a Capsule to the C container struct of the Container constructor")
         self.context = ctx
         self.ia_container = <ciarray.iarray_container_t*> PyCapsule_GetPointer(c, <char*>"iarray_container_t*")
-        self.attrs = Attrs(c, ctx)
+        self.attrs = Attributes(c, ctx)
 
     def __dealloc__(self):
         if self.context is not None and self.context.ia_ctx != NULL:
@@ -410,6 +415,17 @@ cdef class Container:
     @property
     def cratio(self):
         """Array compression ratio."""
+        # Return zarr array values if it is a zproxy
+        if "zproxy_urlpath" in self.attrs:
+            urlpath = self.attrs["zproxy_urlpath"].decode()
+            if _is_s3_store(urlpath):
+                s3 = s3fs.S3FileSystem(anon=True)
+                store = s3fs.S3Map(urlpath, s3=s3)
+                z = zarr.open(store)
+            else:
+                z = zarr.open(urlpath)
+            return z.nbytes / z.nbytes_stored
+        # It is a normal iarray
         cdef ciarray.int64_t nbytes, cbytes
         iarray_check(ciarray.iarray_container_info(self.ia_container, &nbytes, &cbytes))
         return <double>nbytes / <double>cbytes
@@ -441,7 +457,6 @@ cdef class Container:
         cdef ciarray.bool view
         iarray_check(ciarray.iarray_is_view(self.context.ia_ctx, self.ia_container, &view))
         return view
-
 
 
 cdef class Expression:
@@ -1571,9 +1586,9 @@ def partition_advice(dtshape, min_chunksize, max_chunksize, min_blocksize, max_b
     return chunks, blocks
 
 
-# Vlmetalayers
+# Attributes
 
-cdef class Attrs:
+cdef class Attributes:
     cdef ciarray.iarray_container_t *c_
     cdef ciarray.iarray_context_t *ctx_
 
@@ -1626,7 +1641,12 @@ cdef class Attrs:
 cdef void zarr_handler(char *zarr_urlpath, ciarray.int64_t *slice_start, ciarray.int64_t *slice_stop,
                        ciarray.uint8_t *dest):
     path = zarr_urlpath.decode()
-    z_ = zarr.open(path)
+    if _is_s3_store(path):
+        s3 = s3fs.S3FileSystem(anon=True)
+        store = s3fs.S3Map(path, s3=s3)
+        z_ = zarr.open(store)
+    else:
+        z_ = zarr.open(path)
     cdef int ndim = len(z_.shape)
     slice_ = tuple(slice(slice_start[i], slice_stop[i]) for i in range(ndim))
     data = z_[slice_]

@@ -11,6 +11,7 @@
 
 import numpy as np
 import zarr
+import s3fs
 
 import iarray as ia
 from iarray import iarray_ext as ext
@@ -245,21 +246,37 @@ zarr_to_iarray_dtypes = {'int8': np.int8, 'int16': np.int16, 'int32': np.int32, 
                          'float32': np.float32, 'float64': np.float64, 'bool': np.bool_}
 
 def zarr_proxy(zarr_urlpath, cfg: ia.Config = None, **kwargs) -> ia.IArray:
-    """Return a zarr proxy array.
-
+    """Return a Zarr proxy array.
 
     `cfg` and `kwargs` are the same than for :func:`empty`.
 
-    The data type and chunks must not differ from the original zarr array. Furthermore,
+    The data type and chunks must not differ from the original Zarr array. Furthermore,
     chunks must be equal to blocks.
+
+    Parameters
+    ----------
+    zarr_urlpath : str
+        The path to the Zarr array.
+        If it is stored in the cloud, the path must begin with ``s3://``.
 
     Returns
     -------
     :ref:`IArray`
         The zarr proxy array.
 
+    Notes
+    -----
+    If a :func:`save` is done, a copy will be made and a new and usual :ref:`IArray`
+    will be created with all the data on it. Instead, the :paramref:`zarr_urlpath` can be set
+    to store the proxy on disk.
+
     """
-    z = zarr.open(zarr_urlpath)
+    if ext._is_s3_store(zarr_urlpath):
+        s3 = s3fs.S3FileSystem(anon=True)
+        store = s3fs.S3Map(zarr_urlpath, s3=s3)
+        z = zarr.open(store)
+    else:
+        z = zarr.open(zarr_urlpath)
     # Create iarray
     dtype = zarr_to_iarray_dtypes[str(z.dtype)]
 
