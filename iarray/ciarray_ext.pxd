@@ -212,13 +212,11 @@ cdef extern from "libiarray/iarray.h":
     ina_rc_t iarray_empty(iarray_context_t *ctx,
                                        iarray_dtshape_t *dtshape,
                                        iarray_storage_t *storage,
-                                       int flags,
                                        iarray_container_t **container)
 
     ina_rc_t iarray_uninit(iarray_context_t *ctx,
                            iarray_dtshape_t *dtshape,
                            iarray_storage_t *storage,
-                           int flags,
                            iarray_container_t ** container)
 
     void iarray_container_free(iarray_context_t *ctx,
@@ -231,10 +229,8 @@ cdef extern from "libiarray/iarray.h":
     ina_rc_t iarray_arange(iarray_context_t *ctx,
                                 iarray_dtshape_t *dtshape,
                                 double start,
-                                double stop,
                                 double step,
                                 iarray_storage_t *storage,
-                                int flags,
                                 iarray_container_t **container)
 
     ina_rc_t iarray_linspace(iarray_context_t *ctx,
@@ -242,33 +238,28 @@ cdef extern from "libiarray/iarray.h":
                              double start,
                              double stop,
                              iarray_storage_t *storage,
-                             int flags,
                              iarray_container_t **container)
 
     ina_rc_t iarray_zeros(iarray_context_t *ctx,
                           iarray_dtshape_t *dtshape,
                           iarray_storage_t *storage,
-                          int flags,
                           iarray_container_t **container)
 
     ina_rc_t iarray_ones(iarray_context_t *ctx,
                          iarray_dtshape_t *dtshape,
                          iarray_storage_t *storage,
-                         int flags,
                          iarray_container_t **container)
 
     ina_rc_t iarray_fill(iarray_context_t *ctx,
                          iarray_dtshape_t *dtshape,
                          void *value,
                          iarray_storage_t *storage,
-                         int flags,
                          iarray_container_t ** container)
 
     ina_rc_t iarray_copy(iarray_context_t *ctx,
                               iarray_container_t *src,
                               bool view,
                               iarray_storage_t *storage,
-                              int flags,
                               iarray_container_t **dest) nogil
 
     ina_rc_t iarray_get_slice(iarray_context_t *ctx,
@@ -277,7 +268,6 @@ cdef extern from "libiarray/iarray.h":
                                    int64_t *stop,
                                    bool view,
                                    iarray_storage_t *storage,
-                                   int flags,
                                    iarray_container_t **container)
 
     ina_rc_t iarray_set_slice_buffer(iarray_context_t *ctx,
@@ -328,7 +318,6 @@ cdef extern from "libiarray/iarray.h":
                                      void *buffer,
                                      int64_t buflen,
                                      iarray_storage_t *storage,
-                                     int flags,
                                      iarray_container_t **container)
 
     ina_rc_t iarray_container_load(iarray_context_t *ctx,
@@ -483,8 +472,7 @@ cdef extern from "libiarray/iarray.h":
     # Random
 
     ctypedef enum iarray_random_rng_t:
-        IARRAY_RANDOM_RNG_MERSENNE_TWISTER
-        IARRAY_RANDOM_RNG_SOBOL
+        IARRAY_RANDOM_RNG_MRG32K3A
 
     ctypedef enum iarray_random_dist_parameter_t:
         IARRAY_RANDOM_DIST_PARAM_MU
@@ -519,35 +507,30 @@ cdef extern from "libiarray/iarray.h":
                                 iarray_dtshape_t *dtshape,
                                 iarray_random_ctx_t *rand_ctx,
                                 iarray_storage_t *store,
-                                int flags,
                                 iarray_container_t **container)
 
     ina_rc_t iarray_random_randn(iarray_context_t *ctx,
                                  iarray_dtshape_t *dtshape,
                                  iarray_random_ctx_t *rand_ctx,
                                  iarray_storage_t *store,
-                                 int flags,
                                  iarray_container_t **container)
 
     ina_rc_t iarray_random_beta(iarray_context_t *ctx,
                                 iarray_dtshape_t *dtshape,
                                 iarray_random_ctx_t *rand_ctx,
                                 iarray_storage_t *store,
-                                int flags,
                                 iarray_container_t **container)
 
     ina_rc_t iarray_random_lognormal(iarray_context_t *ctx,
                                      iarray_dtshape_t *dtshape,
                                      iarray_random_ctx_t *rand_ctx,
                                      iarray_storage_t *store,
-                                     int flags,
                                      iarray_container_t **container)
 
     ina_rc_t iarray_random_exponential(iarray_context_t *ctx,
                                        iarray_dtshape_t *dtshape,
                                        iarray_random_ctx_t *random_ctx,
                                        iarray_storage_t *store,
-                                       int flags,
                                        iarray_container_t **container)
 
 
@@ -555,35 +538,30 @@ cdef extern from "libiarray/iarray.h":
                                    iarray_dtshape_t *dtshape,
                                    iarray_random_ctx_t *random_ctx,
                                    iarray_storage_t *store,
-                                   int flags,
                                    iarray_container_t **container)
 
     ina_rc_t iarray_random_normal(iarray_context_t *ctx,
                                   iarray_dtshape_t *dtshape,
                                   iarray_random_ctx_t *random_ctx,
                                   iarray_storage_t *store,
-                                  int flags,
                                   iarray_container_t **container)
 
     ina_rc_t iarray_random_bernoulli(iarray_context_t *ctx,
                                      iarray_dtshape_t *dtshape,
                                      iarray_random_ctx_t *random_ctx,
                                      iarray_storage_t *store,
-                                     int flags,
                                      iarray_container_t **container)
 
     ina_rc_t iarray_random_binomial(iarray_context_t *ctx,
                                     iarray_dtshape_t *dtshape,
                                     iarray_random_ctx_t *random_ctx,
                                     iarray_storage_t *store,
-                                    int flags,
                                     iarray_container_t **container)
 
     ina_rc_t iarray_random_poisson(iarray_context_t *ctx,
                                    iarray_dtshape_t *dtshape,
                                    iarray_random_ctx_t *random_ctx,
                                    iarray_storage_t *store,
-                                   int flags,
                                    iarray_container_t **container)
 
     ina_rc_t iarray_random_kstest(iarray_context_t *ctx,

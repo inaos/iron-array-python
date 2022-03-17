@@ -104,8 +104,7 @@ class RandomGen(Enum):
     Available random generators.
     """
 
-    MERSENNE_TWISTER = 0
-    SOBOL = 1
+    MRG32K3A = 0
 
 
 # Eval method

@@ -2,21 +2,18 @@
 
 import iarray as ia
 import numpy as np
+import matplotlib.pyplot as plt
 
-size = 10000
-shape = [size]
 
-a1 = ia.random.uniform(shape, 0, 1)
-a2 = ia.iarray2numpy(a1)
-print(a2[:10])
+shape = [12, 31, 11, 22]
+chunks = [4, 3, 5, 2]
+blocks = [2, 2, 2, 2]
 
-a1 = ia.random.uniform(shape, 0, 1)
-a2 = ia.iarray2numpy(a1)
-print(a2[:10])
+cfg = ia.Config(chunks=chunks, blocks=blocks)
+size = int(np.prod(shape))
 
-b1 = np.random.uniform(0, 1, size).astype(np.float32)
+a = ia.random.random_sample(shape, cfg=cfg, dtype=np.float32)
+b = np.random.rand(size).reshape(shape)
+c = ia.numpy2iarray(b, cfg=cfg)
 
-b2 = ia.numpy2iarray(b1, urlpath="random_dist.iarray")
-
-# Check that distributions are equal
-print(ia.random.kstest(a1, b2))
+print(ia.random.kstest(a, c))
