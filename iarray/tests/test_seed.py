@@ -26,10 +26,6 @@ def test_rand(shape, chunks, blocks, dtype, seed):
     b = ia.random.random_sample(shape, cfg=cfg, seed=seed, dtype=dtype)
     np.testing.assert_array_equal(ia.iarray2numpy(a), ia.iarray2numpy(b))
 
-    # Check that the default seed is None
-    c = ia.random.random_sample(shape, cfg=cfg, dtype=dtype)
-    assert np.alltrue(ia.iarray2numpy(b) != ia.iarray2numpy(c))
-
 
 # Randn
 @pytest.mark.parametrize(

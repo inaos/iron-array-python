@@ -24,16 +24,9 @@ rand_data = [
 def test_rand(shape, chunks, blocks, dtype):
     cfg = ia.Config(chunks=chunks, blocks=blocks)
     size = int(np.prod(shape))
-
-    modes = ["r", "r+", "a", "w", "w-"]
     i = 0
     while i < 5:
-        mode = modes[i]
-        if mode in ["r", "r+"]:
-            with pytest.raises(IOError):
-                a = ia.random.random_sample(shape, cfg=cfg, dtype=dtype, mode=mode)
-            mode = "w"
-        a = ia.random.random_sample(shape, cfg=cfg, dtype=dtype, mode=mode)
+        a = ia.random.random_sample(shape, cfg=cfg, dtype=dtype)
         b = np.random.random_sample(size).reshape(shape).astype(dtype)
         c = ia.numpy2iarray(b, cfg=cfg)
 
