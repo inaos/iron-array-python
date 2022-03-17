@@ -34,7 +34,7 @@ def test_rand(shape, chunks, blocks, dtype):
                 a = ia.random.random_sample(shape, cfg=cfg, dtype=dtype, mode=mode)
             mode = "w"
         a = ia.random.random_sample(shape, cfg=cfg, dtype=dtype, mode=mode)
-        b = np.random.rand(size).reshape(shape).astype(dtype)
+        b = np.random.random_sample(size).reshape(shape).astype(dtype)
         c = ia.numpy2iarray(b, cfg=cfg)
 
         if not ia.random.kstest(a, c):
@@ -301,9 +301,13 @@ def test_binomial(n, p, shape, chunks, blocks, dtype):
         mode = modes[i]
         if mode in ["r", "r+"]:
             with pytest.raises(IOError):
-                a = ia.random.binomial(shape, n, p, cfg=cfg, random_gen=ia.RandomGen.MERSENNE_TWISTER, dtype=dtype, mode=mode)
+                a = ia.random.binomial(
+                    shape, n, p, cfg=cfg, random_gen=ia.RandomGen.MRG32K3A, dtype=dtype, mode=mode
+                )
             mode = "a"
-        a = ia.random.binomial(shape, n, p, cfg=cfg, random_gen=ia.RandomGen.MERSENNE_TWISTER, dtype=dtype, mode=mode)
+        a = ia.random.binomial(
+            shape, n, p, cfg=cfg, random_gen=ia.RandomGen.MRG32K3A, dtype=dtype, mode=mode
+        )
         b = np.random.binomial(n, p, size).reshape(shape).astype(dtype)
         c = ia.numpy2iarray(b, cfg=cfg)
 
@@ -333,9 +337,13 @@ def test_poisson(lamb, shape, chunks, blocks, dtype):
         mode = modes[i]
         if mode in ["r", "r+"]:
             with pytest.raises(IOError):
-                a = ia.random.poisson(shape, lamb, cfg=cfg,  random_gen=ia.RandomGen.SOBOL, dtype=dtype, mode=mode)
+                a = ia.random.poisson(
+                    shape, lamb, cfg=cfg, random_gen=ia.RandomGen.MRG32K3A, dtype=dtype, mode=mode
+                )
             mode = "w"
-        a = ia.random.poisson(shape, lamb, cfg=cfg,  random_gen=ia.RandomGen.SOBOL, dtype=dtype, mode=mode)
+        a = ia.random.poisson(
+            shape, lamb, cfg=cfg, random_gen=ia.RandomGen.MRG32K3A, dtype=dtype, mode=mode
+        )
         b = np.random.poisson(lamb, size).reshape(shape).astype(dtype)
         c = ia.numpy2iarray(b, cfg=cfg)
 

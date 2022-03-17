@@ -145,7 +145,7 @@ class Defaults(object):
     fp_mantissa_bits: int = 0
     eval_method: ia.Eval = ia.Eval.AUTO
     seed: int = None
-    random_gen: ia.RandomGen = ia.RandomGen.MERSENNE_TWISTER
+    random_gen: ia.RandomGen = ia.RandomGen.MRG32K3A
     btune: bool = True
     dtype: (
         np.float64,
