@@ -227,6 +227,10 @@ from .lazy_expr import (
     LazyExpr,
 )
 
+from .attrs import (
+    Attributes,
+)
+
 # For some reason this needs to go to the end, else matmul function does not work.
 from . import iarray_ext as ext
 

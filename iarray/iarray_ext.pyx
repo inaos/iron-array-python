@@ -346,7 +346,6 @@ def _is_s3_store(urlpath):
 cdef class Container:
     cdef ciarray.iarray_container_t *ia_container
     cdef Context context
-    cdef Attributes attrs
 
     def __init__(self, ctx, c):
         if ctx is None:
@@ -355,7 +354,7 @@ cdef class Container:
             raise ValueError("You must pass a Capsule to the C container struct of the Container constructor")
         self.context = ctx
         self.ia_container = <ciarray.iarray_container_t*> PyCapsule_GetPointer(c, <char*>"iarray_container_t*")
-        self.attrs = Attributes(c, ctx)
+
 
     def __dealloc__(self):
         if self.context is not None and self.context.ia_ctx != NULL:
@@ -420,7 +419,7 @@ cdef class Container:
             urlpath = self.attrs["zproxy_urlpath"].decode()
             if _is_s3_store(urlpath):
                 s3 = s3fs.S3FileSystem(anon=True)
-                store = s3fs.S3Map(urlpath, s3=s3)
+                store = s3fs.S3Map(root=urlpath, s3=s3)
                 z = zarr.open(store)
             else:
                 z = zarr.open(urlpath)
@@ -773,6 +772,7 @@ def full(cfg, fill_value, dtshape):
     cdef Py_buffer *val = <Py_buffer *> malloc(sizeof(Py_buffer))
     PyObject_GetBuffer(nparr, val, PyBUF_SIMPLE)
     iarray_check(ciarray.iarray_fill(ctx_, &dtshape_, val.buf, &store_, flags, &c))
+    PyBuffer_Release(val)
 
     c_c = PyCapsule_New(c, <char*>"iarray_container_t*", NULL)
     return ia.IArray(ctx, c_c)
@@ -1588,51 +1588,88 @@ def partition_advice(dtshape, min_chunksize, max_chunksize, min_blocksize, max_b
 
 # Attributes
 
-cdef class Attributes:
+def attr_setitem(iarr, name, content):
     cdef ciarray.iarray_container_t *c_
+    c_ = <ciarray.iarray_container_t *> PyCapsule_GetPointer(iarr.to_capsule(), <char *> "iarray_container_t*")
+    ctx = Context(iarr.cfg)
     cdef ciarray.iarray_context_t *ctx_
+    ctx_ = <ciarray.iarray_context_t *> PyCapsule_GetPointer(ctx.to_capsule(), <char *> "iarray_context_t*")
 
-    def __init__(self, iarray, ctx):
-        self.c_ = <ciarray.iarray_container_t *> PyCapsule_GetPointer(iarray, <char*>"iarray_container_t*")
-        self.ctx_ = <ciarray.iarray_context_t *> PyCapsule_GetPointer(ctx.to_capsule(), <char*>"iarray_context_t*")
+    name = name.encode("utf-8") if isinstance(name, str) else name
+    cdef ciarray.bool exists
+    iarray_check(ciarray.iarray_vlmeta_exists(ctx_, c_, name, &exists))
 
-    def __setitem__(self, name, content):
-        name = name.encode("utf-8") if isinstance(name, str) else name
-        cdef ciarray.bool exists
-        iarray_check(ciarray.iarray_vlmeta_exists(self.ctx_, self.c_, name, &exists))
+    # Fill meta
+    cdef ciarray.iarray_metalayer_t meta
+    content = content.encode("utf-8") if isinstance(content, str) else content
+    a = len(content)
+    if a >= 2**31:
+        raise AttributeError("The content's size cannot be larger than 2**31 - 1")
+    meta.name = name
+    meta.size = a
+    meta.sdata = content
+    if exists:
+        iarray_check(ciarray.iarray_vlmeta_update(ctx_, c_, &meta))
+    else:
+        iarray_check(ciarray.iarray_vlmeta_add(ctx_, c_, &meta))
 
-        # Fill meta
-        cdef ciarray.iarray_metalayer_t meta
-        content = content.encode("utf-8") if isinstance(content, str) else content
-        cdef ciarray.uint32_t len_content = <ciarray.uint32_t> len(content)
-        meta.name = name
-        meta.size = len_content
-        meta.sdata = content
-        if exists:
-            iarray_check(ciarray.iarray_vlmeta_update(self.ctx_, self.c_, &meta))
-        else:
-            iarray_check(ciarray.iarray_vlmeta_add(self.ctx_, self.c_, &meta))
+def attr_getitem(iarr, name):
+    cdef ciarray.iarray_container_t *c_
+    c_ = <ciarray.iarray_container_t *> PyCapsule_GetPointer(iarr.to_capsule(), <char *> "iarray_container_t*")
+    ctx = Context(iarr.cfg)
+    cdef ciarray.iarray_context_t *ctx_
+    ctx_ = <ciarray.iarray_context_t *> PyCapsule_GetPointer(ctx.to_capsule(), <char *> "iarray_context_t*")
 
-    def __getitem__(self, name):
-        name = name.encode("utf-8") if isinstance(name, str) else name
-        cdef ciarray.bool exists
-        iarray_check(ciarray.iarray_vlmeta_exists(self.ctx_, self.c_, name, &exists))
-        if not exists:
-            raise KeyError("attr does not exist")
-        cdef ciarray.iarray_metalayer_t meta
-        iarray_check(ciarray.iarray_vlmeta_get(self.ctx_, self.c_, name, &meta))
+    name = name.encode("utf-8") if isinstance(name, str) else name
+    cdef ciarray.bool exists
+    iarray_check(ciarray.iarray_vlmeta_exists(ctx_, c_, name, &exists))
+    if not exists:
+        raise KeyError("attr does not exist")
+    cdef ciarray.iarray_metalayer_t meta
+    iarray_check(ciarray.iarray_vlmeta_get(ctx_, c_, name, &meta))
 
-        return meta.sdata[:meta.size]
+    return meta.sdata[:meta.size]
 
-    def __delitem__(self, name):
-        name = name.encode("utf-8") if isinstance(name, str) else name
-        iarray_check(ciarray.iarray_vlmeta_delete(self.ctx_, self.c_, name))
+def attr_delitem(iarr, name):
+    cdef ciarray.iarray_container_t *c_
+    c_ = <ciarray.iarray_container_t *> PyCapsule_GetPointer(iarr.to_capsule(), <char *> "iarray_container_t*")
+    ctx = Context(iarr.cfg)
+    cdef ciarray.iarray_context_t *ctx_
+    ctx_ = <ciarray.iarray_context_t *> PyCapsule_GetPointer(ctx.to_capsule(), <char *> "iarray_context_t*")
 
-    def __contains__(self, name):
-        name = name.encode("utf-8") if isinstance(name, str) else name
-        cdef ciarray.bool exists
-        iarray_check(ciarray.iarray_vlmeta_exists(self.ctx_, self.c_, name, &exists))
-        return exists
+    name = name.encode("utf-8") if isinstance(name, str) else name
+    iarray_check(ciarray.iarray_vlmeta_delete(ctx_, c_, name))
+
+def attr_get_names(iarr):
+    cdef ciarray.iarray_container_t *c_
+    c_ = <ciarray.iarray_container_t *> PyCapsule_GetPointer(iarr.to_capsule(), <char *> "iarray_container_t*")
+    ctx = Context(iarr.cfg)
+    cdef ciarray.iarray_context_t *ctx_
+    ctx_ = <ciarray.iarray_context_t *> PyCapsule_GetPointer(ctx.to_capsule(), <char *> "iarray_context_t*")
+    cdef ciarray.int16_t nattrs
+    iarray_check(ciarray.iarray_vlmeta_nitems(ctx_, c_, &nattrs))
+    cdef char** names
+    names = <char **> malloc(sizeof(char*) * nattrs)
+    iarray_check(ciarray.iarray_vlmeta_get_names(ctx_, c_, names))
+    res =  []
+    for i in range(nattrs):
+        res.append(names[i].decode())
+
+    free(names)
+    return res
+
+def attr_len(iarr):
+    cdef ciarray.iarray_container_t *c_
+    c_ = <ciarray.iarray_container_t *> PyCapsule_GetPointer(iarr.to_capsule(), <char *> "iarray_container_t*")
+    ctx = Context(iarr.cfg)
+    cdef ciarray.iarray_context_t *ctx_
+    ctx_ = <ciarray.iarray_context_t *> PyCapsule_GetPointer(ctx.to_capsule(), <char *> "iarray_context_t*")
+
+    cdef ciarray.int16_t nattrs
+    iarray_check(ciarray.iarray_vlmeta_nitems(ctx_, c_, &nattrs))
+    # if nattrs is None:
+    #     return 0
+    return nattrs
 
 
 # Zarr proxy
@@ -1643,7 +1680,7 @@ cdef void zarr_handler(char *zarr_urlpath, ciarray.int64_t *slice_start, ciarray
     path = zarr_urlpath.decode()
     if _is_s3_store(path):
         s3 = s3fs.S3FileSystem(anon=True)
-        store = s3fs.S3Map(path, s3=s3)
+        store = s3fs.S3Map(root=path, s3=s3)
         z_ = zarr.open(store)
     else:
         z_ = zarr.open(path)
