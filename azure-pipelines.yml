@@ -93,8 +93,8 @@ steps:
   displayName: 'Compile package'
   condition: ne( variables['Agent.OS'], 'Windows_NT' )
   env:
-    MKLROOT: $CONDA
-    SVMLROOT: $CONDA/lib
+    MKLROOT: $(CONDA)
+    SVMLROOT: $(CONDA)/lib
 
 - script: |
       call "C:\Program Files\%VSINSTALL%\vcvarsall.bat" %MSVC_PLATFORM%
@@ -105,8 +105,8 @@ steps:
   displayName: 'Compile package'
   condition: eq( variables['Agent.OS'], 'Windows_NT' )
   env:
-    MKLROOT: $CONDA
-    SVMLROOT: $CONDA/Library/lib
+    MKLROOT: $(CONDA)
+    SVMLROOT: $(CONDA)/Library/lib
 
 - bash: |
       python -m pip install pytest pytest-azurepipelines pytest-cov msgpack
