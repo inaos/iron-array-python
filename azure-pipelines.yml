@@ -103,7 +103,7 @@ steps:
   displayName: 'Compile package'
   condition: eq( variables['Agent.OS'], 'Windows_NT' )
   env:
-    MKLROOT: $(CONDA)
+    MKLROOT: $(CONDA)/Library
     SVMLROOT: $(CONDA)/Library/lib
 
 - bash: |
