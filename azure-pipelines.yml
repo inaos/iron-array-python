@@ -72,7 +72,7 @@ steps:
     conda install -y -c intel mkl-include
     conda install -y -c intel mkl-static
     conda install -y -c intel icc_rt
-    conda install -y -c conda-forge 'llvmdev>=13'
+    conda install -y -c numba 'llvmdev'
   displayName: Download dependencies
   condition: ne(variables.CACHE_RESTORED, 'true')
 
@@ -86,14 +86,11 @@ steps:
   displayName: 'Install dependencies'
 
 - bash: |
-      echo $CONDA
-      echo $CONDA_PREFIX
-      echo $MKLROOT
-      echo $SVMLROOT
       python setup.py build_ext -j 4 --build-type=RelWithDebInfo -- -DDISABLE_LLVM_CONFIG=$DISABLE_LLVM_CONFIG -DLLVM_DIR=$CONDA/lib/cmake/llvm
   displayName: 'Compile package'
   condition: ne( variables['Agent.OS'], 'Windows_NT' )
   env:
+    # The $(CONDA_PREFIX) does not exist on Azure pipelines.  $(CONDA) is fine.
     MKLROOT: $(CONDA)
     SVMLROOT: $(CONDA)/lib
 
