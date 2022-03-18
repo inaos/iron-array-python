@@ -67,10 +67,12 @@ steps:
   #  cacheHitVar: CACHE_RESTORED
   #displayName: 'Cache CONDA'
 
-- bash: |
+#- bash: |
+- script: |
     conda create --yes --quiet --name iArrayEnv python=$(python.version)
     conda update --yes -n base -c defaults conda
-    source activate iArrayEnv
+    #source activate iArrayEnv
+    call %CONDA%\condabin\conda.bat activate iArrayEnv
     conda install -y --name iArrayEnv -c intel mkl-include
     conda install -y --name iArrayEnv -c intel mkl-static
     conda install -y --name iArrayEnv -c intel icc_rt
@@ -99,7 +101,7 @@ steps:
   condition: ne( variables['Agent.OS'], 'Windows_NT' )
 
 - script: |
-      call %CONDA%\Scripts\conda.bat activate iArrayEnv
+      call %CONDA%\condabin\conda.bat activate iArrayEnv
       call "C:\Program Files\%VSINSTALL%\vcvarsall.bat" %MSVC_PLATFORM%
       python setup.py build_ext -i --build-type RelWithDebInfo --generator "NMake Makefiles" -- -DINAC_TARGET_ARCH=x86_64 -DLLVM_DIR=%CONDA%/envs/iArrayEnv/Library/lib/cmake/llvm -DWINGEN="NMake Makefiles"
       rem copy the necesssary DLLs into iarray package
