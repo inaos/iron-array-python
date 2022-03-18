@@ -78,7 +78,7 @@ steps:
     conda install -y --name iArrayEnv -c numba llvmlite
     conda install -y --name iArrayEnv numpy
     conda install -y --name iArrayEnv pytest
-    conda install -y --name iArrayEnv cython
+    # conda install -y --name iArrayEnv cython
   displayName: Download dependencies
   condition: ne(variables.CACHE_RESTORED, 'true')
 
