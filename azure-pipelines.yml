@@ -89,6 +89,10 @@ steps:
   displayName: 'Install dependencies'
 
 - bash: |
+      echo $CONDA
+      echo $CONDA_PREFIX
+      echo $MKLROOT
+      echo $SVMLROOT
       python setup.py build_ext -j 4 --build-type=RelWithDebInfo -- -DDISABLE_LLVM_CONFIG=$DISABLE_LLVM_CONFIG -DLLVM_DIR=$CONDA/lib/cmake/llvm
   displayName: 'Compile package'
   condition: ne( variables['Agent.OS'], 'Windows_NT' )
