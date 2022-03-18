@@ -74,7 +74,7 @@ steps:
     conda install -y --name iArrayEnv -c intel mkl-static
     conda install -y --name iArrayEnv -c numba icc_rt
     conda install -y --name iArrayEnv -c numba llvmdev
-    conda install -y --name iArrayEnv -c numba llvmite
+    conda install -y --name iArrayEnv llvmite
     conda install -y --name iArrayEnv numpy
     conda install -y --name iArrayEnv pytest
   displayName: Download dependencies
