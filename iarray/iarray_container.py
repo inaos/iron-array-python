@@ -70,6 +70,10 @@ class IArray(ext.Container):
         """
         return ia.iarray2numpy(self)
 
+    @property
+    def attrs(self):
+        return ia.Attributes(self)
+
     def copy(self, cfg=None, **kwargs) -> IArray:
         """Return a copy of the array.
 

@@ -273,7 +273,7 @@ def zarr_proxy(zarr_urlpath, cfg: ia.Config = None, **kwargs) -> ia.IArray:
     """
     if ext._is_s3_store(zarr_urlpath):
         s3 = s3fs.S3FileSystem(anon=True)
-        store = s3fs.S3Map(zarr_urlpath, s3=s3)
+        store = s3fs.S3Map(root=zarr_urlpath, s3=s3)
         z = zarr.open(store)
     else:
         z = zarr.open(zarr_urlpath)

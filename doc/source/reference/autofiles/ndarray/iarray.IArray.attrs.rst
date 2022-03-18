@@ -5,20 +5,33 @@
 
 .. autoattribute:: IArray.attrs
 
-Instance to a `Blosc2 <https://c-blosc2.readthedocs.io/en/latest/ >`_ Attrs class to
+Instance to a `Blosc2 <https://c-blosc2.readthedocs.io/en/latest/>`_ `Attributes` class to
 manage the attributes of an `IArray`.
-This class behaves very similarly to a dictionary, and attributes
-can be appended in the usual way::
+This class inherites from
+`MutableMapping <https://docs.python.org/3/library/collections.abc.html#collections.abc.MutableMapping>`_
+so every method in this class is available.
 
-    iarr.attrs['attr1'] = 'something'
+Methods
+-------
 
-And can be retrieved similarly::
+.. autosummary::
+   :toctree: attrs
+   :nosignatures:
 
-    value = iarr.attrs['attr1']
-
-Once added, an attribute can be deleted with::
-
-    del iarr.attrs['attr1']
-
-This class also honors the `__contains__` special
-function.
+    Attributes.__getitem__
+    Attributes.__setitem__
+    Attributes.__delitem__
+    Attributes.__iter__
+    Attributes.__len__
+    Attributes.__contains__
+    Attributes.popitem
+    Attributes.pop
+    Attributes.values
+    Attributes.keys
+    Attributes.items
+    Attributes.clear
+    Attributes.update
+    Attributes.setdefault
+    Attributes.get
+    Attributes.__eq__
+    Attributes.__ne__
