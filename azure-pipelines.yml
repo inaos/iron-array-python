@@ -69,7 +69,7 @@ steps:
 
 - bash: |
     conda create --yes --quiet --name iArrayEnv python=$(python.version)
-    conda update -n base -c defaults conda
+    conda update --yes -n base -c defaults conda
     conda activate iArrayEnv
     conda install -y --name iArrayEnv -c intel mkl-include
     conda install -y --name iArrayEnv -c intel mkl-static
