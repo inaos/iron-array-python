@@ -10,15 +10,15 @@ strategy:
       imageName: 'ubuntu-20.04'
       python.version: '3.8'
       DISABLE_LLVM_CONFIG: True
-    mac:
-      imageName: 'macos-10.15'
-      python.version: '3.7'
-      DISABLE_LLVM_CONFIG: True
-#    windows:
-#      imageName: 'windows-2022'
-#      VSINSTALL: "Microsoft Visual Studio\\2022\\Enterprise\\VC\\Auxiliary\\Build"
-#      MSVC_PLATFORM: amd64
-#      python.version: '3.9'
+#    mac:
+#      imageName: 'macos-10.15'
+#      python.version: '3.7'
+#      DISABLE_LLVM_CONFIG: True
+    windows:
+      imageName: 'windows-2022'
+      VSINSTALL: "Microsoft Visual Studio\\2022\\Enterprise\\VC\\Auxiliary\\Build"
+      MSVC_PLATFORM: amd64
+      python.version: '3.9'
 
 pool:
   vmImage: $(imageName)
@@ -72,10 +72,7 @@ steps:
     conda install -y -c intel mkl-include
     conda install -y -c intel mkl-static
     conda install -y -c intel icc_rt
-    conda install -y -c numba 'llvmdev>=11'
-    # conda install -y -c numba llvmlite
-    conda install -y numpy
-    conda install -y pytest
+    conda install -y -c conda-forge 'llvmdev>=13'
   displayName: Download dependencies
   condition: ne(variables.CACHE_RESTORED, 'true')
 
