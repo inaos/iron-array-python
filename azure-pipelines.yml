@@ -2,7 +2,7 @@ trigger:
 - develop
 
 variables:
-  CONDA_CACHE_FOLDER: $(CONDA)/
+  CONDA_CACHE_FOLDER: $(CONDA)/envs/iArrayEnv
 
 strategy:
   matrix:
@@ -68,16 +68,17 @@ steps:
   #displayName: 'Cache CONDA'
 
 - bash: |
-    conda create --yes --quiet python=$(python.version)
+    conda create --yes --quiet --name iArrayEnv python=$(python.version)
     conda update --yes -n base -c defaults conda
-    conda install -y -c intel mkl-include
-    conda install -y -c intel mkl-static
-    conda install -y -c intel icc_rt
-    conda install -y -c conda-forge 'llvmdev>=13'
-    conda install -y -c conda-forge llvmlite
-    conda install -y -c conda-forge numpy
-    conda install -y -c conda-forge pytest
-    # conda install -y cython
+    conda activate iArrayEnv
+    conda install -y --name iArrayEnv -c intel mkl-include
+    conda install -y --name iArrayEnv -c intel mkl-static
+    conda install -y --name iArrayEnv -c intel icc_rt
+    conda install -y --name iArrayEnv -c conda-forge 'llvmdev>=13'
+    conda install -y --name iArrayEnv -c conda-forge llvmlite
+    conda install -y --name iArrayEnv -c conda-forge numpy
+    conda install -y --name iArrayEnv -c conda-forge pytest
+    # conda install -y --name iArrayEnv cython
   displayName: Download dependencies
   condition: ne(variables.CACHE_RESTORED, 'true')
 
@@ -87,17 +88,20 @@ steps:
   displayName: 'Use Python $(python.version)'
 
 - bash: |
+      conda activate iArrayEnv
       python -m pip install --retries 3 -U -r requirements.txt
   displayName: 'Install dependencies'
 
 - bash: |
-      python setup.py build_ext -j 4 --build-type=RelWithDebInfo -- -DDISABLE_LLVM_CONFIG=$DISABLE_LLVM_CONFIG -DLLVM_DIR=$CONDA/lib/cmake/llvm
+      conda activate iArrayEnv
+      python setup.py build_ext -j 4 --build-type=RelWithDebInfo -- -DDISABLE_LLVM_CONFIG=$DISABLE_LLVM_CONFIG -DLLVM_DIR=$CONDA/envs/iArrayEnv/lib/cmake/llvm
   displayName: 'Compile package'
   condition: ne( variables['Agent.OS'], 'Windows_NT' )
 
 - script: |
+      call %CONDA%\condabin\conda.bat activate iArrayEnv
       call "C:\Program Files\%VSINSTALL%\vcvarsall.bat" %MSVC_PLATFORM%
-      python setup.py build_ext -i --build-type RelWithDebInfo --generator "NMake Makefiles" -- -DINAC_TARGET_ARCH=x86_64 -DLLVM_DIR=%CONDA%/Library/lib/cmake/llvm -DWINGEN="NMake Makefiles"
+      python setup.py build_ext -i --build-type RelWithDebInfo --generator "NMake Makefiles" -- -DINAC_TARGET_ARCH=x86_64 -DLLVM_DIR=%CONDA%/envs/iArrayEnv/Library/lib/cmake/llvm -DWINGEN="NMake Makefiles"
       rem copy the necesssary DLLs into iarray package
       copy iarray\iarray-c-develop\build\iarray.dll iarray
       copy iarray\iarray-c-develop\build\svml_dispmd.dll iarray
@@ -105,22 +109,25 @@ steps:
   condition: eq( variables['Agent.OS'], 'Windows_NT' )
 
 - bash: |
+      conda activate iArrayEnv
       python -m pip install pytest pytest-azurepipelines pytest-cov msgpack
-      LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA/lib pytest -vv -s --test-run-title="Linux test suite" --cov-config=.coveragerc --cov=iarray --cov-report=xml --cov-report=html
+      LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA/envs/iArrayEnv/lib pytest -vv -s --test-run-title="Linux test suite" --cov-config=.coveragerc --cov=iarray --cov-report=xml --cov-report=html
   displayName: 'Run Tests'
   condition:
     eq( variables['Agent.OS'], 'Linux' )
 
 - bash: |
+      conda activate iArrayEnv
       python -m pip install pytest pytest-azurepipelines pytest-cov msgpack
-      LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/miniconda/lib pytest -vv -s --test-run-title="Mac test suite" --cov-config=.coveragerc --cov=iarray --cov-report=xml --cov-report=html
+      LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/miniconda/envs/iArrayEnv/lib pytest -vv -s --test-run-title="Mac test suite" --cov-config=.coveragerc --cov=iarray --cov-report=xml --cov-report=html
   displayName: 'Run Tests'
   condition:
     eq( variables['Agent.OS'], 'Darwin' )
 
 - script: |
+      call %CONDA%\condabin\conda.bat activate iArrayEnv
       pip install pytest pytest-azurepipelines pytest-cov pytest-cov msgpack
-      PATH=%PATH%;C:\Miniconda/Library/bin
+      PATH=%PATH%;C:\Miniconda/envs/iArrayEnv/Library/bin
       pytest -vv -s --test-run-title="Windows test suite" --cov-config=.coveragerc --cov=iarray --cov-report=xml --cov-report=html iarray/tests/
   displayName: 'Run Tests'
   condition:
