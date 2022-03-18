@@ -69,14 +69,16 @@ steps:
 
 - bash: |
     conda create --yes --quiet --name iArrayEnv python=$(python.version)
-    source activate iArrayEnv
+    conda update -n base -c defaults conda
+    conda activate iArrayEnv
     conda install -y --name iArrayEnv -c intel mkl-include
     conda install -y --name iArrayEnv -c intel mkl-static
-    conda install -y --name iArrayEnv -c numba icc_rt
+    conda install -y --name iArrayEnv -c intel icc_rt
     conda install -y --name iArrayEnv -c numba llvmdev
     conda install -y --name iArrayEnv -c numba llvmlite
     conda install -y --name iArrayEnv numpy
     conda install -y --name iArrayEnv pytest
+    conda install -y --name iArrayEnv cython
   displayName: Download dependencies
   condition: ne(variables.CACHE_RESTORED, 'true')
 
