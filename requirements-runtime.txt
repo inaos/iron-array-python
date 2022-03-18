@@ -1,6 +1,2 @@
-icc-rt
-llvmlite
-numpy
 ndindex
-pytest
 msgpack
