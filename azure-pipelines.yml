@@ -68,6 +68,7 @@ steps:
   #displayName: 'Cache CONDA'
 
 - bash: |
+    conda init --yes bash
     conda create --yes --quiet --name iArrayEnv python=$(python.version)
     conda update --yes -n base -c defaults conda
     conda activate iArrayEnv
