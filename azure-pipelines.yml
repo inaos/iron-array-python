@@ -73,7 +73,7 @@ steps:
     conda install -y -c intel mkl-static
     conda install -y -c intel icc_rt
     conda install -y -c numba 'llvmdev>=11'
-    conda install -y -c numba llvmlite
+    # conda install -y -c numba llvmlite
     conda install -y numpy
     conda install -y pytest
   displayName: Download dependencies
