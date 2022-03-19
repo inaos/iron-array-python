@@ -10,10 +10,10 @@ strategy:
       imageName: 'ubuntu-20.04'
       python.version: '3.8'
       DISABLE_LLVM_CONFIG: True
-#    mac:
-#      imageName: 'macos-10.15'
-#      python.version: '3.7'
-#      DISABLE_LLVM_CONFIG: True
+    mac:
+      imageName: 'macos-10.15'
+      python.version: '3.7'
+      DISABLE_LLVM_CONFIG: True
     windows:
       imageName: 'windows-2022'
       VSINSTALL: "Microsoft Visual Studio\\2022\\Enterprise\\VC\\Auxiliary\\Build"
@@ -117,6 +117,7 @@ steps:
 
 - bash: |
     python -m pip install pytest-azurepipelines pytest-cov
+    python -m pip install --retries 3 -U -r requirements-runtime.txt
     LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA/lib pytest -vv -s --test-run-title="Linux test suite" --cov-config=.coveragerc --cov=iarray --cov-report=xml --cov-report=html
   displayName: 'Run Tests'
   condition:
