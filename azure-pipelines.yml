@@ -75,6 +75,7 @@ steps:
     if [ "$AGENT_OS" == "Windows_NT" ]
       then
         conda install -y -c numba 'llvmdev'
+        conda install -y cython  # apparently cython from PyPI is not good for win
     else
         # LLVM 13 is necessary for calling int intrinsics
         conda install -y -c conda-forge 'llvmdev>=13'
@@ -104,7 +105,6 @@ steps:
 
 - script: |
     call "C:\Program Files\%VSINSTALL%\vcvarsall.bat" %MSVC_PLATFORM%
-    conda install -y cython  # apparently cython from PyPI is not good for win
     python setup.py build_ext -i --build-type RelWithDebInfo --generator "NMake Makefiles" -- -DINAC_TARGET_ARCH=x86_64 -DLLVM_DIR=%CONDA%/Library/lib/cmake/llvm -DWINGEN="NMake Makefiles"
     rem copy the necesssary DLLs into iarray package
     copy iarray\iarray-c-develop\build\iarray.dll iarray
