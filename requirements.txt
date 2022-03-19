@@ -1,5 +1,5 @@
 cython
-numpy<1.20
+numpy<1.19
 llvmlite
 setuptools
 wheel
