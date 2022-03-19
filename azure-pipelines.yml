@@ -75,7 +75,7 @@ steps:
     if [ "$AGENT_OS" == "Windows_NT" ]
       then
         conda install -y -c numba 'llvmdev'
-        conda install -y -c conda-forge 'numpy>=1.23'
+        conda install -y 'numpy>=1.21'
     else
         # LLVM 13 is necessary for calling int intrinsics
         conda install -y -c conda-forge 'llvmdev>=13'
@@ -92,7 +92,7 @@ steps:
     python -m pip install --retries 3 -U -r requirements.txt
     if [ "$AGENT_OS" == "Windows_NT" ]
       then
-        conda install -y -c conda-forge 'numpy>=1.23' --force-reinstall
+        conda install -y 'numpy>=1.21' --force-reinstall
     fi
   displayName: 'Install dependencies'
 
