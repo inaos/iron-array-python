@@ -92,8 +92,8 @@ steps:
   displayName: 'Install build dependencies'
 
 - bash: |
-    conda install -y cython  # apparently cython is not found if installed before than this
-    # python -m pip install cython  # this also works for unix, but not for win
+    # conda install -y cython  # apparently cython is not found if installed before than this
+    python -m pip install cython  # cython needs installed like this for unix
     python setup.py build_ext -j 4 --build-type=RelWithDebInfo -- -DDISABLE_LLVM_CONFIG=$DISABLE_LLVM_CONFIG -DLLVM_DIR=$CONDA/lib/cmake/llvm
   displayName: 'Compile package'
   condition: ne( variables['Agent.OS'], 'Windows_NT' )
