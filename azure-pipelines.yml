@@ -72,8 +72,13 @@ steps:
     conda install -y -c intel mkl-include
     conda install -y -c intel mkl-static
     conda install -y -c intel icc_rt
-    conda install -y -c numba 'llvmdev'
-    conda install -y numpy
+    if [ "$AGENT_OS" == "Windows_NT" ]
+      then
+        conda install -y -c numba 'llvmdev'
+    else
+        # LLVM 13 is necessary for calling int intrinsics
+        conda install -y -c conda-forge 'llvmdev>=13'
+    fi
   displayName: Download dependencies
   condition: ne(variables.CACHE_RESTORED, 'true')
 
@@ -83,8 +88,13 @@ steps:
   displayName: 'Use Python $(python.version)'
 
 - bash: |
-      python -m pip install --retries 3 -U -r requirements.txt
+    python -m pip install --retries 3 -U -r requirements.txt
+    if [ "$AGENT_OS" == "Windows_NT" ]
+      then
+        conda install -y numpy --force-reinstall
+    fi
   displayName: 'Install dependencies'
+
 
 - bash: |
       python setup.py build_ext -j 4 --build-type=RelWithDebInfo -- -DDISABLE_LLVM_CONFIG=$DISABLE_LLVM_CONFIG -DLLVM_DIR=$CONDA/lib/cmake/llvm
