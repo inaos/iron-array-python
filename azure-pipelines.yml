@@ -94,6 +94,7 @@ steps:
 
 
 - bash: |
+      python -m pip install cython  # for some reason, this is not found in conda enviroment, and installed above)
       python setup.py build_ext -j 4 --build-type=RelWithDebInfo -- -DDISABLE_LLVM_CONFIG=$DISABLE_LLVM_CONFIG -DLLVM_DIR=$CONDA/lib/cmake/llvm
   displayName: 'Compile package'
   condition: ne( variables['Agent.OS'], 'Windows_NT' )
