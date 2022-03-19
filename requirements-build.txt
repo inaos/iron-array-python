@@ -1,9 +1,6 @@
-llvmlite
 setuptools
 wheel
 scikit-build
 cmake
 ninja
-ndindex
-zarr
-s3fs
+pytest

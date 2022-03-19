@@ -1,2 +1,5 @@
+llvmlite
 ndindex
 msgpack
+zarr
+s3fs

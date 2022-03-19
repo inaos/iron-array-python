@@ -38,7 +38,7 @@ so as to allow the iarray library to find the IPP libraries.
 We rely on scikit-build, numpy and others to build and test the package, so please be sure to install the requisites in your environment:
 
 ```bash
-python -m pip install -r requirements.txt
+python -m pip install -r requirements-build.txt
 ```
 
 In addition, we need LLVM development and SVML packages that can be easily installed from conda:
