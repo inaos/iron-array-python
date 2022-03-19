@@ -69,13 +69,13 @@ steps:
 
 - bash: |
     conda update --yes -n base -c defaults conda
+    conda install -y cython
     conda install -y -c intel mkl-include
     conda install -y -c intel mkl-static
     conda install -y -c intel icc_rt
     if [ "$AGENT_OS" == "Windows_NT" ]
       then
         conda install -y -c numba 'llvmdev'
-        conda install -y 'numpy<1.19'
     else
         # LLVM 13 is necessary for calling int intrinsics
         conda install -y -c conda-forge 'llvmdev>=13'
@@ -90,10 +90,6 @@ steps:
 
 - bash: |
     python -m pip install --retries 3 -U -r requirements.txt
-    if [ "$AGENT_OS" == "Windows_NT" ]
-      then
-        conda install -y 'numpy<1.19' --force-reinstall
-    fi
   displayName: 'Install dependencies'
 
 
