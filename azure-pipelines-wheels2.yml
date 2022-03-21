@@ -125,6 +125,7 @@ jobs:
       else
           # LLVM 13 is necessary for calling int intrinsics
           conda install -y -c conda-forge 'llvmdev>=13'
+          python -m pip install cython  # cython needs installed like this for unix
       fi
 
     displayName: 'Install build dependencies'
@@ -245,7 +246,6 @@ jobs:
           # LLVM 13 is necessary for calling int intrinsics
           conda install -y -c conda-forge 'llvmdev>=13'
       fi
-
     displayName: 'Install build dependencies'
 
   - script: |
@@ -257,6 +257,10 @@ jobs:
       copy iarray\iarray-c-develop\build\svml_dispmd.dll iarray
       python setup.py bdist_wheel --generator "NMake Makefiles" -DWINGEN="NMake Makefiles"
     displayName: 'Build wheel'
+    env:
+      # The $(CONDA_PREFIX) does not exist on Azure pipelines.  $(CONDA) is fine.
+      MKLROOT: $(CONDA)
+      SVMLROOT: $(CONDA)/lib
 
   - task: PublishPipelineArtifact@0
     inputs:
