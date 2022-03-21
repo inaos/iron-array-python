@@ -47,7 +47,7 @@ steps:
     fi
     if [ "$AGENT_OS" == "Windows_NT" ]
       then
-        echo "##vso[task.prependpath]$CONDA\Scripts"
+        echo "##vso[task.prependpath]$CONDA/Scripts"
     fi
   displayName: Add conda to PATH
 
