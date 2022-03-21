@@ -47,7 +47,7 @@ steps:
     fi
     if [ "$AGENT_OS" == "Windows_NT" ]
       then
-        echo "##vso[task.prependpath]$CONDA/Scripts"
+        echo "##vso[task.prependpath]$CONDA\Scripts"
     fi
   displayName: Add conda to PATH
 
@@ -68,7 +68,10 @@ steps:
   #displayName: 'Cache CONDA'
 
 - bash: |
+    which python
+    python -V
     conda update --yes -n base -c defaults conda
+    python -m pip install --upgrade pip
     conda install -y -c intel mkl-include
     conda install -y -c intel mkl-static
     conda install -y -c intel icc_rt
