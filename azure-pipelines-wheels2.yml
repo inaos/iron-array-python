@@ -145,6 +145,10 @@ jobs:
       delocate-listdeps ./dist/*.whl
       delocate-wheel ./dist/*.whl
     displayName: 'Build wheel'
+    env:
+      # The $(CONDA_PREFIX) does not exist on Azure pipelines.  $(CONDA) is fine.
+      MKLROOT: $(CONDA)
+      SVMLROOT: $(CONDA)/lib
 
   - script: |
       python -m pip install --retries 3 -U -r requirements-runtime.txt
@@ -257,10 +261,9 @@ jobs:
       copy iarray\iarray-c-develop\build\svml_dispmd.dll iarray
       python setup.py bdist_wheel --generator "NMake Makefiles" -DWINGEN="NMake Makefiles"
     displayName: 'Build wheel'
-    env:
-      # The $(CONDA_PREFIX) does not exist on Azure pipelines.  $(CONDA) is fine.
-      MKLROOT: $(CONDA)
-      SVMLROOT: $(CONDA)/lib
+  env:
+    MKLROOT: $(CONDA)/Library
+    SVMLROOT: $(CONDA)/Library/lib
 
   - task: PublishPipelineArtifact@0
     inputs:
