@@ -261,9 +261,9 @@ jobs:
       copy iarray\iarray-c-develop\build\svml_dispmd.dll iarray
       python setup.py bdist_wheel --generator "NMake Makefiles" -DWINGEN="NMake Makefiles"
     displayName: 'Build wheel'
-  env:
-    MKLROOT: $(CONDA)/Library
-    SVMLROOT: $(CONDA)/Library/lib
+    env:
+      MKLROOT: $(CONDA)/Library
+      SVMLROOT: $(CONDA)/Library/lib
 
   - task: PublishPipelineArtifact@0
     inputs:
