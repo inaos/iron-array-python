@@ -151,6 +151,7 @@ jobs:
       SVMLROOT: $(CONDA)/lib
 
   - script: |
+      python -m pip install --retries 3 -U -r requirements-test.txt
       python -m pip install --retries 3 -U -r requirements-runtime.txt
       python -m pip install iarray --force-reinstall --no-cache-dir -f ./dist/
       python -m pytest iarray/tests
@@ -271,6 +272,7 @@ jobs:
       targetPath: './dist'
 
   - script: |
+      python -m pip install --retries 3 -U -r requirements-test.txt
       python -m pip install --retries 3 -U -r requirements-runtime.txt
       python -m pip install iarray --force-reinstall --no-cache-dir -f ./dist/
       python -m pytest iarray/tests
