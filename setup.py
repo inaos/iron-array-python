@@ -74,7 +74,7 @@ else:
     )
 
 # Optional dependencies
-doc_deps = examples_deps = open("requirements-doc.txt").read().split()
+doc_deps = open("requirements-doc.txt").read().split()
 examples_deps = open("requirements-dev.txt").read().split()
 
 setup(
