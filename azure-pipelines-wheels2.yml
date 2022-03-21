@@ -92,7 +92,6 @@ jobs:
       mkdir -p $HOME/.inaos/cmake
       mkdir -p $HOME/INAOS
       echo "INAC_REPOSITORY_LOCAL=$HOME/INAOS" > $HOME/.inaos/cmake/repository.txt
-      echo "INAC_REPOSITORY_REMOTE=https://inaos.jfrog.io/inaos/libs-release-local/inaos" >> $HOME/.inaos/cmake/repository.txt
       echo "INAC_REPOSITORY_USRPWD=licensed:AKCp5bBraH7CasbsYCURsjzkbjXwVwdYcT7u39EiuL6GjnK1VKfKQWCd1E2E64mHokU5YUHku" >> $HOME/.inaos/cmake/repository.txt
     displayName: Install inaos license
 
@@ -160,12 +159,7 @@ jobs:
   - bash: |
       echo "[distutils]" > $HOME/.pypirc
       echo "index-servers = " >> $HOME/.pypirc
-      echo "    jfrog" >> $HOME/.pypirc
       echo "    iarray" >> $HOME/.pypirc
-      echo "[jfrog]" >> $HOME/.pypirc
-      echo "repository: https://inaos.jfrog.io/artifactory/api/pypi/pypi-iron-array" >> $HOME/.pypirc
-      echo "username: iarray-deploy" >> $HOME/.pypirc
-      echo "password: M{wf5-Am^2)c8&vR" >> $HOME/.pypirc
       echo "[iarray]" >> $HOME/.pypirc
       echo "repository: https://ia-admin:g4W^UT_2kLtSU=MF@distribution.ironarray.io/" >> $HOME/.pypirc
       echo "username: ia-admin" >> $HOME/.pypirc
@@ -174,7 +168,6 @@ jobs:
 
   - bash: |
       python -m pip install twine
-      python -m twine upload -r jfrog dist/*
       python -m twine upload -r iarray dist/*
     displayName: Deploy Wheel
 
@@ -229,7 +222,6 @@ jobs:
       mkdir -p $HOME/.inaos/cmake
       mkdir -p $HOME/INAOS
       echo "INAC_REPOSITORY_LOCAL=$HOME/INAOS" > $HOME/.inaos/cmake/repository.txt
-      echo "INAC_REPOSITORY_REMOTE=https://inaos.jfrog.io/inaos/libs-release-local/inaos" >> $HOME/.inaos/cmake/repository.txt
       echo "INAC_REPOSITORY_USRPWD=licensed:AKCp5bBraH7CasbsYCURsjzkbjXwVwdYcT7u39EiuL6GjnK1VKfKQWCd1E2E64mHokU5YUHku" >> $HOME/.inaos/cmake/repository.txt
     displayName: Install inaos license
 
@@ -281,12 +273,7 @@ jobs:
   - bash: |
       echo "[distutils]" > $HOME/.pypirc
       echo "index-servers = " >> $HOME/.pypirc
-      echo "    jfrog" >> $HOME/.pypirc
       echo "    iarray" >> $HOME/.pypirc
-      echo "[jfrog]" >> $HOME/.pypirc
-      echo "repository: https://inaos.jfrog.io/artifactory/api/pypi/pypi-iron-array" >> $HOME/.pypirc
-      echo "username: iarray-deploy" >> $HOME/.pypirc
-      echo "password: M{wf5-Am^2)c8&vR" >> $HOME/.pypirc
       echo "[iarray]" >> $HOME/.pypirc
       echo "repository: https://ia-admin:g4W^UT_2kLtSU=MF@distribution.ironarray.io/" >> $HOME/.pypirc
       echo "username: ia-admin" >> $HOME/.pypirc
@@ -295,6 +282,5 @@ jobs:
 
   - bash: |
       python -m pip install twine
-      python -m twine upload -r jfrog dist/*
       python -m twine upload -r iarray dist/*
     displayName: Deploy Wheel
