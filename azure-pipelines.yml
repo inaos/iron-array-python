@@ -41,13 +41,11 @@ steps:
   displayName: Clone repos
 
 - bash: |
-    if [ "$AGENT_OS" == "Darwin" ]
-      then
-        echo "##vso[task.prependpath]$CONDA/bin"
-    fi
     if [ "$AGENT_OS" == "Windows_NT" ]
       then
         echo "##vso[task.prependpath]$CONDA/Scripts"
+    else
+        echo "##vso[task.prependpath]$CONDA/bin"
     fi
   displayName: Add conda to PATH
 
@@ -82,7 +80,7 @@ steps:
     else
         # LLVM 13 is necessary for calling int intrinsics
         conda install -y -c conda-forge 'llvmdev>=13'
-        python -m pip install cython  # cython needs installed like this for unix
+        python -m pip install cython  # cython can be installed from either PyPI or conda
     fi
   displayName: Download dependencies
   condition: ne(variables.CACHE_RESTORED, 'true')
