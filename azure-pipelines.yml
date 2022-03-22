@@ -80,7 +80,9 @@ steps:
     else
         # LLVM 13 is necessary for calling int intrinsics
         conda install -y -c conda-forge 'llvmdev>=13'
-        python -m pip install cython  # cython can be installed from either PyPI or conda
+        # python -m pip install cython  # cython can be installed from either PyPI or conda
+        # Attempt to use coda for Linux as well and see
+        conda install -y cython  # apparently cython from PyPI is not good for win
     fi
   displayName: Download dependencies
   condition: ne(variables.CACHE_RESTORED, 'true')

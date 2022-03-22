@@ -134,12 +134,12 @@ jobs:
       PYTHON_VERSION=$(python -c "import sys; print(f'{sys.version_info[0]}.{sys.version_info[1]}')")
       python setup.py clean
       python setup.py build --build-type RelWithDebInfo -G Ninja -- \
-        -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=$(PYTHON_VERSION) \
+        -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=$PYTHON_VERSION \
         -DCMAKE_OSX_ARCHITECTURES:STRING=x86_64 \
         -DDISABLE_LLVM_CONFIG=True \
         -DLLVM_DIR=$CONDA/lib/cmake/llvm
-      python setup.py bdist_wheel --plat-name macosx-$(PYTHON_VERSION)-x86_64 -- \
-        -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=$(PYTHON_VERSION) \
+      python setup.py bdist_wheel --plat-name macosx-$PYTHON_VERSION-x86_64 -- \
+        -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=$PYTHON_VERSION \
         -DCMAKE_OSX_ARCHITECTURES:STRING=x86_64 \
         -DDISABLE_LLVM_CONFIG=True \
         -DLLVM_DIR=$CONDA/lib/cmake/llvm
