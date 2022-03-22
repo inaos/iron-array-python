@@ -56,19 +56,9 @@ elif platform == "win32":
 else:
     copy_libs = []
 
-doc_deps = [
-    "sphinx >= 1.5",
-    "sphinx_rtd_theme",
-    "numpydoc",
-]
-examples_deps = [
-    "matplotlib",
-    "numexpr",
-    "numba",
-]
-
 if BUILD_WHEELS:
     print("BUILD_WHEELS mode is ON!")
+    install_requires = open("requirements-test.txt").read().split()
     install_requires = open("requirements-runtime.txt").read().split()
     package_info = dict(
         package_dir={"iarray": "iarray"},
@@ -82,6 +72,10 @@ else:
     package_info = dict(
         package_dir={"": "."},
     )
+
+# Optional dependencies
+doc_deps = open("requirements-doc.txt").read().split()
+examples_deps = open("requirements-dev.txt").read().split()
 
 setup(
     name="iarray",

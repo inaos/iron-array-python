@@ -1,6 +1,6 @@
-icc-rt
-llvmlite
 numpy
+llvmlite
 ndindex
-pytest
 msgpack
+zarr
+s3fs

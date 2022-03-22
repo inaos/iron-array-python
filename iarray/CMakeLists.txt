@@ -8,7 +8,7 @@ find_package(Cython REQUIRED)
 find_package(NumPy REQUIRED)
 include_directories(${NumPy_INCLUDE_DIRS})
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/iarray-c-develop/include")
-# link_directories("${CMAKE_CURRENT_SOURCE_DIR}/iarray-c-develop/build")  # looks like windows still needs this?
+link_directories("${CMAKE_CURRENT_SOURCE_DIR}/iarray-c-develop/build")  # needed by windows
 link_directories("${CMAKE_CURRENT_SOURCE_DIR}")
 
 if (WIN32)
