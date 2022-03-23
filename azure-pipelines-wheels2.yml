@@ -109,7 +109,7 @@ jobs:
       echo "INAC_REPOSITORY_USRPWD=licensed:AKCp5bBraH7CasbsYCURsjzkbjXwVwdYcT7u39EiuL6GjnK1VKfKQWCd1E2E64mHokU5YUHku" >> $HOME/.inaos/cmake/repository.txt
     displayName: Install inaos license
 
-- bash: |
+  - bash: |
       which python
       python -V
       conda update --yes -n base -c defaults conda
@@ -119,17 +119,11 @@ jobs:
       conda install -y -c intel mkl-include
       conda install -y -c intel mkl-static
       conda install -y -c intel icc_rt
-      if [ "$AGENT_OS" == "Windows_NT" ]
-        then
-          # LLVM 13 from conda-forge is not working for windows yet
-          conda install -y -c numba 'llvmdev'
-          conda install -y cython  # apparently cython from PyPI is not good for win
-      else
-          # LLVM 13 is necessary for calling int intrinsics
-          conda install -y -c conda-forge 'llvmdev>=13'
-          # python -m pip install cython  # for unix cython can be installed from either PyPI or conda
-          conda install -y cython  # for unix cython can be installed from either PyPI or conda
-      fi
+      # LLVM 13 is necessary for calling int intrinsics
+      conda install -y -c conda-forge 'llvmdev>=13'
+      # For unix, cython can be installed from either PyPI or conda
+      # python -m pip install cython
+      conda install -y cython
     displayName: 'Install build dependencies'
 
   - bash: |
@@ -241,14 +235,9 @@ jobs:
 #      conda install -y -c intel mkl-include
 #      conda install -y -c intel mkl-static
 #      conda install -y -c intel icc_rt
-#      if [ "$AGENT_OS" == "Windows_NT" ]
-#        then
-#          conda install -y -c numba 'llvmdev'
-#          conda install -y cython  # apparently cython from PyPI is not good for win
-#      else
-#          # LLVM 13 is necessary for calling int intrinsics
-#          conda install -y -c conda-forge 'llvmdev>=13'
-#      fi
+#      # LLVM 13 from conda-forge is not working for windows yet
+#      conda install -y -c numba 'llvmdev'
+#      conda install -y cython  # apparently cython from PyPI is not good for win
 #    displayName: 'Install build dependencies'
 #
 #  - script: |
