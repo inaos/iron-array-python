@@ -56,6 +56,11 @@ steps:
       fi
   displayName: Take ownership of conda installation
 
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: '$(python.version)'
+  displayName: 'Use Python $(python.version)'
+
   # Caching post-task takes quite a bit of time.  Disabling it.
   # See: https://github.com/inaos/iron-array/issues/311
   #- task: CacheBeta@0
@@ -75,22 +80,17 @@ steps:
     conda install -y -c intel icc_rt
     if [ "$AGENT_OS" == "Windows_NT" ]
       then
+        # LLVM 13 from conda-forge is not working for windows yet
         conda install -y -c numba 'llvmdev'
         conda install -y cython  # apparently cython from PyPI is not good for win
     else
         # LLVM 13 is necessary for calling int intrinsics
         conda install -y -c conda-forge 'llvmdev>=13'
-        # python -m pip install cython  # cython can be installed from either PyPI or conda
-        # Attempt to use coda for Linux as well and see
-        conda install -y cython  # apparently cython from PyPI is not good for win
+        # python -m pip install cython  # for unix cython can be installed from either PyPI or conda
+        conda install -y cython  # for unix cython can be installed from either PyPI or conda
     fi
   displayName: Download dependencies
   condition: ne(variables.CACHE_RESTORED, 'true')
-
-- task: UsePythonVersion@0
-  inputs:
-    versionSpec: '$(python.version)'
-  displayName: 'Use Python $(python.version)'
 
 - bash: |
     python -m pip install --retries 3 -U -r requirements-build.txt
