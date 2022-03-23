@@ -69,11 +69,11 @@ jobs:
   steps:
   - bash: |
       echo "##vso[task.prependpath]$CONDA/bin"  # Add conda to PATH
-      export CONDA_PREFIX=$CONDA   # allow for smoother conda operation
     displayName: Add conda to PATH
 
   - bash: |
       sudo chown -R $USER $CONDA
+      conda init --yes bash
     displayName: Take ownership of conda installation
 
 #  - task: UsePythonVersion@0
@@ -82,6 +82,7 @@ jobs:
 #      architecture: 'x64'
 
   - bash: |
+      conda activate base
       which python
       python -V
     displayName: Check python version
@@ -112,6 +113,7 @@ jobs:
     displayName: Install inaos license
 
   - bash: |
+      conda activate base
       which python
       python -V
       conda update --yes -n base -c defaults conda
@@ -129,6 +131,7 @@ jobs:
     displayName: 'Install build dependencies'
 
   - bash: |
+      conda activate base
       which python
       python -V
       python setup.py clean
@@ -151,6 +154,7 @@ jobs:
       SVMLROOT: $(CONDA)/lib
 
   - bash: |
+      conda activate base
       which python
       python -V
       python -m pip install --retries 3 -U -r requirements-test.txt
