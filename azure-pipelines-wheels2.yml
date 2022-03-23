@@ -73,7 +73,7 @@ jobs:
 
   - bash: |
       sudo chown -R $USER $CONDA
-      conda init --yes bash
+      eval "$(conda shell.bash hook)"
     displayName: Take ownership of conda installation
 
 #  - task: UsePythonVersion@0
