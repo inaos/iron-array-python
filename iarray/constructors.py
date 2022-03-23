@@ -248,10 +248,10 @@ zarr_to_iarray_dtypes = {'int8': np.int8, 'int16': np.int16, 'int32': np.int32, 
 def zarr_proxy(zarr_urlpath, cfg: ia.Config = None, **kwargs) -> ia.IArray:
     """Return a read-only Zarr proxy array.
 
-    `cfg` and `kwargs` are the same than for :func:`empty`.
+    `cfg` and `kwargs` are the same than for :func:`empty` except by `nthreads`, which is
+    always set to 1.
 
-    The data type and chunks must not differ from the original Zarr array. Furthermore,
-    chunks must be equal to blocks.
+    The data type and chunks must not differ from the original Zarr array.
 
     Parameters
     ----------
@@ -291,10 +291,14 @@ def zarr_proxy(zarr_urlpath, cfg: ia.Config = None, **kwargs) -> ia.IArray:
             if tuple(kwargs.pop("chunks")) != z.chunks:
                 raise AttributeError("chunks cannot differ from the original array")
         if "blocks" in kwargs:
-            if tuple(kwargs.pop("blocks")) != z.chunks:
-                raise AttributeError("blocks cannot differ from chunks")
+            blocks = tuple(kwargs.pop("blocks"))
+        else:
+            blocks = z.chunks
+        if "nthreads" in kwargs:
+            if kwargs.pop("nthreads") != 1:
+                raise AttributeError("Cannot use parallelism when interacting with Zarr")
 
-    with ia.config(cfg=cfg, dtype=dtype, chunks=z.chunks, blocks=z.chunks, **kwargs) as cfg:
+    with ia.config(cfg=cfg, dtype=dtype, chunks=z.chunks, blocks=blocks, nthreads=1, **kwargs) as cfg:
         a = uninit(shape=z.shape, cfg=cfg)
 
     # Set special attr to identify zarr_proxy

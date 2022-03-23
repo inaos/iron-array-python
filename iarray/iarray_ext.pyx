@@ -1651,11 +1651,9 @@ def attr_get_names(iarr):
     cdef char** names
     names = <char **> malloc(sizeof(char*) * nattrs)
     iarray_check(ciarray.iarray_vlmeta_get_names(ctx_, c_, names))
-    res =  []
-    for i in range(nattrs):
-        res.append(names[i].decode())
+    res =  [names[i].decode() for i in range(nattrs)]
 
-    free(names)
+    free(<void*>names)
     return res
 
 def attr_len(iarr):
@@ -1667,8 +1665,6 @@ def attr_len(iarr):
 
     cdef ciarray.int16_t nattrs
     iarray_check(ciarray.iarray_vlmeta_nitems(ctx_, c_, &nattrs))
-    # if nattrs is None:
-    #     return 0
     return nattrs
 
 
