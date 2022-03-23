@@ -6,45 +6,45 @@ variables: # This activates => BUILD_WHEELS: 1
 
 jobs:
 
-#- job: 'Linux'
-#  displayName: 'Linux'
-#
-#  pool:
-#    vmImage: 'ubuntu-latest'
-#
-#  steps:
-#  - task: UsePythonVersion@0
-#    inputs:
-#      versionSpec: '3.X'
-#      architecture: 'x64'
-#  - checkout: self
-#    submodules: recursive
-#    persistCredentials: true
-#
-#  - bash: |
-#      git submodule update --init --recursive
-#    displayName: Clone repos
-#
-#  - bash: |
-#      envsubst < iarray/__init__.py > iarray/__init__.tmp
-#      rm iarray/__init__.py
-#      mv iarray/__init__.tmp iarray/__init__.py
-#      head -n20 iarray/__init__.py
-#    displayName: Tokenize version
-#    env:
-#      IA_BUILD_VER: $(Build.BuildId)
-#
-#  - script: |
-#      docker pull dockcross/manylinux2014-x64
-#      docker run dockcross/manylinux2014-x64 > ./dockcross-manylinux2014-x64
-#      chmod +x ./dockcross-manylinux2014-x64
-#      ./dockcross-manylinux2014-x64 ./.build_wheels_in_manylinux.sh
-#    displayName: 'Build wheels'
-#
-#  - task: PublishPipelineArtifact@0
-#    inputs:
-#      artifactName: 'LinuxWheels'
-#      targetPath: './dist'
+- job: 'Linux'
+  displayName: 'Linux'
+
+  pool:
+    vmImage: 'ubuntu-latest'
+
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.X'
+      architecture: 'x64'
+  - checkout: self
+    submodules: recursive
+    persistCredentials: true
+
+  - bash: |
+      git submodule update --init --recursive
+    displayName: Clone repos
+
+  - bash: |
+      envsubst < iarray/__init__.py > iarray/__init__.tmp
+      rm iarray/__init__.py
+      mv iarray/__init__.tmp iarray/__init__.py
+      head -n20 iarray/__init__.py
+    displayName: Tokenize version
+    env:
+      IA_BUILD_VER: $(Build.BuildId)
+
+  - script: |
+      docker pull dockcross/manylinux2014-x64
+      docker run dockcross/manylinux2014-x64 > ./dockcross-manylinux2014-x64
+      chmod +x ./dockcross-manylinux2014-x64
+      ./dockcross-manylinux2014-x64 ./.build_wheels_in_manylinux.sh
+    displayName: 'Build wheels'
+
+  - task: PublishPipelineArtifact@0
+    inputs:
+      artifactName: 'LinuxWheels'
+      targetPath: './dist'
 
 - job: 'macOS'
   displayName: 'macOS'
@@ -75,6 +75,13 @@ jobs:
       sudo chown -R $USER $CONDA
     displayName: Take ownership of conda installation
 
+  # *** Important note ***
+  # This activates the 'hosted' version of Python, not the conda one.
+  # However, as we don't want to use conda environments (I don't have patience enough for handling
+  # Windows conda environments), we will use this one.  Indeed, all conda packages will still be
+  # installed (as per the $CONDA/bin path added above), but we will need to use them explicitly
+  # either via env vars (LD_LIBRARY_PATH) or cmake symbols (LLVM_DIR) or copying DLLs explicitly.
+  # Yeah, that's a mess, life is hard and all of that, but this WORKS...
   - task: UsePythonVersion@0
     inputs:
       versionSpec: '$(python.version)'
@@ -152,8 +159,8 @@ jobs:
   - bash: |
       which python
       python -V
-      python -m pip install --retries 3 -U -r requirements-test.txt
       python -m pip install iarray --force-reinstall --no-cache-dir -f ./dist/
+      python -m pip install --retries 3 -U -r requirements-test.txt
       LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA/lib python -m pytest iarray/tests
     displayName: 'Test wheel'
 
@@ -177,106 +184,106 @@ jobs:
       artifactName: 'MacWheel$(python.version)'
       targetPath: './dist'
 
-#- job: 'Windows'
-#  displayName: 'Windows'
-#
-#  pool:
-#    vmImage: 'windows-2019'
-#
-#  strategy:
-#    matrix:
-#      Python37:
-#        python.version: '3.7'
-#      Python38:
-#        python.version: '3.8'
-#      # Activate 3.9 when Azure pipelines would support it
-#      # https://github.com/Azure/azure-functions-python-worker/issues/742
-#      Python39:
-#        python.version: '3.9'
-#      # 3.10 is supported now: https://github.com/Azure/azure-functions-python-worker/pull/961
-##      Python310:
-##        python.version: '3.10'
-#
-#  steps:
-#  - task: UsePythonVersion@0
-#    inputs:
-#      versionSpec: '$(python.version)'
-#      architecture: 'x64'
-#  - checkout: self
-#    submodules: recursive
-#    persistCredentials: true
-#
-#  - bash: |
-#      git submodule update --init --recursive
-#    displayName: Clone repos
-#
-#  - bash: |
-#      envsubst < iarray/__init__.py > iarray/__init__.tmp
-#      rm iarray/__init__.py
-#      mv iarray/__init__.tmp iarray/__init__.py
-#      head -n20 iarray/__init__.py
-#    displayName: Tokenize version
-#    env:
-#      IA_BUILD_VER: $(Build.BuildId)
-#
-#  - bash: |
-#      mkdir -p $HOME/.inaos/cmake
-#      mkdir -p $HOME/INAOS
-#      echo "INAC_REPOSITORY_LOCAL=$HOME/INAOS" > $HOME/.inaos/cmake/repository.txt
-#      echo "INAC_REPOSITORY_REMOTE=https://inaos.jfrog.io/inaos/libs-release-local/inaos" >> $HOME/.inaos/cmake/repository.txt
-#      echo "INAC_REPOSITORY_USRPWD=licensed:AKCp5bBraH7CasbsYCURsjzkbjXwVwdYcT7u39EiuL6GjnK1VKfKQWCd1E2E64mHokU5YUHku" >> $HOME/.inaos/cmake/repository.txt
-#    displayName: Install inaos license
-#
-#  - bash: |
-#      echo "##vso[task.prependpath]$CONDA/Scripts" # Add conda to PATH
-#    displayName: Add conda to PATH
-#
-#  - bash: |
-#      python -m pip install --upgrade pip
-#      python -m pip install --retries 3 -U -r requirements-build.txt
-#      conda install -y -c intel mkl-include
-#      conda install -y -c intel mkl-static
-#      conda install -y -c intel icc_rt
-#      # LLVM 13 from conda-forge is not working for windows yet
-#      conda install -y -c numba 'llvmdev'
-#      conda install -y cython  # apparently cython from PyPI is not good for win
-#    displayName: 'Install build dependencies'
-#
-#  - script: |
-#      call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" amd64
-#      python setup.py clean
-#      python setup.py build_ext -i --build-type RelWithDebInfo --generator "NMake Makefiles" -- -DINAC_TARGET_ARCH=x86_64 -DLLVM_DIR=%CONDA%/Library/lib/cmake/llvm -DWINGEN="NMake Makefiles"
-#      rem copy the necesssary DLLs into iarray package
-#      copy iarray\iarray-c-develop\build\iarray.dll iarray
-#      copy iarray\iarray-c-develop\build\svml_dispmd.dll iarray
-#      python setup.py bdist_wheel --generator "NMake Makefiles" -DWINGEN="NMake Makefiles"
-#    displayName: 'Build wheel'
-#    env:
-#      MKLROOT: $(CONDA)/Library
-#      SVMLROOT: $(CONDA)/Library/lib
-#
-#  - task: PublishPipelineArtifact@0
-#    inputs:
-#      artifactName: 'Windows$(python.version)'
-#      targetPath: './dist'
-#
-#  - script: |
-#      python -m pip install --retries 3 -U -r requirements-test.txt
-#      python -m pip install iarray --force-reinstall --no-cache-dir -f ./dist/
-#      python -m pytest iarray/tests
-#    displayName: 'Test wheel'
-#
-#  - bash: |
-#      echo "[distutils]" > $HOME/.pypirc
-#      echo "index-servers = " >> $HOME/.pypirc
-#      echo "    iarray" >> $HOME/.pypirc
-#      echo "[iarray]" >> $HOME/.pypirc
-#      echo "repository: https://ia-admin:g4W^UT_2kLtSU=MF@distribution.ironarray.io/" >> $HOME/.pypirc
-#      echo "username: ia-admin" >> $HOME/.pypirc
-#      echo "password: g4W^UT_2kLtSU=MF" >> $HOME/.pypirc
-#    displayName: Install pypirc
-#
-#  - bash: |
-#      python -m pip install twine
-#      python -m twine upload -r iarray dist/*
-#    displayName: Deploy Wheel
+- job: 'Windows'
+  displayName: 'Windows'
+
+  pool:
+    vmImage: 'windows-2019'
+
+  strategy:
+    matrix:
+      Python37:
+        python.version: '3.7'
+      Python38:
+        python.version: '3.8'
+      # Activate 3.9 when Azure pipelines would support it
+      # https://github.com/Azure/azure-functions-python-worker/issues/742
+      Python39:
+        python.version: '3.9'
+      # 3.10 is supported now: https://github.com/Azure/azure-functions-python-worker/pull/961
+#      Python310:
+#        python.version: '3.10'
+
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '$(python.version)'
+      architecture: 'x64'
+  - checkout: self
+    submodules: recursive
+    persistCredentials: true
+
+  - bash: |
+      git submodule update --init --recursive
+    displayName: Clone repos
+
+  - bash: |
+      envsubst < iarray/__init__.py > iarray/__init__.tmp
+      rm iarray/__init__.py
+      mv iarray/__init__.tmp iarray/__init__.py
+      head -n20 iarray/__init__.py
+    displayName: Tokenize version
+    env:
+      IA_BUILD_VER: $(Build.BuildId)
+
+  - bash: |
+      mkdir -p $HOME/.inaos/cmake
+      mkdir -p $HOME/INAOS
+      echo "INAC_REPOSITORY_LOCAL=$HOME/INAOS" > $HOME/.inaos/cmake/repository.txt
+      echo "INAC_REPOSITORY_REMOTE=https://inaos.jfrog.io/inaos/libs-release-local/inaos" >> $HOME/.inaos/cmake/repository.txt
+      echo "INAC_REPOSITORY_USRPWD=licensed:AKCp5bBraH7CasbsYCURsjzkbjXwVwdYcT7u39EiuL6GjnK1VKfKQWCd1E2E64mHokU5YUHku" >> $HOME/.inaos/cmake/repository.txt
+    displayName: Install inaos license
+
+  - bash: |
+      echo "##vso[task.prependpath]$CONDA/Scripts" # Add conda to PATH
+    displayName: Add conda to PATH
+
+  - bash: |
+      python -m pip install --upgrade pip
+      python -m pip install --retries 3 -U -r requirements-build.txt
+      conda install -y -c intel mkl-include
+      conda install -y -c intel mkl-static
+      conda install -y -c intel icc_rt
+      # LLVM 13 from conda-forge is not working for windows yet
+      conda install -y -c numba 'llvmdev'
+      conda install -y cython  # apparently cython from PyPI is not good for win
+    displayName: 'Install build dependencies'
+
+  - script: |
+      call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" amd64
+      python setup.py clean
+      python setup.py build_ext -i --build-type RelWithDebInfo --generator "NMake Makefiles" -- -DINAC_TARGET_ARCH=x86_64 -DLLVM_DIR=%CONDA%/Library/lib/cmake/llvm -DWINGEN="NMake Makefiles"
+      rem copy the necesssary DLLs into iarray package
+      copy iarray\iarray-c-develop\build\iarray.dll iarray
+      copy iarray\iarray-c-develop\build\svml_dispmd.dll iarray
+      python setup.py bdist_wheel --generator "NMake Makefiles" -DWINGEN="NMake Makefiles"
+    displayName: 'Build wheel'
+    env:
+      MKLROOT: $(CONDA)/Library
+      SVMLROOT: $(CONDA)/Library/lib
+
+  - task: PublishPipelineArtifact@0
+    inputs:
+      artifactName: 'Windows$(python.version)'
+      targetPath: './dist'
+
+  - script: |
+      python -m pip install iarray --force-reinstall --no-cache-dir -f ./dist/
+      python -m pip install --retries 3 -U -r requirements-test.txt
+      python -m pytest iarray/tests
+    displayName: 'Test wheel'
+
+  - bash: |
+      echo "[distutils]" > $HOME/.pypirc
+      echo "index-servers = " >> $HOME/.pypirc
+      echo "    iarray" >> $HOME/.pypirc
+      echo "[iarray]" >> $HOME/.pypirc
+      echo "repository: https://ia-admin:g4W^UT_2kLtSU=MF@distribution.ironarray.io/" >> $HOME/.pypirc
+      echo "username: ia-admin" >> $HOME/.pypirc
+      echo "password: g4W^UT_2kLtSU=MF" >> $HOME/.pypirc
+    displayName: Install pypirc
+
+  - bash: |
+      python -m pip install twine
+      python -m twine upload -r iarray dist/*
+    displayName: Deploy Wheel

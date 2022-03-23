@@ -56,6 +56,13 @@ steps:
       fi
   displayName: Take ownership of conda installation
 
+# *** Important note ***
+# This activates the 'hosted' version of Python, not the conda one.
+# However, as we don't want to use conda environments (I don't have patience enough for handling
+# Windows conda environments), we will use this one.  Indeed, all conda packages will still be
+# installed (as per the $CONDA/bin path added above), but we will need to use them explicitly
+# either via env vars (LD_LIBRARY_PATH) or cmake symbols (LLVM_DIR) or copying DLLs explicitly.
+# Yeah, that's a mess, life is hard and all of that, but this WORKS...
 - task: UsePythonVersion@0
   inputs:
     versionSpec: '$(python.version)'
