@@ -72,21 +72,20 @@ jobs:
     displayName: Add conda to PATH
 
   - bash: |
+      conda init bash
       sudo chown -R $USER $CONDA
     displayName: Take ownership of conda installation
 
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '$(python.version)'
-      architecture: 'x64'
+#  - task: UsePythonVersion@0
+#    inputs:
+#      versionSpec: '$(python.version)'
+#      architecture: 'x64'
 
   - bash: |
-      conda init bash
-      bash
       conda activate base
       which python
       python -V
-    displayName: Conda init
+    displayName: Check python version
 
   - checkout: self
     submodules: recursive
