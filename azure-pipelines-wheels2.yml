@@ -149,10 +149,10 @@ jobs:
       SVMLROOT: $(CONDA)/lib
 
   - bash: |
-      python -m pip install --retries 3 -U -r requirements-test.txt
-      python -m pip install --retries 3 -U -r requirements-runtime.txt
+      which python
+      python -V
       python -m pip install iarray --force-reinstall --no-cache-dir -f ./dist/
-      python -m pytest iarray/tests
+      LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/miniconda/lib python -m pytest iarray/tests
     displayName: 'Test wheel'
 
   - bash: |
@@ -259,8 +259,6 @@ jobs:
 #      targetPath: './dist'
 #
 #  - script: |
-#      python -m pip install --retries 3 -U -r requirements-test.txt
-#      python -m pip install --retries 3 -U -r requirements-runtime.txt
 #      python -m pip install iarray --force-reinstall --no-cache-dir -f ./dist/
 #      python -m pytest iarray/tests
 #    displayName: 'Test wheel'
