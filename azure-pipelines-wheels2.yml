@@ -73,16 +73,14 @@ jobs:
 
   - bash: |
       sudo chown -R $USER $CONDA
-      eval "$(conda shell.bash hook)"
     displayName: Take ownership of conda installation
 
-#  - task: UsePythonVersion@0
-#    inputs:
-#      versionSpec: '$(python.version)'
-#      architecture: 'x64'
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '$(python.version)'
+      architecture: 'x64'
 
   - bash: |
-      conda activate base
       which python
       python -V
     displayName: Check python version
@@ -113,7 +111,6 @@ jobs:
     displayName: Install inaos license
 
   - bash: |
-      conda activate base
       which python
       python -V
       conda update --yes -n base -c defaults conda
@@ -131,7 +128,6 @@ jobs:
     displayName: 'Install build dependencies'
 
   - bash: |
-      conda activate base
       which python
       python -V
       python setup.py clean
@@ -154,12 +150,11 @@ jobs:
       SVMLROOT: $(CONDA)/lib
 
   - bash: |
-      conda activate base
       which python
       python -V
       python -m pip install --retries 3 -U -r requirements-test.txt
       python -m pip install iarray --force-reinstall --no-cache-dir -f ./dist/
-      python -m pytest iarray/tests
+      LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA/lib python -m pytest iarray/tests
     displayName: 'Test wheel'
 
   - bash: |

@@ -124,16 +124,7 @@ steps:
     LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA/lib pytest -vv -s --test-run-title="Linux test suite" --cov-config=.coveragerc --cov=iarray --cov-report=xml --cov-report=html
   displayName: 'Run Tests'
   condition:
-    eq( variables['Agent.OS'], 'Linux' )
-
-- bash: |
-    python -m pip install pytest-azurepipelines pytest-cov
-    python -m pip install --retries 3 -U -r requirements-test.txt
-    python -m pip install --retries 3 -U -r requirements-runtime.txt
-    LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/miniconda/lib pytest -vv -s --test-run-title="Mac test suite" --cov-config=.coveragerc --cov=iarray --cov-report=xml --cov-report=html
-  displayName: 'Run Tests'
-  condition:
-    eq( variables['Agent.OS'], 'Darwin' )
+    ne( variables['Agent.OS'], 'Windows_NT' )
 
 - script: |
     pip install pytest pytest-azurepipelines pytest-cov
