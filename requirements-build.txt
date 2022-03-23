@@ -4,4 +4,3 @@ wheel
 scikit-build
 cmake
 ninja
-msgpack
