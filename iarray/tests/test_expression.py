@@ -201,6 +201,18 @@ import numpy as np
             False,
             "test_expression_ysparse.iarr",
         ),
+        (
+            ia.Eval.ITERBLOSC,
+            [100, 100],
+            [23, 32],
+            [10, 10],
+            np.float32,
+            "2.71828**y / x",
+            True,
+            "test_expression_xcontiguous.iarr",
+            True,
+            "test_expression_ycontiguous.iarr",
+        )
     ],
 )
 def test_expression(
@@ -264,7 +276,7 @@ def test_expression(
 @pytest.mark.parametrize(
     "ufunc, ia_expr, xcontiguous, xurlpath, ycontiguous, yurlpath",
     [
-        ("abs(x)", "abs(x)", True, None, True, None),
+        ("abs(x)", "absolute(x)", True, None, True, None),
         ("arccos(x)", "acos(x)", False, None, False, None),
         ("arcsin(x)", "asin(x)", True, "test_expression_xcontiguous.iarr", True, None),
         (
@@ -297,7 +309,7 @@ def test_expression(
         ("floor(x)", "floor(x)", False, None, False, None),
         ("log(x)", "log(x)", True, None, False, None),
         ("log10(x)", "log10(x)", True, "test_expression_xcontiguous.iarr", False, None),
-        # ("negative(x)", "negate(x)"),
+        ("negative(x)", "negate(x)", True, "test_expression_xcontiguous.iarr", False, None),
         (
             "power(x, y)",
             "pow(x, y)",
@@ -361,7 +373,9 @@ def test_ufuncs(ufunc, ia_expr, xcontiguous, xurlpath, ycontiguous, yurlpath):
             lazy_expr = eval("np." + ufunc, {"np": np, "x": x, "y": y})
             iout2 = lazy_expr.eval()
             npout2 = ia.iarray2numpy(iout2)
-            np.testing.assert_allclose(npout, npout2, rtol=tol, atol=tol)
+        else:
+            npout2 = eval("np." + ufunc, {"np": np, "x": x.data, "y": y.data})
+        np.testing.assert_allclose(npout, npout2, rtol=tol, atol=tol)
 
         npout2 = eval("np." + ufunc, {"np": np, "x": npx, "y": npy})  # pure numpy
         np.testing.assert_allclose(npout, npout2, rtol=tol, atol=tol)
@@ -393,7 +407,7 @@ def test_ufuncs(ufunc, ia_expr, xcontiguous, xurlpath, ycontiguous, yurlpath):
         ("floor", False, "test_expression_xsparse.iarr", False, "test_expression_ysparse.iarr"),
         ("log", False, "test_expression_xsparse.iarr", True, "test_expression_ycontiguous.iarr"),
         ("log10", True, "test_expression_xcontiguous.iarr", False, "test_expression_ysparse.iarr"),
-        # "negative",
+        ("negative", True, "test_expression_xcontiguous.iarr", False, "test_expression_ysparse.iarr"),
         ("power", True, "test_expression_xcontiguous.iarr", True, None),
         ("sin", True, "test_expression_xcontiguous.iarr", False, None),
         ("sinh", True, None, False, "test_expression_ysparse.iarr"),
