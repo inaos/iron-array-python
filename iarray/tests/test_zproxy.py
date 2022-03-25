@@ -5,8 +5,6 @@ import s3fs
 import zarr
 import iarray as ia
 
-# This still needs to be tested on Win ()
-pytestmark = pytest.mark.skipif(sys.platform == "win32", reason="does not run on windows")
 
 # linspace
 @pytest.mark.parametrize(
