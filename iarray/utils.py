@@ -17,6 +17,10 @@ import os
 import shutil
 
 
+class IllegalArgumentError(ValueError):
+    pass
+
+
 def _check_access_mode(urlpath, mode, update=False):
     """
     Based on `urlpath` and `mode`, remove the possible underlying storage.

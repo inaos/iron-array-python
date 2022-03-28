@@ -90,5 +90,21 @@ def test_metalayers(shape, chunks, blocks, urlpath, contiguous, dtype):
     item = a.attrs.popitem()
     assert (item == ("numpy", numpy_attr))
 
+    # Special characters
+    a.attrs["àçø"] = numpy_attr
+    assert (a.attrs["àçø"] == numpy_attr)
+    a.attrs["😆"] = test_attr
+    assert (a.attrs["😆"] == test_attr)
+
+    # objects as values
+    nparray = np.arange(start=0, stop=2)
+    a.attrs["àçø"] = nparray.tobytes()
+    assert(a.attrs["àçø"] == nparray.tobytes())
+    a.attrs["😆"] = "😆"
+    assert (a.attrs["😆"] == "😆")
+    obj = {"dtype": str(np.dtype(dtype))}
+    a.attrs["dict"] = obj
+    assert a.attrs["dict"] == obj
+
     # Remove file on disk
     ia.remove_urlpath(urlpath)

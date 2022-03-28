@@ -38,23 +38,23 @@ class Attributes(MutableMapping):
         return unpackb(packed_content)
 
     def __setitem__(self, name, content):
-        """Add or update and attr.
+        """Add or update an attr.
 
-        Its content will be packed with msgpack and will be unpacked when getting it.
+        Its content will be packed with msgpack and unpacked when getting it.
 
         Parameters
         ----------
         name : str or byte string
             The name of the attribute.
         content : object
-            The content of the attr.
+            The content of the attr. The object must be an object that can be serialized by `msgpack.packb`.
+            The getitem counterpart will `msgpack.unpackb` it automatically.
 
         Returns
         -------
         None
 
         """
-        # There is no need to check the size since the maximum length for a binary object is (2 ^ 32) - 1
         packed_content = packb(content)
         ext.attr_setitem(self.iarr, name, packed_content)
 
