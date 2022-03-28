@@ -71,6 +71,7 @@ else:
     # One can avoid using this if we nuke _skbuild/ next to iarray/
     package_info = dict(
         package_dir={"": "."},
+        packages=[],
     )
 
 # Optional dependencies
