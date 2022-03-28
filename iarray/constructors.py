@@ -15,7 +15,8 @@ import s3fs
 
 import iarray as ia
 from iarray import iarray_ext as ext
-from dataclasses import dataclass, field
+from .utils import IllegalArgumentError
+from dataclasses import dataclass
 from typing import Sequence
 
 
@@ -249,7 +250,7 @@ def zarr_proxy(zarr_urlpath, cfg: ia.Config = None, **kwargs) -> ia.IArray:
     """Return a read-only Zarr proxy array.
 
     `cfg` and `kwargs` are the same than for :func:`empty` except by `nthreads`, which is
-    always set to 1.
+    always set to 1 (multi-threading is not yet supported).
 
     The data type and chunks must not differ from the original Zarr array.
 
@@ -296,7 +297,7 @@ def zarr_proxy(zarr_urlpath, cfg: ia.Config = None, **kwargs) -> ia.IArray:
             blocks = z.chunks
         if "nthreads" in kwargs:
             if kwargs.pop("nthreads") != 1:
-                raise AttributeError("Cannot use parallelism when interacting with Zarr")
+                raise IllegalArgumentError("Cannot use parallelism when interacting with Zarr")
 
     with ia.config(cfg=cfg, dtype=dtype, chunks=z.chunks, blocks=blocks, nthreads=1, **kwargs) as cfg:
         a = uninit(shape=z.shape, cfg=cfg)

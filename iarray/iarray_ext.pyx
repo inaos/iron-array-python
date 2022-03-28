@@ -28,8 +28,7 @@ from iarray import udf
 
 from cpython cimport (
     PyObject_GetBuffer, PyBuffer_Release,
-    PyBUF_SIMPLE, PyBUF_WRITABLE, Py_buffer,
-    PyBytes_FromStringAndSize
+    PyBUF_SIMPLE, Py_buffer,
 )
 
 
@@ -1601,10 +1600,9 @@ def attr_setitem(iarr, name, content):
 
     # Fill meta
     cdef ciarray.iarray_metalayer_t meta
-    content = content.encode("utf-8") if isinstance(content, str) else content
     a = len(content)
     if a >= 2**31:
-        raise AttributeError("The content's size cannot be larger than 2**31 - 1")
+        raise ValueError("The size of `content` cannot be larger than 2**31 - 1")
     meta.name = name
     meta.size = a
     meta.sdata = content
