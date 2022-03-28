@@ -20,7 +20,16 @@ import iarray as ia
             False,
             "test_linspace_sparse.iarr",
         ),
-        (-0.1, -0.2, [40, 39, 52, 12], [12, 17, 6, 5], [5, 5, 3, 3], 'float32', True, None),
+        pytest.param(
+            -0.1,
+            -0.2,
+            [40, 39, 52, 12],
+            [12, 17, 6, 5],
+            [5, 5, 3, 3],
+            'float32',
+            True,
+            None,
+            marks=pytest.mark.heavy),
         (
             0,
             10,
@@ -64,7 +73,7 @@ def test_linspace_zproxy(start, stop, shape, chunks, blocks, dtype, contiguous, 
             False,
             "test_arange_sparse.iarr",
         ),
-        (
+        pytest.param(
             0,
             1,
             [12, 12, 15, 13, 18, 19],
@@ -73,6 +82,7 @@ def test_linspace_zproxy(start, stop, shape, chunks, blocks, dtype, contiguous, 
             'float32',
             True,
             None,
+            marks=pytest.mark.heavy,
         ),
         (
             0,
@@ -108,7 +118,8 @@ def test_arange_zproxy(start, stop, shape, chunks, blocks, dtype, contiguous, ur
     "start, stop, shape, chunks, blocks, dtype, contiguous, urlpath",
     [
         (0, 10, [1234], [123], [50], 'float64', False, "test.fromfile0.iarr"),
-        (
+        (0, 10, [12, 12], [6, 5], [6, 5], 'float32', True, "test.fromfile1.iarr"),
+        pytest.param(
             -0.1,
             -0.10,
             [10, 12, 21, 31, 11],
@@ -116,7 +127,8 @@ def test_arange_zproxy(start, stop, shape, chunks, blocks, dtype, contiguous, ur
             [2, 3, 2, 2, 1],
             'float32',
             True,
-            "test.fromfile1.iarr",
+            "test.fromfile2.iarr",
+            marks=pytest.mark.heavy,
         ),
     ],
 )
@@ -218,13 +230,14 @@ def test_slice_zproxy(start, stop, slice, shape, chunks, blocks, dtype, contiguo
 @pytest.mark.parametrize(
     "shape, chunks, blocks, dtype, contiguous, urlpath",
     [
-        (
+        pytest.param(
             [134, 1234, 238],
             [10, 25, 35],
             [5, 15, 15],
             np.float64,
             True,
             "test_zeros_contiguous.iarr",
+            marks=pytest.mark.heavy,
         ),
         ([456, 431], [102, 16], [50, 16], np.float32, False, "test_zeros_sparse.iarr"),
         ([10, 12, 5], [10, 1, 1], [10, 1, 1], np.int16, False, None),
@@ -255,7 +268,7 @@ def test_zeros_zproxy(shape, chunks, blocks, dtype, contiguous, urlpath):
 @pytest.mark.parametrize(
     "shape, chunks, blocks, dtype, contiguous, urlpath",
     [
-        ([456, 12, 234], [55, 6, 21], [6, 3, 11], np.float64, False, None),
+        pytest.param([456, 12, 234], [55, 6, 21], [6, 3, 11], np.float64, False, None, marks=pytest.mark.heavy),
         ([1024, 55], [66, 22], [22, 11], np.float32, True, "test_ones_contiguous.iarr"),
         ([10, 12, 5], [5, 6, 5], [5, 6, 5], np.int8, True, None),
         ([120, 130], [45, 64], [25, 34], np.uint16, False, "test_ones_sparse.iarr"),
@@ -285,8 +298,8 @@ def test_ones_zproxy(shape, chunks, blocks, dtype, contiguous, urlpath):
 @pytest.mark.parametrize(
     "fill_value, shape, chunks, blocks, dtype, contiguous, urlpath",
     [
-        (8.34, [123, 432, 222], [24, 31, 15], [24, 31, 15], np.float64, True, None),
-        (2.00001, [567, 375], [52, 16], [12, 6], np.float32, False, "test_full_sparse.iarr"),
+        pytest.param(8.34, [123, 432, 222], [24, 31, 15], [24, 31, 15], np.float64, True, None, marks=pytest.mark.heavy),
+        (2.00001, [567, 375], [52, 16], [52, 16], np.float32, False, "test_full_sparse.iarr"),
         (8, [10, 12, 5], [5, 5, 5], [5, 5, 5], np.int32, True, "test_full_contiguous.iarr"),
         (True, [12, 16], [12, 16], [3, 5], np.bool_, False, None),
     ],
@@ -313,8 +326,8 @@ def test_full_zproxy(fill_value, shape, chunks, blocks, dtype, contiguous, urlpa
 @pytest.mark.parametrize(
     "shape, chunks, blocks",
     [
-        ([100, 100], [50, 50], [5, 5]),
-        ([20, 60, 30, 50], [10, 40, 10, 11], [5, 5, 5, 5]),
+        ([100, 100], [50, 50], [50, 50]),
+        pytest.param([20, 60, 30, 50], [10, 40, 10, 11], [5, 5, 5, 5], marks=pytest.mark.heavy),
     ],
 )
 @pytest.mark.parametrize("dtype", [np.float32, np.int64, np.uint16])
@@ -322,10 +335,9 @@ def test_full_zproxy(fill_value, shape, chunks, blocks, dtype, contiguous, urlpa
     "contiguous, urlpath, urlpath2",
     [
         (False, None, None),
-        (False, None, None),
         (True, None, None),
-        (True, "test_copy.iarr", "test_copy2.iarr"),
-        (False, "test_copy.iarr", "test_copy2.iarr"),
+        (True, "test_copy.iarr", "test_copy1.iarr"),
+        (False, None, "test_copy2.iarr"),
     ],
 )
 def test_copy_zproxy(shape, chunks, blocks, dtype, contiguous, urlpath, urlpath2):
@@ -369,11 +381,12 @@ def test_copy_zproxy(shape, chunks, blocks, dtype, contiguous, urlpath, urlpath2
 @pytest.mark.parametrize(
     "zarr_path, contiguous, urlpath",
     [
-        (
+        pytest.param(
             "s3://era5-pds/zarr/1987/10/data/" +
             "precipitation_amount_1hour_Accumulation.zarr/precipitation_amount_1hour_Accumulation",
             False,
             "test_cloud_proxy.iarr",
+            marks=pytest.mark.heavy,
         ),
     ],
 )

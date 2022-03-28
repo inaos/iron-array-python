@@ -69,7 +69,7 @@ import numpy as np
             True,
             None,
         ),
-        (
+        pytest.param(
             ia.Eval.ITERBLOSC,
             [100, 100, 100],
             [25, 25, 33],
@@ -80,8 +80,9 @@ import numpy as np
             "test_expression_xcontiguous.iarr",
             True,
             None,
+            marks=pytest.mark.heavy,
         ),
-        (
+        pytest.param(
             ia.Eval.ITERBLOSC,
             [223],
             [100],
@@ -92,10 +93,24 @@ import numpy as np
             "test_expression_xcontiguous.iarr",
             False,
             "test_expression_ysparse.iarr",
+            marks=pytest.mark.heavy,
+        ),
+        pytest.param(
+            ia.Eval.ITERCHUNK,
+            [100, 100, 55],
+            [10, 5, 10],
+            [3, 4, 3],
+            np.float64,
+            "asin(x) + (acos(x) - 1.35) - atan(x + .2)",
+            False,
+            None,
+            True,
+            "test_expression_ycontiguous.iarr",
+            marks=pytest.mark.heavy,
         ),
         (
             ia.Eval.ITERCHUNK,
-            [100, 100, 55],
+            [50, 10, 55],
             [10, 5, 10],
             [3, 4, 3],
             np.float64,
@@ -107,6 +122,18 @@ import numpy as np
         ),
         (
             ia.Eval.ITERCHUNK,
+            [100, 55],
+            [10, 10],
+            [3, 3],
+            np.float64,
+            "arcsin(x) + (arccos(x) - 1.35) - arctan(x + .2)",
+            True,
+            None,
+            True,
+            "test_expression_ycontiguous.iarr",
+        ),
+        pytest.param(
+            ia.Eval.ITERCHUNK,
             [100, 100, 55],
             [10, 5, 10],
             [3, 4, 3],
@@ -116,6 +143,7 @@ import numpy as np
             None,
             True,
             "test_expression_ycontiguous.iarr",
+            marks=pytest.mark.heavy,
         ),  # check NumPy naming convention for ufuncs
         (
             ia.Eval.AUTO,
@@ -165,7 +193,7 @@ import numpy as np
             False,
             "test_expression_ysparse.iarr",
         ),
-        (
+        pytest.param(
             ia.Eval.ITERCHUNK,
             [8, 6, 7, 4, 5],
             [2, 2, 2, 2, 2],
@@ -176,8 +204,21 @@ import numpy as np
             "test_expression_xsparse.iarr",
             True,
             None,
+            marks=pytest.mark.heavy,
         ),
         (
+            ia.Eval.ITERBLOSC,
+            [15, 8],
+            [4, 5],
+            [4, 3],
+            np.float64,
+            "(x - cos(y)) * (sin(x) + y) + 2 * x + y",
+            False,
+            None,
+            False,
+            "test_expression_ysparse.iarr",
+        ),
+        pytest.param(
             ia.Eval.ITERBLOSC,
             [17, 12, 15, 15, 8],
             [8, 6, 7, 4, 5],
@@ -188,8 +229,21 @@ import numpy as np
             None,
             False,
             "test_expression_ysparse.iarr",
+            marks=pytest.mark.heavy
         ),
         (
+            ia.Eval.ITERBLOSC,
+            [17, 12],
+            [8, 6],
+            [4, 3],
+            np.float64,
+            "(x - cos(0.5)) * (sin(.1) + y) + 2 * x + y",
+            True,
+            "test_expression_xcontiguous.iarr",
+            False,
+            "test_expression_ysparse.iarr",
+        ),
+        pytest.param(
             ia.Eval.ITERBLOSC,
             [17, 12, 15, 15, 8],
             [8, 6, 7, 4, 5],
@@ -200,6 +254,7 @@ import numpy as np
             "test_expression_xcontiguous.iarr",
             False,
             "test_expression_ysparse.iarr",
+            marks=pytest.mark.heavy,
         ),
         (
             ia.Eval.ITERBLOSC,
@@ -326,7 +381,7 @@ def test_expression(
     ],
 )
 def test_ufuncs(ufunc, ia_expr, xcontiguous, xurlpath, ycontiguous, yurlpath):
-    shape = [200, 300]
+    shape = [100, 200]
     chunks = [40, 40]
     bshape = [10, 17]
 
@@ -548,7 +603,7 @@ def test_expr_ufuncs(ufunc, xcontiguous, xurlpath, ycontiguous, yurlpath):
             True,
             None,
         ),
-        (
+        pytest.param(
             "(x - z + t) * (z + t - x)",
             "(x - z + t) * (z + t - x)",
             True,
@@ -559,8 +614,9 @@ def test_expr_ufuncs(ufunc, xcontiguous, xurlpath, ycontiguous, yurlpath):
             "test_expression_zcontiguous.iarr",
             True,
             "test_expression_tcontiguous.iarr",
+            marks=pytest.mark.heavy
         ),
-        (
+        pytest.param(
             "(x - z + t + y) * (t - y + z - x)",
             "(x - z + t + y) * (t - y + z - x)",
             False,
@@ -571,6 +627,7 @@ def test_expr_ufuncs(ufunc, xcontiguous, xurlpath, ycontiguous, yurlpath):
             "test_expression_zsparse.iarr",
             False,
             "test_expression_tsparse.iarr",
+            marks=pytest.mark.heavy,
         ),
         (
             "(x - z + t + y) * (t - y + z - x)",
@@ -610,7 +667,7 @@ def test_expr_ufuncs(ufunc, xcontiguous, xurlpath, ycontiguous, yurlpath):
             False,
             None,
         ),
-        (
+        pytest.param(
             "x.tan() * (y.sin() * y.sin() + z.cos()) + (t.sqrt() * 2)",
             "np.tan(x) * (np.sin(y) * np.sin(y) + np.cos(z)) + (np.sqrt(t) * 2)",
             True,
@@ -621,6 +678,7 @@ def test_expr_ufuncs(ufunc, xcontiguous, xurlpath, ycontiguous, yurlpath):
             "test_expression_zsparse.iarr",
             True,
             "test_expression_tsparse.iarr",
+            marks=pytest.mark.heavy,
         ),
         # Use another order than before (precision needs to be relaxed a bit)
         (
