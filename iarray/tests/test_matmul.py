@@ -451,13 +451,14 @@ def test_matmul_slice(
             True,
             "test_matmul_bcontiguous.iarr",
         ),
-        (
+        pytest.param(
             [1230, 763],
             [763, 4],
             False,
             "test_matmul_asparse.iarr",
             False,
             "test_matmul_bsparse.iarr",
+            marks=pytest.mark.heavy,
         ),
         (
             [20, 20],

@@ -169,9 +169,9 @@ def f_2dim(out: udf.Array(udf.float64, 2), x: udf.Array(udf.float64, 2)):
 
 @pytest.mark.parametrize("f", [f_2dim])
 def test_2dim(f):
-    shape = [400, 800]
-    chunks = [60, 200]
-    blocks = [11, 200]
+    shape = [40, 80]    # [400, 800]
+    chunks = [6, 20]    # [60, 200]
+    blocks = [4, 2]     # [11, 200]
     dtype = np.float64
     cparams = dict()
     start, stop = 0, 10

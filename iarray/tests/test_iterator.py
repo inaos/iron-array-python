@@ -33,7 +33,7 @@ from itertools import zip_longest as izip
             "test_iter_bsparse.iarr",
             "w",
         ),
-        (
+        pytest.param(
             [10, 10, 10, 10],
             [3, 4, 3, 4],
             [2, 2, 2, 2],
@@ -44,6 +44,7 @@ from itertools import zip_longest as izip
             False,
             None,
             "r",
+            marks=pytest.mark.heavy,
         ),
         (
             [100, 100],
@@ -69,7 +70,7 @@ from itertools import zip_longest as izip
             "test_iter_bcontiguous.iarr",
             "a",
         ),
-        (
+        pytest.param(
             [10, 10, 10],
             [10, 10, 10],
             [5, 5, 5],
@@ -80,6 +81,7 @@ from itertools import zip_longest as izip
             True,
             "test_iter_bsparse.iarr",
             "a",
+            marks=pytest.mark.heavy,
         ),
         (
             [10, 10, 10, 10],

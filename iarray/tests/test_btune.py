@@ -7,10 +7,12 @@ import iarray as ia
 @pytest.mark.parametrize(
     "start, stop, shape, chunks, blocks, dtype, contiguous, urlpath",
     [
-        (0, 1000, [231, 120, 500], [53, 21, 340], [32, 13, 70], np.float64, False, None),
-        (0, 1000, [231, 120, 500], [53, 21, 340], [32, 13, 70], np.float64, True, "test_btune_64.iarr"),
-        (-1, -2000, [40, 39, 52, 120], [40, 17, 6, 50], [13, 4, 6, 50], np.float32, False, "test_btune_32.iarr"),
-        (-1, -2000, [40, 39, 52, 120], [40, 17, 6, 50], [13, 4, 6, 50], np.float32, True, None),
+        (0, 1000, [131, 120], [53, 21], [32, 13], np.float64, False, None),
+        pytest.param(0, 1000, [231, 120, 500], [53, 21, 340], [32, 13, 70], np.float64, False, None, marks=pytest.mark.heavy),
+        pytest.param(0, 1000, [231, 120, 500], [53, 21, 340], [32, 13, 70], np.float64, True, "test_btune_64.iarr", marks=pytest.mark.heavy),
+        pytest.param(-1, -2000, [40, 39, 52, 120], [40, 17, 6, 50], [13, 4, 6, 50], np.float32, False, "test_btune_32.iarr", marks=pytest.mark.heavy),
+        (-1, -2000, [40, 39,], [40, 17], [13, 4], np.float32, True, None),
+        pytest.param(-1, -2000, [40, 39, 52, 120], [40, 17, 6, 50], [13, 4, 6, 50], np.float32, True, None, marks=pytest.mark.heavy),
     ],
 )
 def test_btune(start, stop, shape, chunks, blocks, dtype, contiguous, urlpath):

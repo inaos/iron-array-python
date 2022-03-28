@@ -7,17 +7,18 @@ import iarray as ia
 @pytest.mark.parametrize(
     "start, stop, shape, chunks, blocks, dtype, contiguous, urlpath",
     [
-        (
+        pytest.param(
             0,
             10,
-            [100, 120, 50],
+            [100, 90, 50],
             [33, 21, 34],
             [12, 13, 7],
             np.float64,
             False,
             "test_linspace_sparse.iarr",
+            marks=pytest.mark.heavy,
         ),
-       (-0.1, -0.2, [40, 39, 52, 12], [12, 17, 6, 5], [5, 4, 6, 5], np.float32, True, None),
+        pytest.param(-0.1, -0.2, [40, 39, 52, 12], [12, 17, 6, 5], [5, 4, 6, 5], np.float32, True, None, marks=pytest.mark.heavy),
         (
             0,
             10,
@@ -57,7 +58,7 @@ def test_linspace(start, stop, shape, chunks, blocks, dtype, contiguous, urlpath
             False,
             "test_arange_sparse.iarr",
         ),
-        (
+        pytest.param(
             0,
             1,
             [12, 12, 15, 13, 18, 19],
@@ -66,6 +67,7 @@ def test_linspace(start, stop, shape, chunks, blocks, dtype, contiguous, urlpath
             np.float32,
             True,
             None,
+            marks=pytest.mark.heavy
         ),
         (
             0,
@@ -98,6 +100,16 @@ def test_arange(start, stop, shape, chunks, blocks, dtype, contiguous, urlpath):
     [
         (0, 10, [1234], [123], [21], np.float64, False, "test.fromfile0.iarr"),
         (
+                -0.1,
+                -0.10,
+                [10, 12, 21],
+                [4, 3, 5],
+                [2, 3, 2],
+                np.float32,
+                True,
+                "test.fromfile1.iarr",
+        ),
+        pytest.param(
             -0.1,
             -0.10,
             [10, 12, 21, 31, 11],
@@ -105,7 +117,8 @@ def test_arange(start, stop, shape, chunks, blocks, dtype, contiguous, urlpath):
             [2, 3, 2, 3, 2],
             np.float32,
             True,
-            "test.fromfile1.iarr",
+            "test.fromfile2.iarr",
+            marks=pytest.mark.heavy,
         ),
     ],
 )
@@ -214,13 +227,14 @@ def test_empty(shape, chunks, blocks, dtype, contiguous, urlpath):
 @pytest.mark.parametrize(
     "shape, chunks, blocks, dtype, contiguous, urlpath",
     [
-        (
+        pytest.param(
             [134, 1234, 238],
             [10, 25, 35],
             [2, 7, 12],
             np.float64,
             True,
             "test_zeros_contiguous.iarr",
+            marks=pytest.mark.heavy,
         ),
         ([456, 431], [102, 16], [12, 7], np.float32, False, "test_zeros_sparse.iarr"),
         ([10, 12, 5], [10, 1, 1], [10, 1, 1], np.int16, False, None),
@@ -246,8 +260,9 @@ def test_zeros(shape, chunks, blocks, dtype, contiguous, urlpath):
 @pytest.mark.parametrize(
     "shape, chunks, blocks, dtype, contiguous, urlpath",
     [
-        ([456, 12, 234], [55, 6, 21], [12, 3, 5], np.float64, False, None),
-        ([1024, 55], [66, 22], [12, 3], np.float32, True, "test_ones_contiguous.iarr"),
+        ([100, 12, 34], [55, 6, 21], [12, 3, 5], np.float64, False, None),
+        pytest.param([456, 12, 234], [55, 6, 21], [12, 3, 5], np.float64, False, None, marks=pytest.mark.heavy),
+        ([100, 55], [66, 22], [12, 3], np.float32, True, "test_ones_contiguous.iarr"),
         ([10, 12, 5], [5, 6, 5], [5, 3, 5], np.int8, True, None),
         ([120, 130], [45, 64], [33, 12], np.uint16, False, "test_ones_sparse.iarr"),
         ([10, 12, 5], [5, 6, 5], [5, 3, 5], np.bool_, True, None),
@@ -271,8 +286,9 @@ def test_ones(shape, chunks, blocks, dtype, contiguous, urlpath):
 @pytest.mark.parametrize(
     "fill_value, shape, chunks, blocks, dtype, contiguous, urlpath",
     [
-        (8.34, [123, 432, 222], [24, 31, 15], [6, 6, 6], np.float64, True, None),
-        (2.00001, [567, 375], [52, 16], [9, 7], np.float32, False, "test_full_sparse.iarr"),
+        pytest.param(8.34, [123, 432, 222], [24, 31, 15], [6, 6, 6], np.float64, True, None, marks=pytest.mark.heavy),
+        (2.00001, [56, 37], [20, 16], [9, 7], np.float32, False, "test_full_sparse.iarr"),
+        pytest.param(2.00001, [567, 375], [52, 16], [9, 7], np.float32, False, "test_full_sparse.iarr", marks=pytest.mark.heavy),
         (8, [10, 12, 5], [5, 5, 5], [5, 5, 5], np.int32, True, "test_full_contiguous.iarr"),
         (True, [12, 16], [12, 16], [10, 10], np.bool_, False, None),
     ],
@@ -314,7 +330,7 @@ def test_overwrite(contiguous):
 @pytest.mark.parametrize(
     "shape, starts, stops, dtype, contiguous, urlpath",
     [
-        ([55, 123, 72], [10, 12, 25], [12, 14, 26], np.float64, False, "test_view_sparse.iarr"),
+        pytest.param([55, 123, 72], [10, 12, 25], [12, 14, 26], np.float64, False, "test_view_sparse.iarr", marks=pytest.mark.heavy),
         ([55, 123, 72], [10, 12, 25], [12, 14, 26], np.float64, True, "test_view_contiguous.iarr"),
         ([10, 12, 5], [3, 9, 1], [4, 12, 3], np.float32, True, None),
         ([10, 12, 5], [3, 9, 1], [4, 12, 3], np.float32, False, None),

@@ -8,8 +8,7 @@ import numpy as np
     [
         ([100, 100], [50, 50], [20, 20]),
         ([20, 10, 30, 20], [10, 4, 10, 11], [4, 5, 3, 7]),
-        # Keep this for a more heavier test
-        #([10, 13, 12, 14, 12, 10], [5, 4, 6, 2, 3, 7], [2, 2, 2, 2, 2, 2]),
+        pytest.param([10, 13, 12, 14, 12, 10], [5, 4, 6, 2, 3, 7], [2, 2, 2, 2, 2, 2], marks=pytest.mark.heavy),
     ],
 )
 @pytest.mark.parametrize("dtype", [np.float32, np.float64, np.int64, np.int32, np.uint64, np.uint32])

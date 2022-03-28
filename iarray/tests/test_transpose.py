@@ -9,7 +9,8 @@ import numpy as np
         ([100, 100], [50, 50], [20, 20], np.float32, False, None, "r"),
         ([100, 100], [20, 20], [10, 10], np.float64, True, "test_transpose_contiguous.iarr", "r+"),
         ([100, 500], [50, 70], [20, 20], np.float32, False, "test_transpose_sparse.iarr", "w"),
-        ([1453, 266], [100, 200], [30, 20], np.float64, True, None, "w-"),
+        ([50, 26], [20, 10], [15, 5], np.float64, True, None, "w-"),
+        pytest.param([1453, 266], [100, 200], [30, 20], np.float64, True, None, "w-", marks=pytest.mark.heavy),
     ],
 )
 def test_transpose(shape, chunks, blocks, dtype, contiguous, urlpath, mode):

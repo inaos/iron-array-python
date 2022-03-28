@@ -9,7 +9,7 @@ from math import isclose
 slice_data = [
     ([30, 100], [20, 20], [10, 13], True, None),
     ([30, 130], [50, 50], [20, 25], False, None),
-    ([10, 78, 55, 21], [3, 30, 30, 21], [3, 12, 6, 21], True, "test_slice_acontiguous.iarr"),
+    pytest.param([10, 78, 55, 21], [3, 30, 30, 21], [3, 12, 6, 21], True, "test_slice_acontiguous.iarr", marks=pytest.mark.heavy),
     ([30, 100], [30, 44], [30, 2], False, "test_slice_asparse.iarr"),
 ]
 
