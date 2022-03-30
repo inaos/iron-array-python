@@ -1,4 +1,3 @@
-import sys
 import pytest
 import numpy as np
 import s3fs

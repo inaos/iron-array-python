@@ -1,3 +1,13 @@
+###########################################################################################
+# Copyright ironArray SL 2021.
+#
+# All rights reserved.
+#
+# This software is the confidential and proprietary information of ironArray SL
+# ("Confidential Information"). You shall not disclose such Confidential Information
+# and shall use it only in accordance with the terms of the license agreement.
+###########################################################################################
+
 import os
 from enum import Enum, auto
 from ctypes import cdll
@@ -36,6 +46,7 @@ elif platform_system == "Darwin":
 else:
     binding.load_library_permanently(os.path.join(install_dir, "svml_dispmd.dll"))
     lib1 = cdll.LoadLibrary(os.path.join(install_dir, "iarray.dll"))
+
 
 # Compression codecs
 class Codec(Enum):
