@@ -12,6 +12,7 @@ import numpy as np
 
 import iarray as ia
 from iarray import iarray_ext as ext
+from .constructors import zarr_to_iarray_dtypes
 import os
 import shutil
 
@@ -40,7 +41,9 @@ def _check_access_mode(urlpath, mode, update=False):
             if not update:
                 ia.remove_urlpath(urlpath)
         elif os.path.exists(urlpath) and mode == b"w-":
-            raise IOError(f"The writing mode cannot overwrite the already existing array '{urlpath}'.")
+            raise IOError(
+                f"The writing mode cannot overwrite the already existing array '{urlpath}'."
+            )
 
 
 def cmp_arrays(a, b, success=None) -> None:
@@ -91,7 +94,7 @@ def save(urlpath: str, iarr: ia.IArray, cfg: ia.Config = None, **kwargs) -> None
     open : Open an array from disk.
     """
     ia.remove_urlpath(urlpath)
-    if kwargs.get('contiguous', None) is None and (cfg is None or cfg.contiguous is None):
+    if kwargs.get("contiguous", None) is None and (cfg is None or cfg.contiguous is None):
         kwargs = dict(kwargs, contiguous=True)
     iarr.copy(cfg=cfg, urlpath=urlpath, **kwargs)
 
@@ -117,9 +120,9 @@ def load(urlpath: str, cfg: ia.Config = None, **kwargs) -> ia.IArray:
     --------
     save : Save an array to disk.
     """
-    if kwargs.get('contiguous', None) is None and (cfg is None or cfg.contiguous is None):
+    if kwargs.get("contiguous", None) is None and (cfg is None or cfg.contiguous is None):
         kwargs = dict(kwargs, contiguous=False)
-    if kwargs.get('mode', None) is not None:
+    if kwargs.get("mode", None) is not None:
         iarr = ia.open(urlpath, mode=kwargs.get("mode", None))
     elif cfg is not None:
         iarr = ia.open(urlpath, mode=cfg.mode)
@@ -128,7 +131,7 @@ def load(urlpath: str, cfg: ia.Config = None, **kwargs) -> ia.IArray:
     return iarr.copy(cfg=cfg, **kwargs)
 
 
-def open(urlpath: str, mode='a') -> ia.IArray:
+def open(urlpath: str, mode="a") -> ia.IArray:
     """Open an array from a binary file in ironArray `.iarr` format.
 
     The array data will lazily be read when necessary.
@@ -202,10 +205,9 @@ def numpy2iarray(arr: np.ndarray, cfg: ia.Config = None, **kwargs) -> ia.IArray:
     --------
     iarray2numpy : Convert an ironArray array into a NumPy array.
     """
-    if arr.dtype == np.float64:
-        dtype = np.float64
-    elif arr.dtype == np.float32:
-        dtype = np.float32
+
+    if np.dtype(arr.dtype) in [np.dtype(d) for d in zarr_to_iarray_dtypes]:
+        dtype = arr.dtype
     else:
         raise NotImplementedError("Only float32 and float64 types are supported for now")
 
@@ -214,13 +216,14 @@ def numpy2iarray(arr: np.ndarray, cfg: ia.Config = None, **kwargs) -> ia.IArray:
     if cfg is None:
         cfg = ia.get_config_defaults()
 
-    if not arr.flags['C_CONTIGUOUS']:
+    if not arr.flags["C_CONTIGUOUS"]:
         # For the conversion we need a *C* contiguous array
-        arr = arr.copy(order='C')
+        arr = arr.copy(order="C")
 
     with ia.config(shape=arr.shape, cfg=cfg, **kwargs) as cfg:
         dtshape = ia.DTShape(arr.shape, cfg.dtype)
         return ext.numpy2iarray(cfg, arr, dtshape)
+
 
 # File system utilities
 def remove_urlpath(urlpath):
