@@ -331,6 +331,7 @@ cdef extern from "libiarray/iarray.h":
     bool iarray_is_empty(iarray_container_t *container)
 
     ina_rc_t iarray_expr_new(iarray_context_t *ctx,
+                             iarray_data_type_t dtype,
                              iarray_expression_t **e)
     void iarray_expr_free(iarray_context_t *ctx,
                           iarray_expression_t **e)
@@ -495,13 +496,9 @@ cdef extern from "libiarray/iarray.h":
 
     void iarray_random_ctx_free(iarray_context_t *ctx, iarray_random_ctx_t **rng_ctx)
 
-    ina_rc_t iarray_random_dist_set_param_float(iarray_random_ctx_t *ctx,
-                                                iarray_random_dist_parameter_t key,
-                                                float value)
-
-    ina_rc_t iarray_random_dist_set_param_double(iarray_random_ctx_t *ctx,
-                                                 iarray_random_dist_parameter_t key,
-                                                 double value)
+    ina_rc_t iarray_random_dist_set_param(iarray_random_ctx_t *ctx,
+                                          iarray_random_dist_parameter_t key,
+                                          double value)
 
     ina_rc_t iarray_random_rand(iarray_context_t *ctx,
                                 iarray_dtshape_t *dtshape,

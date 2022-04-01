@@ -12,9 +12,23 @@ import numpy as np
 
 import iarray as ia
 from iarray import iarray_ext as ext
-from .constructors import zarr_to_iarray_dtypes
 import os
 import shutil
+
+
+zarr_to_iarray_dtypes = {
+    "int8": np.int8,
+    "int16": np.int16,
+    "int32": np.int32,
+    "int64": np.int64,
+    "uint8": np.uint8,
+    "uint16": np.uint16,
+    "uint32": np.uint32,
+    "uint64": np.uint64,
+    "float32": np.float32,
+    "float64": np.float64,
+    "bool": np.bool_,
+}
 
 
 class IllegalArgumentError(ValueError):
