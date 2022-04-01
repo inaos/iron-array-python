@@ -17,7 +17,5 @@
 
    .. autosummary::
    
-      ~RandomGen.MERSENNE_TWISTER
-      ~RandomGen.SOBOL
-   
+      ~RandomGen.MRG32K3A
    

@@ -15,11 +15,11 @@ This class behaves very similarly to a dictionary, and attributes can be appende
 
      iarr.attrs['attr1'] = 'something'
 
- And can be retrieved similarly::
+And can be retrieved similarly::
 
      value = iarr.attrs['attr1']
 
- Once added, an attribute can be deleted with::
+Once added, an attribute can be deleted with::
 
      del iarr.attrs['attr1']
 
