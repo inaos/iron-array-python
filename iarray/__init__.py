@@ -18,7 +18,9 @@ import pytest
 
 # This is the source of truth for version
 # https://packaging.python.org/guides/single-sourcing-package-version/
-__version__ = "1.0.0-$IA_BUILD_VER"
+# __version__ = "1.0.0-$IA_BUILD_VER"
+# Change to use a YEAR.MINOR-BUILD_VER
+__version__ = "2022.1-$IA_BUILD_VER"
 
 binding.initialize()
 binding.initialize_native_target()
