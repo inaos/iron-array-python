@@ -270,7 +270,7 @@ jobs:
   - script: |
       python -m pip install iarray --force-reinstall --no-cache-dir -f ./dist/
       python -m pip install --retries 3 -U -r requirements-test.txt
-      python -m pytest iarray/tests
+      python -m pytest iarray/tests -m "not heavy"
     displayName: 'Test wheel'
 
   - bash: |
