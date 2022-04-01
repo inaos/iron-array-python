@@ -11,8 +11,7 @@ This class inherites from
 `MutableMapping <https://docs.python.org/3/library/collections.abc.html#collections.abc.MutableMapping>`_
 so every method in this class is available.
 
-This class behaves very similarly to a dictionary, and attributes
- can be appended in the usual way::
+This class behaves very similarly to a dictionary, and attributes can be appended in the usual way::
 
      iarr.attrs['attr1'] = 'something'
 
@@ -23,9 +22,6 @@ This class behaves very similarly to a dictionary, and attributes
  Once added, an attribute can be deleted with::
 
      del iarr.attrs['attr1']
-
- This class also honors the `__contains__` special
- function.
 
 Methods
 -------

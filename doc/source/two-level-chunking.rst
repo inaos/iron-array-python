@@ -32,4 +32,4 @@ With that, let's see the amount of data that needs to be retrieved and decompres
 
 This is essentially why the two level chunking can lead to less reads and hence, better performance.
 
-You can see some benchmarks on the double partitioning in the `slicing tutorial <https://ironarray.io/docs/html/tutorials/slicing.html#Performance>`_.
+You can see some benchmarks on the double partitioning in the `slicing benchmark <https://ironarray.io/docs/html/bench/03.Slicing_Datasets_and_Creating_Views.html>`_.
