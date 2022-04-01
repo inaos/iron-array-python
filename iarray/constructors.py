@@ -14,7 +14,7 @@ import s3fs
 
 import iarray as ia
 from iarray import iarray_ext as ext
-from .utils import IllegalArgumentError
+from .utils import IllegalArgumentError, zarr_to_iarray_dtypes
 from dataclasses import dataclass
 from typing import Sequence
 
@@ -33,8 +33,19 @@ class DTShape:
     """
 
     shape: Sequence
-    dtype: (np.float64, np.float32, np.int64, np.int32, np.int16, np.int8, np.uint64, np.uint32, np.uint16,
-        np.uint8, np.bool_) = np.float64
+    dtype: (
+        np.float64,
+        np.float32,
+        np.int64,
+        np.int32,
+        np.int16,
+        np.int8,
+        np.uint64,
+        np.uint32,
+        np.uint16,
+        np.uint8,
+        np.bool_,
+    ) = np.float64
 
     def __post_init__(self):
         if self.shape is None:
@@ -241,10 +252,6 @@ def full(shape: Sequence, fill_value: float, cfg: ia.Config = None, **kwargs) ->
         return ext.full(cfg, fill_value, dtshape)
 
 
-zarr_to_iarray_dtypes = {'int8': np.int8, 'int16': np.int16, 'int32': np.int32, 'int64': np.int64,
-                         'uint8': np.uint8, 'uint16': np.uint16, 'uint32': np.uint32, 'uint64': np.uint64,
-                         'float32': np.float32, 'float64': np.float64, 'bool': np.bool_}
-
 def zarr_proxy(zarr_urlpath, cfg: ia.Config = None, **kwargs) -> ia.IArray:
     """Return a read-only Zarr proxy array.
 
@@ -298,7 +305,9 @@ def zarr_proxy(zarr_urlpath, cfg: ia.Config = None, **kwargs) -> ia.IArray:
             if kwargs.pop("nthreads") != 1:
                 raise IllegalArgumentError("Cannot use parallelism when interacting with Zarr")
 
-    with ia.config(cfg=cfg, dtype=dtype, chunks=z.chunks, blocks=blocks, nthreads=1, **kwargs) as cfg:
+    with ia.config(
+        cfg=cfg, dtype=dtype, chunks=z.chunks, blocks=blocks, nthreads=1, **kwargs
+    ) as cfg:
         a = uninit(shape=z.shape, cfg=cfg)
 
     # Set special attr to identify zarr_proxy

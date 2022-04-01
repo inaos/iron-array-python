@@ -463,7 +463,7 @@ cdef class Expression:
         self.cfg = cfg
         self.context = Context(cfg)
         cdef ciarray.iarray_expression_t* e
-        iarray_check(ciarray.iarray_expr_new(self.context.ia_ctx, &e))
+        iarray_check(ciarray.iarray_expr_new(self.context.ia_ctx, get_key_from_dict(dtypes, cfg.dtype), &e))
         self.ia_expr = e
         self.expression = None
         self.dtshape = None
@@ -1042,14 +1042,8 @@ def random_beta(cfg, alpha, beta, dtshape):
     cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(),
                                                                                                    <char*>"iarray_random_ctx_t*")
 
-    if dtshape.dtype == np.float64:
-        ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_ALPHA, alpha)
-        ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_BETA, beta)
-    elif dtshape.dtype == np.float32:
-        ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_ALPHA, alpha)
-        ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_BETA, beta)
-    else:
-        raise ValueError("Cannot use this data type for this operation")
+    ciarray.iarray_random_dist_set_param(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_ALPHA, alpha)
+    ciarray.iarray_random_dist_set_param(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_BETA, beta)
 
     dtshape = IaDTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
@@ -1075,14 +1069,8 @@ def random_lognormal(cfg, mu, sigma, dtshape):
     cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(),
                                                                                                    <char*>"iarray_random_ctx_t*")
 
-    if dtshape.dtype == np.float64:
-        ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_MU, mu)
-        ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_SIGMA, sigma)
-    elif dtshape.dtype == np.float32:
-        ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_MU, mu)
-        ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_SIGMA, sigma)
-    else:
-        raise ValueError("Cannot use this data type for this operation")
+    ciarray.iarray_random_dist_set_param(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_MU, mu)
+    ciarray.iarray_random_dist_set_param(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_SIGMA, sigma)
 
     dtshape = IaDTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
@@ -1108,12 +1096,7 @@ def random_exponential(cfg, beta, dtshape):
     cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(),
                                                                                                    <char*>"iarray_random_ctx_t*")
 
-    if dtshape.dtype == np.float64:
-        iarray_check(ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_BETA, beta))
-    elif dtshape.dtype == np.float32:
-        iarray_check(ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_BETA, beta))
-    else:
-        raise ValueError("Cannot use this data type for this operation")
+    iarray_check(ciarray.iarray_random_dist_set_param(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_BETA, beta))
 
     dtshape = IaDTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
@@ -1139,14 +1122,8 @@ def random_uniform(cfg, a, b, dtshape):
     cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(),
                                                                                                    <char*>"iarray_random_ctx_t*")
 
-    if dtshape.dtype == np.float64:
-        iarray_check(ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_A, a))
-        iarray_check(ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_B, b))
-    elif dtshape.dtype == np.float32:
-        iarray_check(ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_A, a))
-        iarray_check(ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_B, b))
-    else:
-        raise ValueError("Cannot use this data type for this operation")
+    iarray_check(ciarray.iarray_random_dist_set_param(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_A, a))
+    iarray_check(ciarray.iarray_random_dist_set_param(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_B, b))
 
     dtshape = IaDTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
@@ -1172,14 +1149,8 @@ def random_normal(cfg, mu, sigma, dtshape):
     cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(),
                                                                                                    <char*>"iarray_random_ctx_t*")
 
-    if dtshape.dtype == np.float64:
-        iarray_check(ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_MU, mu))
-        iarray_check(ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_SIGMA, sigma))
-    elif dtshape.dtype == np.float32:
-        iarray_check(ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_MU, mu))
-        iarray_check(ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_SIGMA, sigma))
-    else:
-        raise ValueError("Cannot use this data type for this operation")
+    iarray_check(ciarray.iarray_random_dist_set_param(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_MU, mu))
+    iarray_check(ciarray.iarray_random_dist_set_param(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_SIGMA, sigma))
 
     dtshape = IaDTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
@@ -1205,12 +1176,7 @@ def random_bernoulli(cfg, p, dtshape):
     cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(),
                                                                                                    <char*>"iarray_random_ctx_t*")
 
-    if dtshape.dtype == np.float64:
-        iarray_check(ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_P, p))
-    elif dtshape.dtype == np.float32:
-        iarray_check(ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_P, p))
-    else:
-        raise ValueError("Cannot use this data type for this operation")
+    iarray_check(ciarray.iarray_random_dist_set_param(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_P, p))
 
     dtshape = IaDTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
@@ -1236,14 +1202,8 @@ def random_binomial(cfg, m, p, dtshape):
     cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(),
                                                                                                    <char*>"iarray_random_ctx_t*")
 
-    if dtshape.dtype == np.float64:
-        iarray_check(ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_P, p))
-        iarray_check(ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_M, m))
-    elif dtshape.dtype == np.float32:
-        iarray_check(ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_P, p))
-        iarray_check(ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_M, m))
-    else:
-        raise ValueError("Cannot use this data type for this operation")
+    iarray_check(ciarray.iarray_random_dist_set_param(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_P, p))
+    iarray_check(ciarray.iarray_random_dist_set_param(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_M, m))
 
     dtshape = IaDTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
@@ -1269,12 +1229,7 @@ def random_poisson(cfg, l, dtshape):
     cdef ciarray.iarray_random_ctx_t *r_ctx_ = <ciarray.iarray_random_ctx_t*> PyCapsule_GetPointer(r_ctx.to_capsule(),
                                                                                                    <char*>"iarray_random_ctx_t*")
 
-    if dtshape.dtype == np.float64:
-        iarray_check(ciarray.iarray_random_dist_set_param_double(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_LAMBDA, l))
-    elif dtshape.dtype == np.float32:
-        iarray_check(ciarray.iarray_random_dist_set_param_float(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_LAMBDA, l))
-    else:
-        raise ValueError("Cannot use this data type for this operation")
+    iarray_check(ciarray.iarray_random_dist_set_param(r_ctx_, ciarray.IARRAY_RANDOM_DIST_PARAM_LAMBDA, l))
 
     dtshape = IaDTShape(dtshape).to_dict()
     cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape

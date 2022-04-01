@@ -7,19 +7,24 @@ import pytest
 import iarray as ia
 import numpy as np
 
+dtype_data1 = [np.float64, np.float32]
+dtype_data2 = [np.int32]
+
 rand_data = [
-    ([20, 20, 20], [10, 12, 5], [2, 3, 2], np.float64),
-    pytest.param([12, 31, 11, 22], [4, 3, 5, 2], [2, 2, 2, 2], np.float32, marks=pytest.mark.heavy),
-    ([10, 12, 5], [5, 6, 2], [5, 2, 2], np.float64),
-    pytest.param([4, 3, 5, 2], [2, 2, 2, 2], [2, 2, 1, 2], np.float64, marks=pytest.mark.heavy),
-    ([10, 12, 5], [10, 12, 4], [10, 6, 4], np.float32),
-    ([4, 3, 5, 2], [2, 2, 2, 2], [2, 1, 1, 2], np.float32),
+    ([20, 20, 20], [10, 12, 5], [2, 3, 2]),
+    ([10, 12, 5], [10, 12, 4], [10, 6, 4]),
+    pytest.param([12, 31, 11, 22], [4, 3, 5, 2], [2, 2, 2, 2], marks=pytest.mark.heavy),
+    pytest.param([4, 3, 5, 2], [2, 2, 2, 2], [2, 2, 1, 2], marks=pytest.mark.heavy),
 ]
 
 # Rand
 @pytest.mark.parametrize(
-    "shape, chunks, blocks, dtype",
+    "shape, chunks, blocks",
     rand_data,
+)
+@pytest.mark.parametrize(
+    "dtype",
+    dtype_data1,
 )
 def test_rand(shape, chunks, blocks, dtype):
     cfg = ia.Config(chunks=chunks, blocks=blocks)
@@ -39,8 +44,12 @@ def test_rand(shape, chunks, blocks, dtype):
 
 # Randn
 @pytest.mark.parametrize(
-    "shape, chunks, blocks, dtype",
+    "shape, chunks, blocks",
     rand_data,
+)
+@pytest.mark.parametrize(
+    "dtype",
+    dtype_data1,
 )
 def test_randn(shape, chunks, blocks, dtype):
     cfg = ia.Config(chunks=chunks, blocks=blocks)
@@ -74,8 +83,12 @@ def test_randn(shape, chunks, blocks, dtype):
     ],
 )
 @pytest.mark.parametrize(
-    "shape, chunks, blocks, dtype",
+    "shape, chunks, blocks",
     rand_data,
+)
+@pytest.mark.parametrize(
+    "dtype",
+    dtype_data1,
 )
 def test_beta(alpha, beta, shape, chunks, blocks, dtype):
     cfg = ia.Config(chunks=chunks, blocks=blocks)
@@ -109,8 +122,12 @@ def test_beta(alpha, beta, shape, chunks, blocks, dtype):
     ],
 )
 @pytest.mark.parametrize(
-    "shape, chunks, blocks, dtype",
+    "shape, chunks, blocks",
     rand_data,
+)
+@pytest.mark.parametrize(
+    "dtype",
+    dtype_data1,
 )
 def test_lognormal(mu, sigma, shape, chunks, blocks, dtype):
     cfg = ia.Config(chunks=chunks, blocks=blocks)
@@ -144,8 +161,12 @@ def test_lognormal(mu, sigma, shape, chunks, blocks, dtype):
     ],
 )
 @pytest.mark.parametrize(
-    "shape, chunks, blocks, dtype",
+    "shape, chunks, blocks",
     rand_data,
+)
+@pytest.mark.parametrize(
+    "dtype",
+    dtype_data1,
 )
 def test_exponential(beta, shape, chunks, blocks, dtype):
     cfg = ia.Config(chunks=chunks, blocks=blocks)
@@ -179,8 +200,12 @@ def test_exponential(beta, shape, chunks, blocks, dtype):
     ],
 )
 @pytest.mark.parametrize(
-    "shape, chunks, blocks, dtype",
+    "shape, chunks, blocks",
     rand_data,
+)
+@pytest.mark.parametrize(
+    "dtype",
+    dtype_data1,
 )
 def test_uniform(a_, b_, shape, chunks, blocks, dtype):
     cfg = ia.Config(chunks=chunks, blocks=blocks)
@@ -214,8 +239,12 @@ def test_uniform(a_, b_, shape, chunks, blocks, dtype):
     ],
 )
 @pytest.mark.parametrize(
-    "shape, chunks, blocks, dtype",
+    "shape, chunks, blocks",
     rand_data,
+)
+@pytest.mark.parametrize(
+    "dtype",
+    dtype_data1,
 )
 def test_normal(mu, sigma, shape, chunks, blocks, dtype):
     cfg = ia.Config(chunks=chunks, blocks=blocks)
@@ -246,8 +275,12 @@ def test_normal(mu, sigma, shape, chunks, blocks, dtype):
     [0.01, 0.15, 0.6],
 )
 @pytest.mark.parametrize(
-    "shape, chunks, blocks, dtype",
+    "shape, chunks, blocks",
     rand_data,
+)
+@pytest.mark.parametrize(
+    "dtype",
+    dtype_data2,
 )
 def test_bernoulli(p, shape, chunks, blocks, dtype):
     cfg = ia.Config(chunks=chunks, blocks=blocks)
@@ -281,8 +314,12 @@ def test_bernoulli(p, shape, chunks, blocks, dtype):
     ],
 )
 @pytest.mark.parametrize(
-    "shape, chunks, blocks, dtype",
+    "shape, chunks, blocks",
     rand_data,
+)
+@pytest.mark.parametrize(
+    "dtype",
+    dtype_data2,
 )
 def test_binomial(n, p, shape, chunks, blocks, dtype):
     cfg = ia.Config(chunks=chunks, blocks=blocks)
@@ -317,8 +354,12 @@ def test_binomial(n, p, shape, chunks, blocks, dtype):
     [5, 0.15],
 )
 @pytest.mark.parametrize(
-    "shape, chunks, blocks, dtype",
+    "shape, chunks, blocks",
     rand_data,
+)
+@pytest.mark.parametrize(
+    "dtype",
+    dtype_data2,
 )
 def test_poisson(lamb, shape, chunks, blocks, dtype):
     cfg = ia.Config(chunks=chunks, blocks=blocks)
