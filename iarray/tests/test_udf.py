@@ -28,7 +28,7 @@ def cmp_udf_np(
         start_stop   : A list of tuples defining the input arrays. Each tuple
                        has 2 elements with the start and stop arguments that
                        define each input array.
-        shape        : Shape of the iron arrays.
+        shape        : Shape of the iarrays.
         chunks       : Chunks shape for iarrays.
         blocks       : Blocks shape for iarrays.
         dtype        : Data type.
