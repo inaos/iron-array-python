@@ -9,32 +9,47 @@ from iarray import udf
 from iarray.udf import int32
 
 
-def cmp_udf_np(f, start_stop, shape, partitions, dtype, cparams, f_np=None, user_params=None):
+def cmp_udf_np(
+    f,
+    start_stop,
+    shape,
+    chunks,
+    blocks,
+    dtype,
+    cparams,
+    input_factory=ia.linspace,
+    user_params=None,
+    f_np=None,
+):
     """Helper function that compares UDF against numpy.
 
     Parameters:
-        f          : The User-Defined-Function.
-        start_stop : Defines the input arrays, may be a tuple or a list of
-                     tuples. Each tuple has 2 elements with the start and stop
-                     arguments that define a linspace array.
-        partitions : A tuple with the chunk and block shapes for iarrays.
-        dtype      : Data type.
-        cparams    : Configuration parameters for ironArray.
-        f_np       : An equivalent function for NumPy (for incompatible UDFs).
-        user_params: user params (scalars)
+        f            : The User-Defined-Function.
+        start_stop   : A list of tuples defining the input arrays. Each tuple
+                       has 2 elements with the start and stop arguments that
+                       define each input array.
+        shape        : Shape of the iron arrays.
+        chunks       : Chunks shape for iarrays.
+        blocks       : Blocks shape for iarrays.
+        dtype        : Data type.
+        cparams      : Configuration parameters for ironArray.
+        input_factory: function used to generate the input arrays, by default linspace
+        user_params  : User parameters (scalars)
+        f_np         : An equivalent function for NumPy (for incompatible UDFs).
 
     Function results must not depend on chunks/blocks, otherwise the
     comparison with numpy will fail.
     """
 
-    if type(start_stop) is tuple:
-        start_stop = [start_stop]
+    assert type(start_stop) is list
 
-    chunks, blocks = partitions
+    if f_np is None:
+        f_np = f.py_function
+
     cfg = ia.Config(chunks=chunks, blocks=blocks)
 
     inputs = [
-        ia.linspace(shape, start, stop, cfg=cfg, dtype=dtype, **cparams)
+        input_factory(shape, start, stop, cfg=cfg, dtype=dtype, **cparams)
         for start, stop in start_stop
     ]
     expr = ia.expr_from_udf(f, inputs, user_params, shape=shape, cfg=cfg, **cparams)
@@ -42,16 +57,11 @@ def cmp_udf_np(f, start_stop, shape, partitions, dtype, cparams, f_np=None, user
 
     num = functools.reduce(lambda x, y: x * y, shape)
     out_ref = np.zeros(num, dtype=dtype).reshape(shape)
-    args = [
-        np.linspace(start, stop, num, dtype=dtype).reshape(shape)
-        for start, stop in start_stop
-    ]
+    args = [x.data for x in inputs]
     if user_params is not None:
         args += user_params
-    if f_np is None:
-        f.py_function(out_ref, *args)
-    else:
-        f_np(out_ref, *args)
+
+    f_np(out_ref, *args)
 
     ia.cmp_arrays(out, out_ref)
 
@@ -113,14 +123,14 @@ def test_1dim(f):
     cparams = dict(nthreads=16)
     start, stop = 0, 10
 
-    cmp_udf_np(f, (start, stop), shape, (chunks, blocks), dtype, cparams)
+    cmp_udf_np(f, [(start, stop)], shape, chunks, blocks, dtype, cparams)
 
     # For the test function to return the same output as the Python function
     # the partition size must be multiple of 3. This is just an example of
     # how the result is not always the same as in the Python function.
     blocks = [4 * 100]
     with pytest.raises(AssertionError):
-        cmp_udf_np(f, (start, stop), shape, (chunks, blocks), dtype, cparams)
+        cmp_udf_np(f, [(start, stop)], shape, chunks, blocks, dtype, cparams)
 
 
 @udf.jit
@@ -176,7 +186,7 @@ def test_2dim(f):
     cparams = dict()
     start, stop = 0, 10
 
-    cmp_udf_np(f, (start, stop), shape, (chunks, blocks), dtype, cparams)
+    cmp_udf_np(f, [(start, stop)], shape, chunks, blocks, dtype, cparams)
 
 
 @udf.jit
@@ -199,7 +209,7 @@ def test_while(f):
     cparams = dict()
     start, stop = 0, 10
 
-    cmp_udf_np(f, (start, stop), shape, (chunks, blocks), dtype, cparams)
+    cmp_udf_np(f, [(start, stop)], shape, chunks, blocks, dtype, cparams)
 
 
 @udf.jit
@@ -234,7 +244,7 @@ def test_ifexp(f, f_np):
     dtype = np.float64
     cparams = dict()
 
-    cmp_udf_np(f, [], shape, (chunkshape, blockshape), dtype, cparams, f_np=f_np)
+    cmp_udf_np(f, [], shape, chunkshape, blockshape, dtype, cparams, f_np=f_np)
 
 
 @udf.jit
@@ -262,7 +272,7 @@ def test_ifexp2(f):
     dtype = np.float64
     cparams = dict()
 
-    cmp_udf_np(f, [], shape, (chunkshape, blockshape), dtype, cparams)
+    cmp_udf_np(f, [], shape, chunkshape, blockshape, dtype, cparams)
 
 
 @udf.jit
@@ -362,7 +372,7 @@ def test_math2(f):
     cparams = dict(nthreads=16)
     start, stop = 0, 10
 
-    cmp_udf_np(f, [(start, stop), (start, stop)], shape, (chunks, blocks), dtype, cparams)
+    cmp_udf_np(f, [(start, stop), (start, stop)], shape, chunks, blocks, dtype, cparams)
 
 
 @udf.jit
@@ -395,9 +405,10 @@ def test_user_params(f):
     user_params = [2.5, 1, True]
     cmp_udf_np(
         f,
-        (start, stop),
+        [(start, stop)],
         shape,
-        (chunks, blocks),
+        chunks,
+        blocks,
         dtype,
         cparams,
         user_params=user_params
@@ -443,3 +454,32 @@ def test_idx(f):
     start, stop = 1, 1000
 
     cmp_udf_np_strict(f, start, stop, shape, (chunks, blocks), dtype, cparams)
+
+
+@udf.jit(verbose=0)
+def f_1dim_int(out: udf.Array(udf.int64, 1), x: udf.Array(udf.int64, 1)):
+    n = out.shape[0]
+    for i in range(n):
+        if i % 3 == 0:
+            out[i] = 0
+        elif x[i] > 1 or x[i] <= 3 and i % 2 == 0:
+            out[i] = (x[i] + 4) * (x[i] + 8)
+        else:
+            out[i] = (x[i] - 4) * (x[i] - 8)
+
+    return 0
+
+
+@pytest.mark.parametrize("f", [f_1dim_int])
+def test_1dim_int(f):
+    shape = [10 * 1000]
+    chunks = [3 * 1000]
+    blocks = [3 * 100]
+    dtype = np.int64
+    cparams = dict(nthreads=16)
+    start, stop = 0, 10 * 1000
+
+    cmp_udf_np(
+        f, [(start, stop)], shape, chunks, blocks, dtype, cparams,
+        input_factory=ia.arange
+    )
