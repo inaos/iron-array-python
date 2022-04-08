@@ -17,3 +17,4 @@ The results shown here have been rendered on a specific server for your convenie
    bench/07.Expression_Evaluation_(User_Defined_Functions)
    bench/08.Expression_Evaluation_(On-Disk)
    bench/10.Matrix_Multiplication
+   bench/Parallel-Constructors

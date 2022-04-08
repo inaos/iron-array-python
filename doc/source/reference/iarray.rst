@@ -38,6 +38,7 @@ Methods
    IArray.copy
    IArray.copyto
    IArray.transpose
+   IArray.resize
 
 
 Mathematical methods
@@ -54,7 +55,7 @@ Mathematical methods
    IArray.arccos
    IArray.arctan
    IArray.arctan2
-    IArray.asin
+   IArray.asin
    IArray.acos
    IArray.atan
    IArray.atan2
