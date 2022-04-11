@@ -2,6 +2,7 @@ import pytest
 import numpy as np
 import s3fs
 import zarr
+from msgpack import packb
 import iarray as ia
 
 
@@ -399,3 +400,191 @@ def test_cloud_zproxy(zarr_path, contiguous, urlpath):
     z1 = z[:5, :5, :5]
     np.testing.assert_almost_equal(b, z1)
     ia.remove_urlpath(urlpath)
+
+
+# metalayers
+@pytest.mark.parametrize("shape, chunks, blocks, urlpath, dtype",
+                         [
+                             ([556], [221], [33], "testmeta00.iarr", np.float64),
+                             ([20, 134, 13], [12, 66, 8], [3, 13, 5], "testmeta01.iarr", np.int16),
+                             ([12, 13, 14, 15, 16], [8, 9, 4, 12, 9], [2, 6, 4, 5, 4], None, np.float32)
+                         ])
+def test_metalayers(shape, chunks, blocks, urlpath, dtype):
+    ia.remove_urlpath(urlpath)
+
+    bool_attr = False
+    int_attr = 189063
+    str_attr = "1234"
+
+    zarr_urlpath = "test_attrs.zarr"
+    z = zarr.open(zarr_urlpath, shape=shape, chunks=chunks, dtype=dtype, mode='w')
+    assert (z.attrs.__len__() == 0)
+    z.attrs["bool"] = bool_attr
+    a = ia.zarr_proxy(zarr_urlpath=zarr_urlpath, urlpath=urlpath, dtype=dtype, mode='w')
+
+
+    # setitem, len
+    assert (a.zarr_attrs.__len__() == 1)
+    a.zarr_attrs["int"] = int_attr
+    assert (a.zarr_attrs.__len__() == 2)
+
+    # contains
+    assert ("bool" in a.zarr_attrs)
+    assert ("error" not in a.zarr_attrs)
+    assert (a.zarr_attrs["bool"] == bool_attr)
+    assert ("int" in a.zarr_attrs)
+    # getitem
+    assert (a.zarr_attrs["int"] == int_attr)
+
+    int_attr = 3
+    a.zarr_attrs["int"] = int_attr
+    assert (a.zarr_attrs["int"] == int_attr)
+
+    # iter
+    keys = ["bool", "int"]
+    i = 0
+    for attr in a.zarr_attrs:
+        assert (attr == keys[i])
+        i += 1
+    # keys
+    i = 0
+    for attr in a.zarr_attrs.keys():
+        assert (attr == keys[i])
+        i += 1
+    # values
+    vals = [bool_attr, int_attr]
+    i = 0
+    for val in a.zarr_attrs.values():
+        assert (val == vals[i])
+        i += 1
+
+    # pop
+    elem = a.zarr_attrs.pop("int")
+    assert (a.zarr_attrs.__len__() == 1)
+    assert (elem == int_attr)
+
+    # delitem
+    del a.zarr_attrs["bool"]
+    assert ("bool" not in a.zarr_attrs)
+
+    # clear
+    a.zarr_attrs["bool"] = bool_attr
+    a.zarr_attrs["int"] = int_attr
+    assert (a.zarr_attrs.__len__() == 2)
+    a.zarr_attrs.clear()
+    assert (a.zarr_attrs.__len__() == 0)
+
+    # setdefault
+    a.zarr_attrs.setdefault("default_attr", str_attr)
+    assert (a.zarr_attrs["default_attr"] == str_attr)
+    a.zarr_attrs["bool"] = bool_attr
+    a.zarr_attrs.setdefault("bool", str_attr)
+    assert (a.zarr_attrs["bool"] == bool_attr)
+
+    # popitem
+    item = a.zarr_attrs.popitem()
+    assert (item == ("default_attr", str_attr))
+    item = a.zarr_attrs.popitem()
+    assert (item == ("bool", bool_attr))
+
+    # Special characters
+    a.zarr_attrs["àçø"] = bool_attr
+    assert (a.zarr_attrs["àçø"] == bool_attr)
+    a.zarr_attrs["😆"] = int_attr
+    assert (a.zarr_attrs["😆"] == int_attr)
+
+    a.zarr_attrs["😆"] = "😆"
+    assert (a.zarr_attrs["😆"] == "😆")
+
+    numpy_attr = {b"dtype": str(np.dtype(dtype))}
+    test_attr = {b"lorem": 1234}
+    byte_attr = b"1234"
+
+
+    # setitem, len
+    assert (a.attrs.__len__() == 1)
+    a.attrs["numpy"] = numpy_attr
+    assert (a.attrs.__len__() == 2)
+    a.attrs["test"] = test_attr
+    assert (a.attrs.__len__() == 3)
+
+    # contains
+    assert ("numpy" in a.attrs)
+    assert ("error" not in a.attrs)
+    assert (a.attrs["numpy"] == numpy_attr)
+    assert ("test" in a.attrs)
+    # getitem
+    assert (a.attrs["test"] == test_attr)
+
+    test_attr = packb({b"lorem": 4231})
+    a.attrs["test"] = test_attr
+    assert (a.attrs["test"] == test_attr)
+
+    # iter
+    keys = ["zproxy_urlpath", "numpy", "test"]
+    i = 0
+    for attr in a.attrs:
+        assert (attr == keys[i])
+        i += 1
+    # keys
+    i = 0
+    for attr in a.attrs.keys():
+        assert (attr == keys[i])
+        i += 1
+    # values
+    vals = [zarr_urlpath, numpy_attr, test_attr]
+    i = 0
+    for val in a.attrs.values():
+        assert (val == vals[i])
+        i += 1
+
+    # pop
+    elem = a.attrs.pop("test")
+    assert (a.attrs.__len__() == 2)
+    assert (elem == test_attr)
+
+    # delitem
+    del a.attrs["numpy"]
+    assert ("numpy" not in a.attrs)
+
+    # clear
+    a.attrs["numpy"] = numpy_attr
+    a.attrs["test"] = test_attr
+    assert (a.attrs.__len__() == 3)
+    a.attrs.clear()
+    assert (a.attrs.__len__() == 1)
+
+    # setdefault
+    a.attrs.setdefault("default_attr", byte_attr)
+    assert (a.attrs["default_attr"] == byte_attr)
+    a.attrs["numpy"] = numpy_attr
+    a.attrs.setdefault("numpy", byte_attr)
+    assert (a.attrs["numpy"] == numpy_attr)
+
+    # popitem
+    item = a.attrs.popitem()
+    assert (item == ("zproxy_urlpath", zarr_urlpath))
+    item = a.attrs.popitem()
+    assert (item == ("default_attr", byte_attr))
+    item = a.attrs.popitem()
+    assert (item == ("numpy", numpy_attr))
+
+    # Special characters
+    a.attrs["àçø"] = numpy_attr
+    assert (a.attrs["àçø"] == numpy_attr)
+    a.attrs["😆"] = test_attr
+    assert (a.attrs["😆"] == test_attr)
+
+    # objects as values
+    nparray = np.arange(start=0, stop=2)
+    a.attrs["àçø"] = nparray.tobytes()
+    assert (a.attrs["àçø"] == nparray.tobytes())
+    a.attrs["😆"] = "😆"
+    assert (a.attrs["😆"] == "😆")
+    obj = {"dtype": str(np.dtype(dtype))}
+    a.attrs["dict"] = obj
+    assert a.attrs["dict"] == obj
+
+    # Remove file on disk
+    ia.remove_urlpath(urlpath)
+    ia.remove_urlpath(zarr_urlpath)

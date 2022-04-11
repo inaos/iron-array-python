@@ -684,6 +684,10 @@ class IArray(ext.Container):
         """
         return ia.LazyExpr(new_op=(self, "tanh", None))
 
+    @attrs.setter
+    def attrs(self, value):
+        self._attrs = value
+
 
 @is_documented_by(IArray.abs)
 def abs(iarr: IArray):
