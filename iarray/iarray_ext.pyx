@@ -339,6 +339,14 @@ def _is_s3_store(urlpath):
         return True
     return False
 
+def _zarray_from_proxy(urlpath):
+    if _is_s3_store(urlpath):
+        s3 = s3fs.S3FileSystem(anon=True)
+        store = s3fs.S3Map(root=urlpath, s3=s3)
+        return zarr.open(store)
+    else:
+        return zarr.open(urlpath)
+
 cdef class Container:
     cdef ciarray.iarray_container_t *ia_container
     cdef Context context
@@ -413,12 +421,7 @@ cdef class Container:
         # Return zarr array values if it is a zproxy
         if "zproxy_urlpath" in self.attrs:
             urlpath = self.attrs["zproxy_urlpath"].decode()
-            if _is_s3_store(urlpath):
-                s3 = s3fs.S3FileSystem(anon=True)
-                store = s3fs.S3Map(root=urlpath, s3=s3)
-                z = zarr.open(store)
-            else:
-                z = zarr.open(urlpath)
+            z = _zarray_from_proxy(urlpath)
             return z.nbytes / z.nbytes_stored
         # It is a normal iarray
         cdef ciarray.int64_t nbytes, cbytes
@@ -1576,12 +1579,7 @@ def attr_len(iarr):
 cdef void zarr_handler(char *zarr_urlpath, ciarray.int64_t *slice_start, ciarray.int64_t *slice_stop,
                        ciarray.uint8_t *dest):
     path = zarr_urlpath.decode()
-    if _is_s3_store(path):
-        s3 = s3fs.S3FileSystem(anon=True)
-        store = s3fs.S3Map(root=path, s3=s3)
-        z_ = zarr.open(store)
-    else:
-        z_ = zarr.open(path)
+    z_ = _zarray_from_proxy(path)
     cdef int ndim = len(z_.shape)
     slice_ = tuple(slice(slice_start[i], slice_stop[i]) for i in range(ndim))
     data = z_[slice_]

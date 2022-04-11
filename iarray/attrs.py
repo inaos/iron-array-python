@@ -75,3 +75,9 @@ class Attributes(MutableMapping):
     def __len__(self):
         return ext.attr_len(self.iarr)
 
+    def clear(self):
+        for attr in self.keys():
+            if attr == "zproxy_urlpath":
+                continue
+            else:
+                self.__delitem__(attr)

@@ -10,7 +10,7 @@
 
 import iarray as ia
 from iarray import iarray_ext as ext
-from dataclasses import dataclass, field, fields, replace, asdict
+from dataclasses import dataclass, field, replace, asdict
 from typing import List, Sequence, Any, Union
 import warnings
 from contextlib import contextmanager
@@ -330,7 +330,7 @@ class Config(ext.Config):
     dtype: (np.float64, np.float32, np.int64, np.int32, np.int16, np.int8, np.uint64, np.uint32, np.uint16,
         np.uint8, np.bool_)
         The data type to use. The default is np.float64.
-    codec: :class:`SplitMode`
+    splitmode: :class:`SplitMode`
         The split mode to be used inside Blosc.  Default is :py:obj:`SplitMode.AUTO_SPLIT <SplitMode>`.
     chunks : list, tuple
         The chunk shape for the output array.  If None (the default), a sensible default

@@ -260,6 +260,13 @@ def zarr_proxy(zarr_urlpath, cfg: ia.Config = None, **kwargs) -> ia.IArray:
 
     The data type and chunks must not differ from the original Zarr array.
 
+    A Zarr proxy is a regular IArray array but with a special attribute called `zproxy_urlpath`. This
+    attribute is protected when `attrs.clear()` is used; but can still be deleted with `del attrs["zproxy_urlpath"]`,
+    `attrs.popitem()` or `attrs.pop("zproxy_urlpath")`.
+
+    This IArray has an additional attribute called `proxy_attrs` which contains the Zarr attributes. The user can
+    get and set these attributes.
+
     Parameters
     ----------
     zarr_urlpath : str
@@ -278,12 +285,7 @@ def zarr_proxy(zarr_urlpath, cfg: ia.Config = None, **kwargs) -> ia.IArray:
     and usual on disk :ref:`IArray`. To create a persistent proxy on-disk,
     you can specificy the :paramref:`urlpath` during :func:`zarr_proxy` execution time.
     """
-    if ext._is_s3_store(zarr_urlpath):
-        s3 = s3fs.S3FileSystem(anon=True)
-        store = s3fs.S3Map(root=zarr_urlpath, s3=s3)
-        z = zarr.open(store)
-    else:
-        z = zarr.open(zarr_urlpath)
+    z = ext._zarray_from_proxy(zarr_urlpath)
     # Create iarray
     dtype = zarr_to_iarray_dtypes[str(z.dtype)]
 
@@ -312,6 +314,8 @@ def zarr_proxy(zarr_urlpath, cfg: ia.Config = None, **kwargs) -> ia.IArray:
 
     # Set special attr to identify zarr_proxy
     a.attrs["zproxy_urlpath"] = zarr_urlpath
+    # Create reference to zarr.attrs
+    a.zarr_attrs = z.attrs
     # Assign postfilter
     ext.set_zproxy_postfilter(a)
     return a
