@@ -9,6 +9,7 @@
 ###########################################################################################
 
 # Standard Library
+import inspect
 import math
 
 # Requirements
@@ -183,7 +184,11 @@ class Function(py2llvm.Function):
         dtype = self.llvm.get_dtype(self.ir_module, udf_type)
         params = [py2llvm.Parameter("params", dtype)]
 
-        return_type = types.type_to_ir_type(int64)
+        return_type = self.py_signature.return_type
+        if return_type is inspect._empty:
+            return_type = int64
+
+        return_type = types.type_to_ir_type(return_type)
         return py2llvm.Signature(params, return_type)
 
     def preamble(self, builder, args):
