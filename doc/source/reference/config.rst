@@ -39,6 +39,7 @@ Enumerated classes
    Filter
    Eval
    RandomGen
+   SplitMode
 
 
 Global variables
