@@ -402,14 +402,14 @@ def test_cloud_zproxy(zarr_path, contiguous, urlpath):
     ia.remove_urlpath(urlpath)
 
 
-# metalayers
+# attrs
 @pytest.mark.parametrize("shape, chunks, blocks, urlpath, dtype",
                          [
-                             ([556], [221], [33], "testmeta00.iarr", np.float64),
-                             ([20, 134, 13], [12, 66, 8], [3, 13, 5], "testmeta01.iarr", np.int16),
+                             ([556], [221], [33], "test_attr00.iarr", np.float64),
+                             ([20, 134, 13], [12, 66, 8], [3, 13, 5], "test_attr01.iarr", np.int16),
                              ([12, 13, 14, 15, 16], [8, 9, 4, 12, 9], [2, 6, 4, 5, 4], None, np.float32)
                          ])
-def test_metalayers(shape, chunks, blocks, urlpath, dtype):
+def test_zproxy_attrs(shape, chunks, blocks, urlpath, dtype):
     ia.remove_urlpath(urlpath)
 
     bool_attr = False
@@ -473,6 +473,15 @@ def test_metalayers(shape, chunks, blocks, urlpath, dtype):
     assert (a.zarr_attrs.__len__() == 2)
     a.zarr_attrs.clear()
     assert (a.zarr_attrs.__len__() == 0)
+    # The next line is needed so that Zarr updates its attributes
+    z.attrs.refresh()
+    assert(z.attrs.__len__() == 0)
+    d = {"attr1": 12, "attr2": 3}
+    a.zarr_attrs.put(d)
+    assert (a.zarr_attrs["attr1"] == d["attr1"])
+    assert (a.zarr_attrs["attr1"] == d["attr1"])
+    assert (a.zarr_attrs.__len__() == 2)
+    a.zarr_attrs.clear()
 
     # setdefault
     a.zarr_attrs.setdefault("default_attr", str_attr)

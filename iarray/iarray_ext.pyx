@@ -339,7 +339,7 @@ def _is_s3_store(urlpath):
         return True
     return False
 
-def _zarray_from_proxy(urlpath):
+cpdef _zarray_from_proxy(urlpath):
     if _is_s3_store(urlpath):
         s3 = s3fs.S3FileSystem(anon=True)
         store = s3fs.S3Map(root=urlpath, s3=s3)
