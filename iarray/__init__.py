@@ -9,6 +9,7 @@
 ###########################################################################################
 
 import os
+import re
 from enum import Enum, auto
 from ctypes import cdll
 from llvmlite import binding
@@ -21,6 +22,11 @@ import pytest
 # __version__ = "1.0.0-$IA_BUILD_VER"
 # Change to use a YEAR.MINOR-BUILD_VER
 __version__ = "2022.1-$IA_BUILD_VER"
+
+
+# Compile the regular expression to find operands
+operands_regex = r"\w+(?=\()|((?!0)|[-+]|(?=0+\.))(\d*\.)?\d+(e\d+)?|(\w+)"
+operands_regex_compiled = re.compile(operands_regex)
 
 binding.initialize()
 binding.initialize_native_target()
@@ -233,6 +239,7 @@ from .expression import (
     Expr,
     expr_from_string,
     expr_from_udf,
+    expr_get_operands,
 )
 
 from .lazy_expr import (

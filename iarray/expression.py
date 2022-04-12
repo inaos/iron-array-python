@@ -179,3 +179,13 @@ def check_expr_config(cfg=None, **kwargs):
         else:
             default_shapes = True
     return default_shapes
+
+
+def expr_get_operands(expression):
+    """Return the list of operands in an expression."""
+    m2 = ia.operands_regex_compiled.findall(expression)
+    # 'e' and 'pi' are currently recognized as constants in tiny expression.
+    # I think it is wise to keep doing that.
+    operands = list(set(g[3] for g in m2 if g[3] not in ('', 'e', 'pi')))
+    operands.sort()
+    return operands
