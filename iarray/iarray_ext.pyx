@@ -1599,6 +1599,53 @@ def set_zproxy_postfilter(iarr):
     iarray_check(ciarray.iarray_add_zproxy_postfilter(c, urlpath, func))
 
 
+# UDF registry and library functionality
+cdef class UDF_registry:
+    cdef ciarray.iarray_udf_registry_t *udf_registry
+    cdef Context ctx
+
+    def __init__(self, cfg):
+        self.ctx = Context(cfg)
+        cdef ciarray.iarray_udf_registry_t *registry
+        iarray_check(ciarray.iarray_udf_registry_new(self.ctx.ia_ctx, &registry))
+        self.udf_registry = registry
+
+    def __dealloc(self):
+        ciarray.iarray_udf_registry_free(self.ctx.ia_ctx, &self.udf_registry)
+
+
+cdef class UDF_library:
+    cdef ciarray.iarray_udf_library_t *udf_library
+    cdef ciarray.iarray_udf_registry_t *udf_registry
+
+    def __init__(self, registry: UDF_registry, name):
+        name = name.encode("utf-8") if isinstance(name, str) else name
+        self.udf_registry = registry.udf_registry
+        cdef ciarray.iarray_udf_library_t *library
+        iarray_check(ciarray.iarray_udf_library_new(self.udf_registry, name, &library))
+        self.udf_library = library
+
+    def __dealloc(self):
+        ciarray.iarray_udf_library_free(self.udf_registry, &self.udf_library)
+
+    def compile(self, llvm_bc_len, llvm_bc, dtype, num_args, arg_types, name):
+        llvm_bc = llvm_bc.encode("utf-8") if isinstance(llvm_bc, str) else llvm_bc
+        dtype_ = get_key_from_dict(dtypes, dtype)
+        arg_types_ = [get_key_from_dict(dtypes, i) for i in arg_types]
+        cdef Py_buffer *buf = <Py_buffer *> malloc(sizeof(Py_buffer))
+        PyObject_GetBuffer(arg_types_, buf, PyBUF_SIMPLE)
+        name = name.encode("utf-8") if isinstance(name, str) else name
+        iarray_check(ciarray.iarray_udf_library_compile(self.udf_library,
+                                                        llvm_bc_len,
+                                                        llvm_bc,
+                                                        dtype_,
+                                                        num_args,
+                                                        <ciarray.iarray_data_type_t *>buf,
+                                                        name)
+                     )
+        PyBuffer_Release(buf)
+
+
 #
 # TODO: the next functions are just for benchmarking purposes and should be moved to its own extension
 #
