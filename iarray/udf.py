@@ -138,10 +138,6 @@ def Array(dtype, ndim):
 
 class Function(py2llvm.Function):
 
-    @staticmethod
-    def is_complex_param(param):
-        return type(param.type) is type and issubclass(param.type, types.ComplexType)
-
     def get_py_signature(self, signature):
         """
         The Python signature of the user defined function is as follows:
@@ -238,5 +234,5 @@ class LLVM(py2llvm.LLVM):
         return super().jit(*args, **kwargs)
 
 
-llvm = LLVM(Function)
-jit = llvm.jit
+jit = LLVM(Function).jit
+scalar = LLVM(py2llvm.Function).jit
