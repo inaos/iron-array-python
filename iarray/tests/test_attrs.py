@@ -11,11 +11,11 @@ from msgpack import packb
                          ])
 @pytest.mark.parametrize("shape, chunks, blocks, urlpath, dtype",
                          [
-                             ([556], [221], [33], "testmeta00.iarr", np.float64),
-                             ([20, 134, 13], [12, 66, 8], [3, 13, 5], "testmeta01.iarr", np.int16),
+                             ([556], [221], [33], "test_attr00.iarr", np.float64),
+                             ([20, 134, 13], [12, 66, 8], [3, 13, 5], "test_attr01.iarr", np.int16),
                              ([12, 13, 14, 15, 16], [8, 9, 4, 12, 9], [2, 6, 4, 5, 4], None, np.float32)
                          ])
-def test_metalayers(shape, chunks, blocks, urlpath, contiguous, dtype):
+def test_attrs(shape, chunks, blocks, urlpath, contiguous, dtype):
     ia.remove_urlpath(urlpath)
 
     numpy_attr = {b"dtype": str(np.dtype(dtype))}
