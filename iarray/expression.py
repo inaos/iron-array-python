@@ -75,7 +75,7 @@ def expr_from_string(sexpr: str, inputs: dict, cfg: ia.Config = None, **kwargs) 
     Parameters
     ----------
     sexpr : str
-        An expression in string format.
+        An expression in string form.
     inputs : dict
         Map of variables in `sexpr` to actual arrays.
     cfg : :class:`Config`
@@ -179,3 +179,21 @@ def check_expr_config(cfg=None, **kwargs):
         else:
             default_shapes = True
     return default_shapes
+
+
+def expr_get_operands(sexpr):
+    """Return a tuple with the operands of an expression in string form.
+
+    Parameters
+    ----------
+    sexpr : str
+        An expression in string form.
+
+    Returns
+    -------
+    tuple
+        The operands list.
+    """
+    m2 = ia.operands_regex_compiled.findall(sexpr)
+    operands = set(g[3] for g in m2 if g[3] != '')
+    return tuple(sorted(operands))

@@ -824,3 +824,15 @@ def test_chunks_blocks_params(expression, contiguous, zurlpath, zcontiguous):
     iout = expr.eval()
     assert (iout.cfg.chunks == zcfg.chunks)
     assert (iout.cfg.blocks == zcfg.blocks)
+
+
+@pytest.mark.parametrize(
+    "expression, operands",
+    [
+        ("x + y", ("x", "y")),
+        ("(3 + a) -c -1", ("a", "c")),
+        ("(3.+a)/c", ("a", "c")),
+        ("2.3e9 + b + atan2(a + c / b) - 2**z + 12 % 3 * sin(9 - 9.9) - C", ("C", "a", "b", "c", "z")),
+    ])
+def test_get_operands(expression, operands):
+    assert ia.expr_get_operands(expression) == operands
