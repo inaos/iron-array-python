@@ -1,7 +1,6 @@
 # Standard Library
 import ast
 import builtins
-import collections
 import inspect
 import math
 import operator
@@ -1057,6 +1056,10 @@ class Function:
         self.globals = f_globals
         self.optimize = optimize
 
+    @staticmethod
+    def is_complex_param(param):
+        return type(param.type) is type and issubclass(param.type, types.ComplexType)
+
     def get_py_signature(self, signature):
         inspect_signature = inspect.signature(self.py_function)
         if signature is not None:
@@ -1093,7 +1096,9 @@ class Function:
         # (3) The IR signature
         nargs = len(args)
         params = []
-        for i, (name, type_) in enumerate(self.py_signature.parameters):
+        for i, param in enumerate(self.py_signature.parameters):
+            name = param.name
+            type_ = param.type
             # Get type from argument if not given explicitely
             arg = args[i] if i < nargs else None
             if type_ is inspect._empty:
@@ -1137,6 +1142,9 @@ class Function:
 
     def preamble(self, builder, args):
         pass
+
+    def preamble_for_param(self, builder, param, args):
+        return args[param.name]
 
     def compile(self, verbose=0, *args):
         # (1) Python AST

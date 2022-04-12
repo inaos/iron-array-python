@@ -9,6 +9,7 @@
 ###########################################################################################
 
 # Standard Library
+import inspect
 import math
 
 # Requirements
@@ -137,10 +138,6 @@ def Array(dtype, ndim):
 
 class Function(py2llvm.Function):
 
-    @staticmethod
-    def is_complex_param(param):
-        return type(param.type) is type and issubclass(param.type, types.ComplexType)
-
     def get_py_signature(self, signature):
         """
         The Python signature of the user defined function is as follows:
@@ -183,7 +180,11 @@ class Function(py2llvm.Function):
         dtype = self.llvm.get_dtype(self.ir_module, udf_type)
         params = [py2llvm.Parameter("params", dtype)]
 
-        return_type = types.type_to_ir_type(int64)
+        return_type = self.py_signature.return_type
+        if return_type is inspect._empty:
+            return_type = int64
+
+        return_type = types.type_to_ir_type(return_type)
         return py2llvm.Signature(params, return_type)
 
     def preamble(self, builder, args):
@@ -233,5 +234,5 @@ class LLVM(py2llvm.LLVM):
         return super().jit(*args, **kwargs)
 
 
-llvm = LLVM(Function)
-jit = llvm.jit
+jit = LLVM(Function).jit
+scalar = LLVM(py2llvm.Function).jit
