@@ -24,6 +24,12 @@ jobs:
   - bash: |
       git submodule update --init --recursive
     displayName: Clone repos
+  
+  - bash: |
+      sshpass -p "$SCP_PWD" scp README* ironarray@distribution-ssh.ironarray.io:staging
+    env:
+      SCP_PWD: $(dist-box-ssh-pwd)
+    displayName: Test SCP
 
   - bash: |
       envsubst < iarray/__init__.py > iarray/__init__.tmp
@@ -292,3 +298,4 @@ jobs:
       sshpass -p "$SCP_PWD" scp dist/*.whl ironarray@distribution-ssh.ironarray.io:staging
     env:
       SCP_PWD: $(dist-box-ssh-pwd)
+    displayName: Deploy Wheel SSH
