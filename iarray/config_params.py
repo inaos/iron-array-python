@@ -113,6 +113,7 @@ def partition_advice(
 @dataclass
 class DefaultConfig:
     codec: Any
+    meta: Any
     clevel: Any
     favor: Any
     use_dict: Any
@@ -137,6 +138,7 @@ class Defaults(object):
     # Keep in sync the defaults below with Config.__doc__ docstring.
     _config = None
     codec: ia.Codec = ia.Codec.LZ4
+    meta: int = 0
     clevel: int = 9
     favor: ia.Favor = ia.Favor.BALANCE
     use_dict: bool = False
@@ -179,6 +181,10 @@ class Defaults(object):
     def _codec(self):
         self.compat_params.add("codec")
         return self.codec
+
+    def _meta(self):
+        self.compat_params.add("meta")
+        return self.meta
 
     def _clevel(self):
         self.compat_params.add("clevel")
@@ -225,6 +231,7 @@ class Defaults(object):
             # Bootstrap the defaults
             return DefaultConfig(
                 codec=self.codec,
+                meta=self.meta,
                 clevel=self.clevel,
                 favor=self.favor,
                 use_dict=self.use_dict,
@@ -245,6 +252,7 @@ class Defaults(object):
         if not hasattr(value, "codec"):
             raise ValueError(f"You need to use a `Config` instance")
         self.codec = value.codec
+        self.meta = value.meta
         self.clevel = value.clevel
         self.favor = value.favor
         self.use_dict = value.use_dict
@@ -290,6 +298,12 @@ class Config(ext.Config):
     ----------
     codec: :class:`Codec`
         The codec to be used inside Blosc.  Default is :py:obj:`Codec.ZSTD <Codec>`.
+    meta: int
+        It should be set when using :py:obj:`Codec.ZFP_FIXED_ACCURACY <Codec>`,
+        :py:obj:`Codec.ZFP_FIXED_PRECISION <Codec>` or :py:obj:`Codec.ZFP_FIXED_RATE <Codec>`.
+        It sets the absolute error, precision or ratio respectively. For more info see
+        `C-Blosc2 documentation
+        <https://github.com/Blosc/c-blosc2/blob/main/plugins/codecs/zfp/README.md#plugin-usage>`__ .
     clevel : int
         The compression level.  It can have values between 0 (no compression) and
         9 (max compression).  Default is 1.
@@ -359,6 +373,7 @@ class Config(ext.Config):
     """
 
     codec: ia.Codec = field(default_factory=defaults._codec)
+    meta: int = field(default_factory=defaults._meta)
     clevel: int = field(default_factory=defaults._clevel)
     favor: ia.Favor = field(default_factory=defaults._favor)
     filters: List[ia.Filter] = field(default_factory=defaults._filters)
@@ -390,6 +405,8 @@ class Config(ext.Config):
     contiguous: bool = field(default_factory=defaults._contiguous)
 
     def __post_init__(self):
+        if self.meta is None:
+            self.meta = 0
         if defaults.check_compat:
             self.check_config_params()
         # Restore variable for next time
@@ -442,6 +459,7 @@ class Config(ext.Config):
         # Initialize the Cython counterpart
         super().__init__(
             self.codec,
+            self.meta,
             self.clevel,
             self.favor,
             self.use_dict,
@@ -498,6 +516,22 @@ class Config(ext.Config):
                 defaults.compat_params = set()
                 defaults.check_compat = True
                 raise ValueError(f"A `favor` argument needs `btune` enabled.")
+
+        # codec = ZFP and meta = None
+        meta = kwargs.get("meta", self.meta)
+        codec = kwargs.get("codec", self.codec)
+        zfp_codecs = [ia.Codec.ZFP_FIXED_PRECISION, ia.Codec.ZFP_FIXED_RATE, ia.Codec.ZFP_FIXED_ACCURACY]
+        if codec in zfp_codecs:
+            if meta is None or meta == 0:
+                # Restore variable for next time
+                defaults.compat_params = set()
+                defaults.check_compat = True
+                raise ValueError(f"The `meta` needs to be set when using a ZFP codec.")
+        elif meta is not None and meta != 0:
+            # Restore variable for next time
+            defaults.compat_params = set()
+            defaults.check_compat = True
+            raise ValueError(f"The `meta` can only be set when using a ZFP codec.")
 
     def _get_shape_advice(self, shape):
         chunks, blocks = self.chunks, self.blocks

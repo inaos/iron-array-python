@@ -22,6 +22,8 @@
       ~Codec.LZ4HC
       ~Codec.ZLIB
       ~Codec.ZSTD
-      ~Codec.LIZARD
-   
+      ~Codec.ZFP_FIXED_ACCURACY
+      ~Codec.ZFP_FIXED_PRECISION
+      ~Codec.ZFP_FIXED_RATE
+
    

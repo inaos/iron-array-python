@@ -103,7 +103,9 @@ cdef extern from "libiarray/iarray.h":
         IARRAY_COMPRESSION_SNAPPY
         IARRAY_COMPRESSION_ZLIB
         IARRAY_COMPRESSION_ZSTD
-        IARRAY_COMPRESSION_LIZARD
+        IARRAY_COMPRESSION_ZFP_FIXED_ACCURACY
+        IARRAY_COMPRESSION_ZFP_FIXED_PRECISION
+        IARRAY_COMPRESSION_ZFP_FIXED_RATE
 
     ctypedef enum iarray_compression_favor_t:
         IARRAY_COMPRESSION_FAVOR_BALANCE = 0
@@ -138,6 +140,7 @@ cdef extern from "libiarray/iarray.h":
         int max_num_threads
         uint8_t fp_mantissa_bits
         bool btune
+        uint8_t meta
 
     ctypedef struct iarray_storage_t:
         const char *urlpath

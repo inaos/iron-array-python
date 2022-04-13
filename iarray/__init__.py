@@ -67,7 +67,9 @@ class Codec(Enum):
     LZ4HC = 2
     ZLIB = 4
     ZSTD = 5
-    LIZARD = 6
+    ZFP_FIXED_ACCURACY = 6
+    ZFP_FIXED_PRECISION = 7
+    ZFP_FIXED_RATE = 8
 
 
 # Filter
