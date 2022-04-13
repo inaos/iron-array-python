@@ -287,3 +287,8 @@ jobs:
       python -m pip install twine
       python -m twine upload -r iarray dist/*
     displayName: Deploy Wheel
+    
+  - bash: |
+      sshpass -p "$SCP_PWD" scp dist/*.whl ironarray@distribution-ssh.ironarray.io:staging
+    env:
+      SCP_PWD: $(dist-box-ssh-pwd)
