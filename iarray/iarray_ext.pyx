@@ -1645,6 +1645,15 @@ cdef class UDF_library:
                      )
         PyBuffer_Release(buf)
 
+    def lookup(self, full_name):
+        full_name = full_name.encode("utf-8") if isinstance(full_name, str) else full_name
+        cdef ciarray.uint64_t function_ptr
+        iarray_check(ciarray.iarray_udf_library_lookup(self.udf_registry,
+                                                       full_name,
+                                                       &function_ptr)
+                     )
+        return function_ptr
+
 
 #
 # TODO: the next functions are just for benchmarking purposes and should be moved to its own extension

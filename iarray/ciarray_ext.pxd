@@ -605,3 +605,6 @@ cdef extern from "libiarray/iarray.h":
                                         int num_args,
                                         iarray_data_type_t *arg_types,
                                         const char *name);
+    ina_rc_t iarray_udf_library_lookup(iarray_udf_registry_t *registry,
+                                       const char *full_name,
+                                       uint64_t *function_ptr);
