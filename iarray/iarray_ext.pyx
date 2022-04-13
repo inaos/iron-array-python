@@ -219,9 +219,14 @@ cdef class IArrayInit:
 cdef class Config:
     cdef ciarray.iarray_config_t config
 
-    def __init__(self, compression_codec, compression_level, compression_favor,
+    def __init__(self, compression_codec, meta, compression_level, compression_favor,
                  use_dict, filters, max_num_threads, fp_mantissa_bits, eval_method, btune, split_mode):
         self.config.compression_codec = compression_codec.value
+        # Avoid error in case meta < 0
+        cdef ciarray.uint8_t meta_
+        if meta is not None:
+            meta_ = <ciarray.int8_t> meta
+            self.config.meta = meta_
         self.config.compression_level = compression_level
         self.config.compression_favor = compression_favor.value
         self.config.use_dict = 1 if use_dict else 0
@@ -759,6 +764,7 @@ cdef get_cfg_from_container(cfg, ciarray.iarray_context_t *ctx, ciarray.iarray_c
 
     clevel = cfg_.compression_level
     codec = ia.Codec(cfg_.compression_codec)
+    meta = cfg_.meta
     mantissa_bits = cfg_.fp_mantissa_bits
 
     filters = []
@@ -788,6 +794,7 @@ cdef get_cfg_from_container(cfg, ciarray.iarray_context_t *ctx, ciarray.iarray_c
     ia._defaults.check_compat = False
     c_cfg = ia.Config(
         codec=codec,
+        meta=meta,
         clevel=clevel,
         filters=filters,
         fp_mantissa_bits = mantissa_bits,
