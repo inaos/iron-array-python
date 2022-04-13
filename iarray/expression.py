@@ -27,7 +27,7 @@ class Expr(ext.Expression):
     expr_from_udf
     """
 
-    def __init__(self, shape, cfg=None, **kwargs):
+    def __init__(self, shape, cfg=None, registry=None, **kwargs):
         if cfg is None:
             cfg = ia.get_config_defaults()
 
@@ -35,7 +35,8 @@ class Expr(ext.Expression):
         with ia.config(cfg=cfg, shape=shape, **kwargs) as cfg:
             dtshape = ia.DTShape(shape, cfg.dtype)
             self.cfg = cfg
-            super().__init__(self.cfg)
+            self.registry = registry
+            super().__init__(self.cfg, self.registry)
             super().bind_out_properties(dtshape)
             if default_shapes:
                 # Set cfg chunks and blocks to None to detect that we want the default shapes when evaluating
@@ -69,7 +70,7 @@ def check_inputs(inputs: list, shape):
         return shape, cfg.dtype
 
 
-def expr_from_string(sexpr: str, inputs: dict, cfg: ia.Config = None, **kwargs) -> Expr:
+def expr_from_string(sexpr: str, inputs: dict, cfg: ia.Config = None, registry = None, **kwargs) -> Expr:
     """Create an :class:`Expr` instance from an expression in string form.
 
     Parameters
@@ -97,7 +98,7 @@ def expr_from_string(sexpr: str, inputs: dict, cfg: ia.Config = None, **kwargs) 
     with ia.config(cfg, **kwargs):
         shape, dtype = check_inputs(list(inputs.values()), None)
     kwargs["dtype"] = dtype
-    expr = Expr(shape=shape, cfg=cfg, **kwargs)
+    expr = Expr(shape=shape, cfg=cfg, registry=registry, **kwargs)
     for i in inputs:
         expr.bind(i, inputs[i])
     expr.compile(sexpr)

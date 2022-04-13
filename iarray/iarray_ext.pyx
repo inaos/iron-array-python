@@ -461,12 +461,17 @@ cdef class Expression:
     cdef object expression
     cdef ciarray.iarray_expression_t *ia_expr
     cdef Context context
+    cdef ciarray.iarray_udf_registry_t *udf_registry
 
-    def __init__(self, cfg):
+    def __init__(self, cfg, registry: UDF_registry):
         self.cfg = cfg
+        self.udf_registry = NULL if registry is None else registry.udf_registry
         self.context = Context(cfg)
         cdef ciarray.iarray_expression_t* e
-        iarray_check(ciarray.iarray_expr_new(self.context.ia_ctx, get_key_from_dict(dtypes, cfg.dtype), &e))
+        iarray_check(
+            ciarray.iarray_expr_new(self.context.ia_ctx, self.udf_registry,
+                                    get_key_from_dict(dtypes, cfg.dtype), &e)
+        )
         self.ia_expr = e
         self.expression = None
         self.dtshape = None
@@ -1629,18 +1634,18 @@ cdef class UDF_library:
         ciarray.iarray_udf_library_free(self.udf_registry, &self.udf_library)
 
     def compile(self, llvm_bc_len, llvm_bc, dtype, num_args, arg_types, name):
-        llvm_bc = llvm_bc.encode("utf-8") if isinstance(llvm_bc, str) else llvm_bc
-        dtype_ = get_key_from_dict(dtypes, dtype)
-        arg_types_ = [get_key_from_dict(dtypes, i) for i in arg_types]
+        arg_types = [x.value for x in arg_types]
+        nparr = np.array(arg_types, dtype=np.int32)
         cdef Py_buffer *buf = <Py_buffer *> malloc(sizeof(Py_buffer))
-        PyObject_GetBuffer(arg_types_, buf, PyBUF_SIMPLE)
+        PyObject_GetBuffer(nparr, buf, PyBUF_SIMPLE)
+
         name = name.encode("utf-8") if isinstance(name, str) else name
         iarray_check(ciarray.iarray_udf_library_compile(self.udf_library,
                                                         llvm_bc_len,
                                                         llvm_bc,
-                                                        dtype_,
+                                                        dtype.value,
                                                         num_args,
-                                                        <ciarray.iarray_data_type_t *>buf,
+                                                        <ciarray.iarray_data_type_t *>buf.buf,
                                                         name)
                      )
         PyBuffer_Release(buf)

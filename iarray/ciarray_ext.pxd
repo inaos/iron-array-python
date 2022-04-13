@@ -331,6 +331,7 @@ cdef extern from "libiarray/iarray.h":
     bool iarray_is_empty(iarray_container_t *container)
 
     ina_rc_t iarray_expr_new(iarray_context_t *ctx,
+                             iarray_udf_registry_t *registry,
                              iarray_data_type_t dtype,
                              iarray_expression_t **e)
     void iarray_expr_free(iarray_context_t *ctx,
