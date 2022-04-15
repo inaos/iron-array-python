@@ -267,6 +267,11 @@ from .attrs import (
 # For some reason this needs to go to the end, else matmul function does not work.
 from . import iarray_ext as ext
 
+from .iarray_ext import (
+    UdfRegistry,
+    UdfLibrary,
+)
+
 ext.IArrayInit()
 
 
