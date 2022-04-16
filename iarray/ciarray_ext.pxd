@@ -188,6 +188,7 @@ cdef extern from "libiarray/iarray.h":
         _iarray_jug_var_t vars[IARRAY_EXPR_OPERANDS_MAX]
         iarray_user_param_t user_params[IARRAY_EXPR_USER_PARAMS_MAX]
         int nuser_params
+        void *udf_registry
 
     ina_rc_t iarray_init()
 
@@ -331,7 +332,6 @@ cdef extern from "libiarray/iarray.h":
     bool iarray_is_empty(iarray_container_t *container)
 
     ina_rc_t iarray_expr_new(iarray_context_t *ctx,
-                             iarray_udf_registry_t *registry,
                              iarray_data_type_t dtype,
                              iarray_expression_t **e)
     void iarray_expr_free(iarray_context_t *ctx,

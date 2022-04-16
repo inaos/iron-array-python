@@ -469,9 +469,12 @@ cdef class Expression:
         self.context = Context(cfg)
         cdef ciarray.iarray_expression_t* e
         iarray_check(
-            ciarray.iarray_expr_new(self.context.ia_ctx, self.udf_registry,
+            ciarray.iarray_expr_new(self.context.ia_ctx,
                                     get_key_from_dict(dtypes, cfg.dtype), &e)
         )
+        # Manually set the udf registry.  We do that because we don't want to touch
+        # the C API if possible.
+        e.udf_registry = <void*>(self.udf_registry)
         self.ia_expr = e
         self.expression = None
         self.dtshape = None
