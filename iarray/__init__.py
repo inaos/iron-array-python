@@ -268,9 +268,11 @@ from .attrs import (
 from . import iarray_ext as ext
 
 from .iarray_ext import (
-    UdfRegistry,
     UdfLibrary,
 )
+
+# We will only have a registry (that can have multiple libraries)
+udf_registry = ext.UdfRegistry()
 
 ext.IArrayInit()
 

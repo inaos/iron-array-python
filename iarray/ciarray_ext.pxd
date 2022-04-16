@@ -590,10 +590,8 @@ cdef extern from "libiarray/iarray.h":
     # UDF registry and library functionality
     ctypedef struct iarray_udf_registry_t
     ctypedef struct iarray_udf_library_t
-    ina_rc_t iarray_udf_registry_new(iarray_context_t *ctx,
-                                     iarray_udf_registry_t **udf_registry)
-    void iarray_udf_registry_free(iarray_context_t *ctx,
-                                  iarray_udf_registry_t **udf_registry);
+    ina_rc_t iarray_udf_registry_new(iarray_udf_registry_t **udf_registry)
+    void iarray_udf_registry_free(iarray_udf_registry_t **udf_registry);
     ina_rc_t iarray_udf_library_new(iarray_udf_registry_t *registry,
                                     const char *name,
                                     iarray_udf_library_t **lib);

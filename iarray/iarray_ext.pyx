@@ -463,9 +463,9 @@ cdef class Expression:
     cdef Context context
     cdef ciarray.iarray_udf_registry_t *udf_registry
 
-    def __init__(self, cfg, registry: UdfRegistry):
+    def __init__(self, cfg):
         self.cfg = cfg
-        self.udf_registry = NULL if registry is None else registry.udf_registry
+        self.udf_registry = (<UdfRegistry>ia.udf_registry).udf_registry
         self.context = Context(cfg)
         cdef ciarray.iarray_expression_t* e
         iarray_check(
@@ -1610,16 +1610,17 @@ cdef class UdfRegistry:
     Registry for libraries of scalar UDF functions.
     """
     cdef ciarray.iarray_udf_registry_t *udf_registry
-    cdef Context ctx
 
-    def __init__(self, cfg):
-        self.ctx = Context(cfg)
+    def __init__(self):
         cdef ciarray.iarray_udf_registry_t *registry
-        iarray_check(ciarray.iarray_udf_registry_new(self.ctx.ia_ctx, &registry))
+        iarray_check(ciarray.iarray_udf_registry_new(&registry))
         self.udf_registry = registry
 
+    # For some reason we get a "pointer being freed was not allocated" here
+    # Using the badly formed `__dealloc()` for now
     def __dealloc(self):
-        ciarray.iarray_udf_registry_free(self.ctx.ia_ctx, &self.udf_registry)
+        if self.udf_registry != NULL:
+            ciarray.iarray_udf_registry_free(&self.udf_registry)
 
 
 cdef class UdfLibrary:
@@ -1629,15 +1630,18 @@ cdef class UdfLibrary:
     cdef ciarray.iarray_udf_library_t *udf_library
     cdef ciarray.iarray_udf_registry_t *udf_registry
 
-    def __init__(self, registry: UdfRegistry, name):
+    def __init__(self, name):
         name = name.encode("utf-8") if isinstance(name, str) else name
-        self.udf_registry = registry.udf_registry
+        self.udf_registry = (<UdfRegistry>ia.udf_registry).udf_registry
         cdef ciarray.iarray_udf_library_t *library
         iarray_check(ciarray.iarray_udf_library_new(self.udf_registry, name, &library))
         self.udf_library = library
 
+    # For some reason we get a "pointer being freed was not allocated" here
+    # Using the badly formed `__dealloc()` for now
     def __dealloc(self):
-        ciarray.iarray_udf_library_free(self.udf_registry, &self.udf_library)
+        if self.udf_registry != NULL and self.udf_library != NULL:
+            ciarray.iarray_udf_library_free(self.udf_registry, &self.udf_library)
 
     def register(self, llvm_bc, dtype, num_args, arg_types, name):
         arg_types = [x.value for x in arg_types]
