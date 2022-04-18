@@ -221,9 +221,9 @@ def numpy2iarray(arr: np.ndarray, cfg: ia.Config = None, **kwargs) -> ia.IArray:
     """
 
     if np.dtype(arr.dtype) in [np.dtype(d) for d in zarr_to_iarray_dtypes]:
-        dtype = arr.dtype
+        dtype = arr.dtype.type
     else:
-        raise NotImplementedError("Only float32 and float64 types are supported for now")
+        raise NotImplementedError("Only float[32,64], uint/int[8,16,32,64] and bool types are supported")
 
     kwargs["dtype"] = dtype
 
