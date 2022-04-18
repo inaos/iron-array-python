@@ -14,18 +14,16 @@ shape = [20_000_000]
 dtype = np.float64
 # Let's favor speed during computations
 ia.set_config_defaults(favor=ia.Favor.SPEED, dtype=dtype)
-#ia.set_config_defaults(clevel=0, btune=False)
+# ia.set_config_defaults(clevel=0, btune=False)
+
 
 @udf.scalar(verbose=0)
 def f(a: udf.float64, b: udf.float64) -> float:
     return a * b
 
+
 lib = ia.UdfLibrary("lib")
-bc = f.bc
-print("argtypes -->", f.argtypes)
-# TODO: is there a way to get the signature types more automatically?
-types = [ia.DataType.IARRAY_DATA_TYPE_DOUBLE, ia.DataType.IARRAY_DATA_TYPE_DOUBLE]
-lib.register_func(bc, ia.DataType.IARRAY_DATA_TYPE_DOUBLE, 2, types, "f")
+lib.register_func(f.bc, f.rtype, f.argtypes, "f")
 
 # Create initial containers
 a1 = ia.linspace(shape, 0, 10)

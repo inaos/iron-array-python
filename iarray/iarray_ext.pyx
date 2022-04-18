@@ -26,10 +26,25 @@ import iarray as ia
 from iarray import udf
 
 from cpython cimport (
-    PyObject_GetBuffer, PyBuffer_Release,
-    PyBUF_SIMPLE, Py_buffer,
+    PyObject_GetBuffer,
+    PyBuffer_Release,
+    PyBUF_SIMPLE,
 )
 
+# Conversion table numpy -> iarray
+np2ia_dtype = {
+    "f64": ciarray.IARRAY_DATA_TYPE_DOUBLE,
+    "f32": ciarray.IARRAY_DATA_TYPE_FLOAT,
+    "i64": ciarray.IARRAY_DATA_TYPE_INT64,
+    "i32": ciarray.IARRAY_DATA_TYPE_INT32,
+    "i16": ciarray.IARRAY_DATA_TYPE_INT16,
+    "i8": ciarray.IARRAY_DATA_TYPE_INT8,
+    "u64": ciarray.IARRAY_DATA_TYPE_UINT64,
+    "u32": ciarray.IARRAY_DATA_TYPE_UINT32,
+    "u16": ciarray.IARRAY_DATA_TYPE_UINT16,
+    "u8": ciarray.IARRAY_DATA_TYPE_UINT8,
+    "bool": ciarray.IARRAY_DATA_TYPE_BOOL,
+}
 
 def compress_squeeze(data, selectors):
     return tuple(d for d, s in zip(data, selectors) if not s)
@@ -1617,8 +1632,9 @@ cdef class UdfLibrary:
     def __dealloc__(self):
         ciarray.iarray_udf_library_free(&self.udf_library)
 
-    def register_func(self, llvm_bc, dtype, num_args, arg_types, name):
-        arg_types = [x.value for x in arg_types]
+    def register_func(self, llvm_bc, dtype, arg_types, name):
+        dtype = np2ia_dtype[dtype]
+        arg_types = [np2ia_dtype[x] for x in arg_types]
         nparr = np.array(arg_types, dtype=np.int32)
         cdef Py_buffer *buf = <Py_buffer *> malloc(sizeof(Py_buffer))
         PyObject_GetBuffer(nparr, buf, PyBUF_SIMPLE)
@@ -1627,8 +1643,8 @@ cdef class UdfLibrary:
         iarray_check(ciarray.iarray_udf_func_register(self.udf_library,
                                                       len(llvm_bc),
                                                       llvm_bc,
-                                                      dtype.value,
-                                                      num_args,
+                                                      dtype,
+                                                      len(arg_types),
                                                       <ciarray.iarray_data_type_t *>buf.buf,
                                                       name)
                      )
