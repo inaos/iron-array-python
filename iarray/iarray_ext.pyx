@@ -461,20 +461,15 @@ cdef class Expression:
     cdef object expression
     cdef ciarray.iarray_expression_t *ia_expr
     cdef Context context
-    cdef ciarray.iarray_udf_registry_t *udf_registry
 
     def __init__(self, cfg):
         self.cfg = cfg
-        self.udf_registry = (<UdfRegistry>ia.udf_registry).udf_registry
         self.context = Context(cfg)
         cdef ciarray.iarray_expression_t* e
         iarray_check(
             ciarray.iarray_expr_new(self.context.ia_ctx,
                                     get_key_from_dict(dtypes, cfg.dtype), &e)
         )
-        # Manually set the udf registry.  We do that because we don't want to touch
-        # the C API if possible.
-        e.udf_registry = <void*>(self.udf_registry)
         self.ia_expr = e
         self.expression = None
         self.dtshape = None
@@ -1607,70 +1602,56 @@ def set_zproxy_postfilter(iarr):
     iarray_check(ciarray.iarray_add_zproxy_postfilter(c, urlpath, func))
 
 
-# UDF registry and library functionality
-cdef class UdfRegistry:
-    """
-    Registry for libraries of scalar UDF functions.
-    """
-    cdef ciarray.iarray_udf_registry_t *udf_registry
-
-    def __init__(self):
-        cdef ciarray.iarray_udf_registry_t *registry
-        iarray_check(ciarray.iarray_udf_registry_new(&registry))
-        self.udf_registry = registry
-
-    # For some reason we get a "pointer being freed was not allocated" here
-    # Using the badly formed `__dealloc()` for now
-    def __dealloc(self):
-        if self.udf_registry != NULL:
-            ciarray.iarray_udf_registry_free(&self.udf_registry)
-
-
 cdef class UdfLibrary:
     """
     Library for scalar UDF functions.
     """
     cdef ciarray.iarray_udf_library_t *udf_library
-    cdef ciarray.iarray_udf_registry_t *udf_registry
 
     def __init__(self, name):
         name = name.encode("utf-8") if isinstance(name, str) else name
-        self.udf_registry = (<UdfRegistry>ia.udf_registry).udf_registry
         cdef ciarray.iarray_udf_library_t *library
-        iarray_check(ciarray.iarray_udf_library_new(self.udf_registry, name, &library))
+        iarray_check(ciarray.iarray_udf_library_new(name, &library))
         self.udf_library = library
 
-    # For some reason we get a "pointer being freed was not allocated" here
-    # Using the badly formed `__dealloc()` for now
-    def __dealloc(self):
-        if self.udf_registry != NULL and self.udf_library != NULL:
-            ciarray.iarray_udf_library_free(self.udf_registry, &self.udf_library)
+    def __dealloc__(self):
+        ciarray.iarray_udf_library_free(&self.udf_library)
 
-    def register(self, llvm_bc, dtype, num_args, arg_types, name):
+    def register_func(self, llvm_bc, dtype, num_args, arg_types, name):
         arg_types = [x.value for x in arg_types]
         nparr = np.array(arg_types, dtype=np.int32)
         cdef Py_buffer *buf = <Py_buffer *> malloc(sizeof(Py_buffer))
         PyObject_GetBuffer(nparr, buf, PyBUF_SIMPLE)
 
         name = name.encode("utf-8") if isinstance(name, str) else name
-        iarray_check(ciarray.iarray_udf_library_compile(self.udf_library,
-                                                        len(llvm_bc),
-                                                        llvm_bc,
-                                                        dtype.value,
-                                                        num_args,
-                                                        <ciarray.iarray_data_type_t *>buf.buf,
-                                                        name)
+        iarray_check(ciarray.iarray_udf_func_register(self.udf_library,
+                                                      len(llvm_bc),
+                                                      llvm_bc,
+                                                      dtype.value,
+                                                      num_args,
+                                                      <ciarray.iarray_data_type_t *>buf.buf,
+                                                      name)
                      )
         PyBuffer_Release(buf)
 
-    def lookup(self, full_name):
-        full_name = full_name.encode("utf-8") if isinstance(full_name, str) else full_name
-        cdef ciarray.uint64_t function_ptr
-        iarray_check(ciarray.iarray_udf_library_lookup(self.udf_registry,
-                                                       full_name,
-                                                       &function_ptr)
+
+def udf_lookup_func(full_name : str):
+    """Do a lookup for a `full_name` scalar UDF function.
+
+    Parameters
+    ----------
+    full_name : str
+        The full name of the function to be found.  Its format is ``lib_name.func_name``.
+
+    Returns
+    -------
+    A pointer (int64) to the function found.  If not found, and error is raised.
+    """
+    full_name = full_name.encode("utf-8") if isinstance(full_name, str) else full_name
+    cdef ciarray.uint64_t function_ptr
+    iarray_check(ciarray.iarray_udf_func_lookup(full_name, &function_ptr)
                      )
-        return function_ptr
+    return function_ptr
 
 
 #

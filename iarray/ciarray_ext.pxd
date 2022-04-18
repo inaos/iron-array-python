@@ -188,7 +188,6 @@ cdef extern from "libiarray/iarray.h":
         _iarray_jug_var_t vars[IARRAY_EXPR_OPERANDS_MAX]
         iarray_user_param_t user_params[IARRAY_EXPR_USER_PARAMS_MAX]
         int nuser_params
-        void *udf_registry
 
     ina_rc_t iarray_init()
 
@@ -588,22 +587,16 @@ cdef extern from "libiarray/iarray.h":
     ina_rc_t iarray_add_zproxy_postfilter(iarray_container_t *src, char *zarr_urlpath, zhandler_ptr zhandler)
 
     # UDF registry and library functionality
-    ctypedef struct iarray_udf_registry_t
     ctypedef struct iarray_udf_library_t
-    ina_rc_t iarray_udf_registry_new(iarray_udf_registry_t **udf_registry)
-    void iarray_udf_registry_free(iarray_udf_registry_t **udf_registry);
-    ina_rc_t iarray_udf_library_new(iarray_udf_registry_t *registry,
-                                    const char *name,
+    ina_rc_t iarray_udf_library_new(const char *name,
                                     iarray_udf_library_t **lib);
-    void iarray_udf_library_free(iarray_udf_registry_t *registry,
-                                 iarray_udf_library_t **lib);
-    ina_rc_t iarray_udf_library_compile(iarray_udf_library_t *lib,
-                                        int llvm_bc_len,
-                                        const char *llvm_bc,
-                                        iarray_data_type_t return_type,
-                                        int num_args,
-                                        iarray_data_type_t *arg_types,
-                                        const char *name);
-    ina_rc_t iarray_udf_library_lookup(iarray_udf_registry_t *registry,
-                                       const char *full_name,
-                                       uint64_t *function_ptr);
+    void iarray_udf_library_free(iarray_udf_library_t **lib);
+    ina_rc_t iarray_udf_func_register(iarray_udf_library_t *lib,
+                                      int llvm_bc_len,
+                                      const char *llvm_bc,
+                                      iarray_data_type_t return_type,
+                                      int num_args,
+                                      iarray_data_type_t *arg_types,
+                                      const char *name);
+    ina_rc_t iarray_udf_func_lookup(const char *full_name,
+                                    uint64_t *function_ptr);

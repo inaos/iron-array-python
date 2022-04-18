@@ -35,7 +35,6 @@ class Expr(ext.Expression):
         with ia.config(cfg=cfg, shape=shape, **kwargs) as cfg:
             dtshape = ia.DTShape(shape, cfg.dtype)
             self.cfg = cfg
-            self.registry = ia.udf_registry
             super().__init__(self.cfg)
             super().bind_out_properties(dtshape)
             if default_shapes:

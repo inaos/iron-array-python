@@ -269,16 +269,14 @@ from . import iarray_ext as ext
 
 from .iarray_ext import (
     UdfLibrary,
+    udf_lookup_func,
 )
 
-# We will only have a registry (that can have multiple libraries)
-udf_registry = ext.UdfRegistry()
-
-ext.IArrayInit()
+# Keep the reference so as to avoid calling the destroyer immediately
+_init_object = ext.IArrayInit()
 
 
 from . import tests
-
 
 def test():
     retcode = pytest.main(["-x", os.path.dirname(tests.__file__)])
