@@ -8,12 +8,15 @@
 # and shall use it only in accordance with the terms of the license agreement.
 ###########################################################################################
 from collections.abc import MutableMapping
-from typing import Optional
 import re
+from typing import Optional
+
+from llvmlite import ir
 
 import iarray as ia
 from iarray import iarray_ext as ext
 from iarray import py2llvm
+from iarray import udf
 
 
 # The main expression class
@@ -324,6 +327,24 @@ def expr_get_operands(sexpr):
     return expr_get_ops_funcs(sexpr)[0]
 
 
+class UdfLibrary(ext.UdfLibrary):
+
+    def __init__(self, name):
+        super().__init__(name)
+        self.name = name
+
+    def __getattr__(self, name):
+        full_name = f'{self.name}.{name}'
+        try:
+            address = ext.udf_lookup_func(full_name)
+        except ia.IArrayError:
+            raise AttributeError(f"{type(self)} object has no attribute '{name}'")
+
+        address = ir.Constant(udf.int64, address)
+
+        return address
+
+
 class UdfRegistry(MutableMapping):
 
     def __init__(self):
@@ -364,7 +385,7 @@ class UdfRegistry(MutableMapping):
         None
         """
         if name not in self.libs:
-            self.libs[name] = ext.UdfLibrary(name)
+            self.libs[name] = UdfLibrary(name)
             self.libs_funcs[name] = set()
         func_name = udf_func.name
         if func_name in self.libs_funcs[name]:

@@ -275,12 +275,15 @@ class NodeVisitor(BaseNodeVisitor):
         if name in self.locals:
             return self.locals[name]
 
-        # To support recursivity XXX
         if name in self.root.compiled:
             return self.root.compiled[name]
 
         if name in self.root.globals:
             return self.root.globals[name]
+
+        libs = iarray.udf_registry.libs
+        if name in libs:
+            return libs[name]
 
         if name == 'UDFJIT':
             return 1
@@ -1212,11 +1215,6 @@ class Function:
                     signatures[args] = signature
                 fname = name if t is types.float64 else f'{name}f'
                 node.compiled[(py_func,) + args] = ir.Function(self.ir_module, signature, name=fname)
-
-        for plugin in plugins:
-            load_functions = getattr(plugin, "load_functions", None)
-            if load_functions is not None:
-                node.compiled.update(load_functions(self.ir_module))
 
         # (6) The IR module and function
         f_type = ir.FunctionType(
