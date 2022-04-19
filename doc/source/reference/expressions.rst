@@ -54,4 +54,3 @@ Utils
    :nosignatures:
 
    expr_get_operands
-   udf_libraries

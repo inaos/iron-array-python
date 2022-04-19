@@ -9,7 +9,6 @@
 ###########################################################################################
 
 import os
-import re
 from enum import Enum, auto
 from ctypes import cdll
 from llvmlite import binding
@@ -23,10 +22,6 @@ import pytest
 # Change to use a YEAR.MINOR-BUILD_VER
 __version__ = "2022.1-$IA_BUILD_VER"
 
-
-# Compile the regular expression to find operands
-operands_regex = r"\w+(?=\()|((?!0)|[-+]|(?=0+\.))(\d*\.)?\d+(e\d+)?|(\w+)"
-operands_regex_compiled = re.compile(operands_regex)
 
 binding.initialize()
 binding.initialize_native_target()
@@ -237,10 +232,10 @@ from . import random
 
 from .expression import (
     Expr,
+    UdfLibraries,
     expr_from_string,
     expr_from_udf,
     expr_get_operands,
-    udf_libraries,
 )
 
 from .lazy_expr import (

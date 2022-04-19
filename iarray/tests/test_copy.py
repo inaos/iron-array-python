@@ -13,7 +13,7 @@ import numpy as np
 )
 @pytest.mark.parametrize("dtype", [np.float32, np.float64, np.int64, np.int32, np.uint64, np.uint32])
 @pytest.mark.parametrize(
-    " contiguous, urlpath, urlpath2",
+    "contiguous, urlpath, urlpath2",
     [
         (False, None, None),
         (False, None, None),

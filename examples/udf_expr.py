@@ -26,9 +26,9 @@ def fmult(a: udf.float64, b: udf.float64) -> float:
     return a * b
 
 
-libs = ia.udf_libraries()
-libs("lib").register_func(fsum)
-libs("lib2").register_func(fmult)
+libs = ia.UdfLibraries()
+libs["lib"].register_func(fsum)
+libs["lib2"].register_func(fmult)
 
 # Create initial containers
 a1 = ia.linspace(shape, 0, 10)

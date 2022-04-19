@@ -9,6 +9,7 @@
 ###########################################################################################
 
 from typing import Optional
+import re
 
 import iarray as ia
 from iarray import iarray_ext as ext
@@ -69,6 +70,16 @@ def check_inputs(inputs: list, shape):
         return shape, cfg.dtype
 
 
+# Check that inputs values are compatible with operands in expression
+def check_expr(sexpr: str, inputs: dict):
+    vars_in_expr = expr_get_operands(sexpr)
+    if not set(vars_in_expr).issubset(set(inputs.keys())):
+        raise ValueError(f"Some operands in expression {vars_in_expr} are not in input keys")
+    for var in vars_in_expr:
+        if not isinstance(inputs[var], ia.IArray):
+            raise ValueError(f"Operand {var} is not an IArray instance")
+
+
 def expr_from_string(sexpr: str, inputs: dict, cfg: ia.Config = None, **kwargs) -> Expr:
     """Create an :class:`Expr` instance from an expression in string form.
 
@@ -94,6 +105,7 @@ def expr_from_string(sexpr: str, inputs: dict, cfg: ia.Config = None, **kwargs) 
     --------
     expr_from_udf
     """
+    check_expr(sexpr, inputs)
     with ia.config(cfg, **kwargs):
         shape, dtype = check_inputs(list(inputs.values()), None)
     kwargs["dtype"] = dtype
@@ -181,6 +193,12 @@ def check_expr_config(cfg=None, **kwargs):
     return default_shapes
 
 
+# Compile the regular expression to find operands
+# The expression below does not detect functions like 'lib.func()'
+# operands_regex = r"\w+(?=\()|((?!0)|[-+]|(?=0+\.))(\d*\.)?\d+(e\d+)?|(\w+)"
+# See https://regex101.com/r/ASRG5J/1
+operands_regex = r"((\w\.*)+)(\()|((?!0)|[-+]|(0+\.))(\d*\.)?\d+(e\d+)?|(\w+)"
+operands_regex_compiled = re.compile(operands_regex)
 def expr_get_operands(sexpr):
     """Return a tuple with the operands of an expression in string form.
 
@@ -194,33 +212,21 @@ def expr_get_operands(sexpr):
     tuple
         The operands list.
     """
-    m2 = ia.operands_regex_compiled.findall(sexpr)
-    operands = set(g[3] for g in m2 if g[3] != '')
+    m2 = operands_regex_compiled.findall(sexpr)
+    # We are interested in the last group (operands) only
+    # print("->", list(m2))
+    operands = set(g[-1] for g in m2 if g[-1] != '')
     return tuple(sorted(operands))
 
 
-def udf_libraries():
-    """
-    Handler for UDF libraries.
+class UdfLibraries:
+    libs = {}  # libraries are shared among all instances
 
-    Returns
-    -------
-    A function (closure) that returns the handler for the library passed as argument.
+    def __init__(self):
+        pass
 
-    Examples
-    --------
-    The next registers `fsum` in "my_lib" library and `fmult` in "my_other_lib":
-    >>> libs = ia.udf_libraries()
-    >>> libs("my_lib").register_func(fsum)
-    >>> libs("my_other_lib").register_func(fmult)
-    Once registered, UDFs can be part of expressions.
-    """
-    libs = {}
-
-    # The closure below implements a singleton for library handlers
-    def library(name):
-        if name in libs:
-            return libs[name]
-        libs[name] = ext.UdfLibrary(name)
-        return libs[name]
-    return library
+    def __getitem__(self, name):
+        if name in self.libs:
+            return self.libs[name]
+        self.libs[name] = ext.UdfLibrary(name)
+        return self.libs[name]

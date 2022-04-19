@@ -1635,7 +1635,9 @@ cdef class UdfLibrary:
         iarray_check(ciarray.iarray_udf_library_new(name, &library))
         self.udf_library = library
 
-    def __dealloc__(self):
+    # By removing the trailing "__" we are not making use of the automatic cleanup
+    # We are doing so because currently this segfaults (Address boundary error).
+    def __dealloc(self):
         ciarray.iarray_udf_library_free(&self.udf_library)
 
     def register_func(self, f):
