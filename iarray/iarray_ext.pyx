@@ -1635,9 +1635,7 @@ cdef class UdfLibrary:
         iarray_check(ciarray.iarray_udf_library_new(name, &library))
         self.udf_library = library
 
-    # By removing the trailing "__" we are not making use of the automatic cleanup
-    # We are doing so because currently this segfaults (Address boundary error).
-    def __dealloc(self):
+    def dealloc(self):
         ciarray.iarray_udf_library_free(&self.udf_library)
 
     def register_func(self, f):
@@ -1674,8 +1672,7 @@ def udf_lookup_func(full_name : str):
     """
     full_name = full_name.encode("utf-8") if isinstance(full_name, str) else full_name
     cdef ciarray.uint64_t function_ptr
-    iarray_check(ciarray.iarray_udf_func_lookup(full_name, &function_ptr)
-                     )
+    iarray_check(ciarray.iarray_udf_func_lookup(full_name, &function_ptr))
     return function_ptr
 
 

@@ -232,7 +232,7 @@ from . import random
 
 from .expression import (
     Expr,
-    UdfLibraries,
+    UdfRegistry,
     expr_from_string,
     expr_from_udf,
     expr_get_operands,
@@ -255,6 +255,9 @@ from .iarray_ext import (
 
 # Keep the reference so as to avoid calling the destroyer immediately
 _init_object = ext.IArrayInit()
+
+# Global registry for udfs
+udf_registry = UdfRegistry()
 
 
 from . import tests

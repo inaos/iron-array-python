@@ -26,9 +26,9 @@ def fmult(a: udf.float64, b: udf.float64) -> float:
     return a * b
 
 
-libs = ia.UdfLibraries()
-libs["lib"].register_func(fsum)
-libs["lib2"].register_func(fmult)
+ia.udf_registry["lib"] = fsum
+ia.udf_registry["lib2"] = fmult
+print(list(ia.udf_registry.iter_all_funcs()))
 
 # Create initial containers
 a1 = ia.linspace(shape, 0, 10)
@@ -64,3 +64,5 @@ print(b1_n)
 # b1 = ne.evaluate(expr, {"x": a1_n})
 # print("Time for pure expr eval:", round((time() - t0), 3))
 # print(b1)
+
+ia.udf_registry.clear()

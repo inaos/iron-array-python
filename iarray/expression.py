@@ -7,7 +7,7 @@
 # ("Confidential Information"). You shall not disclose such Confidential Information
 # and shall use it only in accordance with the terms of the license agreement.
 ###########################################################################################
-
+from collections.abc import MutableMapping
 from typing import Optional
 import re
 
@@ -219,14 +219,107 @@ def expr_get_operands(sexpr):
     return tuple(sorted(operands))
 
 
-class UdfLibraries:
-    libs = {}  # libraries are shared among all instances
+class UdfRegistry(MutableMapping):
 
     def __init__(self):
-        pass
+        self.libs = {}
+        self.libs_funcs = {}
 
-    def __getitem__(self, name):
+    def __getitem__(self, name: str):
+        """
+        Get the :paramref:`name` library.
+
+        Parameters
+        ----------
+        name : str or byte string
+            The name of the library to return.
+
+        Returns
+        -------
+        object : set
+            A set with all the UDF functions in :paramref:`name` lib.
+        """
         if name in self.libs:
-            return self.libs[name]
-        self.libs[name] = ext.UdfLibrary(name)
-        return self.libs[name]
+            return self.libs_funcs[name]
+        raise ValueError(f"'{name}' is not a registered library")
+
+    def __setitem__(self, name: str, udf_func: py2llvm.Function):
+        """Add a UDF function to :paramref:`name` library.
+
+        Parameters
+        ----------
+        name : str or byte string
+            The name of the library.
+        udf_func : py2llvm.Function
+            The UDF function.
+
+        Returns
+        -------
+        None
+        """
+        if name not in self.libs:
+            self.libs[name] = ext.UdfLibrary(name)
+            self.libs_funcs[name] = set()
+        if udf_func.name in self.libs_funcs[name]:
+            raise ValueError(f"UDF func '{udf_func.name}' already registered in library '{name}'")
+        self.libs[name].register_func(udf_func)
+        self.libs_funcs[name].add(udf_func)
+
+    def __delitem__(self, name: str):
+        """Delete the attr given by :paramref:`name`.
+
+        Parameters
+        ----------
+        name : str or byte string
+            The name of the attr.
+        """
+        self.libs[name].dealloc()
+        del self.libs[name]
+        del self.libs_funcs[name]
+
+    def __iter__(self):
+        """
+        Iterate over all the names of the registered libs.
+        """
+        for name in self.libs:
+            yield name
+
+    def iter_funcs(self, name: str):
+        """
+        Iterate over all UDF funcs registered in :paramref:`name` lib.
+
+        Parameters
+        ----------
+        name : str
+            The name of the library
+
+        Returns
+        -------
+        Iterator over all funcs under :paramref:`name` lib.
+        """
+        for func in self.libs_funcs[name]:
+            yield func
+
+    def iter_all_func_names(self):
+        """
+        Iterate over all UDF func names registered in all libs.
+
+        Returns
+        -------
+        Iterator over all registered UDF funcs in the `lib_name.func_name` form.
+        """
+        for name in self.libs:
+            for func in self.libs_funcs[name]:
+                yield ".".join([name, func.name])
+
+    def __len__(self):
+        return len(self.libs)
+
+    def clear(self):
+        """
+        Clear all the registered libs and UDF funcs.
+        """
+        for name in list(self.libs):
+            self.__delitem__(name)
+        self.libs = {}
+        self.libs_funcs = {}
