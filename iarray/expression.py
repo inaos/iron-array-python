@@ -197,3 +197,30 @@ def expr_get_operands(sexpr):
     m2 = ia.operands_regex_compiled.findall(sexpr)
     operands = set(g[3] for g in m2 if g[3] != '')
     return tuple(sorted(operands))
+
+
+def udf_libraries():
+    """
+    Handler for UDF libraries.
+
+    Returns
+    -------
+    A function (closure) that returns the handler for the library passed as argument.
+
+    Examples
+    --------
+    The next registers `fsum` in "my_lib" library and `fmult` in "my_other_lib":
+    >>> libs = ia.udf_libraries()
+    >>> libs("my_lib").register_func(fsum)
+    >>> libs("my_other_lib").register_func(fmult)
+    Once registered, UDFs can be part of expressions.
+    """
+    libs = {}
+
+    # The closure below implements a singleton for library handlers
+    def library(name):
+        if name in libs:
+            return libs[name]
+        libs[name] = ext.UdfLibrary(name)
+        return libs[name]
+    return library

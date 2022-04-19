@@ -23,7 +23,6 @@ Constructors
 
    expr_from_string
    expr_from_udf
-   expr_get_operands
 
 
 Expressions are implemented in the :py:class:`iarray.Expr` class.  Once built,
@@ -46,3 +45,13 @@ Methods
    :nosignatures:
 
    Expr.eval
+
+Utils
+-----
+
+.. autosummary::
+   :toctree: autofiles/expressions/
+   :nosignatures:
+
+   expr_get_operands
+   udf_libraries

@@ -18,19 +18,24 @@ ia.set_config_defaults(favor=ia.Favor.SPEED, dtype=dtype)
 
 
 @udf.scalar(verbose=0)
-def f(a: udf.float64, b: udf.float64) -> float:
+def fsum(a: udf.float64, b: udf.float64) -> float:
+    return a + b
+
+@udf.scalar(verbose=0)
+def fmult(a: udf.float64, b: udf.float64) -> float:
     return a * b
 
 
-lib = ia.UdfLibrary("lib")
-lib.register_func(f.bc, f.rtype, f.argtypes, "f")
+libs = ia.udf_libraries()
+libs("lib").register_func(fsum)
+libs("lib2").register_func(fmult)
 
 # Create initial containers
 a1 = ia.linspace(shape, 0, 10)
 a2 = np.linspace(0, 10, shape[0], dtype=dtype).reshape(shape)
 
 print("pure expr evaluation ...")
-expr = "4 * x * x"
+expr = "4 * (x * x)"
 expr = ia.expr_from_string(expr, {"x": a1})
 t0 = time()
 b1 = expr.eval()
@@ -41,7 +46,8 @@ print(b1_n)
 
 print("scalar udf evaluation ...")
 # expr = "lib.f(a1, a1)"  # segfault.  fix it by propagating errors correctly!
-expr = "4 * lib.f(x, x)"
+# expr = "4 * lib.fsum(x, x) + lib2.fmult(x, x)"  # segfaults too
+expr = "4 * lib2.fmult(x, x)"
 expr = ia.expr_from_string(expr, {"x": a1})
 t0 = time()
 b1 = expr.eval()

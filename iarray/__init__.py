@@ -240,6 +240,7 @@ from .expression import (
     expr_from_string,
     expr_from_udf,
     expr_get_operands,
+    udf_libraries,
 )
 
 from .lazy_expr import (
@@ -254,7 +255,6 @@ from .attrs import (
 from . import iarray_ext as ext
 
 from .iarray_ext import (
-    UdfLibrary,
     udf_lookup_func,
 )
 

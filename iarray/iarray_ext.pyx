@@ -1638,7 +1638,8 @@ cdef class UdfLibrary:
     def __dealloc__(self):
         ciarray.iarray_udf_library_free(&self.udf_library)
 
-    def register_func(self, llvm_bc, dtype, arg_types, name):
+    def register_func(self, f):
+        llvm_bc, dtype, arg_types, name = f.bc, f.rtype, f.argtypes, f.name
         dtype = udf2ia_dtype[dtype]
         arg_types = [udf2ia_dtype[x] for x in arg_types]
         nparr = np.array(arg_types, dtype=np.int32)
