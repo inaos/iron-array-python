@@ -140,7 +140,7 @@ cdef extern from "libiarray/iarray.h":
         int max_num_threads
         uint8_t fp_mantissa_bits
         bool btune
-        uint8_t meta
+        uint8_t compression_meta
 
     ctypedef struct iarray_storage_t:
         const char *urlpath
