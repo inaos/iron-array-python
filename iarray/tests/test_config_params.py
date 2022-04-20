@@ -4,10 +4,10 @@ import numpy as np
 
 
 @pytest.mark.parametrize(
-    "clevel, codec, filters, chunks, blocks, contiguous, urlpath, meta",
+    "clevel, codec, filters, chunks, blocks, contiguous, urlpath",
     [
-        (0, ia.Codec.ZSTD, [ia.Filter.SHUFFLE], None, None, False, None, None),
-        (1, ia.Codec.BLOSCLZ, [ia.Filter.SHUFFLE], [50, 50], [20, 20], True, None, None),
+        (0, ia.Codec.ZSTD, [ia.Filter.SHUFFLE], None, None, False, None),
+        (1, ia.Codec.BLOSCLZ, [ia.Filter.SHUFFLE], [50, 50], [20, 20], True, None),
         (
             9,
             ia.Codec.ZSTD,
@@ -16,7 +16,6 @@ import numpy as np
             [20, 20],
             False,
             b"test_config_params_sparse.iarr",
-            None,
         ),
         (
             6,
@@ -26,15 +25,13 @@ import numpy as np
             [50, 20],
             True,
             b"test_config_params_contiguous.iarr",
-            None,
         ),
-        (0, ia.Codec.ZSTD, [ia.Filter.SHUFFLE], None, None, False, None, None),
-        (0, ia.Codec.ZFP_FIXED_ACCURACY, [ia.Filter.SHUFFLE], None, None, False, None, -2),
+        (0, ia.Codec.ZSTD, [ia.Filter.SHUFFLE], None, None, False, None),
     ],
 )
-def test_global_config(clevel, codec, filters, chunks, blocks, contiguous, urlpath, meta):
+def test_global_config(clevel, codec, filters, chunks, blocks, contiguous, urlpath):
     ia.set_config_defaults(clevel=clevel, codec=codec, filters=filters, chunks=chunks, blocks=blocks,
-                           contiguous=contiguous, urlpath=urlpath, btune=False, meta=meta)
+                           contiguous=contiguous, urlpath=urlpath, btune=False, zfp_meta=None)
     config = ia.get_config_defaults()
     assert config.clevel == clevel
     assert config.codec == codec
@@ -43,10 +40,7 @@ def test_global_config(clevel, codec, filters, chunks, blocks, contiguous, urlpa
     assert config.blocks == blocks
     assert config.contiguous == contiguous
     assert config.urlpath == urlpath
-    if meta is None:
-        assert config.meta == 0
-    else:
-        assert config.meta == meta
+    assert config.zfp_meta == 0
 
     # One can pass store parameters straight to config() dataclass too
     ia.set_config_defaults(
@@ -58,7 +52,6 @@ def test_global_config(clevel, codec, filters, chunks, blocks, contiguous, urlpa
         contiguous=False,
         urlpath=None,
         btune=False,
-        meta=meta,
     )
     config = ia.get_config_defaults()
     assert config.clevel == clevel
@@ -68,10 +61,7 @@ def test_global_config(clevel, codec, filters, chunks, blocks, contiguous, urlpa
     assert config.blocks == blocks
     assert config.contiguous is False
     assert config.urlpath is None
-    if meta is None:
-        assert config.meta == 0
-    else:
-        assert config.meta == meta
+    assert config.zfp_meta == 0
 
     # Or, we can set defaults via Config (for better auto-completion)
     cfg = ia.Config(
@@ -83,7 +73,6 @@ def test_global_config(clevel, codec, filters, chunks, blocks, contiguous, urlpa
         contiguous=False,
         urlpath=None,
         btune=False,
-        meta=meta,
     )
     ia.set_config_defaults(cfg)
     config = ia.get_config_defaults()
@@ -94,16 +83,13 @@ def test_global_config(clevel, codec, filters, chunks, blocks, contiguous, urlpa
     assert config.blocks == blocks
     assert config.contiguous is False
     assert config.urlpath is None
-    if meta is None:
-        assert config.meta == 0
-    else:
-        assert config.meta == meta
+    assert config.zfp_meta == 0
 
     # Or, we can use a mix of Config and keyword args
     cfg = ia.Config(
         clevel=clevel, codec=codec, blocks=blocks, contiguous=False, urlpath=urlpath, btune=False
     )
-    ia.set_config_defaults(cfg, filters=filters, chunks=chunks, meta=meta)
+    ia.set_config_defaults(cfg, filters=filters, chunks=chunks, zfp_meta=None)
     config = ia.get_config_defaults()
 
     assert config.clevel == clevel
@@ -113,10 +99,7 @@ def test_global_config(clevel, codec, filters, chunks, blocks, contiguous, urlpa
     assert config.blocks == blocks
     assert config.contiguous is False
     assert config.urlpath is urlpath
-    if meta is None:
-        assert config.meta == 0
-    else:
-        assert config.meta == meta
+    assert config.zfp_meta == 0
 
 
 @pytest.mark.parametrize(
@@ -354,37 +337,96 @@ def test_default_params():
     assert cfg.mode == cfg2.mode
     ia.remove_urlpath(urlpath)
 
-def test_zfp_codec():
+def test_zfp_accuracy_codec():
     with pytest.raises(ValueError):
         ia.set_config_defaults(btune=False, codec=ia.Codec.ZFP_FIXED_ACCURACY)
     with pytest.raises(ValueError):
-        ia.set_config_defaults(btune=False, codec=ia.Codec.ZFP_FIXED_RATE)
-    with pytest.raises(ValueError):
-        ia.set_config_defaults(btune=False, codec=ia.Codec.ZFP_FIXED_PRECISION)
-
-    with pytest.raises(ValueError):
-        ia.set_config_defaults(btune=False, codec=ia.Codec.LZ4, meta=3)
-
+        ia.set_config_defaults(btune=False, codec=ia.Codec.LZ4, zfp_meta=3)
 
     shape = [100, 100]
     chunks = [30, 30]
-    blocks = [2, 2]
-    start = 0
-    stop = 5
+    blocks = [4, 4]
     dtype = np.float32
     contiguous = False
-    urlpath = "test_zfp.iarr"
+    urlpath = "test_zfp_accuracy.iarr"
     codec = ia.Codec.ZFP_FIXED_ACCURACY
-    meta = -2
+    zfp_meta = -4
 
-    size = int(np.prod(shape))
     ia.remove_urlpath(urlpath)
-    print("tira-li al ia.linspace")
-    a = ia.linspace(shape, start, stop, dtype=dtype, chunks=chunks, blocks=blocks, contiguous=contiguous,
-                    urlpath=urlpath, codec=codec, meta=meta, btune=False)
+    a = ia.random.random_sample(shape=shape, dtype=dtype, chunks=chunks, blocks=blocks, contiguous=contiguous,
+                    urlpath=urlpath)
     b = ia.iarray2numpy(a)
-    c = np.linspace(start, stop, size, dtype=dtype).reshape(shape)
-    np.testing.assert_allclose(b, c, rtol=1e-2)
+    c = a.copy(dtype=dtype, chunks=chunks, blocks=blocks, contiguous=contiguous, mode="w",
+               codec=codec, zfp_meta=zfp_meta, btune=False, filters=[ia.Filter.NOFILTER])
+    d = ia.iarray2numpy(c)
+    np.testing.assert_allclose(b, d, rtol=1e-4, atol=1e-4)
+
+    with pytest.raises(AssertionError):
+        np.testing.assert_allclose(b, d, rtol=1e-6, atol=1e-6)
+
+    ia.remove_urlpath(urlpath)
+
+def test_zfp_precision_codec():
+    import os
+    os.environ['INAC_TRACE'] = 'iarray.error'
+    os.environ['CATERVA_TRACE'] = 'caterva.error'
+    os.environ['BLOSC_TRACE'] = 'blosc.error'
+    with pytest.raises(ValueError):
+        ia.set_config_defaults(btune=False, codec=ia.Codec.ZFP_FIXED_PRECISION)
+
+    shape = [100, 100]
+    chunks = [30, 30]
+    blocks = [4, 4]
+    dtype = np.float64
+    contiguous = True
+    urlpath = "test_zfp_precision.iarr"
+    codec = ia.Codec.ZFP_FIXED_PRECISION
+    zfp_meta = 32
+
+    ia.remove_urlpath(urlpath)
+    a = ia.random.random_sample(shape=shape, dtype=dtype, chunks=chunks, blocks=blocks, contiguous=contiguous,
+                    urlpath=urlpath)
+    b = ia.iarray2numpy(a)
+    c = a.copy(dtype=dtype, chunks=chunks, blocks=blocks, contiguous=contiguous, mode="w",
+               codec=codec, zfp_meta=zfp_meta, btune=False, filters=[ia.Filter.NOFILTER])
+    d = ia.iarray2numpy(c)
+    e = a.copy(btune=False, filters=[ia.Filter.TRUNC_PREC], fp_mantissa_bits=16)
+    f = ia.iarray2numpy(e)
+    np.testing.assert_allclose(b, d, rtol=1e-4, atol=1e-4)
+    np.testing.assert_allclose(d, f, rtol=1e-4, atol=1e-4)
+
+    with pytest.raises(AssertionError):
+        np.testing.assert_allclose(b, d, rtol=1e-12, atol=1e-12)
+
+    ia.remove_urlpath(urlpath)
+
+def test_zfp_rate_codec():
+    with pytest.raises(ValueError):
+        ia.set_config_defaults(btune=False, codec=ia.Codec.ZFP_FIXED_RATE)
+    with pytest.raises(ValueError):
+        ia.set_config_defaults(btune=False, codec=ia.Codec.ZFP_FIXED_RATE, zfp_meta=3)
+
+    shape = [100, 100]
+    chunks = [30, 30]
+    blocks = [4, 4]
+    dtype = np.float32
+    contiguous = False
+    urlpath = "test_zfp_rate.iarr"
+    codec = ia.Codec.ZFP_FIXED_RATE
+    zfp_meta = 50
+
+    ia.remove_urlpath(urlpath)
+    a = ia.random.random_sample(shape=shape, dtype=dtype, chunks=chunks, blocks=blocks, contiguous=contiguous,
+                    urlpath=urlpath)
+    b = ia.iarray2numpy(a)
+    c = a.copy(dtype=dtype, chunks=chunks, blocks=blocks, contiguous=contiguous, mode="w",
+               codec=codec, zfp_meta=zfp_meta, btune=False, filters=[ia.Filter.NOFILTER])
+    d = ia.iarray2numpy(c)
+
+    np.testing.assert_allclose(b, d, rtol=1e-2, atol=1e-2)
+    with pytest.raises(AssertionError):
+        np.testing.assert_allclose(b, d, rtol=1e-6, atol=1e-6)
+    assert(round(c.cratio) == 2)
 
     ia.remove_urlpath(urlpath)
 
