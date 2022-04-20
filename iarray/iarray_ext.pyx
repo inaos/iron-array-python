@@ -1658,7 +1658,7 @@ cdef class UdfLibrary:
         PyBuffer_Release(buf)
 
 
-def udf_lookup_func(full_name : str):
+def udf_lookup_func(full_name):
     """Do a lookup for a `full_name` scalar UDF function.
 
     Parameters

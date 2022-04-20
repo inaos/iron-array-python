@@ -224,6 +224,7 @@ class UdfRegistry(MutableMapping):
     def __init__(self):
         self.libs = {}
         self.libs_funcs = {}
+        self.func_addr = {}
 
     def __getitem__(self, name: str):
         """
@@ -260,10 +261,13 @@ class UdfRegistry(MutableMapping):
         if name not in self.libs:
             self.libs[name] = ext.UdfLibrary(name)
             self.libs_funcs[name] = set()
-        if udf_func.name in self.libs_funcs[name]:
-            raise ValueError(f"UDF func '{udf_func.name}' already registered in library '{name}'")
+        func_name = udf_func.name
+        if func_name in self.libs_funcs[name]:
+            raise ValueError(f"UDF func '{func_name}' already registered in library '{name}'")
         self.libs[name].register_func(udf_func)
         self.libs_funcs[name].add(udf_func)
+        full_func_name = ".".join([name, func_name])
+        self.func_addr[full_func_name] = ia.udf_lookup_func(full_func_name)
 
     def __delitem__(self, name: str):
         """Delete the attr given by :paramref:`name`.
@@ -273,6 +277,9 @@ class UdfRegistry(MutableMapping):
         name : str or byte string
             The name of the attr.
         """
+        for func in self.libs_funcs[name]:
+            full_func_name = ".".join([name, func.name])
+            del self.func_addr[full_func_name]
         self.libs[name].dealloc()
         del self.libs[name]
         del self.libs_funcs[name]
@@ -312,6 +319,20 @@ class UdfRegistry(MutableMapping):
             for func in self.libs_funcs[name]:
                 yield ".".join([name, func.name])
 
+    def get_func_addr(self, func_name):
+        """
+        Return the address of the compiled UDF function.
+
+        Parameters
+        ----------
+        func_name : str
+            The name of the function in `lib_name.func_name` form.
+
+        Returns
+        -------
+        An integer with the address of the compiled UDF function.  Yes, this is mainly for devs.
+        """
+
     def __len__(self):
         return len(self.libs)
 
@@ -323,3 +344,4 @@ class UdfRegistry(MutableMapping):
             self.__delitem__(name)
         self.libs = {}
         self.libs_funcs = {}
+        self.func_addr = {}

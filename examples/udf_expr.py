@@ -28,7 +28,7 @@ def fmult(a: udf.float64, b: udf.float64) -> float:
 
 ia.udf_registry["lib"] = fsum
 ia.udf_registry["lib2"] = fmult
-print(list(ia.udf_registry.iter_all_funcs()))
+print("Registered UDF funcs:", tuple(ia.udf_registry.iter_all_func_names()))
 
 # Create initial containers
 a1 = ia.linspace(shape, 0, 10)
