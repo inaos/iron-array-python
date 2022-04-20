@@ -134,12 +134,12 @@ class Reduce(Enum):
 
 
 # List of all know universal functions
-UFUNC_LIST = (
-    "abs",
-    "arccos",
-    "arcsin",
-    "arctan",
-    "arctan2",
+MATH_FUNC_LIST = (
+    "abs", "absolute",
+    "arccos", "acos",
+    "arcsin", "asin",
+    "arctan", "atan",
+    "arctan2", "atan2",
     "ceil",
     "cos",
     "cosh",
@@ -147,8 +147,8 @@ UFUNC_LIST = (
     "floor",
     "log",
     "log10",
-    "negative",
-    "power",
+    "negative", "negate",
+    "power", "pow",
     "sin",
     "sinh",
     "sqrt",

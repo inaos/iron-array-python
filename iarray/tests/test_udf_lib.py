@@ -21,9 +21,9 @@ def fmult(a: udf.float64, b: udf.float64) -> float:
         ("x * x", "lib2.fmult(x, x)", {"x": ia.arange((10,))}),
         ("2 * (x + x)", "2 * lib.fsum(x, x)", {"x": ia.arange((10,))}),
         ("2 + x * x", "2 + lib2.fmult(x, x)", {"x": ia.arange((10,))}),
-        # ("2 + x * x * (x + x)", "2 + lib.fmult(x, x) * lib2.fsum(x, x)", {"x": ia.arange((10,))}),  # segfaults!
-        # ("2 + x * x", "2 + lib.fmult2(x, x)", {"x": ia.arange((10,))}),  # segfaults (should be function not found!)
-        # ("2 + x * x", "2 + lib.fmult(x, x)", {"x": ia.arange((10,))}),  # segfaults (should be lib2 not found!)
+        ("2 + sin(x) + x * x", "2 + sin(x) + lib2.fmult(x, x)", {"x": ia.arange((10,))}),
+        ("2 * (sin(x) + cos(x)) + x * x", "2 * (sin(x) + cos(x)) + lib2.fmult(x, x)", {"x": ia.arange((10,))}),
+        # ("2 + x * x * (x + x)", "2 + lib2.fmult(x, x) * lib.fsum(x, x)", {"x": ia.arange((10,))}), # raises an error
     ],
 )
 def test_simple(sexpr, sexpr_udf, inputs):
@@ -57,6 +57,10 @@ def test_simple(sexpr, sexpr_udf, inputs):
     [
         ("lib.fsum(x1, x)", {"x": ia.arange((10,))}),
         ("lib.fsum(x1, x1)", {"x": ia.arange((10,))}),
+        ("2 + lib.fmult2(x, x)", {"x": ia.arange((10,))}),
+        ("2 + lib2.fmult(x, x)", {"x": ia.arange((10,))}),
+        ("2 + sin(x) + lib2.fmult(x, x)", {"x": ia.arange((10,))}),
+        ("2 + lib.fmult(x, x) * lib2.fsum(x, x)", {"x": ia.arange((10,))}),
     ],
 )
 def test_malformed(sexpr_udf, inputs):

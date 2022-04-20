@@ -70,14 +70,51 @@ def check_inputs(inputs: list, shape):
         return shape, cfg.dtype
 
 
-# Check that inputs values are compatible with operands in expression
+# Compile the regular expression to find operands
+# The expression below does not detect functions like 'lib.func()'
+# operands_regex = r"\w+(?=\()|((?!0)|[-+]|(?=0+\.))(\d*\.)?\d+(e\d+)?|(\w+)"
+# See https://regex101.com/r/ASRG5J/1
+operands_regex = r"((\w\.*)+)(\()|((?!0)|[-+]|(0+\.))(\d*\.)?\d+(e\d+)?|(\w+)"
+operands_regex_compiled = re.compile(operands_regex)
+def expr_get_ops_funcs(sexpr):
+    """Return the operands and functions of an expression in string form.
+
+    Parameters
+    ----------
+    sexpr : str
+        An expression in string form.
+
+    Returns
+    -------
+    tuple
+        A tuple of tuples: ((operands), (regular_funcs), (udf_funcs)).
+    """
+    m2 = operands_regex_compiled.findall(sexpr)
+    operands = tuple(sorted(set(g[-1] for g in m2 if g[-1] != '')))
+    regular_funcs = tuple(sorted(set(g[0] for g in m2 if g[0] != '' and '.' not in g[0])))
+    udf_funcs = tuple(sorted(set(g[0] for g in m2 if g[0] != '' and '.' in g[0])))
+    return operands, regular_funcs, udf_funcs
+
+
+# Check validity for operands, regular functions and udf functions in expression
 def check_expr(sexpr: str, inputs: dict):
-    vars_in_expr = expr_get_operands(sexpr)
-    if not set(vars_in_expr).issubset(set(inputs.keys())):
-        raise ValueError(f"Some operands in expression {vars_in_expr} are not in input keys")
-    for var in vars_in_expr:
-        if not isinstance(inputs[var], ia.IArray):
-            raise ValueError(f"Operand {var} is not an IArray instance")
+    ops_in_expr, regular_funcs_in_expr, udf_funcs_in_expr = expr_get_ops_funcs(sexpr)
+
+    # Operands
+    if not set(ops_in_expr).issubset(set(inputs.keys())):
+        raise ValueError(f"Some operands in expression {ops_in_expr} are not in input keys")
+    for op in ops_in_expr:
+        if not isinstance(inputs[op], ia.IArray):
+            raise ValueError(f"Operand {op} is not an IArray instance")
+
+    # Regular functions
+    if not set(regular_funcs_in_expr).issubset(set(ia.MATH_FUNC_LIST)):
+        raise ValueError(f"Some regular funcs in expression {regular_funcs_in_expr} are not allowed")
+
+    # UDF functions
+    reg_funcs = set(ia.udf_registry.iter_all_func_names())
+    if not set(udf_funcs_in_expr).issubset(reg_funcs):
+        raise ValueError(f"Some UDF funcs in expression {udf_funcs_in_expr} are not registered yet")
 
 
 def expr_from_string(sexpr: str, inputs: dict, cfg: ia.Config = None, **kwargs) -> Expr:
@@ -193,12 +230,6 @@ def check_expr_config(cfg=None, **kwargs):
     return default_shapes
 
 
-# Compile the regular expression to find operands
-# The expression below does not detect functions like 'lib.func()'
-# operands_regex = r"\w+(?=\()|((?!0)|[-+]|(?=0+\.))(\d*\.)?\d+(e\d+)?|(\w+)"
-# See https://regex101.com/r/ASRG5J/1
-operands_regex = r"((\w\.*)+)(\()|((?!0)|[-+]|(0+\.))(\d*\.)?\d+(e\d+)?|(\w+)"
-operands_regex_compiled = re.compile(operands_regex)
 def expr_get_operands(sexpr):
     """Return a tuple with the operands of an expression in string form.
 
@@ -212,11 +243,7 @@ def expr_get_operands(sexpr):
     tuple
         The operands list.
     """
-    m2 = operands_regex_compiled.findall(sexpr)
-    # We are interested in the last group (operands) only
-    # print("->", list(m2))
-    operands = set(g[-1] for g in m2 if g[-1] != '')
-    return tuple(sorted(operands))
+    return expr_get_ops_funcs(sexpr)[0]
 
 
 class UdfRegistry(MutableMapping):
