@@ -54,22 +54,6 @@ class Expr(ext.Expression):
         return super().eval()
 
 
-def check_inputs(inputs: list, shape):
-    if inputs:
-        first_input = inputs[0]
-        for input_ in inputs[1:]:
-            if first_input.shape != input_.shape:
-                raise ValueError("Inputs should have the same shape")
-            if first_input.dtype != input_.dtype:
-                raise TypeError("Inputs should have the same dtype")
-        return first_input.shape, first_input.dtype
-    else:
-        cfg = ia.get_config_defaults()
-        if shape is None:
-            raise AttributeError("A shape is needed")
-        return shape, cfg.dtype
-
-
 # Compile the regular expression to find operands
 # The expression below does not detect functions like 'lib.func()'
 # operands_regex = r"\w+(?=\()|((?!0)|[-+]|(?=0+\.))(\d*\.)?\d+(e\d+)?|(\w+)"
@@ -117,6 +101,18 @@ def check_expr(sexpr: str, inputs: dict):
         raise ValueError(f"Some UDF funcs in expression {udf_funcs_in_expr} are not registered yet")
 
 
+def check_inputs(inputs: list):
+    if len(inputs) == 0:
+        raise ValueError("You need to pass at least one input.  Use ia.empty if it is not really needed.")
+    first_input = inputs[0]
+    for input_ in inputs[1:]:
+        if first_input.shape != input_.shape:
+            raise ValueError("Inputs should have the same shape")
+        if first_input.dtype != input_.dtype:
+            raise TypeError("Inputs should have the same dtype")
+    return first_input.shape, first_input.dtype
+
+
 def expr_from_string(sexpr: str, inputs: dict, cfg: ia.Config = None, **kwargs) -> Expr:
     """Create an :class:`Expr` instance from an expression in string form.
 
@@ -144,7 +140,7 @@ def expr_from_string(sexpr: str, inputs: dict, cfg: ia.Config = None, **kwargs) 
     """
     check_expr(sexpr, inputs)
     with ia.config(cfg, **kwargs):
-        shape, dtype = check_inputs(list(inputs.values()), None)
+        shape, dtype = check_inputs(list(inputs.values()))
     kwargs["dtype"] = dtype
     expr = Expr(shape=shape, cfg=cfg, **kwargs)
     for i in inputs:
@@ -157,7 +153,6 @@ def expr_from_udf(
     udf: py2llvm.Function,
     inputs: list,
     params: Optional[list] = None,
-    shape=None,
     cfg=None,
     **kwargs
 ) -> Expr:
@@ -193,8 +188,8 @@ def expr_from_udf(
         params = []
 
     # Build expression
-    with ia.config(cfg, shape=shape, **kwargs):
-        shape, dtype = check_inputs(inputs, shape)
+    with ia.config(cfg, **kwargs):
+        shape, dtype = check_inputs(inputs)
 
     kwargs["dtype"] = dtype
     expr = Expr(shape=shape, cfg=cfg, **kwargs)
