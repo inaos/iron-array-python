@@ -18,7 +18,7 @@ ia.set_config_defaults(favor=ia.Favor.SPEED, dtype=dtype)
 
 
 @jit(verbose=0)
-def tri(out: Array(float64, 2), x: Array(float64, 2), k: int64) -> int64:
+def tri(out: Array(float64, 2), k: int64) -> int64:
     n = out.window_shape[0]
     m = out.window_shape[1]
     row_start = out.window_start[0]
@@ -32,9 +32,10 @@ def tri(out: Array(float64, 2), x: Array(float64, 2), k: int64) -> int64:
     return 0
 
 
-# Create input array.  Here we only use it for passing the dimensions, so an empty() will do (and it is cheap)
+# Build an Expr() instance with not input arrays, and a single scalar param
+# As there are no input arrays, we need to specify a shape!
 ia_in = ia.empty(shape)
-expr = ia.expr_from_udf(tri, [ia_in], [1])
+expr = ia.expr_from_udf(tri, [], [1], shape=shape)
 ia_out = expr.eval()
 print(ia_out.info)
 out = ia.iarray2numpy(ia_out)

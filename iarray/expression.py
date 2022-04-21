@@ -42,6 +42,22 @@ class Expr(ext.Expression):
                 # Set cfg chunks and blocks to None to detect that we want the default shapes when evaluating
                 self.cfg.chunks = None
                 self.cfg.blocks = None
+        self.input_refs = []  # keep references to some inputs alive!
+
+    def bind(self, var, value, keep_ref=False):
+        """
+        Bind var names to input arrays.
+
+        Params
+        ------
+        var : str
+            The name of the variable in the expression.
+        value : :ref:`IArray`
+            The actual array that is attached to the variable.
+        """
+        if keep_ref:
+            self.input_refs.append(value)  # add a reference to this input
+        return super().bind(var, value)
 
     def eval(self) -> ia.IArray:
         """Evaluate the expression in self.
@@ -51,8 +67,11 @@ class Expr(ext.Expression):
         :ref:`IArray`
             The output array.
         """
-        return super().eval()
-
+        iarr = super().eval()
+        # We don't want to free references to new arrays coming from scalars
+        # This would prevent to reuse the expression instance in e.g. bench loops.
+        # self.input_refs = []   # free internal reference to inputs
+        return iarr
 
 # Compile the regular expression to find operands
 # The expression below does not detect functions like 'lib.func()'
@@ -100,20 +119,63 @@ def check_expr(sexpr: str, inputs: dict):
     if not set(udf_funcs_in_expr).issubset(reg_funcs):
         raise ValueError(f"Some UDF funcs in expression {udf_funcs_in_expr} are not registered yet")
 
-
-def check_inputs(inputs: list):
-    if len(inputs) == 0:
-        raise ValueError("You need to pass at least one input.  Use ia.empty if it is not really needed.")
-    first_input = inputs[0]
-    for input_ in inputs[1:]:
-        if first_input.shape != input_.shape:
-            raise ValueError("Inputs should have the same shape")
-        if first_input.dtype != input_.dtype:
-            raise TypeError("Inputs should have the same dtype")
-    return first_input.shape, first_input.dtype
+    return ops_in_expr
 
 
-def expr_from_string(sexpr: str, inputs: dict, cfg: ia.Config = None, **kwargs) -> Expr:
+def check_inputs_string(inputs: dict, cfg : ia.Config):
+    """
+    Check the inputs for a expression in string form.
+
+    If scalars are found, they are broadcasted to the final shape.
+
+    Parameters
+    ----------
+    inputs: dict
+        A map for operand names and arrays or scalars.
+
+    cfg: ia.Config
+        The default config for new arrays from scalars.
+
+    Returns
+    -------
+    tuple
+        A tuple of shape, dtype and the updated dict of inputs
+    """
+    arrays = dict()
+    scalars = dict()
+    for iname, ivalue in inputs.items():
+        if hasattr(ivalue, 'shape') and ivalue.shape != ():
+            arrays[iname] = ivalue
+        else:
+            scalars[iname] = ivalue
+    if len(arrays) == 0:
+        raise ValueError("You need to pass at least one array.  Use ia.empty() if values are not really needed.")
+
+    # Get the shape and dtype for array operands
+    larrays = list(arrays.values())
+    first_array = larrays[0]
+    for array in larrays[1:]:
+        if first_array.shape != array.shape:
+            raise ValueError("Arrays in inputs should have the same shape")
+        if first_array.dtype != array.dtype:
+            raise TypeError("Arrays in inputs should have the same dtype")
+    shape, chunks, blocks, dtype = first_array.shape, first_array.chunks, first_array.blocks, first_array.dtype
+
+    # Now convert the scalars to arrays with the proper shape and dtype
+    new_inputs = {}
+    for skey, svalue in scalars.items():
+        # Using them same chunks and blocks maximizes the chance to use ITERBLOSC
+        new_inputs[skey] = ia.full(shape=shape, fill_value=svalue, dtype=dtype, cfg=cfg,
+                                   chunks=chunks, blocks=blocks)
+
+    return shape, dtype, arrays, new_inputs
+
+
+def expr_from_string(sexpr: str,
+                     inputs: dict,
+                     params: Optional[dict] = None,
+                     cfg: ia.Config = None,
+                     **kwargs) -> Expr:
     """Create an :class:`Expr` instance from an expression in string form.
 
     Parameters
@@ -138,21 +200,37 @@ def expr_from_string(sexpr: str, inputs: dict, cfg: ia.Config = None, **kwargs) 
     --------
     expr_from_udf
     """
-    check_expr(sexpr, inputs)
-    with ia.config(cfg, **kwargs):
-        shape, dtype = check_inputs(list(inputs.values()))
+    with ia.config(cfg, **kwargs) as cfg:
+        shape, dtype, array_inputs, new_inputs = check_inputs_string(inputs, cfg)
+    check_expr(sexpr, {**array_inputs, **new_inputs})
     kwargs["dtype"] = dtype
     expr = Expr(shape=shape, cfg=cfg, **kwargs)
-    for i in inputs:
-        expr.bind(i, inputs[i])
+    for k, v in array_inputs.items():
+        expr.bind(k, v)
+    for k, v in new_inputs.items():
+        # These are arrays created anew.  Keep the reference to them.
+        expr.bind(k, v, keep_ref=True)
     expr.compile(sexpr)
     return expr
+
+
+def check_inputs_udf(inputs: list):
+    if len(inputs) == 0:
+        raise ValueError("You need to pass at least one array.  Use ia.empty() if values are not really needed.")
+    first_input = inputs[0]
+    for input_ in inputs[1:]:
+        if first_input.shape != input_.shape:
+            raise ValueError("Inputs should have the same shape")
+        if first_input.dtype != input_.dtype:
+            raise TypeError("Inputs should have the same dtype")
+    return first_input.shape, first_input.dtype
 
 
 def expr_from_udf(
     udf: py2llvm.Function,
     inputs: list,
     params: Optional[list] = None,
+    shape=None,
     cfg=None,
     **kwargs
 ) -> Expr:
@@ -168,6 +246,8 @@ def expr_from_udf(
     params : list
         List user parameters, other than the input arrays, passed to the user
         defined function.
+    shape : Sequence
+        The shape for the output array.  If None, the value is derived from the inputs.
     cfg : :class:`Config`
         The configuration for running the expression.
         If None (default), global defaults are used.
@@ -188,9 +268,11 @@ def expr_from_udf(
         params = []
 
     # Build expression
-    with ia.config(cfg, **kwargs):
-        shape, dtype = check_inputs(inputs)
-
+    with ia.config(cfg, **kwargs) as cfg:
+        if inputs:
+            shape, dtype = check_inputs_udf(inputs)
+        else:
+            dtype = cfg.dtype
     kwargs["dtype"] = dtype
     expr = Expr(shape=shape, cfg=cfg, **kwargs)
 
@@ -199,9 +281,9 @@ def expr_from_udf(
         expr.bind("", i)
 
     # Bind input scalars
-    sig_params = udf.py_signature.parameters[1:] # The first param is the output array
-    sig_params = sig_params[len(inputs):] # Next come the input arrays
-    assert len(params) == len(sig_params) # What is left are the user params (scalars)
+    sig_params = udf.py_signature.parameters[1:]  # The first param is the output array
+    sig_params = sig_params[len(inputs):]  # Next come the input arrays
+    assert len(params) == len(sig_params)  # What is left are the user params (scalars)
 
     for value, sig_param in zip(params, sig_params):
         expr.bind_param(value, sig_param.type)
@@ -212,7 +294,7 @@ def expr_from_udf(
 
 
 def check_expr_config(cfg=None, **kwargs):
-    # Check if the chunks and blocks are explicitly set
+    # Check that the chunks and blocks are explicitly set
     default_shapes = False
     if (cfg is not None and cfg.chunks is None and cfg.blocks is None) or cfg is None:
         shape_params = {"chunks", "blocks"}
@@ -236,7 +318,7 @@ def expr_get_operands(sexpr):
     Returns
     -------
     tuple
-        The operands list.
+        The list of operands.
     """
     return expr_get_ops_funcs(sexpr)[0]
 

@@ -236,6 +236,7 @@ from .expression import (
     expr_from_string,
     expr_from_udf,
     expr_get_operands,
+    expr_get_ops_funcs,
 )
 
 from .lazy_expr import (

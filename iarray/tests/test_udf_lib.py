@@ -19,6 +19,7 @@ def fmult(a: udf.float64, b: udf.float64) -> float:
     [
         ("x + x", "lib.fsum(x, x)", {"x": ia.arange((10,))}),
         ("x * x", "lib2.fmult(x, x)", {"x": ia.arange((10,))}),
+        ("x + y", "lib.fsum(x, y)", {"x": ia.arange((10,)), "y": 1}),  # scalar as param!
         ("2 * (x + x)", "2 * lib.fsum(x, x)", {"x": ia.arange((10,))}),
         ("2 + x * x", "2 + lib2.fmult(x, x)", {"x": ia.arange((10,))}),
         ("2 + sin(x) + x * x", "2 + sin(x) + lib2.fmult(x, x)", {"x": ia.arange((10,))}),

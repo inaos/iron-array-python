@@ -85,3 +85,4 @@ Utils
    :nosignatures:
 
    expr_get_operands
+   expr_get_ops_funcs
