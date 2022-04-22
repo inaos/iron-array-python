@@ -12,6 +12,7 @@ from llvmlite import binding, ir
 from llvmlite.llvmpy.core import Module
 
 # Project
+import iarray
 from . import default
 from . import types
 
@@ -1304,7 +1305,7 @@ class LLVM:
         self.dtypes[type_id] = dtype
         return dtype
 
-    def jit(self, py_function=None, signature=None, verbose=0, optimize=True):
+    def jit(self, py_function=None, signature=None, verbose=0, optimize=True, lib=None):
         f_globals = inspect.stack()[1].frame.f_globals
 
         if type(py_function) is FunctionType:
@@ -1318,6 +1319,8 @@ class LLVM:
             function = self.fclass(self, py_function, signature, f_globals, optimize)
             if function.can_be_compiled():
                 function.compile(verbose)
+            if lib is not None:
+                iarray.udf_registry[lib] = function
             return function
 
         return wrapper

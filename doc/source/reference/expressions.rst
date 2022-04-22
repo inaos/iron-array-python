@@ -54,7 +54,12 @@ UdfRegistry
 
 This class is meant to register UDF functions in libraries.
 As there is only a global register, the user must use its global
-`udf_registry` instance in the iarray package.  See examples for more info.
+`udf_registry` instance in the iarray package.
+
+Note that, since the inclusion of the new `lib=` param in the `udf.scalar`
+decorator, it is not necessary to use this explicitly for registering
+anymore.  See `udf_expr.py` example for more info on how to use the
+register mechanism.
 
 .. autosummary::
    :toctree: autofiles/expressions/

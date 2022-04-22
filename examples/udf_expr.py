@@ -11,28 +11,25 @@ from iarray import udf
 
 # Define array params
 shape = [100_000_000]
-dtype = np.float64
-# Let's favor speed during computations
-ia.set_config_defaults(favor=ia.Favor.SPEED, dtype=dtype)
-# ia.set_config_defaults(clevel=0, btune=False)
 
-
-@udf.scalar(verbose=0)
+@udf.scalar(lib="lib")
 def fsum(a: udf.float64, b: udf.float64) -> float:
     return a + b
 
-@udf.scalar(verbose=0)
+@udf.scalar(lib="lib2")
 def fmult(a: udf.float64, b: udf.float64) -> float:
     return a * b
 
 
-ia.udf_registry["lib"] = fsum
-ia.udf_registry["lib2"] = fmult
+# With the new mechanism for registering functions in the udf.scalar decorator,
+# it is not necessary to register functions manually anymore.
+# ia.udf_registry["lib"] = fsum
+# ia.udf_registry["lib2"] = fmult
 print("Registered UDF funcs:", tuple(ia.udf_registry.iter_all_func_names()))
 
 # Create initial containers
 a1 = ia.linspace(shape, 0, 10)
-a2 = np.linspace(0, 10, shape[0], dtype=dtype).reshape(shape)
+a2 = np.linspace(0, 10, shape[0]).reshape(shape)
 
 print("** pure expr evaluation ...")
 expr = "4 * (x * y)"
@@ -65,4 +62,5 @@ b1 = ne.evaluate(expr, {"x": a1_n, "y": 1})
 print("Time:", round((time() - t0), 3))
 print(b1)
 
+# In case we want to clear the UDF registry explicitly
 ia.udf_registry.clear()
