@@ -42,7 +42,7 @@ class Expr(ext.Expression):
                 # Set cfg chunks and blocks to None to detect that we want the default shapes when evaluating
                 self.cfg.chunks = None
                 self.cfg.blocks = None
-        self.input_refs = []  # keep references to some inputs alive!
+        self.input_refs = {}  # keep references to some inputs alive!
 
     def bind(self, var, value, keep_ref=False):
         """
@@ -56,7 +56,7 @@ class Expr(ext.Expression):
             The actual array that is attached to the variable.
         """
         if keep_ref:
-            self.input_refs.append(value)  # add a reference to this input
+            self.input_refs[var] = value  # add a reference to this input
         return super().bind(var, value)
 
     def eval(self) -> ia.IArray:
@@ -70,7 +70,7 @@ class Expr(ext.Expression):
         iarr = super().eval()
         # We don't want to free references to new arrays coming from scalars
         # This would prevent to reuse the expression instance in e.g. bench loops.
-        # self.input_refs = []   # free internal reference to inputs
+        # self.input_refs = {}   # free internal reference to inputs
         return iarr
 
 # Compile the regular expression to find operands
@@ -105,7 +105,8 @@ def check_expr(sexpr: str, inputs: dict):
 
     # Operands
     if not set(ops_in_expr).issubset(set(inputs.keys())):
-        raise ValueError(f"Some operands in expression {ops_in_expr} are not in input keys")
+        ops_not_in_expr = tuple(set(ops_in_expr) - set(inputs.keys()))
+        raise ValueError(f"Some operands in expression {ops_not_in_expr} are not in input keys")
     for op in ops_in_expr:
         if not isinstance(inputs[op], ia.IArray):
             raise ValueError(f"Operand {op} is not an IArray instance")
