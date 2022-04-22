@@ -229,7 +229,7 @@ def ones(shape: Sequence, cfg: ia.Config = None, **kwargs) -> ia.IArray:
         return ext.ones(cfg, dtshape)
 
 
-def full(shape: Sequence, fill_value: float, cfg: ia.Config = None, **kwargs) -> ia.IArray:
+def full(shape: Sequence, fill_value, cfg: ia.Config = None, **kwargs) -> ia.IArray:
     """Return a new array of given shape and type, filled with `fill_value`.
 
     `shape`, `cfg` and `kwargs` are the same than for :func:`empty`.

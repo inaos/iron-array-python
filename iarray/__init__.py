@@ -9,7 +9,6 @@
 ###########################################################################################
 
 import os
-import re
 from enum import Enum, auto
 from ctypes import cdll
 from llvmlite import binding
@@ -23,10 +22,6 @@ import pytest
 # Change to use a YEAR.MINOR-BUILD_VER
 __version__ = "2022.1-$IA_BUILD_VER"
 
-
-# Compile the regular expression to find operands
-operands_regex = r"\w+(?=\()|((?!0)|[-+]|(?=0+\.))(\d*\.)?\d+(e\d+)?|(\w+)"
-operands_regex_compiled = re.compile(operands_regex)
 
 binding.initialize()
 binding.initialize_native_target()
@@ -141,12 +136,12 @@ class Reduce(Enum):
 
 
 # List of all know universal functions
-UFUNC_LIST = (
-    "abs",
-    "arccos",
-    "arcsin",
-    "arctan",
-    "arctan2",
+MATH_FUNC_LIST = (
+    "abs", "absolute",
+    "arccos", "acos",
+    "arcsin", "asin",
+    "arctan", "atan",
+    "arctan2", "atan2",
     "ceil",
     "cos",
     "cosh",
@@ -154,8 +149,8 @@ UFUNC_LIST = (
     "floor",
     "log",
     "log10",
-    "negative",
-    "power",
+    "negative", "negate",
+    "power", "pow",
     "sin",
     "sinh",
     "sqrt",
@@ -239,9 +234,11 @@ from . import random
 
 from .expression import (
     Expr,
+    UdfRegistry,
     expr_from_string,
     expr_from_udf,
     expr_get_operands,
+    expr_get_ops_funcs,
 )
 
 from .lazy_expr import (
@@ -255,11 +252,18 @@ from .attrs import (
 # For some reason this needs to go to the end, else matmul function does not work.
 from . import iarray_ext as ext
 
-ext.IArrayInit()
+from .iarray_ext import (
+    udf_lookup_func,
+)
+
+# Keep the reference so as to avoid calling the destroyer immediately
+_init_object = ext.IArrayInit()
+
+# Global registry for udfs
+udf_registry = UdfRegistry()
 
 
 from . import tests
-
 
 def test():
     retcode = pytest.main(["-x", os.path.dirname(tests.__file__)])

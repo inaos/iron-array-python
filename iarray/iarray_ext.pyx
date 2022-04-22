@@ -26,9 +26,42 @@ import iarray as ia
 from iarray import udf
 
 from cpython cimport (
-    PyObject_GetBuffer, PyBuffer_Release,
-    PyBUF_SIMPLE, Py_buffer,
+    PyObject_GetBuffer,
+    PyBuffer_Release,
+    PyBUF_SIMPLE,
 )
+
+# dtype conversion tables: udf <-> iarray
+udf2ia_dtype = {
+    "f64": ciarray.IARRAY_DATA_TYPE_DOUBLE,
+    "f32": ciarray.IARRAY_DATA_TYPE_FLOAT,
+    "i64": ciarray.IARRAY_DATA_TYPE_INT64,
+    "i32": ciarray.IARRAY_DATA_TYPE_INT32,
+    "i16": ciarray.IARRAY_DATA_TYPE_INT16,
+    "i8": ciarray.IARRAY_DATA_TYPE_INT8,
+    "u64": ciarray.IARRAY_DATA_TYPE_UINT64,
+    "u32": ciarray.IARRAY_DATA_TYPE_UINT32,
+    "u16": ciarray.IARRAY_DATA_TYPE_UINT16,
+    "u8": ciarray.IARRAY_DATA_TYPE_UINT8,
+    "bool": ciarray.IARRAY_DATA_TYPE_BOOL,
+}
+ia2udf_dtype = {v: k for k, v in udf2ia_dtype.items()}
+
+# dtype conversion tables: numpy <-> iarray
+np2ia_dtype = {
+    np.float64: ciarray.IARRAY_DATA_TYPE_DOUBLE,
+    np.float32: ciarray.IARRAY_DATA_TYPE_FLOAT,
+    np.int64: ciarray.IARRAY_DATA_TYPE_INT64,
+    np.int32: ciarray.IARRAY_DATA_TYPE_INT32,
+    np.int16: ciarray.IARRAY_DATA_TYPE_INT16,
+    np.int8: ciarray.IARRAY_DATA_TYPE_INT8,
+    np.uint64: ciarray.IARRAY_DATA_TYPE_UINT64,
+    np.uint32: ciarray.IARRAY_DATA_TYPE_UINT32,
+    np.uint16: ciarray.IARRAY_DATA_TYPE_UINT16,
+    np.uint8: ciarray.IARRAY_DATA_TYPE_UINT8,
+    np.bool_: ciarray.IARRAY_DATA_TYPE_BOOL,
+}
+ia2np_dtype = {v: k for k, v in np2ia_dtype.items()}
 
 
 def compress_squeeze(data, selectors):
@@ -80,7 +113,7 @@ cdef class ReadBlockIter:
 
         iarray_check(ciarray.iarray_iter_read_block_new(self.container.context.ia_ctx, &self.ia_read_iter,
                                                         self.container.ia_container, block_, &self.ia_block_val, False))
-        self.dtype = get_key_from_dict(dtypes, self.container.dtype)
+        self.dtype = np2ia_dtype[self.container.dtype]
         self.Info = namedtuple('Info', 'index elemindex nblock shape size slice')
 
     def __dealloc__(self):
@@ -157,7 +190,7 @@ cdef class WriteBlockIter:
                                                          &self.ia_block_val,
                                                          False))
 
-        self.dtype = get_key_from_dict(dtypes, self.container.dtype)
+        self.dtype = np2ia_dtype[self.container.dtype]
         self.Info = namedtuple('Info', 'index elemindex nblock shape size')
 
     def __dealloc__(self):
@@ -275,24 +308,13 @@ cdef class Context:
     def to_capsule(self):
         return PyCapsule_New(self.ia_ctx, <char*>"iarray_context_t*", NULL)
 
-# Type data equivalences between C and Python
-dtypes = {ciarray.IARRAY_DATA_TYPE_DOUBLE: np.float64, ciarray.IARRAY_DATA_TYPE_FLOAT: np.float32,
-                 ciarray.IARRAY_DATA_TYPE_INT64: np.int64, ciarray.IARRAY_DATA_TYPE_INT32: np.int32,
-                 ciarray.IARRAY_DATA_TYPE_INT16: np.int16, ciarray.IARRAY_DATA_TYPE_INT8: np.int8,
-                 ciarray.IARRAY_DATA_TYPE_UINT64: np.uint64, ciarray.IARRAY_DATA_TYPE_UINT32: np.uint32,
-                 ciarray.IARRAY_DATA_TYPE_UINT16: np.uint16, ciarray.IARRAY_DATA_TYPE_UINT8: np.uint8,
-                 ciarray.IARRAY_DATA_TYPE_BOOL: np.bool_}
-def get_key_from_dict(dic, val):
-    for key, value in dic.items():
-        if val == value:
-            return key
 
 cdef class IaDTShape:
     cdef ciarray.iarray_dtshape_t ia_dtshape
 
     def __cinit__(self, dtshape):
         self.ia_dtshape.ndim = len(dtshape.shape)
-        self.ia_dtshape.dtype = get_key_from_dict(dtypes, dtshape.dtype)
+        self.ia_dtshape.dtype = np2ia_dtype[dtshape.dtype]
         for i in range(len(dtshape.shape)):
             self.ia_dtshape.shape[i] = dtshape.shape[i]
 
@@ -305,7 +327,7 @@ cdef class IaDTShape:
 
     @property
     def dtype(self):
-        return dtypes[self.ia_dtshape.dtype]
+        return ia2np_dtype[self.ia_dtshape.dtype]
 
     @property
     def shape(self):
@@ -413,7 +435,7 @@ cdef class Container:
         """Data-type of the array’s elements."""
         cdef ciarray.iarray_dtshape_t dtshape
         iarray_check(ciarray.iarray_get_dtshape(self.context.ia_ctx, self.ia_container, &dtshape))
-        return dtypes[dtshape.dtype]
+        return ia2np_dtype[dtshape.dtype]
 
     @property
     def dtshape(self):
@@ -471,7 +493,9 @@ cdef class Expression:
         self.cfg = cfg
         self.context = Context(cfg)
         cdef ciarray.iarray_expression_t* e
-        iarray_check(ciarray.iarray_expr_new(self.context.ia_ctx, get_key_from_dict(dtypes, cfg.dtype), &e))
+        iarray_check(
+            ciarray.iarray_expr_new(self.context.ia_ctx, np2ia_dtype[cfg.dtype], &e)
+        )
         self.ia_expr = e
         self.expression = None
         self.dtshape = None
@@ -744,7 +768,7 @@ def full(cfg, fill_value, dtshape):
     ia._check_access_mode(cfg.urlpath, cfg.mode)
 
     cdef ciarray.iarray_container_t *c
-    dtype = dtypes[dtshape_.dtype]
+    dtype = ia2np_dtype[dtshape_.dtype]
     # The ciarray.iarray_fill function requires a void pointer
     nparr = np.array([fill_value], dtype=dtype)
     cdef Py_buffer *val = <Py_buffer *> malloc(sizeof(Py_buffer))
@@ -780,7 +804,7 @@ cdef get_cfg_from_container(cfg, ciarray.iarray_context_t *ctx, ciarray.iarray_c
     cdef ciarray.iarray_dtshape_t dtshape;
     ciarray.iarray_get_dtshape(ctx, c, &dtshape)
 
-    dtype = dtypes[dtshape.dtype]
+    dtype = ia2np_dtype[dtshape.dtype]
 
     cdef ciarray.iarray_storage_t storage;
     ciarray.iarray_get_storage(ctx, c, &storage)
@@ -982,7 +1006,7 @@ def iarray2numpy(cfg, c):
         shape.append(dtshape.shape[i])
     size = np.prod(shape, dtype=np.int64)
 
-    dtype = dtypes[dtshape.dtype]
+    dtype = ia2np_dtype[dtshape.dtype]
     if ciarray.iarray_is_empty(c_):
         # Return an empty array.  Another possibility would be to raise an exception here?  Let's wait for a use case...
         return np.empty(size, dtype=dtype).reshape(shape)
@@ -1604,6 +1628,59 @@ def set_zproxy_postfilter(iarr):
     urlpath = urlpath.encode("utf-8") if isinstance(urlpath, str) else urlpath
 
     iarray_check(ciarray.iarray_add_zproxy_postfilter(c, urlpath, func))
+
+
+cdef class UdfLibrary:
+    """
+    Library for scalar UDF functions.
+    """
+    cdef ciarray.iarray_udf_library_t *udf_library
+
+    def __init__(self, name):
+        name = name.encode("utf-8") if isinstance(name, str) else name
+        cdef ciarray.iarray_udf_library_t *library
+        iarray_check(ciarray.iarray_udf_library_new(name, &library))
+        self.udf_library = library
+
+    def dealloc(self):
+        ciarray.iarray_udf_library_free(&self.udf_library)
+
+    def register_func(self, f):
+        llvm_bc, dtype, arg_types, name = f.bc, f.rtype, f.argtypes, f.name
+        dtype = udf2ia_dtype[dtype]
+        arg_types = [udf2ia_dtype[x] for x in arg_types]
+        nparr = np.array(arg_types, dtype=np.int32)
+        cdef Py_buffer *buf = <Py_buffer *> malloc(sizeof(Py_buffer))
+        PyObject_GetBuffer(nparr, buf, PyBUF_SIMPLE)
+
+        name = name.encode("utf-8") if isinstance(name, str) else name
+        iarray_check(ciarray.iarray_udf_func_register(self.udf_library,
+                                                      len(llvm_bc),
+                                                      llvm_bc,
+                                                      dtype,
+                                                      len(arg_types),
+                                                      <ciarray.iarray_data_type_t *>buf.buf,
+                                                      name)
+                     )
+        PyBuffer_Release(buf)
+
+
+def udf_lookup_func(full_name):
+    """Do a lookup for a `full_name` scalar UDF function.
+
+    Parameters
+    ----------
+    full_name : str
+        The full name of the function to be found.  Its format is ``lib_name.func_name``.
+
+    Returns
+    -------
+    A pointer (int64) to the function found.  If not found, and error is raised.
+    """
+    full_name = full_name.encode("utf-8") if isinstance(full_name, str) else full_name
+    cdef ciarray.uint64_t function_ptr
+    iarray_check(ciarray.iarray_udf_func_lookup(full_name, &function_ptr))
+    return function_ptr
 
 
 #

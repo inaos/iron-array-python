@@ -23,11 +23,13 @@ Constructors
 
    expr_from_string
    expr_from_udf
-   expr_get_operands
 
 
 Expressions are implemented in the :py:class:`iarray.Expr` class.  Once built,
 they can be evaluated via the :func:`iarray.Expr.eval` method.
+
+Expressions can call UDF functions registered via the
+:py:class:`iarray.UdfRegistry` class.
 
 Expr class
 ==========
@@ -46,3 +48,46 @@ Methods
    :nosignatures:
 
    Expr.eval
+
+UdfRegistry
+===========
+
+This class is meant to register UDF functions in libraries.
+As there is only a global register, the user must use its global
+`udf_registry` instance in the iarray package.
+
+Note that, since the inclusion of the new `lib=` param in the `udf.scalar`
+decorator, it is not necessary to use this explicitly for registering
+anymore.  See `udf_expr.py` example for more info on how to use the
+register mechanism.
+
+.. autosummary::
+   :toctree: autofiles/expressions/
+   :nosignatures:
+
+   UdfRegistry
+
+Methods
+-------
+
+.. autosummary::
+   :toctree: autofiles/expressions/
+   :nosignatures:
+
+   UdfRegistry.__getitem__
+   UdfRegistry.__setitem__
+   UdfRegistry.__delitem__
+   UdfRegistry.iter_funcs
+   UdfRegistry.iter_all_func_names
+   UdfRegistry.get_func_addr
+   UdfRegistry.clear
+
+Utils
+-----
+
+.. autosummary::
+   :toctree: autofiles/expressions/
+   :nosignatures:
+
+   expr_get_operands
+   expr_get_ops_funcs

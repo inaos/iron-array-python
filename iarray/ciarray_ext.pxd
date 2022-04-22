@@ -588,3 +588,18 @@ cdef extern from "libiarray/iarray.h":
 
     ctypedef void (*zhandler_ptr) (char *zarr_urlpath, int64_t *slice_start, int64_t *slice_stop, uint8_t *dest)
     ina_rc_t iarray_add_zproxy_postfilter(iarray_container_t *src, char *zarr_urlpath, zhandler_ptr zhandler)
+
+    # UDF registry and library functionality
+    ctypedef struct iarray_udf_library_t
+    ina_rc_t iarray_udf_library_new(const char *name,
+                                    iarray_udf_library_t **lib);
+    void iarray_udf_library_free(iarray_udf_library_t **lib);
+    ina_rc_t iarray_udf_func_register(iarray_udf_library_t *lib,
+                                      int llvm_bc_len,
+                                      const char *llvm_bc,
+                                      iarray_data_type_t return_type,
+                                      int num_args,
+                                      iarray_data_type_t *arg_types,
+                                      const char *name);
+    ina_rc_t iarray_udf_func_lookup(const char *full_name,
+                                    uint64_t *function_ptr);

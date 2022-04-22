@@ -311,7 +311,7 @@ def test_expression(
                 # Don't do a replacement twice
                 break
             expression = expression.replace(ufunc, ufunc_repls[ufunc])
-    for ufunc in ia.UFUNC_LIST:
+    for ufunc in ia.MATH_FUNC_LIST:
         if ufunc in expression:
             idx = expression.find(ufunc)
             # Prevent replacing an ufunc with np.ufunc twice (not terribly solid, but else, test will crash)
@@ -836,3 +836,18 @@ def test_chunks_blocks_params(expression, contiguous, zurlpath, zcontiguous):
     ])
 def test_get_operands(expression, operands):
     assert ia.expr_get_operands(expression) == operands
+
+
+@pytest.mark.parametrize(
+    "sexpr, sexpr_scalar, inputs",
+    [
+        ("x + 1", "x + y", {"x": ia.arange((10,)), "y": 1}),
+        ("x + y + 1.35", "x + y + z", {"x": ia.arange((10,)), "y": 1, "z": 1.35}),
+    ])
+def test_scalar_params(sexpr, sexpr_scalar, inputs):
+    expr = ia.expr_from_string(sexpr, inputs)
+    expr_scalar = ia.expr_from_string(sexpr_scalar, inputs)
+    out = expr.eval()
+    out_udf = expr_scalar.eval()
+    tol = 1e-14
+    np.testing.assert_allclose(out.data, out_udf.data, rtol=tol, atol=tol)

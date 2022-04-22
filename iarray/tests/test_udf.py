@@ -82,8 +82,6 @@ def cmp_udf_np_strict(f, start, stop, shape, partitions, dtype, cparams):
 
     x = ia.linspace(shape, start, stop, cfg=cfg, dtype=dtype, **cparams)
     assert x.cfg.dtype == dtype
-    # Both functions should work, but we are encouraging ia.expr_from_udf()
-    # expr = f.create_expr([x], dtshape, cfg=cfg, **cparams)
     expr = ia.expr_from_udf(f, [x], cfg=cfg, **cparams)
 
     out = expr.eval()
