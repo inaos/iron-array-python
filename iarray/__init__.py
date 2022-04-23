@@ -254,6 +254,7 @@ from . import iarray_ext as ext
 
 from .iarray_ext import (
     udf_lookup_func,
+    IArrayError,
 )
 
 # Keep the reference so as to avoid calling the destroyer immediately
