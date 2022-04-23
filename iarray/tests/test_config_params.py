@@ -368,9 +368,6 @@ def test_zfp_accuracy_codec():
 
 def test_zfp_precision_codec():
     import os
-    os.environ['INAC_TRACE'] = 'iarray.error'
-    os.environ['CATERVA_TRACE'] = 'caterva.error'
-    os.environ['BLOSC_TRACE'] = 'blosc.error'
     with pytest.raises(ValueError):
         ia.set_config_defaults(btune=False, codec=ia.Codec.ZFP_FIXED_PRECISION)
 
@@ -399,6 +396,7 @@ def test_zfp_precision_codec():
         np.testing.assert_allclose(b, d, rtol=1e-12, atol=1e-12)
 
     ia.remove_urlpath(urlpath)
+
 
 def test_zfp_rate_codec():
     with pytest.raises(ValueError):
