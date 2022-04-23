@@ -324,12 +324,8 @@ def test_error(f):
     x = ia.linspace(shape, start, stop, cfg=cfg, dtype=dtype, **cparams)
     expr = f.create_expr([x], cfg=cfg, **cparams)
 
-    try:
+    with pytest.raises(ia.IArrayError):
         expr.eval()
-    except ia.ext.IArrayError:
-        pass
-    else:
-        assert False
 
 
 def f_unsupported_function(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
