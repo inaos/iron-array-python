@@ -951,7 +951,8 @@ def get_slice(cfg, data, start, stop, squeeze_mask, view, storage):
     b =  ia.IArray(ctx, c_c)
     b.view_ref = data  # Keep a reference of the parent container
     if b.ndim == 0:
-        return float(ia.iarray2numpy(b))
+        # Scalars will be represented by NumPy containers
+        return ia.iarray2numpy(b)
 
     return b
 

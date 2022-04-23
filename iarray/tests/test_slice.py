@@ -17,6 +17,7 @@ slice_data = [
 @pytest.mark.parametrize(
     "slices",
     [
+        (0, 1),  # test with scalars
         slice(10, 20),
         9,
         (slice(5, 30), slice(10, 40)),
@@ -48,7 +49,7 @@ def test_slice(slices, shape, chunks, blocks, dtype, acontiguous, aurlpath):
     data = ia.arange(shape, dtype=dtype)[slices]
 
     a[slices] = data
-    an[slices] = data.data
+    an[slices] = data.data if isinstance(data, ia.IArray) else data
     np.testing.assert_almost_equal(a.data, an)
 
     b = a[slices]
