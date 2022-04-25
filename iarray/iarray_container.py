@@ -73,6 +73,11 @@ class IArray(ext.Container):
     def attrs(self):
         return ia.Attributes(self)
 
+    # Views
+    def astype(self, dtype):
+        return ia.View(self, dtype=dtype)
+
+    # Regular methods
     def copy(self, cfg=None, **kwargs) -> IArray:
         """Return a copy of the array.
 
@@ -1252,3 +1257,16 @@ def transpose(a: IArray, cfg=None, **kwargs):
 
     with ia.config(cfg=cfg, **kwargs) as cfg:
         return ext.transpose(cfg, a)
+
+
+# Tentative View interface
+class View(ext.View, IArray):
+
+    def __init__(self, iarr, **kwargs):
+        self.iarr_viewed = iarr
+        dtype = kwargs["dtype"] if "dtype" in kwargs else None
+        cfg = ia.get_config_defaults()
+        # For views we want to keep storage parameters (specially chunks, blocks) the same
+        with ia.config(chunks=iarr.chunks, blocks=iarr.blocks,
+                       shape=iarr.shape, dtype=dtype, cfg=cfg) as cfg:
+            ext.View.__init__(self, cfg)

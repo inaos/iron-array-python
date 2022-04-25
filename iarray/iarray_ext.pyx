@@ -997,6 +997,11 @@ def iarray2numpy(cfg, c):
     ctx = Context(cfg)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(),
                                                                                            <char*>"iarray_context_t*")
+    dtype = c.dtype
+    if isinstance(c, ia.View):
+        # The data should be taken from the array that is being viewed
+        # FIXME: implement this as a postfilter for fully emulate a regular IArray!
+        c = c.iarr_viewed
     cdef ciarray.iarray_container_t *c_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(c.to_capsule(),
                                                                                              <char*>"iarray_container_t*")
 
@@ -1007,7 +1012,6 @@ def iarray2numpy(cfg, c):
         shape.append(dtshape.shape[i])
     size = np.prod(shape, dtype=np.int64)
 
-    dtype = ia2np_dtype[dtshape.dtype]
     if ciarray.iarray_is_empty(c_):
         # Return an empty array.  Another possibility would be to raise an exception here?  Let's wait for a use case...
         return np.empty(size, dtype=dtype).reshape(shape)
@@ -1682,6 +1686,44 @@ def udf_lookup_func(full_name):
     cdef ciarray.uint64_t function_ptr
     iarray_check(ciarray.iarray_udf_func_lookup(full_name, &function_ptr))
     return function_ptr
+
+
+class View(Container):
+
+    def __init__(self, cfg):
+        """
+        Create the new view context and container.
+
+        Parameters
+        ----------
+        cfg: ia.Config
+            The configuration for the view.
+
+        """
+        self._v_dtype = cfg.dtype
+        ctx = Context(cfg)
+        cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
+            ctx.to_capsule(), <char*>"iarray_context_t*")
+
+        dtshape = ia.DTShape(self.iarr_viewed.shape, self.dtype)
+        dtshape = IaDTShape(dtshape).to_dict()
+        cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
+
+        # Check that we are not inadvertently overwriting anything
+        ia._check_access_mode(cfg.urlpath, cfg.mode)
+
+        # Use uninit values for the actual view
+        cdef ciarray.iarray_storage_t store_
+        set_storage(cfg, &store_)
+        cdef ciarray.iarray_container_t *c
+        iarray_check(ciarray.iarray_empty(ctx_, &dtshape_, &store_, &c))
+
+        c_c = PyCapsule_New(c, <char *> "iarray_container_t*", NULL)
+        super().__init__(ctx, c_c)
+
+    @property
+    def dtype(self):
+        return self._v_dtype if self._v_dtype is not None else self.iarr_viewed.dtype
 
 
 #
