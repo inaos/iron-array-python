@@ -14,6 +14,20 @@ import re
 import iarray as ia
 from iarray import iarray_ext as ext
 from iarray import py2llvm
+from iarray import udf
+
+import numpy as np
+
+
+udf2np_dtypes = {
+    udf.int8: np.int8,
+    udf.int16: np.int16,
+    udf.int32: np.int32,
+    udf.int64: np.int64,
+    udf.float32: np.float32,
+    udf.float64: np.float64,
+    udf.bool: np.bool_,  # really an alias to int8, but still as different symbol
+}
 
 
 # The main expression class
@@ -158,8 +172,6 @@ def check_inputs_string(inputs: dict, cfg : ia.Config):
     for array in larrays[1:]:
         if first_array.shape != array.shape:
             raise ValueError("Arrays in inputs should have the same shape")
-        if first_array.dtype != array.dtype:
-            raise TypeError("Arrays in inputs should have the same dtype")
     shape, chunks, blocks, dtype = first_array.shape, first_array.chunks, first_array.blocks, first_array.dtype
 
     # Now convert the scalars to arrays with the proper shape and dtype
@@ -216,15 +228,11 @@ def expr_from_string(sexpr: str,
 
 
 def check_inputs_udf(inputs: list):
-    if len(inputs) == 0:
-        raise ValueError("You need to pass at least one array.  Use ia.empty() if values are not really needed.")
     first_input = inputs[0]
     for input_ in inputs[1:]:
         if first_input.shape != input_.shape:
             raise ValueError("Inputs should have the same shape")
-        if first_input.dtype != input_.dtype:
-            raise TypeError("Inputs should have the same dtype")
-    return first_input.shape, first_input.dtype
+    return first_input.shape
 
 
 def expr_from_udf(
@@ -271,9 +279,12 @@ def expr_from_udf(
     # Build expression
     with ia.config(cfg, **kwargs) as cfg:
         if inputs:
-            shape, dtype = check_inputs_udf(inputs)
+            shape = check_inputs_udf(inputs)
         else:
-            dtype = cfg.dtype
+            if cfg.shape is None:
+                raise ValueError("You need to pass either an array argument, or a shape")
+    out_param = udf.py_signature.parameters[0]  # The first param is the output array
+    dtype = udf2np_dtypes[out_param.type.dtype]
     kwargs["dtype"] = dtype
     expr = Expr(shape=shape, cfg=cfg, **kwargs)
 
