@@ -69,8 +69,8 @@ jobs:
       Python39:
         python.version: '3.9'
       # 3.10 is supported now: https://github.com/Azure/azure-functions-python-worker/pull/961
-#      Python310:
-#        python.version: '3.10'
+      Python310:
+        python.version: '3.10'
 
   steps:
   - bash: |
@@ -207,8 +207,8 @@ jobs:
       Python39:
         python.version: '3.9'
       # 3.10 is supported now: https://github.com/Azure/azure-functions-python-worker/pull/961
-#      Python310:
-#        python.version: '3.10'
+      Python310:
+        python.version: '3.10'
 
   steps:
   - task: UsePythonVersion@0
