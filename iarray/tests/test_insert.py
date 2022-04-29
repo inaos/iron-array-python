@@ -45,8 +45,8 @@ def test_insert(shape, chunks, blocks, data_shape, axis, start, dtype, acontiguo
     npa = ia.iarray2numpy(a)
     if dtype in [np.float64, np.float32]:
         rtol = 1e-6 if dtype == np.float32 else 1e-14
-        np.testing.assert_allclose(npa[slice_], np_data, rtol=rtol, atol=0)
+        np.testing.assert_allclose(npa[tuple(slice_)], np_data, rtol=rtol, atol=0)
     else:
-        np.testing.assert_equal(npa[slice_], np_data)
+        np.testing.assert_equal(npa[tuple(slice_)], np_data)
 
     ia.remove_urlpath(aurlpath)
