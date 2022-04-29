@@ -287,7 +287,24 @@ cdef extern from "libiarray/iarray.h":
 
     ina_rc_t iarray_container_resize(iarray_context_t *ctx,
                                      iarray_container_t *container,
-                                     int64_t *new_shape)
+                                     int64_t *new_shape,
+                                     int64_t *start)
+    ina_rc_t iarray_container_insert(iarray_context_t *ctx,
+                                     iarray_container_t *container,
+                                     void *buffer,
+                                     int64_t buffersize,
+                                     const int8_t axis,
+                                     int64_t insert_start)
+    ina_rc_t iarray_container_append(iarray_context_t *ctx,
+                                     iarray_container_t *container,
+                                     void *buffer,
+                                     int64_t buffersize,
+                                     const int8_t axis)
+    ina_rc_t iarray_container_delete(iarray_context_t *ctx,
+                                     iarray_container_t *container,
+                                     const int8_t axis,
+                                     int64_t delete_start,
+                                     int64_t delete_len)
 
     ina_rc_t iarray_squeeze_index(iarray_context_t *ctx,
                                   iarray_container_t *container,

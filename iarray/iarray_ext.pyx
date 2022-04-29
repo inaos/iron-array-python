@@ -956,7 +956,8 @@ def get_slice(cfg, data, start, stop, squeeze_mask, view, storage):
 
     return b
 
-def resize(container, new_shape):
+
+def resize(container, new_shape, start):
     cdef ciarray.iarray_container_t *container_
     container_ = <ciarray.iarray_container_t *> PyCapsule_GetPointer(container.to_capsule(),
                                                                      <char*>"iarray_container_t*")
@@ -967,8 +968,104 @@ def resize(container, new_shape):
     cdef ciarray.int64_t new_shape_[ciarray.IARRAY_DIMENSION_MAX]
     for i in range(ndim):
         new_shape_[i] = new_shape[i]
+        print(new_shape_[i])
+    cdef ciarray.int64_t start_[ciarray.IARRAY_DIMENSION_MAX]
+    if start is None:
+        iarray_check(ciarray.iarray_container_resize(ctx_, container_, new_shape_, NULL))
+    else:
+        for i in range(ndim):
+            start_[i] = start[i]
+        iarray_check(ciarray.iarray_container_resize(ctx_, container_, new_shape_, start_))
 
-    iarray_check(ciarray.iarray_container_resize(ctx_, container_, new_shape_))
+
+def insert(container, buffer, axis, start):
+    if start is not  None:
+        if start % container.chunks[axis] != 0 and start != container.shape[axis]:
+            raise IndexError("Cannot insert in the middle of the chunks")
+
+    cdef ciarray.iarray_container_t *container_
+    container_ = <ciarray.iarray_container_t *> PyCapsule_GetPointer(container.to_capsule(),
+                                                                     <char*>"iarray_container_t*")
+    ctx = Context(container.cfg)
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t *> PyCapsule_GetPointer(ctx.to_capsule(),
+                                                                                            <char*>"iarray_context_t*")
+    cdef Py_buffer *buf = <Py_buffer *> malloc(sizeof(Py_buffer))
+    PyObject_GetBuffer(buffer, buf, PyBUF_SIMPLE)
+    if start is None:
+        start = container.shape[axis]
+
+    if container.dtype in [np.float64, np.int32, np.uint32]:
+        typesize = 4
+    if container.dtype in [np.float32, np.int64, np.uint64]:
+        typesize = 8
+    if container.dtype in [np.int16, np.uint16]:
+        typesize = 2
+    if container.dtype in [np.int8, np.uint8, np.bool_]:
+        typesize = 1
+
+    row_size = typesize
+    buffershape = [0] * container.ndim
+    for i in range(0, container.ndim):
+        if i != axis:
+            row_size *= container.shape[i]
+            buffershape[i] = container.shape[i]
+
+    if buf.len % row_size != 0:
+        raise ValueError("The data length must be a multiple of the array's shape excluding the axis")
+
+    iarray_check(ciarray.iarray_container_insert(ctx_, container_, buf.buf, buf.len, axis, start))
+
+    PyBuffer_Release(buf)
+
+
+def append(container, buffer, axis):
+    cdef ciarray.iarray_container_t *container_
+    container_ = <ciarray.iarray_container_t *> PyCapsule_GetPointer(container.to_capsule(),
+                                                                     <char*>"iarray_container_t*")
+    ctx = Context(container.cfg)
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t *> PyCapsule_GetPointer(ctx.to_capsule(),
+                                                                                            <char*>"iarray_context_t*")
+    cdef Py_buffer *buf = <Py_buffer *> malloc(sizeof(Py_buffer))
+    PyObject_GetBuffer(buffer, buf, PyBUF_SIMPLE)
+
+    if container.dtype in [np.float64, np.int32, np.uint32]:
+        typesize = 4
+    if container.dtype in [np.float32, np.int64, np.uint64]:
+        typesize = 8
+    if container.dtype in [np.int16, np.uint16]:
+        typesize = 2
+    if container.dtype in [np.int8, np.uint8, np.bool_]:
+        typesize = 1
+
+    row_size = typesize
+    for i in range(0, container.ndim):
+        if i != axis:
+            row_size *= container.shape[i]
+    if buf.len % row_size != 0:
+        raise ValueError("The data length must be a multiple of the array's shape excluding the axis")
+
+    iarray_check(ciarray.iarray_container_append(ctx_, container_, buf.buf, buf.len, axis))
+
+    PyBuffer_Release(buf)
+
+
+def delete(container, axis, delete_len, start):
+    if start is not None:
+        if (start + delete_len) != container.shape[axis]:
+            if start % container.chunks[axis] != 0 or (start + delete_len) % container.chunks[axis] != 0:
+                raise IndexError("Cannot delete in the middle of the chunks")
+
+    cdef ciarray.iarray_container_t *container_
+    container_ = <ciarray.iarray_container_t *> PyCapsule_GetPointer(container.to_capsule(),
+                                                                     <char*>"iarray_container_t*")
+    ctx = Context(container.cfg)
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t *> PyCapsule_GetPointer(ctx.to_capsule(),
+                                                                                            <char*>"iarray_context_t*")
+    if start is None:
+        start = container.shape[axis] - delete_len
+
+    iarray_check(ciarray.iarray_container_delete(ctx_, container_, axis, start, delete_len))
+
 
 def numpy2iarray(cfg, a, dtshape):
     ctx = Context(cfg)
@@ -1680,7 +1777,7 @@ def udf_lookup_func(full_name):
     """
     full_name = full_name.encode("utf-8") if isinstance(full_name, str) else full_name
     cdef ciarray.uint64_t function_ptr
-    iarray_check(ciarray.iarray_udf_func_lookup(full_name, &function_ptr))
+    iarray_check(ciarray.iarray_udf_func_lookup(<char *>full_name, &function_ptr))
     return function_ptr
 
 
