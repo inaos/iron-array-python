@@ -133,20 +133,21 @@ class IArray(ext.Container):
         start: tuple, list or None, optional.
             The position from where the array will be extended or shrunk according to
             :paramref:`newshape`. If given, it should have the same dimensions
-            as `self`. If None (the default), the appended or deleted chunks will be those
-            which will be (or were respectively) at the end of the array.
+            as `self`. If None (the default), the appended or deleted chunks will happen
+            at the end of the array.
 
         Notes
         -----
         The array values corresponding to the added positions are not initialized.
         Thus, the user is in charge of initializing them.
-        Furthermore, the same limitations in :func:`insert`, :func:`append` and :func:`delete`
-        apply to :paramref:`start` in each dimension.
+        Furthermore, the :paramref:`start` has to fulfill the same conditions than in
+        :func:`insert`, :func:`append` and :func:`delete`.
 
         See Also
         --------
         insert
         append
+        delete
         """
         ext.resize(self, new_shape=newshape, start=start)
 
@@ -168,13 +169,15 @@ class IArray(ext.Container):
         -----
         If :paramref:`start` is not at the end of the array, it must be a multiple of the
         chunkshape in the :paramref:`axis` dimension.
-        Furthermore, the :paramref:`data` length must be a multiple of the array's length excluding
-        its length in the :paramref:`axis` (if :paramref:`start` is at the end) or
-        adding the length of the chunkshape in the :paramref:`axis` dimension (otherwise).
+        Furthermore, the :paramref:`data` length must be a multiple of the array chunkshape
+        in all the dimensions, except when :paramref:`start` is at the end in the
+        :paramref:`axis` dimension, where it can take any value.
 
         See Also
         --------
         append
+        delete
+        resize
         """
         ext.insert(self, data, axis, start)
 
@@ -191,12 +194,14 @@ class IArray(ext.Container):
 
         Notes
         -----
-        The :paramref:`data` length must be a multiple of the array's length excluding
-        its length in the :paramref:`axis`.
+        The :paramref:`data` length must be a multiple of the chunkshape of the array,
+        except in the :paramref:`axis`, where it can take any value.
 
         See Also
         --------
         insert
+        delete
+        resize
         """
         ext.append(self, data, axis)
 
@@ -212,17 +217,19 @@ class IArray(ext.Container):
             The axis that will be shrunk.
             Default is 0.
         start: int, None, optional
-            The position from where to start deleting the elements. If None (default)
-            the deleted elements will be those at the end of the array.
+            The starting point for deleting the elements. If None (default)
+            the deleted elements will be at the end of the array.
 
         Notes
         -----
-        If :paramref:`delete_len` is not a multiple of the chunkshape in the :paramref:`axis`,
-        :paramref:`start` must be equal to array's old shape - :paramref:`delete_len`.
+        If :paramref:`delete_len` is not a multiple of the chunkshape in :paramref:`axis`,
+        :paramref:`start` must be None or pointing to the end of the array in :paramref:`axis`.
 
         See Also
         --------
         resize
+        insert
+        append
         """
         ext.delete(self, axis=axis, start=start, delete_len=delete_len)
 
