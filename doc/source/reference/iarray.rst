@@ -39,6 +39,9 @@ Methods
    IArray.copyto
    IArray.transpose
    IArray.resize
+   IArray.insert
+   IArray.append
+   IArray.delete
 
 
 Mathematical methods

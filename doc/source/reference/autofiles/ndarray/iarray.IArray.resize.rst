@@ -1,5 +1,5 @@
 ﻿iarray.IArray.resize
-==================
+====================
 
 .. currentmodule:: iarray
 

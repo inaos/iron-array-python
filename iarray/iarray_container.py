@@ -122,7 +122,7 @@ class IArray(ext.Container):
         for info, block in self.iter_read_block():
             dest[info.slice] = block[:]
 
-    def resize(self, newshape):
+    def resize(self, newshape, start=None):
         """Change the shape of the array by growing or shrinking one or more dimensions.
 
         Parameters
@@ -130,13 +130,101 @@ class IArray(ext.Container):
         newshape : tuple or list
             The new shape of the array container. It should have the same dimensions
             as `self`.
+        start: tuple, list or None, optional.
+            The position from where the array will be extended or shrunk according to
+            :paramref:`newshape`. If given, it should have the same dimensions
+            as `self`. If None (the default), the appended or deleted chunks will be those
+            which will be (or were respectively) at the end of the array.
 
         Notes
         -----
         The array values corresponding to the added positions are not initialized.
         Thus, the user is in charge of initializing them.
+        Furthermore, the same limitations in :func:`insert`, :func:`append` and :func:`delete`
+        apply to :paramref:`start` in each dimension.
+
+        See Also
+        --------
+        insert
+        append
         """
-        ext.resize(self, newshape)
+        ext.resize(self, new_shape=newshape, start=start)
+
+    def insert(self, data, axis=0, start=None):
+        """Insert data in a position by extending the :paramref:`axis`.
+
+        Parameters
+        ----------
+        data: object supporting the PyBuffer protocol
+            The object containing the data.
+        axis: int, optional
+            The axis along the data contained by :paramref:`data` will be inserted.
+            Default is 0.
+        start: int, optional
+            The position in the array axis from where to start inserting the data.
+            If None (default), it will be appended at the end.
+
+        Notes
+        -----
+        If :paramref:`start` is not at the end of the array, it must be a multiple of the
+        chunkshape in the :paramref:`axis` dimension.
+        Furthermore, the :paramref:`data` length must be a multiple of the array's length excluding
+        its length in the :paramref:`axis` (if :paramref:`start` is at the end) or
+        adding the length of the chunkshape in the :paramref:`axis` dimension (otherwise).
+
+        See Also
+        --------
+        append
+        """
+        ext.insert(self, data, axis, start)
+
+    def append(self, data, axis=0):
+        """Append data at the end by extending the :paramref:`axis`.
+
+        Parameters
+        ----------
+        data: object supporting the PyBuffer protocol
+            The object containing the data.
+        axis: int, optional
+            Axis along which to append.
+            Default is 0.
+
+        Notes
+        -----
+        The :paramref:`data` length must be a multiple of the array's length excluding
+        its length in the :paramref:`axis`.
+
+        See Also
+        --------
+        insert
+        """
+        ext.append(self, data, axis)
+
+    def delete(self, delete_len, axis=0, start=None):
+        """Delete :paramref:`delete_len` positions along the :paramref:`axis` from the
+        :paramref:`start`.
+
+        Parameters
+        ----------
+        delete_len: int
+            The number of elements to delete in the `array.shape[axis]`.
+        axis: int, optional
+            The axis that will be shrunk.
+            Default is 0.
+        start: int, None, optional
+            The position from where to start deleting the elements. If None (default)
+            the deleted elements will be those at the end of the array.
+
+        Notes
+        -----
+        If :paramref:`delete_len` is not a multiple of the chunkshape in the :paramref:`axis`,
+        :paramref:`start` must be equal to array's old shape - :paramref:`delete_len`.
+
+        See Also
+        --------
+        resize
+        """
+        ext.delete(self, axis=axis, start=start, delete_len=delete_len)
 
     def iter_read_block(self, iterblock: tuple = None):
         if iterblock is None:
