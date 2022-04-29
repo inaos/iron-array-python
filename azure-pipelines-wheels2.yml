@@ -24,12 +24,13 @@ jobs:
   - bash: |
       git submodule update --init --recursive
     displayName: Clone repos
-  
-  - bash: |
-      sshpass -p "$SCP_PWD" scp README* ironarray@distribution-ssh.ironarray.io:staging
-    env:
-      SCP_PWD: $(dist-box-ssh-pwd)
-    displayName: Test SCP
+
+# This is a test and currently issuing this error: "Host key verification failed." (Linux)
+#  - bash: |
+#      sshpass -p "$SCP_PWD" scp README* ironarray@distribution-ssh.ironarray.io:staging
+#    env:
+#      SCP_PWD: $(dist-box-ssh-pwd)
+#    displayName: Test SCP
 
   - bash: |
       envsubst < iarray/__init__.py > iarray/__init__.tmp
@@ -294,9 +295,11 @@ jobs:
       python -m twine upload -r iarray dist/*
     displayName: Deploy Wheel
     
-  - bash: |
-      #sshpass -p "$SCP_PWD" scp dist/*.whl ironarray@distribution-ssh.ironarray.io:staging
-      plink -ssh distribution-ssh.ironarray.io -l ironarray -pw "$SCP_PWD"
-    env:
-      SCP_PWD: $(dist-box-ssh-pwd)
-    displayName: Deploy Wheel SSH
+# This is currently issuing the error: "Host key verification failed." for Linux/MacOSX
+# and complaining about "sshpass not found" on Win.  This requires more testing.
+#  - bash: |
+#      #sshpass -p "$SCP_PWD" scp dist/*.whl ironarray@distribution-ssh.ironarray.io:staging
+#      plink -ssh distribution-ssh.ironarray.io -l ironarray -pw "$SCP_PWD"
+#    env:
+#      SCP_PWD: $(dist-box-ssh-pwd)
+#    displayName: Deploy Wheel SSH
