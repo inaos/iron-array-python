@@ -24,7 +24,9 @@ def fmult(a: udf.float64, b: udf.float64) -> float:
         ("2 + x * x", "2 + lib2.fmult(x, x)", {"x": ia.arange((10,))}),
         ("2 + sin(x) + x * x", "2 + sin(x) + lib2.fmult(x, x)", {"x": ia.arange((10,))}),
         ("2 * (sin(x) + cos(x)) + x * x", "2 * (sin(x) + cos(x)) + lib2.fmult(x, x)", {"x": ia.arange((10,))}),
-        # ("2 + x * x * (x + x)", "2 + lib2.fmult(x, x) * lib.fsum(x, x)", {"x": ia.arange((10,))}), # raises an error
+        ("2 + x * x * (x + x)", "2 + lib2.fmult(x, x) * lib.fsum(x, x)", {"x": ia.arange((10,))}),
+        ("2 + x * x * ((x * x) + x)", "2 + lib2.fmult(x, x) * lib.fsum(lib2.fmult(x, x), x)", {"x": ia.arange((10,))}),
+        ("x * y * ((x * y) + y)", "lib2.fmult(x, y) * lib.fsum(lib2.fmult(x, y), y)", {"x": ia.arange((10,)), "y": 2}),
     ],
 )
 def test_simple(sexpr, sexpr_udf, inputs):
