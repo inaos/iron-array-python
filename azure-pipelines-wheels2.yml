@@ -295,7 +295,8 @@ jobs:
     displayName: Deploy Wheel
     
   - bash: |
-      sshpass -p "$SCP_PWD" scp dist/*.whl ironarray@distribution-ssh.ironarray.io:staging
+      #sshpass -p "$SCP_PWD" scp dist/*.whl ironarray@distribution-ssh.ironarray.io:staging
+      plink -ssh distribution-ssh.ironarray.io -l ironarray -pw "$SCP_PWD"
     env:
       SCP_PWD: $(dist-box-ssh-pwd)
     displayName: Deploy Wheel SSH
