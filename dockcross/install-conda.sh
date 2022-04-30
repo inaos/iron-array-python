@@ -35,7 +35,9 @@ conda update --all --yes
 conda clean -tipy
 
 # Install conda build and deployment tools.
-conda install -y --quiet -c numba/label/manylinux2014 llvmdev
+# conda install -y --quiet -c numba/label/manylinux2014 llvmdev
+# LLVM 13 is necessary for calling int intrinsics
+conda install -y -c conda-forge 'llvmdev>=13'
 conda install -y --quiet -c intel mkl-include
 conda install -y --quiet -c intel mkl-static
 conda install -y --quiet -c intel icc_rt
