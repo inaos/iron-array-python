@@ -90,7 +90,8 @@ for version in "${versions[@]}"; do
   cd /tmp/
   python -m pip install iarray --user --no-cache-dir -f /work/dist/
   cd /work/
-  python -m pytest iarray/tests
+  # python -m pytest iarray/tests  # these are too heavy to run here
+  python -m pytest iarray/tests -m "not heavy"
   conda deactivate
 done
 
