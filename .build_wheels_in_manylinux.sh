@@ -85,6 +85,8 @@ for version in "${versions[@]}"; do
   python_version=`${pybin} -c "import sys; print('%d.%d'%sys.version_info[0:2])"`
   conda create --yes -n test-wheels python=$python_version
   conda activate test-wheels
+  python -m pip install -r requirements-runtime.txt
+  python -m pip install -r requirements-test.txt
   cd /tmp/
   python -m pip install iarray --user --no-cache-dir -f /work/dist/
   cd /work/
