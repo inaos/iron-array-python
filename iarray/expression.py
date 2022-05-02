@@ -349,9 +349,13 @@ class UdfLibrary(ext.UdfLibrary):
         except ia.IArrayError:
             raise AttributeError(f"{type(self)} object has no attribute '{name}'")
 
+        # Convert function address (int) to IR function pointer
         address = ir.Constant(udf.int64, address)
+        f_type = self.functions[name].ir_function_type
+        f_type_ptr = f_type.as_pointer()
+        f_ptr = address.inttoptr(f_type_ptr)
 
-        return address
+        return f_ptr
 
 
 class UdfRegistry(MutableMapping):
