@@ -1002,12 +1002,13 @@ class GenVisitor(NodeVisitor):
 
         key = (func,) + tuple(types.value_to_ir_type(x) for x in args)
         func = self.root.compiled.get(key, func)
-        if not isinstance(func, ir.Function):
+        if not hasattr(func, 'function_type'):
             raise TypeError(f"unexpected {func}")
 
         # Check the number of arguments is correct
-        if len(args) != len(func.args):
-            n = len(func.args)
+        arg_types = func.function_type.args
+        if len(args) != len(arg_types):
+            n = len(arg_types)
             raise TypeError(
                 f"{func.name} takes exactly one argument ({len(args)} given)"
                 if n == 1
@@ -1016,8 +1017,8 @@ class GenVisitor(NodeVisitor):
 
         # Convert to IR values of the correct type
         args = [
-            types.value_to_ir_value(self.builder, arg, type_=func_arg.type)
-            for arg, func_arg in zip(args, func.args)
+            types.value_to_ir_value(self.builder, arg, type_=arg_type)
+            for arg, arg_type in zip(args, arg_types)
         ]
 
         return self.builder.call(func, args)
@@ -1214,13 +1215,14 @@ class Function:
                     signature = ir.FunctionType(t, args)
                     signatures[args] = signature
                 fname = name if t is types.float64 else f'{name}f'
-                node.compiled[(py_func,) + args] = ir.Function(self.ir_module, signature, name=fname)
+                func = ir.Function(self.ir_module, signature, name=fname)
+                node.compiled[(py_func,) + args] = func
 
         # (6) The IR module and function
-        f_type = ir.FunctionType(
+        self.ir_function_type = ir.FunctionType(
             ir_signature.return_type, tuple(param.type for param in ir_signature.parameters)
         )
-        ir_function = ir.Function(self.ir_module, f_type, self.name)
+        ir_function = ir.Function(self.ir_module, self.ir_function_type, self.name)
 
         # (7) AST pass: structure
         node.globals = self.globals
