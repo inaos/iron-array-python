@@ -169,9 +169,15 @@ class IArray(ext.Container):
         -----
         If :paramref:`start` is not at the end of the array, it must be a multiple of the
         chunkshape in the :paramref:`axis` dimension.
-        Furthermore, the :paramref:`data` length must be a multiple of the array chunkshape
-        in all the dimensions, except when :paramref:`start` is at the end in the
-        :paramref:`axis` dimension, where it can take any value.
+        Furthermore, the :paramref:`data` length must be a multiple of the array length
+        excluding its length in the :paramref:`axis` (if :paramref:`start` is at the end) or
+        adding the length of the chunkshape in the :paramref:`axis` dimension (otherwise).
+
+        For example, if we have an array of `shape=[20, 20]` and `chunks=[7,7]`, and we
+        would like to insert data in the `axis=0`. Then, if `start = 0` which is different from `shape[axis]`
+        and multiple of `chunks[axis]`, the length of :paramref:`data` must be a
+        multiple of `7 * 20`. If `start = 20 = shape[axis]` (or None),
+        the length of :paramref:`data` can be `anything * 20`.
 
         See Also
         --------
@@ -194,8 +200,12 @@ class IArray(ext.Container):
 
         Notes
         -----
-        The :paramref:`data` length must be a multiple of the chunkshape of the array,
+        The :paramref:`data` length must be a multiple of the shape of the array,
         except in the :paramref:`axis`, where it can take any value.
+
+        For example, suppose we have an array of `shape = [20, 20]`, and `chunks=[7, 7]`.
+        Then the :paramref:`data` length can be `anything * 20` and the new shape would be
+        `[20 + anything, 20]`.
 
         See Also
         --------
@@ -223,7 +233,20 @@ class IArray(ext.Container):
         Notes
         -----
         If :paramref:`delete_len` is not a multiple of the chunkshape in :paramref:`axis`,
-        :paramref:`start` must be None or pointing to the end of the array in :paramref:`axis`.
+        :paramref:`start` must be None or pointing to the difference between the shape in
+        :paramref:`axis` and :paramref:`delete_len`.
+
+        For example, if we have an array with `shape = [20, 20]` and `chunks=[7, 7]`.
+        If `delete_len = 5` and `axis=0`, because :paramref:`delete_len`
+        is not a multiple of `chunks[axis]`, :paramref:`start`
+        must be `None` or `shape[axis] - delete_len = 15`. In both cases, the deleted elements
+        will be the same (those at the end) and the new shape will be `[15, 20]`.
+        If we would like to delete some elements
+        in the middle of the array, :paramref:`start` and :paramref:`delete_len` both must be a multiple
+        of `chunks[axis]`. So the only possibilities is this particular case would be
+        `start = 0` and `delete_len = 7` or `delete_len = 14` which would give an array with
+        shape `[13, 20]` or `[6, 20]`. Or `start = 7` and
+        `delete_len = 7` which would give an array with shape `[13, 20]`.
 
         See Also
         --------
