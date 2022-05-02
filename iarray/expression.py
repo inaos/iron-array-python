@@ -332,6 +332,15 @@ class UdfLibrary(ext.UdfLibrary):
     def __init__(self, name):
         super().__init__(name)
         self.name = name
+        self.functions = {}
+
+    def register_func(self, function):
+        name = function.name
+        if name in self.functions:
+            raise ValueError(f"UDF func '{name}' already registered in library '{self.name}'")
+
+        super().register_func(function)
+        self.functions[name] = function
 
     def __getattr__(self, name):
         full_name = f'{self.name}.{name}'
@@ -349,7 +358,6 @@ class UdfRegistry(MutableMapping):
 
     def __init__(self):
         self.libs = {}        # name: <UdfLibrary>
-        self.libs_funcs = {}  # name: {fname: <Function>}
         self.func_addr = {}   # name.fname: address (int)
 
     def __getitem__(self, name: str):
@@ -369,7 +377,7 @@ class UdfRegistry(MutableMapping):
             udf.Function
         """
         if name in self.libs:
-            return self.libs_funcs[name]
+            return self.libs[name].functions
         raise ValueError(f"'{name}' is not a registered library")
 
     def __setitem__(self, name: str, udf_func: py2llvm.Function):
@@ -388,13 +396,8 @@ class UdfRegistry(MutableMapping):
         """
         if name not in self.libs:
             self.libs[name] = UdfLibrary(name)
-            self.libs_funcs[name] = {}
-        func_name = udf_func.name
-        if func_name in self.libs_funcs[name]:
-            raise ValueError(f"UDF func '{func_name}' already registered in library '{name}'")
         self.libs[name].register_func(udf_func)
-        self.libs_funcs[name][func_name] = udf_func
-        full_func_name = f"{name}.{func_name}"
+        full_func_name = f"{name}.{udf_func.name}"
         self.func_addr[full_func_name] = ia.udf_lookup_func(full_func_name)
 
     def __delitem__(self, name: str):
@@ -405,11 +408,11 @@ class UdfRegistry(MutableMapping):
         name : str or byte string
             The name of the attr.
         """
-        for func_name in self.libs_funcs[name]:
-            del self.func_addr[f"{name}.{func_name}"]
+        for lib in self.libs[name]:
+            for func_name in lib.functions:
+                del self.func_addr[f"{name}.{func_name}"]
         self.libs[name].dealloc()
         del self.libs[name]
-        del self.libs_funcs[name]
 
     def __iter__(self):
         """
@@ -431,7 +434,7 @@ class UdfRegistry(MutableMapping):
         -------
         Iterator over all funcs under :paramref:`name` lib.
         """
-        yield from self.libs_funcs[name].values()
+        yield from self.libs[name].functions.values()
 
     def iter_all_func_names(self):
         """
@@ -442,7 +445,7 @@ class UdfRegistry(MutableMapping):
         Iterator over all registered UDF funcs in the `lib_name.func_name` form.
         """
         for name in self.libs:
-            for func_name in self.libs_funcs[name]:
+            for func_name in self.libs[name].functions:
                 yield f"{name}.{func_name}"
 
     def get_func_addr(self, func_name):
@@ -469,5 +472,4 @@ class UdfRegistry(MutableMapping):
         for name in list(self.libs):
             self.__delitem__(name)
         self.libs = {}
-        self.libs_funcs = {}
         self.func_addr = {}
