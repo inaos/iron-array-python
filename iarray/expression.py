@@ -348,9 +348,9 @@ class UdfLibrary(ext.UdfLibrary):
 class UdfRegistry(MutableMapping):
 
     def __init__(self):
-        self.libs = {}
-        self.libs_funcs = {}
-        self.func_addr = {}
+        self.libs = {}        # name: <UdfLibrary>
+        self.libs_funcs = {}  # name: {fname: <Function>}
+        self.func_addr = {}   # name.fname: address (int)
 
     def __getitem__(self, name: str):
         """
@@ -363,8 +363,10 @@ class UdfRegistry(MutableMapping):
 
         Returns
         -------
-        object : set
-            A set with all the UDF functions in :paramref:`name` lib.
+        object : dict
+            A dict with all the UDF functions in :paramref:`name` lib.
+            The key is the function name and the value is an instance of
+            udf.Function
         """
         if name in self.libs:
             return self.libs_funcs[name]
@@ -386,13 +388,13 @@ class UdfRegistry(MutableMapping):
         """
         if name not in self.libs:
             self.libs[name] = UdfLibrary(name)
-            self.libs_funcs[name] = set()
+            self.libs_funcs[name] = {}
         func_name = udf_func.name
         if func_name in self.libs_funcs[name]:
             raise ValueError(f"UDF func '{func_name}' already registered in library '{name}'")
         self.libs[name].register_func(udf_func)
-        self.libs_funcs[name].add(udf_func)
-        full_func_name = ".".join([name, func_name])
+        self.libs_funcs[name][func_name] = udf_func
+        full_func_name = f"{name}.{func_name}"
         self.func_addr[full_func_name] = ia.udf_lookup_func(full_func_name)
 
     def __delitem__(self, name: str):
@@ -403,9 +405,8 @@ class UdfRegistry(MutableMapping):
         name : str or byte string
             The name of the attr.
         """
-        for func in self.libs_funcs[name]:
-            full_func_name = ".".join([name, func.name])
-            del self.func_addr[full_func_name]
+        for func_name in self.libs_funcs[name]:
+            del self.func_addr[f"{name}.{func_name}"]
         self.libs[name].dealloc()
         del self.libs[name]
         del self.libs_funcs[name]
@@ -430,8 +431,7 @@ class UdfRegistry(MutableMapping):
         -------
         Iterator over all funcs under :paramref:`name` lib.
         """
-        for func in self.libs_funcs[name]:
-            yield func
+        yield from self.libs_funcs[name].values()
 
     def iter_all_func_names(self):
         """
@@ -442,8 +442,8 @@ class UdfRegistry(MutableMapping):
         Iterator over all registered UDF funcs in the `lib_name.func_name` form.
         """
         for name in self.libs:
-            for func in self.libs_funcs[name]:
-                yield ".".join([name, func.name])
+            for func_name in self.libs_funcs[name]:
+                yield f"{name}.{func_name}"
 
     def get_func_addr(self, func_name):
         """
