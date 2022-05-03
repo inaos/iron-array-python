@@ -909,7 +909,7 @@ class GenVisitor(NodeVisitor):
         if isinstance(value, types.Node):
             value = value.Attribute_exit(self)
 
-        if isinstance(value, ir.Value) and value.type.is_pointer:
+        if isinstance(value, ir.Value) and value.type.is_pointer and not hasattr(value, 'function_type'):
             value = self.builder.load(value)
 
         return value

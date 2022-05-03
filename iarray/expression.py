@@ -349,11 +349,16 @@ class UdfLibrary(ext.UdfLibrary):
         except ia.IArrayError:
             raise AttributeError(f"{type(self)} object has no attribute '{name}'")
 
+        # TODO I think it would be simpler and better to instead use
+        # llvmlite.binding.add_symbol(name, address), but I discovered this a
+        # bit too late.
+
         # Convert function address (int) to IR function pointer
         address = ir.Constant(udf.int64, address)
         f_type = self.functions[name].ir_function_type
         f_type_ptr = f_type.as_pointer()
         f_ptr = address.inttoptr(f_type_ptr)
+        f_ptr.function_type = f_type
 
         return f_ptr
 
