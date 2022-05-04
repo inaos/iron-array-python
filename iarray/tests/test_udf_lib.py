@@ -65,3 +65,29 @@ def test_simple(sexpr, sexpr_udf, inputs):
 def test_malformed(sexpr_udf, inputs):
     with pytest.raises(ValueError):
         ia.expr_from_string(sexpr_udf, inputs)
+
+
+@udf.jit(verbose=0)
+def udf_mult(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1), y: udf.Array(udf.float64, 1)):
+    n = out.shape[0]
+    for i in range(n):
+        out[i] = lib2.fmult(x[i], y[i])
+
+    return 0
+
+@pytest.mark.parametrize(
+    "sexpr, func, inputs",
+    [
+        ("x * y", udf_mult, {"x": ia.arange([10]), "y": ia.arange([10])}),
+    ]
+)
+def test_udf(sexpr, func, inputs):
+    expr = ia.expr_from_string(sexpr, inputs)
+    out = expr.eval()
+
+    inputs = list(inputs.values())
+    expr_udf = ia.expr_from_udf(func, inputs)
+    out_udf = expr_udf.eval()
+
+    tol = 1e-14
+    np.testing.assert_allclose(out.data, out_udf.data, rtol=tol, atol=tol)
