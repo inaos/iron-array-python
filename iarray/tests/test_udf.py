@@ -190,7 +190,7 @@ def test_2dim(f):
 @udf.jit
 def f_while(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
     n = x.shape[0]
-    i: int32 = 0
+    i = 0
     while i < n:
         out[i] = (math.sin(x[i]) - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
         i = i + 1
