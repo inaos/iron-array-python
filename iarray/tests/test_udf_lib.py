@@ -100,13 +100,13 @@ def udf_const_mult(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1))
 @udf.jit
 def udf_sin(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
     for i in range(out.shape[0]):
-        out[i] = 2.0 + math.sin(x[i]) + lib2.fmult(x[i], x[i])
+        out[i] = 2 + math.sin(x[i]) + lib2.fmult(x[i], x[i])
     return 0
 
 @udf.jit
 def udf_sin_cos(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
     for i in range(out.shape[0]):
-        out[i] = 2.0 * (math.sin(x[i]) + math.cos(x[i])) + lib2.fmult(x[i], x[i])
+        out[i] = 2 * (math.sin(x[i]) + math.cos(x[i])) + lib2.fmult(x[i], x[i])
     return 0
 
 @udf.jit

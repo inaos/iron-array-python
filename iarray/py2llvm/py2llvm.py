@@ -69,7 +69,7 @@ def values_to_type(left, right):
 
     # At least 1 is IR
     ltype = types.type_to_ir_type(ltype)
-    rtype = types.type_to_ir_type(ltype)
+    rtype = types.type_to_ir_type(rtype)
 
     if ltype is types.float64 or rtype is types.float64:
         return types.float64
