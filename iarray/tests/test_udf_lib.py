@@ -67,26 +67,94 @@ def test_malformed(sexpr_udf, inputs):
         ia.expr_from_string(sexpr_udf, inputs)
 
 
-@udf.jit(verbose=0)
-def udf_mult(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1), y: udf.Array(udf.float64, 1)):
-    n = out.shape[0]
-    for i in range(n):
-        out[i] = lib2.fmult(x[i], y[i])
+@udf.jit
+def udf_sum(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
+    for i in range(out.shape[0]):
+        out[i] = lib.fsum(x[i], x[i])
+    return 0
 
+@udf.jit
+def udf_mult(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
+    for i in range(out.shape[0]):
+        out[i] = lib2.fmult(x[i], x[i])
+    return 0
+
+@udf.jit
+def udf_scalar(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1), y: udf.float64):
+    for i in range(out.shape[0]):
+        out[i] = lib.fsum(x[i], y)
+    return 0
+
+@udf.jit
+def udf_const_sum(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
+    for i in range(out.shape[0]):
+        out[i] = 2 * lib.fsum(x[i], x[i])
+    return 0
+
+@udf.jit
+def udf_const_mult(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
+    for i in range(out.shape[0]):
+        out[i] = 2 + lib2.fmult(x[i], x[i])
+    return 0
+
+@udf.jit
+def udf_sin(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
+    for i in range(out.shape[0]):
+        out[i] = 2.0 + math.sin(x[i]) + lib2.fmult(x[i], x[i])
+    return 0
+
+@udf.jit
+def udf_sin_cos(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
+    for i in range(out.shape[0]):
+        out[i] = 2.0 * (math.sin(x[i]) + math.cos(x[i])) + lib2.fmult(x[i], x[i])
+    return 0
+
+@udf.jit
+def udf_mult_sum(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
+    for i in range(out.shape[0]):
+        out[i] = 2 + lib2.fmult(x[i], x[i]) * lib.fsum(x[i], x[i])
+    return 0
+
+@udf.jit
+def udf_mult_sum_mult(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
+    for i in range(out.shape[0]):
+        out[i] = 2 + lib2.fmult(x[i], x[i]) * lib.fsum(lib2.fmult(x[i], x[i]), x[i])
+    return 0
+
+@udf.jit
+def udf_mult_sum_mult_scalar(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1), y: udf.float64):
+    for i in range(out.shape[0]):
+        out[i] = lib2.fmult(x[i], y) * lib.fsum(lib2.fmult(x[i], y), y)
     return 0
 
 @pytest.mark.parametrize(
     "sexpr, func, inputs",
     [
-        ("x * y", udf_mult, {"x": ia.arange([10]), "y": ia.arange([10])}),
+        ("x + x", udf_sum, {"x": ia.arange((10,))}),
+        ("x * x", udf_mult, {"x": ia.arange((10,))}),
+        ("x + y", udf_scalar, {"x": ia.arange((10,)), "y": 1}),  # scalar as param!
+        ("2 * (x + x)", udf_const_sum, {"x": ia.arange((10,))}),
+        ("2 + x * x", udf_const_mult, {"x": ia.arange((10,))}),
+        ("2 + sin(x) + x * x", udf_sin, {"x": ia.arange((10,))}),
+        ("2 * (sin(x) + cos(x)) + x * x", udf_sin_cos, {"x": ia.arange((10,))}),
+        ("2 + x * x * (x + x)", udf_mult_sum, {"x": ia.arange((10,))}),
+        ("2 + x * x * ((x * x) + x)", udf_mult_sum_mult, {"x": ia.arange((10,))}),
+        ("x * y * ((x * y) + y)", udf_mult_sum_mult_scalar, {"x": ia.arange((10,)), "y": 2}),
     ]
 )
 def test_udf(sexpr, func, inputs):
     expr = ia.expr_from_string(sexpr, inputs)
     out = expr.eval()
 
-    inputs = list(inputs.values())
-    expr_udf = ia.expr_from_udf(func, inputs)
+    user_inputs = []
+    user_params = []
+    for value in inputs.values():
+        if isinstance(value, ia.IArray):
+            user_inputs.append(value)
+        else:
+            user_params.append(value)
+
+    expr_udf = ia.expr_from_udf(func, user_inputs, user_params)
     out_udf = expr_udf.eval()
 
     tol = 1e-14
