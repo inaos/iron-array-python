@@ -308,7 +308,7 @@ class Config(ext.Config):
     Parameters
     ----------
     codec: :class:`Codec`
-        The codec to be used inside Blosc. Default is :py:obj:`Codec.ZSTD <Codec>`.
+        The codec to be used inside Blosc.  Default is :py:obj:`Codec.ZSTD <Codec>`.
     zfp_meta: int
         It should be set when using :py:obj:`Codec.ZFP_FIXED_ACCURACY <Codec>`,
         :py:obj:`Codec.ZFP_FIXED_PRECISION <Codec>` or :py:obj:`Codec.ZFP_FIXED_RATE <Codec>`.
@@ -355,10 +355,12 @@ class Config(ext.Config):
     dtype: (np.float64, np.float32, np.int64, np.int32, np.int16, np.int8, np.uint64, np.uint32, np.uint16,
         np.uint8, np.bool_)
         The data type to use. The default is np.float64.
-    np_dtype: str or bytes (np.dtype.str)
+    np_dtype: bytes, str or np.dtype instance
         The array-protocol typestring of the np.dtype object to use. Default is None. If set, :paramref:`dtype`
         must also be set. The native :ref:`IArray` type used to store data will be :paramref:`dtype`, and
-        if needed, a cast or a copy will be made when retrieving so that the output type is :paramref:`np_dtype` .
+        if needed, a cast or a copy will be made when retrieving so that the output type is :paramref:`np_dtype`.
+        Caveat emptor: all the internal operations will use the native :paramref:`dtype`, not :paramref:`np_dtype`,
+        so it is easy to shoot in your foot if you expect the reverse thing to happen.
     splitmode: :class:`SplitMode`
         The split mode to be used inside Blosc.  Default is :py:obj:`SplitMode.AUTO_SPLIT <SplitMode>`.
     chunks : list, tuple
@@ -412,7 +414,7 @@ class Config(ext.Config):
         np.uint8,
         np.bool_,
     ) = field(default_factory=defaults._dtype)
-    np_dtype: np.dtype = field(default_factory=defaults._np_dtype)
+    np_dtype: bytes or str or np.dtype = field(default_factory=defaults._np_dtype)
     split_mode: ia.SplitMode = field(default_factory=defaults._split_mode)
     chunks: Union[Sequence, None] = field(default_factory=defaults._chunks)
     blocks: Union[Sequence, None] = field(default_factory=defaults._blocks)
@@ -512,7 +514,7 @@ class Config(ext.Config):
         if np_dtype is not None and not np_dtype_allowed:
             defaults.compat_params = set()
             defaults.check_compat = True
-            raise ValueError("`dtype` must be set when setting `np_dtype`")
+            raise ValueError("`dtype` must be explicitly set when setting `np_dtype`")
 
         # btune=True with others
         btune = kwargs.get("btune", self.btune)

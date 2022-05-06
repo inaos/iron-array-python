@@ -69,22 +69,18 @@ ia2np_dtype = {v: k for k, v in np2ia_dtype.items()}
 dtype_str2dtype = {bo + l + '[' + size + ']': np.int64 for bo in ['<', '>'] for l in ['M8', 'm8']
                    for size in ['Y', 'M', 'D', 'h', 's', 'ms', 'us', 'μs', 'ns', 'ps', 'fs', 'as']}
 # NaT (not a time)
-dtype_str2dtype = dtype_str2dtype | {bo + l: np.int64 for bo in ['<', '>'] for l in ['M8', 'm8']}
+dtype_str2dtype.update({bo + l: np.int64 for bo in ['<', '>'] for l in ['M8', 'm8']})
 # integers
-dtype_str2dtype = dtype_str2dtype | \
-                  {bo + 'i' + size: dtype for bo in ['<', '>']
-                  for (size, dtype) in [('1', np.int8), ('2', np.int16), ('4', np.int32), ('8', np.int64)]}
+dtype_str2dtype.update({bo + 'i' + size: dtype for bo in ['<', '>']
+                  for (size, dtype) in [('1', np.int8), ('2', np.int16), ('4', np.int32), ('8', np.int64)]})
 # unsigned integers
-dtype_str2dtype = dtype_str2dtype | \
-                  {bo + 'u' + size: dtype for bo in ['<', '>']
-                  for (size, dtype) in [('1', np.uint8), ('2', np.uint16), ('4', np.uint32), ('8', np.uint64)]}
+dtype_str2dtype.update({bo + 'u' + size: dtype for bo in ['<', '>']
+                  for (size, dtype) in [('1', np.uint8), ('2', np.uint16), ('4', np.uint32), ('8', np.uint64)]})
 # floats
-dtype_str2dtype = dtype_str2dtype | \
-                  {bo + 'f' + size: dtype for bo in ['<', '>']
-                  for (size, dtype) in [('2', np.int16), ('4', np.float32), ('8', np.float64)]}
+dtype_str2dtype.update({bo + 'f' + size: dtype for bo in ['<', '>']
+                  for (size, dtype) in [('2', np.int16), ('4', np.float32), ('8', np.float64)]})
 # booleans
-dtype_str2dtype = dtype_str2dtype | {'|b1': np.bool_,
-                                     '|u1': np.bool_}
+dtype_str2dtype.update({'|b1': np.bool_, '|u1': np.bool_})
 
 
 def compress_squeeze(data, selectors):
@@ -467,6 +463,11 @@ cdef class Container:
         """The array-protocol typestring of the np.dtype object to use."""
         return self.attrs["np_dtype"] if "np_dtype" in self.attrs.keys() else None
 
+    @np_dtype.setter
+    def np_dtype(self, value):
+        if value is not None:
+            self.attrs["np_dtype"] = np.dtype(value).str
+
     @property
     def dtshape(self):
         """The :py:obj:`DTShape` of the array."""
@@ -624,11 +625,6 @@ cdef class Expression:
         self.cfg.blocks = blocks
 
 
-def add_np_dtype(iarr, np_dtype):
-    if np_dtype is not None:
-        iarr.attrs["np_dtype"] = np_dtype
-
-
 #
 # Iarray container constructors
 #
@@ -657,7 +653,7 @@ def copy(cfg, src):
 
     c_c = PyCapsule_New(c, <char*>"iarray_container_t*", NULL)
     a = ia.IArray(ctx, c_c)
-    add_np_dtype(a, cfg.np_dtype)
+    a.np_dtype = cfg.np_dtype
 
     return a
 
@@ -681,7 +677,7 @@ def empty(cfg, dtshape):
 
     c_c = PyCapsule_New(c, <char*>"iarray_container_t*", NULL)
     a = ia.IArray(ctx, c_c)
-    add_np_dtype(a, cfg.np_dtype)
+    a.np_dtype = cfg.np_dtype
 
     return a
 
@@ -705,7 +701,7 @@ def uninit(cfg, dtshape):
 
     c_c = PyCapsule_New(c, <char*>"iarray_container_t*", NULL)
     a = ia.IArray(ctx, c_c)
-    add_np_dtype(a, cfg.np_dtype)
+    a.np_dtype = cfg.np_dtype
 
     return a
 
@@ -732,7 +728,7 @@ def arange(cfg, slice_, dtshape):
 
     c_c = PyCapsule_New(c, <char*>"iarray_container_t*", NULL)
     a = ia.IArray(ctx, c_c)
-    add_np_dtype(a, cfg.np_dtype)
+    a.np_dtype = cfg.np_dtype
 
     return a
 
@@ -756,7 +752,7 @@ def linspace(cfg, start, stop, dtshape):
 
     c_c = PyCapsule_New(c, <char*>"iarray_container_t*", NULL)
     a = ia.IArray(ctx, c_c)
-    add_np_dtype(a, cfg.np_dtype)
+    a.np_dtype = cfg.np_dtype
 
     return a
 
@@ -780,7 +776,7 @@ def zeros(cfg, dtshape):
 
     c_c = PyCapsule_New(c, <char*>"iarray_container_t*", NULL)
     a = ia.IArray(ctx, c_c)
-    add_np_dtype(a, cfg.np_dtype)
+    a.np_dtype = cfg.np_dtype
 
     return a
 
@@ -804,7 +800,7 @@ def ones(cfg, dtshape):
 
     c_c = PyCapsule_New(c, <char*>"iarray_container_t*", NULL)
     a = ia.IArray(ctx, c_c)
-    add_np_dtype(a, cfg.np_dtype)
+    a.np_dtype = cfg.np_dtype
 
     return a
 
@@ -836,7 +832,7 @@ def full(cfg, fill_value, dtshape):
 
     c_c = PyCapsule_New(c, <char*>"iarray_container_t*", NULL)
     a = ia.IArray(ctx, c_c)
-    add_np_dtype(a, cfg.np_dtype)
+    a.np_dtype = cfg.np_dtype
 
     return a
 
@@ -1020,7 +1016,7 @@ def get_slice(cfg, data, start, stop, squeeze_mask, view, storage):
     c_c = PyCapsule_New(c, <char*>"iarray_container_t*", NULL)
 
     b =  ia.IArray(ctx, c_c)
-    add_np_dtype(b, cfg.np_dtype)
+    b.np_dtype = cfg.np_dtype
     b.view_ref = data  # Keep a reference of the parent container
     if b.ndim == 0:
         # Scalars will be represented by NumPy containers
@@ -1142,7 +1138,7 @@ def numpy2iarray(cfg, a, dtshape):
 
     c_c =  PyCapsule_New(c, <char*>"iarray_container_t*", NULL)
     b = ia.IArray(ctx, c_c)
-    add_np_dtype(b, cfg.np_dtype)
+    b.np_dtype = cfg.np_dtype
 
     return b
 
@@ -1180,6 +1176,7 @@ def iarray2numpy(cfg, c):
             itemsize = type.itemsize
             iarray_check(ciarray.iarray_to_buffer(ctx_, c_, np.PyArray_DATA(a), size * itemsize))
         else:
+            # dtypes are incompatible, so force the cast
             a = np.zeros(size, dtype=dtype).reshape(shape)
             itemsize = np.dtype(dtype).itemsize
             iarray_check(ciarray.iarray_to_buffer(ctx_, c_, np.PyArray_DATA(a), size * itemsize))
@@ -1487,7 +1484,7 @@ def matmul(cfg, a, b):
 
     c_c = PyCapsule_New(c, <char*>"iarray_container_t*", NULL)
     d = ia.IArray(ctx, c_c)
-    add_np_dtype(d, cfg.np_dtype)
+    d.np_dtype = cfg.np_dtype
 
     return d
 
@@ -1654,7 +1651,7 @@ def reduce_multi(cfg, a, method, axis):
     c_c = PyCapsule_New(c, <char*>"iarray_container_t*", NULL)
     cfg2 = get_cfg_from_container(cfg, ctx_, c, cfg.urlpath)
     d = ia.IArray(Context(cfg2), c_c)
-    add_np_dtype(d, a.np_dtype)
+    d.np_dtype = a.np_dtype
 
     return d
 

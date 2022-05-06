@@ -75,7 +75,7 @@ class Expr(ext.Expression):
         # This would prevent to reuse the expression instance in e.g. bench loops.
         # self.input_refs = {}   # free internal reference to inputs
         a = iarr
-        ext.add_np_dtype(a, self.cfg.np_dtype)
+        a.np_dtype = self.cfg.np_dtype
         return a
 
 # Compile the regular expression to find operands
