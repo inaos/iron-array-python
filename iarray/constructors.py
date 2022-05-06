@@ -130,28 +130,37 @@ def arange(
     --------
     empty : Create an empty array.
     """
-
-    if (start, stop, step) == (None, None, None):
-        stop = np.prod(shape)
-        start = 0
-        step = 1
-    elif (stop, step) == (None, None):
-        stop = start
-        start = 0
-        step = 1
-    elif step is None:
-        stop = stop
-        start = start
-        if shape is None:
-            step = 1
-        else:
-            step = (stop - start) / np.prod(shape)
-    slice_ = slice(start, stop, step)
-
     if cfg is None:
         cfg = ia.get_config_defaults()
 
     with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
+        if cfg.np_dtype is not None and type(start) in [np.datetime64, np.timedelta64] \
+                and start.dtype.str[1:] != cfg.np_dtype[1:]:
+            raise ValueError("`start` has to be the same type as `cfg.np_dtype`")
+        if cfg.np_dtype is not None and type(stop) in [np.datetime64, np.timedelta64] \
+                and stop.dtype.str[1:] != cfg.np_dtype[1:]:
+            raise ValueError("`stop` has to be the same type as `cfg.np_dtype`")
+        if (start, stop, step) == (None, None, None):
+            stop = np.prod(shape)
+            start = 0
+            step = 1
+        elif (stop, step) == (None, None):
+            stop = np.array(start, dtype=cfg.dtype)
+            start = 0
+            step = 1
+        elif step is None:
+            stop = np.array(stop, dtype=cfg.dtype)
+            start = np.array(start, dtype=cfg.dtype)
+
+            if shape is None:
+                step = 1
+            else:
+                step = (stop - start) / np.prod(shape)
+        else:
+            stop = np.array(stop, dtype=cfg.dtype)
+            start = np.array(start, dtype=cfg.dtype)
+
+        slice_ = slice(start, stop, step)
         dtshape = ia.DTShape(shape, cfg.dtype)
         return ext.arange(cfg, slice_, dtshape)
 
@@ -249,6 +258,10 @@ def full(shape: Sequence, fill_value, cfg: ia.Config = None, **kwargs) -> ia.IAr
 
     with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
         dtshape = ia.DTShape(shape, cfg.dtype)
+        if cfg.np_dtype is not None and type(fill_value) in [np.datetime64, np.timedelta64] \
+                and fill_value.dtype.str[1:] != cfg.np_dtype[1:]:
+            raise ValueError("`fill_value` has to be the same type as `cfg.np_dtype`")
+        fill_value = np.array(fill_value, dtype=cfg.dtype)
         return ext.full(cfg, fill_value, dtshape)
 
 

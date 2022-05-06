@@ -74,7 +74,9 @@ class Expr(ext.Expression):
         # We don't want to free references to new arrays coming from scalars
         # This would prevent to reuse the expression instance in e.g. bench loops.
         # self.input_refs = {}   # free internal reference to inputs
-        return iarr
+        a = iarr
+        ext.add_np_dtype(a, self.cfg.np_dtype)
+        return a
 
 # Compile the regular expression to find operands
 # The expression below does not detect functions like 'lib.func()'
@@ -206,8 +208,10 @@ def expr_from_string(sexpr: str,
     """
     with ia.config(cfg, **kwargs) as cfg:
         shape, dtype, array_inputs, new_inputs = check_inputs_string(inputs, cfg)
+        np_dtype = cfg.np_dtype
     check_expr(sexpr, {**array_inputs, **new_inputs})
     kwargs["dtype"] = dtype
+    kwargs["np_dtype"] = np_dtype
     expr = Expr(shape=shape, cfg=cfg, **kwargs)
     for k, v in array_inputs.items():
         expr.bind(k, v)
@@ -273,11 +277,13 @@ def expr_from_udf(
 
     # Build expression
     with ia.config(cfg, **kwargs) as cfg:
+        np_dtype = cfg.np_dtype
         if inputs:
             shape, dtype = check_inputs_udf(inputs)
         else:
             dtype = cfg.dtype
     kwargs["dtype"] = dtype
+    kwargs["np_dtype"] = np_dtype
     expr = Expr(shape=shape, cfg=cfg, **kwargs)
 
     # Bind input arrays

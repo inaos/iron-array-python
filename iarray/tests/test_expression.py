@@ -6,7 +6,7 @@ import numpy as np
 
 # Expression
 @pytest.mark.parametrize(
-    "method, shape, chunks, blocks, dtype, expression, xcontiguous, xurlpath, ycontiguous, yurlpath",
+    "method, shape, chunks, blocks, dtype, np_dtype, expression, xcontiguous, xurlpath, ycontiguous, yurlpath",
     [
         (
             ia.Eval.ITERBLOSC,
@@ -14,6 +14,7 @@ import numpy as np
             [23, 32],
             [10, 10],
             np.float64,
+            None,
             "cos(x)",
             True,
             "test_expression_xcontiguous.iarr",
@@ -25,20 +26,23 @@ import numpy as np
             [100, 100],
             [10, 99],
             [4, 12],
-            np.float64,
+            np.int64,
+            'M8[Y]',
             "x",
             False,
             None,
             False,
             None,
         ),
-        (ia.Eval.ITERBLOSC, [1000], [110], [55], np.float32, "x", True, None, True, None),
+        (ia.Eval.ITERBLOSC, [100], [20], [5], np.int64, 'M8[M]', "x-y", True, None, True, None),
+        (ia.Eval.ITERBLOSC, [1000], [110], [55], np.float32, None, "x", True, None, True, None),
         (
             ia.Eval.ITERBLOSC,
             [1000],
             [100],
             [30],
             np.float64,
+            None,
             "(cos(x) - 1.35) * (sin(x) - 4.45) * tan(x - 8.5)",
             False,
             "test_expression_xsparse.iarr",
@@ -51,6 +55,7 @@ import numpy as np
             [100],
             [25],
             np.float64,
+            None,
             "(cos(x) - 1.35) * (sin(x) - 4.45) * tan(x - 8.5)",
             True,
             None,
@@ -63,6 +68,7 @@ import numpy as np
             [367],
             [77],
             np.float32,
+            None,
             "(abs(-x) - 1.35) * ceil(x) * floor(x - 8.5)",
             False,
             None,
@@ -75,6 +81,7 @@ import numpy as np
             [25, 25, 33],
             [12, 16, 8],
             np.float64,
+            None,
             "sinh(x) + (cosh(x) - 1.35) - tanh(x + .2)",
             True,
             "test_expression_xcontiguous.iarr",
@@ -88,6 +95,7 @@ import numpy as np
             [100],
             [30],
             np.float64,
+            None,
             "sinh(x) + (cosh(x) - 1.35) - tanh(x + .2)",
             True,
             "test_expression_xcontiguous.iarr",
@@ -101,6 +109,7 @@ import numpy as np
             [10, 5, 10],
             [3, 4, 3],
             np.float64,
+            None,
             "asin(x) + (acos(x) - 1.35) - atan(x + .2)",
             False,
             None,
@@ -114,6 +123,7 @@ import numpy as np
             [10, 5, 10],
             [3, 4, 3],
             np.float64,
+            None,
             "asin(x) + (acos(x) - 1.35) - atan(x + .2)",
             False,
             None,
@@ -126,6 +136,7 @@ import numpy as np
             [10, 10],
             [3, 3],
             np.float64,
+            None,
             "arcsin(x) + (arccos(x) - 1.35) - arctan(x + .2)",
             True,
             None,
@@ -138,6 +149,7 @@ import numpy as np
             [10, 5, 10],
             [3, 4, 3],
             np.float64,
+            None,
             "arcsin(x) + (arccos(x) - 1.35) - arctan(x + .2)",
             True,
             None,
@@ -151,6 +163,7 @@ import numpy as np
             [500],
             [100],
             np.float64,
+            None,
             "exp(x) + (log(x) - 1.35) - log10(x + .2)",
             True,
             None,
@@ -163,6 +176,7 @@ import numpy as np
             [500],
             [200],
             np.float32,
+            None,
             "sqrt(x) + atan2(x, x) + pow(x, x)",
             False,
             None,
@@ -175,6 +189,7 @@ import numpy as np
             [500],
             [250],
             np.float32,
+            None,
             "sqrt(x) + arctan2(x, x) + power(x, x)",
             False,
             "test_expression_xsparse.iarr",
@@ -187,6 +202,7 @@ import numpy as np
             [50, 50],
             [25, 25],
             np.float64,
+            None,
             "(x - cos(1)) * 2",
             True,
             None,
@@ -199,6 +215,7 @@ import numpy as np
             [2, 2, 2, 2, 2],
             [2, 2, 2, 2, 2],
             np.float32,
+            None,
             "(x - cos(y)) * (sin(x) + y) + 2 * x + y",
             False,
             "test_expression_xsparse.iarr",
@@ -212,6 +229,7 @@ import numpy as np
             [4, 5],
             [4, 3],
             np.float64,
+            None,
             "(x - cos(y)) * (sin(x) + y) + 2 * x + y",
             False,
             None,
@@ -224,6 +242,7 @@ import numpy as np
             [8, 6, 7, 4, 5],
             [4, 3, 3, 4, 5],
             np.float64,
+            None,
             "(x - cos(y)) * (sin(x) + y) + 2 * x + y",
             False,
             None,
@@ -237,6 +256,7 @@ import numpy as np
             [8, 6],
             [4, 3],
             np.float64,
+            None,
             "(x - cos(0.5)) * (sin(.1) + y) + 2 * x + y",
             True,
             "test_expression_xcontiguous.iarr",
@@ -249,6 +269,7 @@ import numpy as np
             [8, 6, 7, 4, 5],
             [4, 3, 3, 4, 5],
             np.float64,
+            None,
             "(x - cos(0.5)) * (sin(.1) + y) + 2 * x + y",
             True,
             "test_expression_xcontiguous.iarr",
@@ -262,6 +283,7 @@ import numpy as np
             [23, 32],
             [10, 10],
             np.float32,
+            None,
             "2.71828**y / x",
             True,
             "test_expression_xcontiguous.iarr",
@@ -271,21 +293,23 @@ import numpy as np
     ],
 )
 def test_expression(
-    method, shape, chunks, blocks, dtype, expression, xcontiguous, xurlpath, ycontiguous, yurlpath
+    method, shape, chunks, blocks, dtype, np_dtype, expression, xcontiguous, xurlpath, ycontiguous, yurlpath
 ):
     # The ranges below are important for not overflowing operations
     ia.remove_urlpath(xurlpath)
     ia.remove_urlpath(yurlpath)
     ia.remove_urlpath("test_expression_zarray.iarr")
 
-    x = ia.linspace(shape, 0.1, 0.2, dtype=dtype, chunks=chunks, blocks=blocks, contiguous=xcontiguous,
+    x = ia.linspace(shape, 0, 1, dtype=dtype, np_dtype=np_dtype, chunks=chunks, blocks=blocks, contiguous=xcontiguous,
                     urlpath=xurlpath)
-    y = ia.linspace(shape, 0, 1, dtype=dtype, chunks=chunks, blocks=blocks, contiguous=ycontiguous, urlpath=yurlpath)
+    y = ia.linspace(shape, 0.1, 0.2, dtype=dtype, np_dtype=np_dtype, chunks=chunks, blocks=blocks, contiguous=ycontiguous,
+                    urlpath=yurlpath)
     npx = ia.iarray2numpy(x)
     npy = ia.iarray2numpy(y)
 
+    out_np_dtype = 'm8[M]'if np_dtype is not None and np.dtype(np_dtype).str[1] == 'M' and expression == 'x-y' else np_dtype
     expr = ia.expr_from_string(expression, {"x": x, "y": y}, chunks=chunks, blocks=blocks, contiguous=xcontiguous,
-                               urlpath="test_expression_zarray.iarr", eval_method=method)
+                               urlpath="test_expression_zarray.iarr", dtype=dtype, np_dtype=out_np_dtype,  eval_method=method)
 
     with pytest.raises(IOError):
         expr.cfg.mode = "r"
@@ -319,8 +343,11 @@ def test_expression(
                 expression = expression.replace(ufunc + "(", "np." + ufunc + "(")
     npout2 = eval(expression, {"x": npx, "y": npy, "np": numpy})
 
-    tol = 1e-6 if dtype is np.float32 else 1e-14
-    np.testing.assert_allclose(npout, npout2, rtol=tol, atol=tol)
+    if np_dtype is None:
+        tol = 1e-6 if dtype is np.float32 else 1e-14
+        np.testing.assert_allclose(npout, npout2, rtol=tol, atol=tol)
+    else:
+        np.testing.assert_equal(npout, npout2)
 
     ia.remove_urlpath(x.cfg.urlpath)
     ia.remove_urlpath(y.cfg.urlpath)

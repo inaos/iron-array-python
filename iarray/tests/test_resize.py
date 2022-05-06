@@ -11,16 +11,25 @@ array_data = [
 ]
 
 
-@pytest.mark.parametrize("dtype", [np.float32, np.float64, np.int64, np.int32, np.uint64, np.uint32])
+@pytest.mark.parametrize("dtype, np_dtype",
+                         [
+                             (np.float32, None),
+                             (np.uint32, '>M8[M]'),
+                             (np.int64, '<m8[ps]'),
+                             (np.int32, None),
+                             (np.uint64, '>i8'),
+                             (np.uint32, 'u8'),
+                         ]
+                         )
 @pytest.mark.parametrize(
     "shape, chunks, blocks, newshape, start, acontiguous, aurlpath",
     array_data,
 )
-def test_resize(shape, chunks, blocks, newshape, start, dtype, acontiguous, aurlpath):
+def test_resize(shape, chunks, blocks, newshape, start, dtype, np_dtype, acontiguous, aurlpath):
     ia.remove_urlpath(aurlpath)
     cfg = ia.Config(chunks=chunks, blocks=blocks, contiguous=acontiguous)
-    a = ia.full(shape=shape, fill_value=4, cfg=cfg, mode="a", dtype=dtype, urlpath=aurlpath)
-    b = ia.full(shape=newshape, fill_value=4, cfg=cfg, mode="a", dtype=dtype)
+    a = ia.full(shape=shape, fill_value=4, cfg=cfg, mode="a", dtype=dtype, np_dtype=np_dtype, urlpath=aurlpath)
+    b = ia.full(shape=newshape, fill_value=4, cfg=cfg, mode="a", dtype=dtype, np_dtype=np_dtype)
 
     a.resize(newshape=newshape, start=start)
 
@@ -49,8 +58,9 @@ def test_resize(shape, chunks, blocks, newshape, start, dtype, acontiguous, aurl
     npa = ia.iarray2numpy(a)
     npb = ia.iarray2numpy(b)
 
-    if dtype in [np.float64, np.float32]:
-        rtol = 1e-6 if dtype == np.float32 else 1e-14
+    npdtype = dtype if np_dtype is None else np.dtype(np_dtype)
+    if npdtype in [np.float64, np.float32]:
+        rtol = 1e-6 if npdtype == np.float32 else 1e-14
         np.testing.assert_allclose(npa, npb, rtol=rtol, atol=0)
     else:
         np.testing.assert_equal(npa, npb)

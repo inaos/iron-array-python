@@ -3,16 +3,16 @@ import iarray as ia
 import numpy as np
 from math import isclose
 
-params_names = "shape, chunks, blocks, axis, dtype, mode"
+params_names = "shape, chunks, blocks, axis, dtype, np_dtype, mode"
 params_data = [
-    ([100, 100], [50, 50], [20, 20], 0, np.float32, "r"),
-    ([10, 10, 10, 10], [4, 4, 4, 4], [2, 2, 2, 2], 1, np.float64, "r+"),
-    pytest.param([20, 100, 30, 50], [10, 40, 10, 11], [4, 5, 3, 7], 1, np.float64, "r+", marks=pytest.mark.heavy),
-    ([10, 10, 10, 10], [4, 4, 4, 4], [2, 2, 2, 2], 1, np.int16, "w"),
-    ([40, 45], [20, 23], [9, 7], (0), np.int64, "w-"),
-    pytest.param([70, 45, 56, 34], [20, 23, 30, 34], [9, 7, 8, 7], (0, 3), np.int64, "w-", marks=pytest.mark.heavy),
-    ([10, 10, 10], [10, 10, 10], [10, 10, 10], None, np.uint32, "a"),
-    ([10, 10, 10], [4, 4, 4], [2, 2, 2], 1, np.bool_, "w"),
+    ([100, 100], [50, 50], [20, 20], 0, np.float64, '>f4', "r"),
+    ([10, 10, 10, 10], [4, 4, 4, 4], [2, 2, 2, 2], 1, np.float32, 'i4', "r+"),
+    pytest.param([20, 100, 30, 50], [10, 40, 10, 11], [4, 5, 3, 7], 1, np.float64, None, "r+", marks=pytest.mark.heavy),
+    ([10, 10, 10, 10], [4, 4, 4, 4], [2, 2, 2, 2], 1, np.int16, 'u2', "w"),
+    ([40, 45], [20, 23], [9, 7], (0), np.int64, 'M8[ns]', "w-"),
+    pytest.param([70, 45, 56, 34], [20, 23, 30, 34], [9, 7, 8, 7], (0, 3), np.int64, '>m8[fs]', "w-", marks=pytest.mark.heavy),
+    ([10, 10, 10], [10, 10, 10], [10, 10, 10], None, np.uint32, 'f8', "a"),
+    ([10, 10, 10], [4, 4, 4], [2, 2, 2], 1, np.bool_, 'u1', "w"),
 ]
 
 
@@ -21,12 +21,16 @@ params_data = [
 @pytest.mark.parametrize("contiguous", [True, False])
 @pytest.mark.parametrize("urlpath", [None, "test_reduce.iarr"])
 @pytest.mark.parametrize("view", [True, False])
-def test_reduce(shape, chunks, blocks, axis, dtype, rfunc, contiguous, urlpath, mode, view):
+def test_reduce(shape, chunks, blocks, axis, dtype, np_dtype, rfunc, contiguous, urlpath, mode, view):
 
     ia.remove_urlpath(urlpath)
     ia.remove_urlpath("test_reduce_res.iarr")
+    npdtype = dtype if np_dtype is None else np.dtype(np_dtype)
+    if np_dtype is not None and npdtype.str[1] in ['M', 'm'] and rfunc in ["mean", "prod", "sum"]:
+        pytest.skip("cannot compute this reduction with this dtype")
+
     cfg = ia.Config(chunks=chunks, blocks=blocks, contiguous=contiguous, urlpath=urlpath)
-    a1 = ia.ones(shape, dtype=dtype, cfg=cfg)
+    a1 = ia.ones(shape, dtype=dtype, np_dtype=np_dtype, cfg=cfg)
     if view:
         slices = tuple([slice(np.random.randint(1, s)) for s in a1.shape])
         a1 = a1[slices]
@@ -40,8 +44,8 @@ def test_reduce(shape, chunks, blocks, axis, dtype, rfunc, contiguous, urlpath, 
         mode = "a"
     b1 = getattr(ia, rfunc)(a1, axis=axis, urlpath="test_reduce_res.iarr", mode=mode)
 
-    if dtype in [np.float64, np.float32] or rfunc == "mean":
-        rtol = 1e-6 if dtype == np.float32 else 1e-14
+    if npdtype in [np.float64, np.float32] or rfunc == "mean":
+        rtol = 1e-6 if npdtype == np.float32 else 1e-14
         if b2.ndim == 0:
             isclose(b1, b2, rel_tol=rtol, abs_tol=0.0)
         else:

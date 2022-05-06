@@ -473,8 +473,15 @@ def test_matmul_slice(
         ([1000, 555], [555], True, None, False, None),
     ],
 )
-@pytest.mark.parametrize("dtype", [np.float32, np.float64])
-def test_matmul_opt(ashape, bshape, dtype, acontiguous, aurlpath, bcontiguous, burlpath):
+@pytest.mark.parametrize("dtype, np_dtype",
+                         [
+                             (np.float32, None),
+                             (np.float64, '>f8'),
+                             (np.float32, '>f8'),
+
+                         ]
+                         )
+def test_matmul_opt(ashape, bshape, dtype, np_dtype, acontiguous, aurlpath, bcontiguous, burlpath):
 
     params = ia.matmul_params(ashape, bshape, chunk_size=16 * 1024)
 
@@ -484,11 +491,11 @@ def test_matmul_opt(ashape, bshape, dtype, acontiguous, aurlpath, bcontiguous, b
     ia.remove_urlpath(burlpath)
 
     acfg = ia.Config(chunks=achunks, blocks=ablocks, contiguous=acontiguous, urlpath=aurlpath)
-    a = ia.linspace(ashape, -10, 1, dtype=dtype, cfg=acfg)
+    a = ia.linspace(ashape, -10, 1, dtype=dtype, np_dtype=np_dtype, cfg=acfg)
     an = ia.iarray2numpy(a)
 
     bcfg = ia.Config(chunks=bchunks, blocks=bblocks, contiguous=bcontiguous, urlpath=burlpath)
-    b = ia.linspace(bshape, -1, 10, dtype=dtype, cfg=bcfg)
+    b = ia.linspace(bshape, -1, 10, dtype=dtype, np_dtype=np_dtype, cfg=bcfg)
     bn = ia.iarray2numpy(b)
 
     c = ia.matmul(a, b)
