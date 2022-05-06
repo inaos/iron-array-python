@@ -160,6 +160,30 @@ def test_btune_incompat(clevel, codec, filters):
 
 
 @pytest.mark.parametrize(
+    "np_dtype, dtype",
+    [
+        ('f8', np.float64),
+        ('f4', np.float64),
+        ('datetime64[Y]', np.int32),
+        ('datetime64[D]', np.uint32),
+        ('timedelta64[ps]', np.int64),
+        ('timedelta64[as]', np.uint64),
+        ('i8', np.int16),
+        ('ui2', np.bool_),
+    ],
+)
+def test_np_dtype(np_dtype, dtype):
+    with pytest.raises(ValueError):
+        ia.set_config_defaults(np_dtype=np_dtype)
+
+    with pytest.raises(ValueError):
+        ia.set_config_defaults(np_dtype=np_dtype)
+    with pytest.raises(ValueError):
+        ia.Config(np_dtype=np_dtype)
+
+
+
+@pytest.mark.parametrize(
     "chunks, blocks, shape",
     [
         (None, None, (100, 100)),

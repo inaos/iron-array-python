@@ -186,6 +186,11 @@ class IArray(ext.Container):
         delete
         resize
         """
+        if type(data) is np.ndarray:
+            if data.dtype.itemsize != np.dtype(self.dtype).itemsize:
+                data = np.array(data, dtype=self.dtype)
+            elif data.dtype.str[0] == '>':
+                data = data.byteswap()
         ext.insert(self, data, axis, start)
 
     def append(self, data, axis=0):
@@ -214,6 +219,11 @@ class IArray(ext.Container):
         delete
         resize
         """
+        if type(data) is np.ndarray:
+            if data.dtype.itemsize != np.dtype(self.dtype).itemsize:
+                data = np.array(data, dtype=self.dtype)
+            elif data.dtype.str[0] == '>':
+                data = data.byteswap()
         ext.append(self, data, axis)
 
     def delete(self, delete_len, axis=0, start=None):
@@ -290,7 +300,13 @@ class IArray(ext.Container):
         if isinstance(value, (float, int)):
             value = np.full(shape, value, dtype=self.dtype)
         elif isinstance(value, ia.IArray):
-            value = value.data
+            if self.np_dtype is None:
+                value = value.data
+            else:
+                value = value.data
+                value = value.astype(dtype=self.dtype)
+        elif self.np_dtype is not None:
+            value = np.full(shape, value, dtype=self.dtype)
         with ia.config(cfg=self.cfg) as cfg:
             return ext.set_slice(cfg, self, start, stop, value)
 

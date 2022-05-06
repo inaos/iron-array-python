@@ -222,10 +222,11 @@ def numpy2iarray(arr: np.ndarray, cfg: ia.Config = None, **kwargs) -> ia.IArray:
 
     if np.dtype(arr.dtype) in [np.dtype(d) for d in zarr_to_iarray_dtypes]:
         dtype = arr.dtype.type
+        kwargs["dtype"] = dtype
     else:
-        raise NotImplementedError("Only float[32,64], uint/int[8,16,32,64] and bool types are supported")
-
-    kwargs["dtype"] = dtype
+        np_dtype = np.dtype(arr.dtype).str
+        kwargs["np_dtype"] = np_dtype
+        kwargs["dtype"] = ext.dtype_str2dtype[np_dtype]
 
     if cfg is None:
         cfg = ia.get_config_defaults()

@@ -5,7 +5,14 @@ import numpy as np
 
 # Test load, open and save
 @pytest.mark.parametrize("contiguous", [True, False])
-@pytest.mark.parametrize("dtype", [np.float32, np.float64, np.int32, np.uint32])
+@pytest.mark.parametrize("dtype, np_dtype",
+                         [
+                             (np.float32, '>f4'),
+                             (np.float64, 'i4'),
+                             (np.int32, 'M8[fs]'),
+                             (np.uint32, None),
+                         ]
+                         )
 @pytest.mark.parametrize(
     "shape, chunks, blocks",
     [
@@ -16,17 +23,18 @@ import numpy as np
     ],
 )
 @pytest.mark.parametrize("func", [ia.load, ia.open])
-def test_load_save(shape, chunks, blocks, dtype, func, contiguous):
+def test_load_save(shape, chunks, blocks, dtype, np_dtype, func, contiguous):
     urlpath = "test_load_save.iarr"
 
     ia.remove_urlpath(urlpath)
 
     cfg = ia.Config(chunks=chunks, blocks=blocks, contiguous=contiguous)
     max = 1
-    if dtype not in [np.float64, np.float32]:
+    npdtype = dtype if np_dtype is None else np.dtype(np_dtype)
+    if npdtype not in [np.float64, np.float32]:
         for i in range(len(shape)):
             max *= shape[i]
-    a = ia.arange(shape, 0, max, dtype=dtype, cfg=cfg)
+    a = ia.arange(shape, 0, max, dtype=dtype, np_dtype=np_dtype, cfg=cfg)
     an = ia.iarray2numpy(a)
 
     ia.save(urlpath, a, contiguous=contiguous)
@@ -34,7 +42,7 @@ def test_load_save(shape, chunks, blocks, dtype, func, contiguous):
     b = func(urlpath)
     bn = ia.iarray2numpy(b)
 
-    if dtype in [np.float64, np.float32]:
+    if npdtype in [np.float64, np.float32]:
         np.testing.assert_almost_equal(an, bn)
     else:
         np.testing.assert_array_equal(an, bn)
@@ -51,6 +59,7 @@ def test_load_save(shape, chunks, blocks, dtype, func, contiguous):
     assert(b.cfg.filters == a.cfg.filters)
     assert(b.cfg.fp_mantissa_bits == a.cfg.fp_mantissa_bits)
     assert(b.dtype == a.dtype)
+    assert(b.np_dtype == a.np_dtype)
     assert(b.cfg.mode == "a")
 
     c = ia.load(urlpath)
@@ -62,6 +71,7 @@ def test_load_save(shape, chunks, blocks, dtype, func, contiguous):
     assert(c.cfg.filters == a.cfg.filters)
     assert(c.cfg.fp_mantissa_bits == a.cfg.fp_mantissa_bits)
     assert(c.dtype == a.dtype)
+    assert(c.np_dtype == a.np_dtype)
     assert(c.cfg.mode == "a")
 
     ia.remove_urlpath(urlpath)

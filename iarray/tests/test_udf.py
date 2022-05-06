@@ -20,6 +20,7 @@ def cmp_udf_np(
     input_factory=ia.linspace,
     user_params=None,
     f_np=None,
+    np_dtype=None,
 ):
     """Helper function that compares UDF against numpy.
 
@@ -49,21 +50,28 @@ def cmp_udf_np(
     cfg = ia.Config(chunks=chunks, blocks=blocks)
 
     inputs = [
-        input_factory(shape, start, stop, cfg=cfg, dtype=dtype, **cparams)
+        input_factory(shape, start, stop, cfg=cfg, dtype=dtype, np_dtype=None, **cparams)
         for start, stop in start_stop
     ]
-    expr = ia.expr_from_udf(f, inputs, user_params, shape=shape, cfg=cfg, **cparams)
+    expr = ia.expr_from_udf(f, inputs, user_params, shape=shape, dtype=dtype, np_dtype=np_dtype, cfg=cfg, **cparams)
     out = expr.eval()
 
+    npdtype = dtype if np_dtype is None else np.dtype(np_dtype)
     num = functools.reduce(lambda x, y: x * y, shape)
-    out_ref = np.zeros(num, dtype=dtype).reshape(shape)
+    out_ref = np.zeros(num, dtype=npdtype).reshape(shape)
     args = [x.data for x in inputs]
     if user_params is not None:
         args += user_params
 
     f_np(out_ref, *args)
-
-    ia.cmp_arrays(out, out_ref)
+    if npdtype in [np.float64, np.float32]:
+        ia.cmp_arrays(out, out_ref)
+    else:
+        if type(out) is ia.IArray:
+            out = ia.iarray2numpy(out)
+        if type(out_ref) is ia.IArray:
+            out_ref = ia.iarray2numpy(out_ref)
+        np.testing.assert_array_equal(out, out_ref)
 
 
 def cmp_udf_np_strict(f, start, stop, shape, partitions, dtype, cparams):
@@ -476,4 +484,29 @@ def test_1dim_int(f):
     cmp_udf_np(
         f, [(start, stop)], shape, chunks, blocks, dtype, cparams,
         input_factory=ia.arange
+    )
+
+@udf.jit
+def f_idx_int(
+    out: udf.Array(udf.int64, 1),
+    x: udf.Array(udf.int64, 1)
+):
+    n = out.shape[0]
+    for i in range(n):
+        out[i] = x[i]
+
+    return 0
+
+@pytest.mark.parametrize("f", [f_idx_int])
+def test_idx_var_datetime(f):
+    shape = [10 * 1000]
+    chunks = [3 * 1000]
+    blocks = [3 * 100]
+    dtype = np.int64
+    cparams = dict(nthreads=16)
+    start, stop = 0, 10 * 1000
+
+    cmp_udf_np(
+        f, [(start, stop)], shape, chunks, blocks, dtype, cparams,
+        input_factory=ia.arange, np_dtype='m8[Y]'
     )

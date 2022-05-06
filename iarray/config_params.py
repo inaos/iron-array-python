@@ -125,6 +125,7 @@ class DefaultConfig:
     random_gen: Any
     btune: Any
     dtype: Any
+    np_dtype: Any
     split_mode: Any
 
 
@@ -162,6 +163,7 @@ class Defaults(object):
         np.uint8,
         np.bool_,
     ) = np.float64
+    np_dtype: bytes or str = None
     split_mode: (ia.SplitMode) = ia.SplitMode.AUTO_SPLIT
     chunks: Sequence = None
     blocks: Sequence = None
@@ -220,7 +222,14 @@ class Defaults(object):
         return self.btune
 
     def _dtype(self):
+        # To check dtype is set when np_dtype != None
+        self.compat_params.add("dtype")
         return self.dtype
+
+    def _np_dtype(self):
+        # To check dtype is set when np_dtype != None
+        self.compat_params.add("np_dtype")
+        return self.np_dtype
 
     def _split_mode(self):
         return self.split_mode
@@ -243,6 +252,7 @@ class Defaults(object):
                 random_gen=self.random_gen,
                 btune=self.btune,
                 dtype=self.dtype,
+                np_dtype=self.np_dtype,
                 split_mode=self.split_mode,
             )
         return self._config
@@ -264,6 +274,7 @@ class Defaults(object):
         self.random_gen = value.random_gen
         self.btune = value.btune
         self.dtype = value.dtype
+        self.np_dtype = value.np_dtype
         self.split_mode = value.split_mode
         self._config = value
 
@@ -297,7 +308,7 @@ class Config(ext.Config):
     Parameters
     ----------
     codec: :class:`Codec`
-        The codec to be used inside Blosc.  Default is :py:obj:`Codec.ZSTD <Codec>`.
+        The codec to be used inside Blosc. Default is :py:obj:`Codec.ZSTD <Codec>`.
     zfp_meta: int
         It should be set when using :py:obj:`Codec.ZFP_FIXED_ACCURACY <Codec>`,
         :py:obj:`Codec.ZFP_FIXED_PRECISION <Codec>` or :py:obj:`Codec.ZFP_FIXED_RATE <Codec>`.
@@ -344,6 +355,10 @@ class Config(ext.Config):
     dtype: (np.float64, np.float32, np.int64, np.int32, np.int16, np.int8, np.uint64, np.uint32, np.uint16,
         np.uint8, np.bool_)
         The data type to use. The default is np.float64.
+    np_dtype: str or bytes (np.dtype.str)
+        The array-protocol typestring of the np.dtype object to use. Default is None. If set, :paramref:`dtype`
+        must also be set. The native :ref:`IArray` type used to store data will be :paramref:`dtype`, and
+        if needed, a cast or a copy will be made when retrieving so that the output type is :paramref:`np_dtype` .
     splitmode: :class:`SplitMode`
         The split mode to be used inside Blosc.  Default is :py:obj:`SplitMode.AUTO_SPLIT <SplitMode>`.
     chunks : list, tuple
@@ -397,6 +412,7 @@ class Config(ext.Config):
         np.uint8,
         np.bool_,
     ) = field(default_factory=defaults._dtype)
+    np_dtype: np.dtype = field(default_factory=defaults._np_dtype)
     split_mode: ia.SplitMode = field(default_factory=defaults._split_mode)
     chunks: Union[Sequence, None] = field(default_factory=defaults._chunks)
     blocks: Union[Sequence, None] = field(default_factory=defaults._blocks)
@@ -455,6 +471,8 @@ class Config(ext.Config):
         # De-activate TRUNC_PREC filter if mantissa_bits == 0
         if self.fp_mantissa_bits == 0 and ia.Filter.TRUNC_PREC in self.filters:
             self.filters.pop(0)
+        if self.np_dtype is not None:
+            self.np_dtype = np.dtype(self.np_dtype).str
 
         # Initialize the Cython counterpart
         super().__init__(
@@ -485,6 +503,17 @@ class Config(ext.Config):
 
     def check_config_params(self, **kwargs):
         # Check incompatibilities
+        # dtype set when np_dtype also set
+        if kwargs != {} and "np_dtype" in kwargs:
+            np_dtype_allowed = all(x in kwargs for x in ["np_dtype", "dtype"])
+        else:
+            np_dtype_allowed = all(x not in defaults.compat_params for x in ["np_dtype", "dtype"])
+        np_dtype = kwargs.get("np_dtype", self.np_dtype)
+        if np_dtype is not None and not np_dtype_allowed:
+            defaults.compat_params = set()
+            defaults.check_compat = True
+            raise ValueError("`dtype` must be set when setting `np_dtype`")
+
         # btune=True with others
         btune = kwargs.get("btune", self.btune)
 
