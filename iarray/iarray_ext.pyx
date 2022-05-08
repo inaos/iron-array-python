@@ -942,6 +942,42 @@ def open(cfg, urlpath):
         set_zproxy_postfilter(iarr)
     return iarr
 
+def set_orthogonal_selection(cfg, dst, selection, ndarray):
+    ctx = Context(cfg)
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(),
+                                                                                           <char*>"iarray_context_t*")
+    cdef ciarray.iarray_container_t *data_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(dst.to_capsule(),
+                                                                                                <char*>"iarray_container_t*")
+    ndim = dst.ndim
+    interface = ndarray.__array_interface__
+    cdef Py_buffer buf
+    PyObject_GetBuffer(ndarray, &buf, PyBUF_SIMPLE)
+
+    cdef ciarray.int64_t **selection_ = <ciarray.int64_t **> malloc(len(selection) * sizeof(ciarray.int64_t *))
+    cdef ciarray.int64_t *selection_size_ = <ciarray.int64_t *> malloc(len(selection) * sizeof(ciarray.int64_t))
+
+    for i, sel in enumerate(selection):
+        selection_[i] = <ciarray.int64_t *> malloc(len(sel) * sizeof(ciarray.int64_t))
+        selection_size_[i] = len(sel)
+        for j, s in enumerate(sel):
+            selection_[i][j] = s
+
+    cdef ciarray.int64_t buffersize_ = np.dtype(dst.dtype).itemsize
+    cdef ciarray.int64_t[ciarray.IARRAY_DIMENSION_MAX] buffershape_
+    for i, sel in enumerate(selection):
+        buffershape_[i] = len(sel)
+        buffersize_ *= buffershape_[i]
+
+    buffershape = [len(sel) for sel in selection]
+
+
+    iarray_check(ciarray.iarray_set_orthogonal_selection(ctx_, data_, selection_, selection_size_,
+                                     <void *> buf.buf, buffershape_, buffersize_))
+    PyBuffer_Release(&buf)
+
+    return dst
+
+
 def set_slice(cfg, data, start, stop, buffer):
     # Check that we are not inadvertently overwriting anything
     ia._check_access_mode(cfg.urlpath, cfg.mode, True)
@@ -966,6 +1002,45 @@ def set_slice(cfg, data, start, stop, buffer):
     PyBuffer_Release(buf)
 
     return data
+
+def get_orthogonal_selection(cfg, src, dst, selection):
+    ia._check_access_mode(cfg.urlpath, cfg.mode, True)
+
+    ctx = Context(cfg)
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t *> PyCapsule_GetPointer(
+        ctx.to_capsule(),
+        <char *> "iarray_context_t*")
+    cdef ciarray.iarray_container_t *data_ = <ciarray.iarray_container_t *> PyCapsule_GetPointer(
+        src.to_capsule(),
+        <char *> "iarray_container_t*")
+
+    cdef ciarray.int64_t ** selection_ = <ciarray.int64_t **> malloc(
+        len(selection) * sizeof(ciarray.int64_t *))
+    cdef ciarray.int64_t *selection_size_ = <ciarray.int64_t *> malloc(
+        len(selection) * sizeof(ciarray.int64_t))
+
+    for i, sel in enumerate(selection):
+        selection_[i] = <ciarray.int64_t *> malloc(len(sel) * sizeof(ciarray.int64_t))
+        selection_size_[i] = len(sel)
+        for j, s in enumerate(sel):
+            selection_[i][j] = s
+
+    cdef ciarray.int64_t buffersize_ = np.dtype(dst.dtype).itemsize
+    cdef ciarray.int64_t[ciarray.IARRAY_DIMENSION_MAX] buffershape_
+    for i, sel in enumerate(selection):
+        buffershape_[i] = len(sel)
+        buffersize_ *= buffershape_[i]
+
+    buffershape = [len(sel) for sel in selection]
+
+    cdef Py_buffer view
+    PyObject_GetBuffer(dst, &view, PyBUF_SIMPLE)
+
+    iarray_check(ciarray.iarray_get_orthogonal_selection(ctx_, data_, selection_, selection_size_,
+                                     <void *> view.buf, buffershape_, buffersize_))
+    PyBuffer_Release(&view)
+
+    return dst
 
 
 def get_slice(cfg, data, start, stop, squeeze_mask, view, storage):

@@ -16,6 +16,21 @@ import ndindex
 from .info import InfoReporter
 
 
+def process_selection(selection, shape):
+    mask = tuple(True if isinstance(s, int) else False for s in selection)
+    new_selection = []
+    for s, n in zip(selection, shape):
+        if isinstance(s, slice):
+            si = np.array([i for i in range(*s.indices(n))])
+        elif isinstance(s, int):
+            si = np.array([s % n])
+        else:
+            si = np.array([i % n for i in s])
+        new_selection.append(si)
+
+    return new_selection
+
+
 def process_key(key, shape):
     key = ndindex.ndindex(key).expand(shape).raw
     mask = tuple(True if isinstance(k, int) else False for k in key)
@@ -309,6 +324,21 @@ class IArray(ext.Container):
             value = np.full(shape, value, dtype=self.dtype)
         with ia.config(cfg=self.cfg) as cfg:
             return ext.set_slice(cfg, self, start, stop, value)
+
+    def set_orthogonal_selection(self, selection, value):
+        selection = process_selection(selection, self.shape)
+        if isinstance(value, (int, float)):
+            shape = [len(s) for s in selection]
+            value = np.full(shape, value, self.dtype)
+        with ia.config(cfg=self.cfg) as cfg:
+            return ext.set_orthogonal_selection(cfg, self, selection, value)
+
+    def get_orthogonal_selection(self, selection):
+        selection = process_selection(selection, self.shape)
+        shape = tuple(len(s) for s in selection)
+        with ia.config(cfg=self.cfg) as cfg:
+            dst = np.ones(shape, dtype=self.dtype)
+            return ext.get_orthogonal_selection(cfg, self, dst, selection)
 
     def __iter__(self):
         return self.iter_read_block()
