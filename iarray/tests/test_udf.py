@@ -56,15 +56,15 @@ def cmp_udf_np(
     expr = ia.expr_from_udf(f, inputs, user_params, shape=shape, dtype=dtype, np_dtype=np_dtype, cfg=cfg, **cparams)
     out = expr.eval()
 
-    npdtype = dtype if np_dtype is None else np.dtype(np_dtype)
+    out_dtype = dtype if np_dtype is None else np.dtype(np_dtype)
     num = functools.reduce(lambda x, y: x * y, shape)
-    out_ref = np.zeros(num, dtype=npdtype).reshape(shape)
+    out_ref = np.zeros(num, dtype=out_dtype).reshape(shape)
     args = [x.data for x in inputs]
     if user_params is not None:
         args += user_params
 
     f_np(out_ref, *args)
-    if npdtype in [np.float64, np.float32]:
+    if out_dtype in [np.float64, np.float32]:
         ia.cmp_arrays(out, out_ref)
     else:
         if type(out) is ia.IArray:

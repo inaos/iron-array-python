@@ -45,8 +45,8 @@ def test_slice(slices, shape, chunks, blocks, dtype, np_dtype, acontiguous, aurl
     ia.remove_urlpath(aurlpath)
     cfg = ia.Config(chunks=chunks, blocks=blocks, contiguous=acontiguous, urlpath=aurlpath)
     max = 1
-    npdtype = dtype if np_dtype is None else np.dtype(np_dtype)
-    if npdtype not in [np.float64, np.float32]:
+    out_dtype = dtype if np_dtype is None else np.dtype(np_dtype)
+    if out_dtype not in [np.float64, np.float32]:
         for i in range(len(shape)):
             max *= shape[i]
     a = ia.arange(shape, 0, max, cfg=cfg, mode="w", dtype=dtype, np_dtype=np_dtype)
@@ -54,7 +54,7 @@ def test_slice(slices, shape, chunks, blocks, dtype, np_dtype, acontiguous, aurl
 
     a[slices] = 0
     an[slices] = 0
-    if npdtype in [np.float16, np.float32, np.float64]:
+    if out_dtype in [np.float16, np.float32, np.float64]:
         np.testing.assert_almost_equal(a.data, an)
     else:
         np.testing.assert_equal(a.data, an)
@@ -63,7 +63,7 @@ def test_slice(slices, shape, chunks, blocks, dtype, np_dtype, acontiguous, aurl
 
     a[slices] = data
     an[slices] = data.data if isinstance(data, ia.IArray) else data
-    if npdtype in [np.float16, np.float32, np.float64]:
+    if out_dtype in [np.float16, np.float32, np.float64]:
         np.testing.assert_almost_equal(a.data, an)
     else:
         np.testing.assert_equal(a.data, an)
@@ -72,7 +72,7 @@ def test_slice(slices, shape, chunks, blocks, dtype, np_dtype, acontiguous, aurl
     an2 = an[slices]
 
     if b.ndim == 0:
-        if npdtype in [np.float16, np.float32, np.float64]:
+        if out_dtype in [np.float16, np.float32, np.float64]:
             isclose(an2, b)
         else:
             assert an2 == b
@@ -80,7 +80,7 @@ def test_slice(slices, shape, chunks, blocks, dtype, np_dtype, acontiguous, aurl
         bn = ia.iarray2numpy(b)
         assert an2.shape == bn.shape
         assert an2.ndim == bn.ndim
-        if npdtype in [np.float16, np.float32, np.float64]:
+        if out_dtype in [np.float16, np.float32, np.float64]:
             np.testing.assert_almost_equal(an[slices], bn)
         else:
             np.testing.assert_equal(an[slices], bn)

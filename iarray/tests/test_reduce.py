@@ -25,8 +25,8 @@ def test_reduce(shape, chunks, blocks, axis, dtype, np_dtype, rfunc, contiguous,
 
     ia.remove_urlpath(urlpath)
     ia.remove_urlpath("test_reduce_res.iarr")
-    npdtype = dtype if np_dtype is None else np.dtype(np_dtype)
-    if np_dtype is not None and npdtype.str[1] in ['M', 'm'] and rfunc in ["mean", "prod", "sum"]:
+    out_dtype = dtype if np_dtype is None else np.dtype(np_dtype)
+    if np_dtype is not None and out_dtype.str[1] in ['M', 'm'] and rfunc in ["mean", "prod", "sum"]:
         pytest.skip("cannot compute this reduction with this dtype")
 
     cfg = ia.Config(chunks=chunks, blocks=blocks, contiguous=contiguous, urlpath=urlpath)
@@ -44,8 +44,8 @@ def test_reduce(shape, chunks, blocks, axis, dtype, np_dtype, rfunc, contiguous,
         mode = "a"
     b1 = getattr(ia, rfunc)(a1, axis=axis, urlpath="test_reduce_res.iarr", mode=mode)
 
-    if npdtype in [np.float64, np.float32] or rfunc == "mean":
-        rtol = 1e-6 if npdtype == np.float32 else 1e-14
+    if out_dtype in [np.float64, np.float32] or rfunc == "mean":
+        rtol = 1e-6 if out_dtype == np.float32 else 1e-14
         if b2.ndim == 0:
             isclose(b1, b2, rel_tol=rtol, abs_tol=0.0)
         else:

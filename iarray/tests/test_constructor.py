@@ -113,9 +113,9 @@ def test_arange(start, stop, shape, chunks, blocks, dtype, np_dtype, contiguous,
     ia.remove_urlpath(urlpath)
     a = ia.arange(shape, start, stop, step, dtype=dtype, np_dtype=np_dtype, chunks=chunks, blocks=blocks, contiguous=contiguous, urlpath=urlpath)
     b = ia.iarray2numpy(a)
-    npdtype = dtype if np_dtype is None else np_dtype
-    c = np.arange(start, stop, step, dtype=npdtype).reshape(shape)
-    if 'f' in np.dtype(npdtype).str:
+    out_dtype = dtype if np_dtype is None else np_dtype
+    c = np.arange(start, stop, step, dtype=out_dtype).reshape(shape)
+    if 'f' in np.dtype(out_dtype).str:
         np.testing.assert_almost_equal(b, c)
     else:
         np.testing.assert_array_equal(b, c)
@@ -238,9 +238,9 @@ def test_slice(start, stop, slice, shape, chunks, blocks, dtype, np_dtype, conti
                   urlpath=urlpath)
     b = a[slice]
     c = ia.iarray2numpy(b)
-    npdtype = dtype if np_dtype is None else np_dtype
-    d = np.arange(start, stop, step, dtype=npdtype).reshape(shape)[slice]
-    if 'f' in np.dtype(npdtype).str:
+    out_dtype = dtype if np_dtype is None else np_dtype
+    d = np.arange(start, stop, step, dtype=out_dtype).reshape(shape)[slice]
+    if 'f' in np.dtype(out_dtype).str:
         np.testing.assert_allclose(c, d)
     else:
         np.testing.assert_array_equal(c, d)
@@ -262,8 +262,8 @@ def test_empty(shape, chunks, blocks, dtype, np_dtype, contiguous, urlpath):
     with ia.config(chunks=chunks, blocks=blocks, contiguous=contiguous, urlpath=urlpath):
         a = ia.empty(shape, dtype=dtype, np_dtype=np_dtype)
     b = ia.iarray2numpy(a)
-    npdtype = dtype if np_dtype is None else np_dtype
-    assert b.dtype == np.dtype(npdtype)
+    out_dtype = dtype if np_dtype is None else np_dtype
+    assert b.dtype == np.dtype(out_dtype)
     assert b.shape == tuple(shape)
 
     ia.remove_urlpath(urlpath)
@@ -294,9 +294,9 @@ def test_zeros(shape, chunks, blocks, dtype, np_dtype, contiguous, urlpath):
     ia.remove_urlpath(urlpath)
     a = ia.zeros(shape, dtype=dtype, np_dtype=np_dtype, chunks=chunks, blocks=blocks, contiguous=contiguous, urlpath=urlpath)
     b = ia.iarray2numpy(a)
-    npdtype = dtype if np_dtype is None else np_dtype
-    c = np.zeros(shape, dtype=npdtype)
-    if 'f' in np.dtype(npdtype).str:
+    out_dtype = dtype if np_dtype is None else np_dtype
+    c = np.zeros(shape, dtype=out_dtype)
+    if 'f' in np.dtype(out_dtype).str:
         np.testing.assert_almost_equal(b, c)
     else:
         np.testing.assert_array_equal(b, c)
@@ -322,9 +322,9 @@ def test_ones(shape, chunks, blocks, dtype, np_dtype, contiguous, urlpath):
     ia.remove_urlpath(urlpath)
     a = ia.ones(shape, dtype=dtype, np_dtype=np_dtype, chunks=chunks, blocks=blocks, contiguous=contiguous, urlpath=urlpath)
     b = ia.iarray2numpy(a)
-    npdtype = dtype if np_dtype is None else np_dtype
-    c = np.ones(shape, dtype=npdtype)
-    if 'f' in np.dtype(npdtype).str:
+    out_dtype = dtype if np_dtype is None else np_dtype
+    c = np.ones(shape, dtype=out_dtype)
+    if 'f' in np.dtype(out_dtype).str:
         np.testing.assert_almost_equal(b, c)
     else:
         np.testing.assert_array_equal(b, c)
@@ -354,9 +354,9 @@ def test_full(fill_value, shape, chunks, blocks, dtype, np_dtype, contiguous, ur
     ia.remove_urlpath(urlpath)
     a = ia.full(shape, fill_value, dtype=dtype, np_dtype=np_dtype, chunks=chunks, blocks=blocks, contiguous=contiguous, urlpath=urlpath)
     b = ia.iarray2numpy(a)
-    npdtype = dtype if np_dtype is None else np_dtype
-    c = np.full(shape, fill_value, dtype=npdtype)
-    if 'f' in np.dtype(npdtype).str:
+    out_dtype = dtype if np_dtype is None else np_dtype
+    c = np.full(shape, fill_value, dtype=out_dtype)
+    if 'f' in np.dtype(out_dtype).str:
         np.testing.assert_almost_equal(b, c)
     else:
         np.testing.assert_array_equal(b, c)
