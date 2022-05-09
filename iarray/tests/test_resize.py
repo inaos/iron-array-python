@@ -58,9 +58,9 @@ def test_resize(shape, chunks, blocks, newshape, start, dtype, np_dtype, acontig
     npa = ia.iarray2numpy(a)
     npb = ia.iarray2numpy(b)
 
-    npdtype = dtype if np_dtype is None else np.dtype(np_dtype)
-    if npdtype in [np.float64, np.float32]:
-        rtol = 1e-6 if npdtype == np.float32 else 1e-14
+    out_dtype = dtype if np_dtype is None else np.dtype(np_dtype)
+    if out_dtype in [np.float64, np.float32]:
+        rtol = 1e-6 if out_dtype == np.float32 else 1e-14
         np.testing.assert_allclose(npa, npb, rtol=rtol, atol=0)
     else:
         np.testing.assert_equal(npa, npb)

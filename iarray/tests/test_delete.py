@@ -11,15 +11,24 @@ array_data = [
 ]
 
 
-@pytest.mark.parametrize("dtype", [np.float32, np.float64, np.int64, np.int32, np.uint64, np.uint32])
+@pytest.mark.parametrize("dtype, np_dtype",
+                         [
+                             (np.float32, None),
+                             (np.uint64, '>M8[M]'),
+                             (np.int64, '<m8[ps]'),
+                             (np.int32, None),
+                             (np.uint64, '>i8'),
+                             (np.uint32, 'u8'),
+                         ]
+                         )
 @pytest.mark.parametrize(
     "shape, chunks, blocks, axis, start, delete_len, acontiguous, aurlpath",
     array_data,
 )
-def test_delete(shape, chunks, blocks, axis, start, delete_len, dtype, acontiguous, aurlpath):
+def test_delete(shape, chunks, blocks, axis, start, delete_len, dtype, np_dtype, acontiguous, aurlpath):
     ia.remove_urlpath(aurlpath)
     cfg = ia.Config(chunks=chunks, blocks=blocks, contiguous=acontiguous, urlpath=aurlpath)
-    a = ia.full(shape=shape, fill_value=4, cfg=cfg, mode="w", dtype=dtype)
+    a = ia.full(shape=shape, fill_value=4, cfg=cfg, mode="w", dtype=dtype, np_dtype=np_dtype)
 
     with pytest.raises(IndexError):
         a.delete(start=0, delete_len=(chunks[axis]-1), axis=axis)
@@ -30,14 +39,14 @@ def test_delete(shape, chunks, blocks, axis, start, delete_len, dtype, acontiguo
             slice_.append(slice(0, shape[i]))
         else:
             slice_.append(slice(start, start + delete_len))
-    print(slice_)
     slice_ = tuple(slice_)
     a[slice_] = 0
     a.delete(axis=axis, start=start, delete_len=delete_len)
     npa = ia.iarray2numpy(a)
-    npb = np.full(shape=a.shape, fill_value=4, dtype=dtype)
+    out_dtype = dtype if np_dtype is None else np.dtype(np_dtype)
+    npb = np.full(shape=a.shape, fill_value=4, dtype=out_dtype)
 
-    if dtype in [np.float64, np.float32]:
+    if out_dtype in [np.float64, np.float32]:
         rtol = 1e-6 if dtype == np.float32 else 1e-14
         np.testing.assert_allclose(npa, npb, rtol=rtol, atol=0)
     else:

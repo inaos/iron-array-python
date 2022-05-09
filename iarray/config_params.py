@@ -163,7 +163,7 @@ class Defaults(object):
         np.uint8,
         np.bool_,
     ) = np.float64
-    np_dtype: bytes or str = None
+    np_dtype: bytes or str or np.dtype() = None
     split_mode: (ia.SplitMode) = ia.SplitMode.AUTO_SPLIT
     chunks: Sequence = None
     blocks: Sequence = None

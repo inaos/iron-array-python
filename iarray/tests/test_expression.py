@@ -307,9 +307,9 @@ def test_expression(
     npx = ia.iarray2numpy(x)
     npy = ia.iarray2numpy(y)
 
-    out_np_dtype = 'm8[M]'if np_dtype is not None and np.dtype(np_dtype).str[1] == 'M' and expression == 'x-y' else np_dtype
+    out_dtype = 'm8[M]'if np_dtype is not None and np.dtype(np_dtype).str[1] == 'M' and expression == 'x-y' else np_dtype
     expr = ia.expr_from_string(expression, {"x": x, "y": y}, chunks=chunks, blocks=blocks, contiguous=xcontiguous,
-                               urlpath="test_expression_zarray.iarr", dtype=dtype, np_dtype=out_np_dtype,  eval_method=method)
+                               urlpath="test_expression_zarray.iarr", dtype=dtype, np_dtype=out_dtype,  eval_method=method)
 
     with pytest.raises(IOError):
         expr.cfg.mode = "r"

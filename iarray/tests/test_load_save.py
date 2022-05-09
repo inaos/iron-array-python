@@ -30,8 +30,8 @@ def test_load_save(shape, chunks, blocks, dtype, np_dtype, func, contiguous):
 
     cfg = ia.Config(chunks=chunks, blocks=blocks, contiguous=contiguous)
     max = 1
-    npdtype = dtype if np_dtype is None else np.dtype(np_dtype)
-    if npdtype not in [np.float64, np.float32]:
+    out_dtype = dtype if np_dtype is None else np.dtype(np_dtype)
+    if out_dtype not in [np.float64, np.float32]:
         for i in range(len(shape)):
             max *= shape[i]
     a = ia.arange(shape, 0, max, dtype=dtype, np_dtype=np_dtype, cfg=cfg)
@@ -42,7 +42,7 @@ def test_load_save(shape, chunks, blocks, dtype, np_dtype, func, contiguous):
     b = func(urlpath)
     bn = ia.iarray2numpy(b)
 
-    if npdtype in [np.float64, np.float32]:
+    if out_dtype in [np.float64, np.float32]:
         np.testing.assert_almost_equal(an, bn)
     else:
         np.testing.assert_array_equal(an, bn)

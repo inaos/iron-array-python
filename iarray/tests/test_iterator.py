@@ -113,8 +113,8 @@ def test_iterator(
     ia.remove_urlpath(aurlpath)
     ia.remove_urlpath(burlpath)
     max = 1
-    npdtype = dtype if np_dtype is None else np.dtype(np_dtype)
-    if npdtype not in [np.float64, np.float32]:
+    out_dtype = dtype if np_dtype is None else np.dtype(np_dtype)
+    if out_dtype not in [np.float64, np.float32]:
         for i in range(len(shape)):
             max *= shape[i]
     a = ia.arange(shape, 0, max, dtype=dtype, np_dtype=np_dtype, cfg=acfg)
@@ -134,14 +134,14 @@ def test_iterator(
         start = ainfo.elemindex
         stop = tuple(ainfo.elemindex[i] + ainfo.shape[i] for i in range(len(ainfo.elemindex)))
         slices = tuple(slice(start[i], stop[i]) for i in range(len(start)))
-        if npdtype in [np.float64, np.float32]:
+        if out_dtype in [np.float64, np.float32]:
             np.testing.assert_almost_equal(aslice, an[slices])
         else:
             np.testing.assert_array_equal(aslice, an[slices])
 
     bn = ia.iarray2numpy(b)
 
-    if npdtype in [np.float64, np.float32]:
+    if out_dtype in [np.float64, np.float32]:
         np.testing.assert_almost_equal(bn, an)
     else:
         np.testing.assert_array_equal(bn, an)

@@ -29,21 +29,21 @@ def test_append(shape, chunks, blocks, data_shape, axis, dtype, np_dtype, aconti
     ia.remove_urlpath(aurlpath)
     cfg = ia.Config(chunks=chunks, blocks=blocks, contiguous=acontiguous, urlpath=aurlpath)
     max = 1
-    npdtype = dtype if np_dtype is None else np.dtype(np_dtype)
+    out_dtype = dtype if np_dtype is None else np.dtype(np_dtype)
 
-    if npdtype not in [np.float64, np.float32]:
+    if out_dtype not in [np.float64, np.float32]:
         for i in range(len(shape)):
             max *= shape[i]
     a = ia.arange(shape, 0, max, cfg=cfg, mode="w", dtype=dtype, np_dtype=np_dtype)
 
     npa = ia.iarray2numpy(a)
-    z = zarr.array(npa, dtype=npdtype)
+    z = zarr.array(npa, dtype=out_dtype)
 
     with pytest.raises(ValueError):
-        np_data = np.full(shape=17, fill_value=47, dtype=npdtype)
+        np_data = np.full(shape=17, fill_value=47, dtype=out_dtype)
         a.append(np_data, axis=axis)
 
-    np_data = np.full(shape=data_shape, fill_value=47, dtype=npdtype)
+    np_data = np.full(shape=data_shape, fill_value=47, dtype=out_dtype)
 
     a.append(data=np_data, axis=axis)
     z.append(np_data, axis=axis)
@@ -51,8 +51,8 @@ def test_append(shape, chunks, blocks, data_shape, axis, dtype, np_dtype, aconti
     npb = ia.iarray2numpy(a)
     npc = z[:]
 
-    if npdtype in [np.float64, np.float32]:
-        rtol = 1e-6 if npdtype == np.float32 else 1e-14
+    if out_dtype in [np.float64, np.float32]:
+        rtol = 1e-6 if out_dtype == np.float32 else 1e-14
         np.testing.assert_allclose(npb, npc, rtol=rtol, atol=0)
     else:
         np.testing.assert_equal(npb, npc)
