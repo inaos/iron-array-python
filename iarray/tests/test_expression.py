@@ -35,7 +35,7 @@ import numpy as np
             None,
         ),
         (ia.Eval.ITERBLOSC, [100], [20], [5], np.int64, 'M8[M]', "x-y", True, None, True, None),
-        (ia.Eval.ITERBLOSC, [1000], [110], [55], np.float32, None, "x", True, None, True, None),
+        (ia.Eval.ITERBLOSC, [1000], [110], [55], np.float32, None, "y", True, None, True, None),
         (
             ia.Eval.ITERBLOSC,
             [1000],
@@ -300,9 +300,9 @@ def test_expression(
     ia.remove_urlpath(yurlpath)
     ia.remove_urlpath("test_expression_zarray.iarr")
 
-    x = ia.linspace(shape, 0, 1, dtype=dtype, np_dtype=np_dtype, chunks=chunks, blocks=blocks, contiguous=xcontiguous,
+    x = ia.linspace(shape, 0.1, 0.2, dtype=dtype, np_dtype=np_dtype, chunks=chunks, blocks=blocks, contiguous=xcontiguous,
                     urlpath=xurlpath)
-    y = ia.linspace(shape, 0.1, 0.2, dtype=dtype, np_dtype=np_dtype, chunks=chunks, blocks=blocks, contiguous=ycontiguous,
+    y = ia.linspace(shape, 0, 1, dtype=dtype, np_dtype=np_dtype, chunks=chunks, blocks=blocks, contiguous=ycontiguous,
                     urlpath=yurlpath)
     npx = ia.iarray2numpy(x)
     npy = ia.iarray2numpy(y)
