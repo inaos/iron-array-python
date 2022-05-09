@@ -346,7 +346,7 @@ def test_ones(shape, chunks, blocks, dtype, np_dtype, contiguous, urlpath):
          "test_full_contiguous.iarr"),
         (np.datetime64('2034', 'Y'), [56, 37], [20, 16], [9, 7], np.uint16, '>M8[Y]', False, "test_full_sparse.iarr"),
         (np.timedelta64(2034, 'h'), [50, 42], [20, 16], [9, 7], np.uint32, '>m8[h]', False, "test_full_sparse.iarr"),
-        (4, [12, 16], [12, 16], [10, 10], np.uint8, np.dtype(np.float).str, True, None),
+        (4, [12, 16], [12, 16], [10, 10], np.uint8, np.dtype(np.float64).str, True, None),
         (0.000056, [12, 16], [12, 16], [10, 10], np.double, '>f8', False, None),
     ],
 )
