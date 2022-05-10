@@ -423,9 +423,8 @@ class UdfRegistry(MutableMapping):
         name : str or byte string
             The name of the attr.
         """
-        for lib in self.libs[name]:
-            for func_name in lib.functions:
-                del self.func_addr[f"{name}.{func_name}"]
+        for func_name in self.libs[name].functions:
+            del self.func_addr[f"{name}.{func_name}"]
         self.libs[name].dealloc()
         del self.libs[name]
 
