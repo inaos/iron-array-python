@@ -34,25 +34,39 @@ def For(dim, ndim, body):
 
 class Transformer(ast.NodeTransformer):
 
-    def __init__(self, ndim):
-        self.ndim = ndim
-        self.annotation = ast.parse(f'udf.Array(udf.float64, {ndim})')
-        self.index = ','.join(f'i{i}' for i in range(ndim))
+    def __init__(self, args):
+        self.args = args
+        # FIXME the datatype is hardcoded
+        dtype = 'udf.float64'
+
+        # The function arguments
+        self.func_args = []
+        for name, value in args.items():
+            if isinstance(value, ia.IArray):
+                ndim = value.ndim
+                annotation = ast.parse(f'udf.Array({dtype}, {ndim})')
+            else:
+                annotation = ast.parse(dtype)
+            self.func_args.append(ast.arg(name, annotation=annotation))
+
+        # The output is the first argument
         # FIXME output name is hardcoded, may conflict with expression names
-        self.names = ['out']
+        annotation = ast.parse(f'udf.Array(udf.float64, {ndim})')
+        self.func_args.insert(0, ast.arg('out', annotation))
+
+        # Keep the ndim, and the index used to access the arrays
+        self.ndim = ndim
+        self.index = ','.join(f'i{i}' for i in range(ndim))
+
 
     def visit_Module(self, node):
         self.generic_visit(node)
-        args = [
-            ast.arg(name, annotation=self.annotation)
-            for name in self.names
-        ]
         return ast.Module(body=[
             ast.FunctionDef(
                 name='f',
                 args=ast.arguments(
                     posonlyargs=[],
-                    args=args,
+                    args=self.func_args,
                     #arg? vararg,
                     kwonlyargs=[],
                     kw_defaults=[],
@@ -81,29 +95,46 @@ class Transformer(ast.NodeTransformer):
         )
 
     def visit_Name(self, node):
-        if node.id not in self.names:
-            self.names.append(node.id)
+        arg = self.args[node.id]
+        if isinstance(arg, ia.IArray):
+            return ast.Subscript(
+                value=node,
+                slice=ast.Index(value=name(self.index)),
+                ctx=node.ctx
+            )
 
-        return ast.Subscript(
-            value=name(node.id),
-            slice=ast.Index(value=name(self.index)),
-            ctx=node.ctx
-        )
+        # Scalar
+        return node
 
 
 def eudf(expr, args, debug=False):
+    # There must be at least 1 argument
     assert len(args) > 0
-    args = list(args.values())
-    ndim = args[0].ndim
 
-    tree = ast.parse(expr)                     # AST of the input expression
-    tree = Transformer(ndim).visit(tree)       # AST of the UDF function
-    source = decompile(tree)                   # Source code of the UDF function
+    # Split input arrays from input scalars
+    # TODO Verify all arrays have the same shape
+    arrays = []
+    scalars = []
+    for value in args.values():
+        if isinstance(value, ia.IArray):
+            arrays.append(value)
+        else:
+            scalars.append(value)
+
+    # From the string expression produce the udf function source
+    tree = ast.parse(expr)               # AST of the input expression
+    tree = Transformer(args).visit(tree) # AST of the UDF function
+    source = decompile(tree)             # Source code of the UDF function
     if debug:
         print(source)
 
-    exec(source, globals(), locals())          # The Python function
+    # The Python function
+    exec(source, globals(), locals())
     py_func = locals()['f']
-    udf_func = udf.jit(py_func, source=source) # The UDF function
-    ia_expr = ia.expr_from_udf(udf_func, args) # The IArray expression
+
+    # The UDF function
+    udf_func = udf.jit(py_func, source=source)
+
+    # The IArray expression
+    ia_expr = ia.expr_from_udf(udf_func, arrays, scalars)
     return ia_expr
