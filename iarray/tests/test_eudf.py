@@ -13,8 +13,8 @@ from iarray.eudf import eudf
         ("x + y", {"x": ia.arange((10,)), "y": 1}),  # scalar as param!
         ("2 * (x + x)", {"x": ia.arange((10,))}),
         ("2 + x * x", {"x": ia.arange((10,))}),
-#       ("2 + sin(x) + x * x", {"x": ia.arange((10,))}),
-#       ("2 * (sin(x) + cos(x)) + x * x", {"x": ia.arange((10,))}),
+        ("2 + sin(x) + x * x", {"x": ia.arange((10,))}),
+        ("2 * (sin(x) + cos(x)) + x * x", {"x": ia.arange((10,))}),
         ("2 + x * x * (x + x)", {"x": ia.arange((10,))}),
         ("2 + x * x * ((x * x) + x)", {"x": ia.arange((10,))}),
         ("x * y * ((x * y) + y)", {"x": ia.arange((10,)), "y": 2}),

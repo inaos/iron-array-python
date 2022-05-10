@@ -3,6 +3,7 @@ from ast_decompiler import decompile
 
 import iarray as ia
 from iarray import udf
+from iarray.py2llvm.py2llvm import MATH_FUNCS
 
 
 def name(id, ctx=ast.Load()):
@@ -95,15 +96,23 @@ class Transformer(ast.NodeTransformer):
         )
 
     def visit_Name(self, node):
-        arg = self.args[node.id]
+        # Math functions
+        if node.id in MATH_FUNCS:
+            return ast.Attribute(
+                value=name('math'),
+                attr=node.id,
+                ctx=node.ctx,
+            )
+
+        # Access to arrays
+        arg = self.args.get(node.id)
         if isinstance(arg, ia.IArray):
             return ast.Subscript(
                 value=node,
                 slice=ast.Index(value=name(self.index)),
-                ctx=node.ctx
+                ctx=node.ctx,
             )
 
-        # Scalar
         return node
 
 
