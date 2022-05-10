@@ -40,7 +40,7 @@ def test_simple(sexpr, sexpr_udf, inputs):
     assert {"fmult"} == set(fname for fname in ia.udf_registry["lib2"])
     assert "fmult" in (f.name for f in ia.udf_registry.iter_funcs("lib2"))
     assert "lib2.fmult" in (f for f in ia.udf_registry.iter_all_func_names())
-    assert {"lib.fsum", "lib2.fmult"} == set(ia.udf_registry.iter_all_func_names())
+    assert {"lib.fsum", "lib2.fmult"}.issubset(set(ia.udf_registry.iter_all_func_names()))
     assert ia.udf_registry.get_func_addr("lib2.fmult") != 0  # this can be any integer
 
     expr = ia.expr_from_string(sexpr, inputs)
