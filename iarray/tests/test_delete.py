@@ -41,7 +41,14 @@ def test_delete(shape, chunks, blocks, axis, start, delete_len, dtype, np_dtype,
             slice_.append(slice(start, start + delete_len))
     slice_ = tuple(slice_)
     a[slice_] = 0
-    a.delete(axis=axis, start=start, delete_len=delete_len)
+    new_shape = a.delete(axis=axis, start=start, delete_len=delete_len)
+    expected_shape = [0] * a.ndim
+    for i in range(0, a.ndim):
+        if i != axis:
+            expected_shape[i] = shape[i]
+        else:
+            expected_shape[i] = shape[i] - delete_len
+    assert new_shape == tuple(expected_shape)
     npa = ia.iarray2numpy(a)
     out_dtype = dtype if np_dtype is None else np.dtype(np_dtype)
     npb = np.full(shape=a.shape, fill_value=4, dtype=out_dtype)

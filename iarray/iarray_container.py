@@ -165,6 +165,7 @@ class IArray(ext.Container):
         delete
         """
         ext.resize(self, new_shape=newshape, start=start)
+        return self.shape
 
     def insert(self, data, axis=0, start=None):
         """Insert data in a position by extending the :paramref:`axis`.
@@ -207,6 +208,7 @@ class IArray(ext.Container):
             elif data.dtype.str[0] == '>':
                 data = data.byteswap()
         ext.insert(self, data, axis, start)
+        return self.shape
 
     def append(self, data, axis=0):
         """Append data at the end by extending the :paramref:`axis`.
@@ -240,6 +242,7 @@ class IArray(ext.Container):
             elif data.dtype.str[0] == '>':
                 data = data.byteswap()
         ext.append(self, data, axis)
+        return self.shape
 
     def delete(self, delete_len, axis=0, start=None):
         """Delete :paramref:`delete_len` positions along the :paramref:`axis` from the
@@ -281,6 +284,7 @@ class IArray(ext.Container):
         append
         """
         ext.delete(self, axis=axis, start=start, delete_len=delete_len)
+        return self.shape
 
     def iter_read_block(self, iterblock: tuple = None):
         if iterblock is None:

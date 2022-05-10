@@ -31,7 +31,8 @@ def test_resize(shape, chunks, blocks, newshape, start, dtype, np_dtype, acontig
     a = ia.full(shape=shape, fill_value=4, cfg=cfg, mode="a", dtype=dtype, np_dtype=np_dtype, urlpath=aurlpath)
     b = ia.full(shape=newshape, fill_value=4, cfg=cfg, mode="a", dtype=dtype, np_dtype=np_dtype)
 
-    a.resize(newshape=newshape, start=start)
+    outshape = a.resize(newshape=newshape, start=start)
+    assert outshape == tuple(newshape)
 
     only_shrink = True
     for i in range(0, a.ndim):

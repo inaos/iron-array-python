@@ -45,8 +45,9 @@ def test_append(shape, chunks, blocks, data_shape, axis, dtype, np_dtype, aconti
 
     np_data = np.full(shape=data_shape, fill_value=47, dtype=out_dtype)
 
-    a.append(data=np_data, axis=axis)
-    z.append(np_data, axis=axis)
+    new_shape = a.append(data=np_data, axis=axis)
+    new_shape_z = z.append(np_data, axis=axis)
+    assert new_shape == new_shape_z
 
     npb = ia.iarray2numpy(a)
     npc = z[:]

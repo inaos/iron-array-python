@@ -43,7 +43,14 @@ def test_insert(shape, chunks, blocks, data_shape, axis, start, dtype, np_dtype,
         a.insert(start=1, data=np_data, axis=axis)
 
     np_data = np.full(shape=data_shape, fill_value=47, dtype=out_dtype)
-    a.insert(data=np_data, axis=axis, start=start)
+    new_shape = a.insert(data=np_data, axis=axis, start=start)
+    expected_shape = [0] * a.ndim
+    for i in range(0, a.ndim):
+        if i != axis:
+            expected_shape[i] = shape[i]
+        else:
+            expected_shape[i] = shape[i] + data_shape[i]
+    assert new_shape == tuple(expected_shape)
 
     slice_ = []
     for i in range(0, a.ndim):
