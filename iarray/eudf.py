@@ -1,5 +1,8 @@
 import ast
+import math
+
 from ast_decompiler import decompile
+import numpy as np
 
 import iarray as ia
 from iarray import udf
@@ -13,7 +16,7 @@ def name(id, ctx=ast.Load()):
 def For(dim, ndim, body):
     body = [For(dim + 1, ndim, body)] if dim < ndim - 1 else body
     return ast.For(
-        target=name(f'i{dim}'),
+        target=name(f'i{dim}', ctx=ast.Store()),
         iter=ast.Call(
             func=name('range'),
             args=[
@@ -37,22 +40,30 @@ class Transformer(ast.NodeTransformer):
 
     def __init__(self, args):
         self.args = args
-        # FIXME the datatype is hardcoded
-        dtype = 'udf.float64'
-
         # The function arguments
+        dtype_map = {
+            np.float32: 'udf.float32',
+            np.float64: 'udf.float64',
+            np.int32: 'udf.int32',
+            np.int32: 'udf.int64',
+            float: 'udf.float64',
+            int: 'udf.float64', # FIXME Should be int64
+        }
         self.func_args = []
         for name, value in args.items():
             if isinstance(value, ia.IArray):
                 ndim = value.ndim
+                dtype = dtype_map[value.dtype]
                 annotation = ast.parse(f'udf.Array({dtype}, {ndim})')
             else:
+                dtype = dtype_map[type(value)]
                 annotation = ast.parse(dtype)
             self.func_args.append(ast.arg(name, annotation=annotation))
 
         # The output is the first argument
         # FIXME output name is hardcoded, may conflict with expression names
-        annotation = ast.parse(f'udf.Array(udf.float64, {ndim})')
+        # FIXME Cast args types to find out type
+        annotation = ast.parse(f'udf.Array({dtype}, {ndim})')
         self.func_args.insert(0, ast.arg('out', annotation))
 
         # Keep the ndim, and the index used to access the arrays
@@ -115,8 +126,19 @@ class Transformer(ast.NodeTransformer):
 
         return node
 
+    def visit_Subscript(self, node):
+        self.generic_visit(node)
+        if isinstance(node.slice, (ast.BoolOp, ast.Compare)):
+            return ast.IfExp(
+                test=node.slice,
+                body=node.value,
+                orelse=ast.Constant(math.nan),
+            )
 
-def eudf(expr, args, debug=False):
+        return node
+
+
+def eudf(expr, args, debug=False, verbose=0):
     # There must be at least 1 argument
     assert len(args) > 0
 
@@ -142,7 +164,7 @@ def eudf(expr, args, debug=False):
     py_func = locals()['f']
 
     # The UDF function
-    udf_func = udf.jit(py_func, source=source)
+    udf_func = udf.jit(py_func, ast=tree, verbose=verbose)
 
     # The IArray expression
     ia_expr = ia.expr_from_udf(udf_func, arrays, scalars)
