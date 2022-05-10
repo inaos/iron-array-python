@@ -23,6 +23,24 @@ builtins.UDFJIT = 0
 # Plugins
 plugins = [default]
 
+MATH_FUNCS = {
+    'fabs', 'fmod', 'remainder',
+    # Exponential functions
+    'exp', 'expm1', 'log', 'log2', 'log10', 'log1p',
+    # Power functions
+    'sqrt', 'hypot', 'pow',
+    # Trigonometric functions
+    'sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'atan2',
+    # Hiperbolic functions
+    'sinh', 'cosh', 'tanh', 'asinh', 'acosh', 'atanh',
+    # Error and gamma functions
+    'erf', 'lgamma',
+    # Nearest ingeger floating-point operations
+    'ceil', 'floor', 'trunc',
+    # Floating-point manipulation functions
+    'copysign',
+}
+
 
 class Range:
     def __init__(self, builder, *args):
@@ -1182,26 +1200,8 @@ class Function:
 
         # (5) Load functions
         node.compiled = {}
-        names = [
-            'fabs', 'fmod', 'remainder',
-            # Exponential functions
-            'exp', 'expm1', 'log', 'log2', 'log10', 'log1p',
-            # Power functions
-            'sqrt', 'hypot', 'pow',
-            # Trigonometric functions
-            'sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'atan2',
-            # Hiperbolic functions
-            'sinh', 'cosh', 'tanh', 'asinh', 'acosh', 'atanh',
-            # Error and gamma functions
-            'erf', 'lgamma',
-            # Nearest ingeger floating-point operations
-            'ceil', 'floor', 'trunc',
-            # Floating-point manipulation functions
-            'copysign',
-        ]
-
         signatures = {}
-        for name in names:
+        for name in MATH_FUNCS:
             py_func = getattr(math, name)
             try:
                 signature = inspect.signature(py_func)
