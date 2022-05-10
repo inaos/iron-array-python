@@ -1151,9 +1151,12 @@ class Function:
     def preamble_for_param(self, builder, param, args):
         return args[param.name]
 
-    def compile(self, verbose=0, *args):
+    def compile(self, source=None, verbose=0, *args):
+        if source is None:
+            source = inspect.getsource(self.py_function)
+
         # (1) Python AST
-        self.py_source = inspect.getsource(self.py_function)
+        self.py_source = source
         if verbose:
             print("====== Source ======")
             print(self.py_source)
@@ -1305,20 +1308,20 @@ class LLVM:
         self.dtypes[type_id] = dtype
         return dtype
 
-    def jit(self, py_function=None, signature=None, verbose=0, optimize=True, lib=None):
+    def jit(self, py_function=None, signature=None, source=None, verbose=0, optimize=True, lib=None):
         f_globals = inspect.stack()[1].frame.f_globals
 
         if type(py_function) is FunctionType:
             function = self.fclass(self, py_function, signature, f_globals, optimize)
             if function.can_be_compiled():
-                function.compile(verbose)
+                function.compile(source=source, verbose=verbose)
             return function
 
         # Called as a decorator
         def wrapper(py_function):
             function = self.fclass(self, py_function, signature, f_globals, optimize)
             if function.can_be_compiled():
-                function.compile(verbose)
+                function.compile(source=source, verbose=verbose)
             if lib is not None:
                 iarray.udf_registry[lib] = function
             return function
