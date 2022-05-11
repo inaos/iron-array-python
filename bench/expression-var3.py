@@ -36,7 +36,7 @@ ia.set_config_defaults()
 out_prec = 30
 
 
-@udf.jit(verbose=0)
+@udf.jit
 def f1(out: Array(float64, 1), x: Array(float64, 1)) -> int64:
     n = out.shape[0]
     for i in range(n):
@@ -46,7 +46,7 @@ def f1(out: Array(float64, 1), x: Array(float64, 1)) -> int64:
 
 
 # Version with 3 parameters
-@udf.jit(verbose=0)
+@udf.jit
 def f3(
     out: Array(float64, 1), x: Array(float64, 1), y: Array(float64, 1), z: Array(float64, 1)
 ) -> int64:

@@ -140,7 +140,7 @@ class Transformer(ast.NodeTransformer):
         return node
 
 
-def expr_udf(expr, args, debug=False, verbose=0):
+def expr_udf(expr, args, debug=0):
     # There must be at least 1 argument
     assert len(args) > 0
 
@@ -158,7 +158,7 @@ def expr_udf(expr, args, debug=False, verbose=0):
     tree = ast.parse(expr)               # AST of the input expression
     tree = Transformer(args).visit(tree) # AST of the UDF function
     source = decompile(tree)             # Source code of the UDF function
-    if debug:
+    if debug > 0:
         print(source)
 
     # The Python function
@@ -166,7 +166,7 @@ def expr_udf(expr, args, debug=False, verbose=0):
     py_func = locals()['f']
 
     # The UDF function
-    udf_func = udf.jit(py_func, ast=tree, verbose=verbose)
+    udf_func = udf.jit(py_func, ast=tree, debug=debug)
 
     # The IArray expression
     ia_expr = ia.expr_from_udf(udf_func, arrays, scalars)

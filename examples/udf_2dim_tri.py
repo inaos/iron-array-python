@@ -17,7 +17,7 @@ dtype = np.float64
 ia.set_config_defaults(favor=ia.Favor.SPEED, dtype=dtype)
 
 
-@jit(verbose=0)
+@jit
 def tri(out: Array(float64, 2), k: int64) -> int64:
     n = out.window_shape[0]
     m = out.window_shape[1]

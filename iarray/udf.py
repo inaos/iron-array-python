@@ -176,7 +176,7 @@ class Function(py2llvm.Function):
 
         return signature
 
-    def get_ir_signature(self, node, verbose=0, *args):
+    def get_ir_signature(self, node, debug=0, *args):
         dtype = self.llvm.get_dtype(self.ir_module, udf_type)
         params = [py2llvm.Parameter("params", dtype)]
 
