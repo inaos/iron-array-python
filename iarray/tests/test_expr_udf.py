@@ -3,13 +3,14 @@ import pytest
 
 import iarray as ia
 from iarray import udf
-from iarray.eudf import eudf
+from iarray.expr_udf import expr_udf
 
 
-@udf.scalar(lib="lib_eudf")
+TOL = 1e-14
+
+@udf.scalar(lib="lib_expr_udf")
 def fsum(a: udf.float64, b: udf.float64) -> float:
     return a + b
-
 
 @pytest.mark.parametrize(
     "sexpr, inputs",
@@ -24,16 +25,14 @@ def fsum(a: udf.float64, b: udf.float64) -> float:
         ("2 + x * x * (x + x)", {"x": ia.arange((10,))}),
         ("2 + x * x * ((x * x) + x)", {"x": ia.arange((10,))}),
         ("x * y * ((x * y) + y)", {"x": ia.arange((10,)), "y": 2}),
-        ("lib_eudf.fsum(x, x)", {"x": ia.arange((10,))}),
+        ("lib_expr_udf.fsum(x, x)", {"x": ia.arange((10,))}),
+        ("x + y", {"x": ia.arange((10, 10)), "y": ia.arange((10, 10))}),
     ],
 )
 def test_simple(sexpr, inputs):
-    expr = ia.expr_from_string(sexpr, inputs)
-    out = expr.eval()
-    expr_udf = eudf(sexpr, inputs)
-    out_udf = expr_udf.eval()
-    tol = 1e-14
-    np.testing.assert_allclose(out.data, out_udf.data, rtol=tol, atol=tol)
+    out = expr_udf(sexpr, inputs).eval()
+    ref_out = ia.expr_from_string(sexpr, inputs).eval()
+    np.testing.assert_allclose(out.data, ref_out.data, rtol=TOL, atol=TOL)
 
 
 @pytest.mark.parametrize(
@@ -43,12 +42,10 @@ def test_simple(sexpr, inputs):
     ]
 )
 def test_complex(sexpr, sexpr_np, inputs):
-    expr_udf = eudf(sexpr, inputs)
-    out_udf = expr_udf.eval()
+    out = expr_udf(sexpr, inputs).eval()
 
     a = inputs['a'].data
     b = inputs['b'].data
-    np_out = np.where(eval(sexpr_np), a, np.nan)
+    out_ref = np.where(eval(sexpr_np), a, np.nan)
 
-    tol = 1e-14
-    np.testing.assert_allclose(np_out, out_udf.data, rtol=tol, atol=tol)
+    np.testing.assert_allclose(out.data, out_ref, rtol=TOL, atol=TOL)
