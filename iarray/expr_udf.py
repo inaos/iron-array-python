@@ -21,6 +21,9 @@ else:
 def name(id, ctx=ast.Load()):
     return ast.Name(id, ctx=ctx)
 
+def constant(value):
+    return ast.Constant(value, kind=None)
+
 
 def For(dim, ndim, body):
     body = [For(dim + 1, ndim, body)] if dim < ndim - 1 else body
@@ -35,7 +38,7 @@ def For(dim, ndim, body):
                         attr='shape',
                         ctx=ast.Load(),
                     ),
-                    slice=ast.Index(value=ast.Constant(dim)),
+                    slice=ast.Index(value=constant(dim)),
                     ctx=ast.Load()
                 )
             ],
@@ -91,17 +94,18 @@ class Transformer(ast.NodeTransformer):
                     args=ast.arguments(
                         posonlyargs=[],
                         args=self.func_args,
-                        #arg? vararg,
+                        vararg=None,
                         kwonlyargs=[],
                         kw_defaults=[],
-                        #arg? kwarg,
+                        kwarg=None,
                         defaults=[]
                     ),
                     body=[
                         For(0, self.ndim, node.body),
-                        ast.Return(value=ast.Constant(0)),
+                        ast.Return(value=constant(0)),
                     ],
                     decorator_list=[],
+                    returns=None,
                 )
             ],
             type_ignores=[],
@@ -146,7 +150,7 @@ class Transformer(ast.NodeTransformer):
             return ast.IfExp(
                 test=node.slice,
                 body=node.value,
-                orelse=ast.Constant(math.nan),
+                orelse=constant(math.nan),
             )
 
         return node
