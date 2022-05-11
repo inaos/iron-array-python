@@ -2,3 +2,4 @@ numpy
 llvmlite
 ndindex
 msgpack
+ast_decompiler
