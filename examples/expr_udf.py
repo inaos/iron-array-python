@@ -1,8 +1,8 @@
 import iarray as ia
-from iarray.eudf import eudf
+from iarray.expr_udf import expr_udf
 
 
 args = {'x': ia.ones(shape=[10, 10]), 'y': ia.ones(shape=[10, 10])}
-expr = eudf("x + y", args, debug=True)
+expr = expr_udf("x + y", args, debug=True, verbose=2)
 out = expr.eval()
 print(out.data)

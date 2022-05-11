@@ -50,7 +50,7 @@ class Transformer(ast.NodeTransformer):
             int: 'udf.float64', # FIXME Should be int64
         }
         self.func_args = []
-        for name, value in args.items():
+        for key, value in args.items():
             if isinstance(value, ia.IArray):
                 ndim = value.ndim
                 dtype = dtype_map[value.dtype]
@@ -58,7 +58,7 @@ class Transformer(ast.NodeTransformer):
             else:
                 dtype = dtype_map[type(value)]
                 annotation = ast.parse(dtype)
-            self.func_args.append(ast.arg(name, annotation=annotation))
+            self.func_args.append(ast.arg(key, annotation=annotation))
 
         # The output is the first argument
         # FIXME output name is hardcoded, may conflict with expression names
@@ -68,8 +68,10 @@ class Transformer(ast.NodeTransformer):
 
         # Keep the ndim, and the index used to access the arrays
         self.ndim = ndim
-        self.index = ','.join(f'i{i}' for i in range(ndim))
-
+        self.index = ast.Tuple(
+            elts=[name(f'i{i}') for i in range(ndim)],
+            ctx=ast.Load(),
+        )
 
     def visit_Module(self, node):
         self.generic_visit(node)
@@ -99,7 +101,7 @@ class Transformer(ast.NodeTransformer):
             targets = [
                 ast.Subscript(
                     value=name('out'),
-                    slice=ast.Index(value=name(self.index)),
+                    slice=ast.Index(value=self.index),
                     ctx=ast.Store(),
                 )
             ],
@@ -120,7 +122,7 @@ class Transformer(ast.NodeTransformer):
         if isinstance(arg, ia.IArray):
             return ast.Subscript(
                 value=node,
-                slice=ast.Index(value=name(self.index)),
+                slice=ast.Index(value=self.index),
                 ctx=node.ctx,
             )
 
@@ -138,7 +140,7 @@ class Transformer(ast.NodeTransformer):
         return node
 
 
-def eudf(expr, args, debug=False, verbose=0):
+def expr_udf(expr, args, debug=False, verbose=0):
     # There must be at least 1 argument
     assert len(args) > 0
 
