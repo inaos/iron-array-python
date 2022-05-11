@@ -36,16 +36,22 @@ def test_simple(sexpr, inputs):
 
 
 @pytest.mark.parametrize(
-    "sexpr, sexpr_np, inputs",
+    "condition, inputs",
     [
-        ('a[b > 5.0]', 'b > 5.0', {'a': ia.arange([10]), 'b': ia.arange([10])}),
+        ('b > 5', {'a': ia.arange([10]), 'b': ia.arange([10])}),
+        ('(b > 5) and not (a > 7) or (b > 42)', {'a': ia.arange([10, 10]), 'b': ia.arange([10, 10])}),
     ]
 )
-def test_complex(sexpr, sexpr_np, inputs):
+def test_masks(condition, inputs):
+    sexpr = f'a[{condition}]'
     out = expr_udf(sexpr, inputs).eval()
 
+    # Numpy
+    replace = {'and': '&', 'or': '|', 'not': '~'}
+    for k, v in replace.items():
+        condition = condition.replace(k, v)
     a = inputs['a'].data
     b = inputs['b'].data
-    out_ref = np.where(eval(sexpr_np), a, np.nan)
+    out_ref = np.where(eval(condition), a, np.nan)
 
     np.testing.assert_allclose(out.data, out_ref, rtol=TOL, atol=TOL)
