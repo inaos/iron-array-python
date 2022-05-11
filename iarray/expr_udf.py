@@ -146,9 +146,15 @@ class Transformer(ast.NodeTransformer):
 
     def visit_Subscript(self, node):
         self.generic_visit(node)
-        if isinstance(node.slice, (ast.BoolOp, ast.Compare)):
+        slice = node.slice
+
+        # Python 3.8
+        if isinstance(slice, ast.Index):
+            slice = slice.value
+
+        if isinstance(slice, (ast.BoolOp, ast.Compare)):
             return ast.IfExp(
-                test=node.slice,
+                test=slice,
                 body=node.value,
                 orelse=constant(math.nan),
             )
