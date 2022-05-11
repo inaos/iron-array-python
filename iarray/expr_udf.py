@@ -1,12 +1,21 @@
 import ast
 import math
 
-from ast_decompiler import decompile
 import numpy as np
 
 import iarray as ia
 from iarray import udf
 from iarray.py2llvm.py2llvm import MATH_FUNCS
+
+try:
+    # Python 3.9
+    ast.unparse
+except AttributeError:
+    # Python 3.8
+    from ast_decompiler import decompile
+else:
+    def decompile(tree):
+        return ast.unparse(tree)
 
 
 def name(id, ctx=ast.Load()):
@@ -75,25 +84,28 @@ class Transformer(ast.NodeTransformer):
 
     def visit_Module(self, node):
         self.generic_visit(node)
-        return ast.Module(body=[
-            ast.FunctionDef(
-                name='f',
-                args=ast.arguments(
-                    posonlyargs=[],
-                    args=self.func_args,
-                    #arg? vararg,
-                    kwonlyargs=[],
-                    kw_defaults=[],
-                    #arg? kwarg,
-                    defaults=[]
-                ),
-                body=[
-                    For(0, self.ndim, node.body),
-                    ast.Return(value=ast.Constant(0)),
-                ],
-                decorator_list=[],
-            )
-        ])
+        return ast.Module(
+            body=[
+                ast.FunctionDef(
+                    name='f',
+                    args=ast.arguments(
+                        posonlyargs=[],
+                        args=self.func_args,
+                        #arg? vararg,
+                        kwonlyargs=[],
+                        kw_defaults=[],
+                        #arg? kwarg,
+                        defaults=[]
+                    ),
+                    body=[
+                        For(0, self.ndim, node.body),
+                        ast.Return(value=ast.Constant(0)),
+                    ],
+                    decorator_list=[],
+                )
+            ],
+            type_ignores=[],
+        )
 
     def visit_Expr(self, node):
         self.generic_visit(node)
@@ -157,6 +169,7 @@ def expr_udf(expr, args, debug=0):
     # From the string expression produce the udf function source
     tree = ast.parse(expr)               # AST of the input expression
     tree = Transformer(args).visit(tree) # AST of the UDF function
+    ast.fix_missing_locations(tree)
     source = decompile(tree)             # Source code of the UDF function
     if debug > 0:
         print(source)
