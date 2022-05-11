@@ -20,7 +20,7 @@ dtype = np.float64
 ia.set_config_defaults(favor=ia.Favor.SPEED, dtype=dtype)
 
 
-@jit(verbose=0)
+@jit
 def f(out: Array(float64, 1), x: Array(float64, 1)) -> int64:
     n = out.shape[0]
     for i in range(n):

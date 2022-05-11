@@ -17,7 +17,7 @@ nthreads = 8  # number of threads for the evaluation and/or compression
 engine = "udf"  # can be "udf" or "juggernaut" (it always works with "juggernaut")
 
 
-@udf.jit(verbose=0)
+@udf.jit
 def poly_llvm(out: udf.Array(float64, 1), x: udf.Array(float64, 1)) -> int64:
     n = out.shape[0]
     for i in range(n):

@@ -21,7 +21,7 @@ dtype = np.float64
 ia.set_config_defaults(nthreads=8, dtype=dtype)
 
 
-@jit(verbose=0)
+@jit
 def f(out: Array(float64, 1), x: Array(float64, 1)) -> int64:
     n = x.window_shape[0]
     # base = x.window_start[0]

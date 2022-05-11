@@ -458,7 +458,7 @@ def test_idx(f):
     cmp_udf_np_strict(f, start, stop, shape, (chunks, blocks), dtype, cparams)
 
 
-@udf.jit(verbose=0)
+@udf.jit
 def f_1dim_int(out: udf.Array(udf.int64, 1), x: udf.Array(udf.int64, 1)):
     n = out.shape[0]
     for i in range(n):

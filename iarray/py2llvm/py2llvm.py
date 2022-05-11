@@ -190,8 +190,8 @@ class BaseNodeVisitor:
         NodeVisitor().traverse(node)
     """
 
-    def __init__(self, verbose):
-        self.verbose = verbose
+    def __init__(self, debug):
+        self.debug = debug
         self.depth = 0
 
     @classmethod
@@ -251,7 +251,7 @@ class BaseNodeVisitor:
         value = cb(node, parent, *args) if cb is not None else None
 
         # Debug
-        if self.verbose > 1:
+        if self.debug > 2:
             name = node.__class__.__name__
             line = None
             if event == "enter":
@@ -431,8 +431,8 @@ class BlockVisitor(NodeVisitor):
       blocks). These will be used in the 2nd pass.
     """
 
-    def __init__(self, verbose, function):
-        super().__init__(verbose)
+    def __init__(self, debug, function):
+        super().__init__(debug)
         self.function = function
 
     def FunctionDef_returns(self, node, parent, returns):
@@ -558,10 +558,6 @@ class GenVisitor(NodeVisitor):
 
     def print(self, line):
         print(self.depth * " " + line)
-
-    def debug(self, node, parent):
-        for name, field in ast.iter_fields(node):
-            self.print(f"- {name} {field}")
 
     def convert(self, value, type_):
         """
@@ -1107,12 +1103,12 @@ class Function:
 
         return Signature(params, return_type)
 
-    def get_ir_signature(self, node, verbose=0, *args):
+    def get_ir_signature(self, node, debug=0, *args):
         # (2) Infer return type if not given
         return_type = self.py_signature.return_type
         if return_type is inspect._empty:
             node.return_type = return_type
-            InferVisitor(verbose).traverse(node)
+            InferVisitor(debug).traverse(node)
             return_type = node.return_type
             self.py_signature.return_type = return_type
 
@@ -1169,11 +1165,11 @@ class Function:
     def preamble_for_param(self, builder, param, args):
         return args[param.name]
 
-    def compile(self, node=None, verbose=0, *args):
+    def compile(self, node=None, debug=0, *args):
         if node is None:
             self.py_source = inspect.getsource(self.py_function)
             # (1) Python AST
-            if verbose:
+            if debug > 0:
                 print("====== Source ======")
                 print(self.py_source)
 
@@ -1183,7 +1179,7 @@ class Function:
 
         # (2) IR Signature
         self.ir_module = Module()
-        ir_signature = self.get_ir_signature(node, verbose, *args)
+        ir_signature = self.get_ir_signature(node, debug, *args)
         self.ir_signature = ir_signature
 
         # (4) For libffi
@@ -1233,22 +1229,22 @@ class Function:
         node.ir_signature = ir_signature
         node.ir_function = ir_function
 
-        if verbose > 1:
+        if debug > 2:
             print("====== Debug: 1st pass ======")
-        BlockVisitor(verbose, self).traverse(node)
+        BlockVisitor(debug, self).traverse(node)
 
         # (8) AST pass: generate
-        if verbose > 1:
+        if debug > 2:
             print("====== Debug: 2nd pass ======")
-        GenVisitor(verbose).traverse(node)
+        GenVisitor(debug).traverse(node)
 
         # (9) IR code
-        if verbose:
+        if debug > 2:
             print("====== IR ======")
             print(self.ir)
 
         # Compile
-        self.mod = self.llvm.compile_ir(self.ir, self.name, verbose, self.optimize)
+        self.mod = self.llvm.compile_ir(self.ir, self.name, debug, self.optimize)
 
         # (11) Done
         self.compiled = True
@@ -1261,9 +1257,9 @@ class Function:
     def bc(self):
         return self.mod.as_bitcode()
 
-    def call_args(self, *args, verbose=0):
+    def call_args(self, *args, debug=0):
         if self.compiled is False:
-            self.compile(verbose, *args)
+            self.compile(debug, *args)
 
         c_args = []
         for py_arg in args:
@@ -1277,11 +1273,11 @@ class Function:
 
         return tuple(c_args)
 
-    def __call__(self, *args, verbose=0):
-        c_args = self.call_args(*args, verbose=verbose)
+    def __call__(self, *args, debug=0):
+        c_args = self.call_args(*args, debug=debug)
 
         value = self.call(c_args)
-        if verbose:
+        if debug > 0:
             print("====== Output ======")
             print(f"args = {args}")
             print(f"ret  = {value}")
@@ -1308,27 +1304,27 @@ class LLVM:
         self.dtypes[type_id] = dtype
         return dtype
 
-    def jit(self, py_function=None, signature=None, ast=None, verbose=0, optimize=True, lib=None):
+    def jit(self, py_function=None, signature=None, ast=None, debug=0, optimize=True, lib=None):
         f_globals = inspect.stack()[1].frame.f_globals
 
         if type(py_function) is FunctionType:
             function = self.fclass(self, py_function, signature, f_globals, optimize)
             if function.can_be_compiled():
-                function.compile(node=ast, verbose=verbose)
+                function.compile(node=ast, debug=debug)
             return function
 
         # Called as a decorator
         def wrapper(py_function):
             function = self.fclass(self, py_function, signature, f_globals, optimize)
             if function.can_be_compiled():
-                function.compile(node=ast, verbose=verbose)
+                function.compile(node=ast, debug=debug)
             if lib is not None:
                 iarray.udf_registry[lib] = function
             return function
 
         return wrapper
 
-    def compile_ir(self, llvm_ir, name, verbose, optimize=True):
+    def compile_ir(self, llvm_ir, name, debug, optimize=True):
         """
         Compile the LLVM IR string with the given engine.
         The compiled module object is returned.
@@ -1338,7 +1334,7 @@ class LLVM:
         mod = binding.parse_assembly(llvm_ir)
         mod.verify()
         # Assign triple, so the IR can be saved and compiled with llc
-        if verbose:
+        if debug > 1:
             print("====== IR (parsed) ======")
             print(mod)
 
@@ -1358,7 +1354,7 @@ class LLVM:
             pmb.populate(mpm)
             mpm.run(mod)
 
-            if verbose:
+            if debug > 1:
                 print("====== IR (optimized) ======")
                 print(mod)
 
