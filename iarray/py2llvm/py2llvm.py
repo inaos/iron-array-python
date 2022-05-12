@@ -4,6 +4,7 @@ import builtins
 import inspect
 import math
 import operator
+import re
 from types import FunctionType
 import typing
 
@@ -494,17 +495,27 @@ class BlockVisitor(NodeVisitor):
         node.builder = builder
         node.f_rtype = ir_signature.return_type
 
-    def If_test(self, node, parent, test):
+    def Return_exit(self, node, parent, value):
+        return True # Means this statement terminates the block
+
+    def If_test(self, node, parent, test, suffix_re=re.compile('if_true(.*)')):
         """
         If(expr test, stmt* body, stmt* orelse)
         """
         node.block_true = self.function.append_basic_block("if_true")
+        node.block_suffix = suffix_re.match(node.block_true.name).group(1)
 
     def If_body(self, node, parent, body):
-        node.block_false = self.function.append_basic_block("if_false")
+        node.block_false = self.function.append_basic_block("if_false" + node.block_suffix)
 
-    def If_orelse(self, node, parent, orelse):
-        node.block_next = self.function.append_basic_block("if_next")
+    def If_exit(self, node, parent, test, body, orelse):
+        is_terminated = bool(body and body[-1] and orelse and orelse[-1])
+        if not is_terminated:
+            node.block_next = self.function.append_basic_block("if_next" + node.block_suffix)
+        else:
+            node.block_next = None
+
+        return is_terminated
 
     def IfExp_test(self, node, parent, test):
         """
@@ -842,8 +853,10 @@ class GenVisitor(NodeVisitor):
         self.builder.position_at_end(node.block_false)
 
     def If_orelse(self, node, parent, orelse):
-        self.builder.branch(node.block_next)
-        self.builder.position_at_end(node.block_next)
+        if node.block_next is not None:
+            if not self.builder.block.is_terminated:
+                self.builder.branch(node.block_next)
+            self.builder.position_at_end(node.block_next)
 
     #
     # for ...
