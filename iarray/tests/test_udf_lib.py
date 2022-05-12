@@ -25,13 +25,13 @@ def fmult(a: udf.float64, b: udf.float64) -> float:
         ("2 + sin(x) + x * x", "2 + sin(x) + lib2.fmult(x, x)", {"x": ia.arange((10,))}),
         ("2 * (sin(x) + cos(x)) + x * x", "2 * (sin(x) + cos(x)) + lib2.fmult(x, x)", {"x": ia.arange((10,))}),
         ("2 + x * x * (x + x)", "2 + lib2.fmult(x, x) * lib.fsum(x, x)", {"x": ia.arange((10,))}),
-        ("2 + x * x * ((x * x) + x)", "2 + lib2.fmult(x, x) * lib.fsum(lib2.fmult(x, x), x)", {"x": ia.arange((10,))}),
-        ("x * y * ((x * y) + y)", "lib2.fmult(x, y) * lib.fsum(lib2.fmult(x, y), y)", {"x": ia.arange((10,)), "y": 2}),
+        ("2 + x * x * ((x * x) + x)", "2 + lib2.fmult(x, x) * lib.fsum(lib2.fmult(x, x), x)", {"x": ia.arange([10])}),
+        ("x * y * ((x * y) + y)", "lib2.fmult(x, y) * lib.fsum(lib2.fmult(x, y), y)", {"x": ia.arange([10]), "y": 2}),
     ],
 )
 def test_simple(sexpr, sexpr_udf, inputs):
     assert "lib" in ia.udf_registry
-    assert {"fsum"} == set(fname for fname in ia.udf_registry["lib"])
+    assert "fsum" in set(fname for fname in ia.udf_registry["lib"])
     assert "fsum" in (f.name for f in ia.udf_registry.iter_funcs("lib"))
     assert "lib.fsum" in (f for f in ia.udf_registry.iter_all_func_names())
     assert ia.udf_registry.get_func_addr("lib.fsum") != 0  # this can be any integer
@@ -159,3 +159,48 @@ def test_udf(sexpr, func, inputs):
 
     tol = 1e-14
     np.testing.assert_allclose(out.data, out_udf.data, rtol=tol, atol=tol)
+
+
+@udf.scalar(lib="lib")
+def fcond_none(a: udf.float64, b: udf.float64) -> float:
+    if (a + b) > 3:
+        x = 1
+    else:
+        x = 0
+
+    return x
+
+@udf.scalar(lib="lib")
+def fcond_both(a: udf.float64, b: udf.float64) -> float:
+    if (a + b) > 3:
+        return 1
+    else:
+        return 0
+
+@udf.scalar(lib="lib")
+def fcond_if(a: udf.float64, b: udf.float64) -> float:
+    if (a + b) > 3:
+        return 1
+    else:
+        x = 0
+
+    return x
+
+@udf.scalar(lib="lib")
+def fcond_else(a: udf.float64, b: udf.float64) -> float:
+    if (a + b) > 3:
+        x = 1
+    else:
+        return 0
+
+    return x
+
+@pytest.mark.parametrize("name", ["fcond_none", "fcond_both", "fcond_if", "fcond_else"])
+def test_conditional(name):
+    a = ia.arange([10])
+    b = ia.ones([10])
+    expr = ia.expr_from_string(f"lib.{name}(a, b)", {"a": a, "b": b})
+    out = expr.eval()
+
+    out_ref = (a.data + b.data) > 3
+    np.testing.assert_array_equal(out.data, out_ref)
