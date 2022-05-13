@@ -359,7 +359,7 @@ class IArray(ext.Container):
 
         Notes
         -----
-        As in Zarr, this function can also be replaced by `self.oindex[selection]`.
+        This function can also be replaced by `self.oindex[selection]`.
 
         See Also
         --------
@@ -368,7 +368,7 @@ class IArray(ext.Container):
         selection = process_selection(selection, self.shape)
         if type(value) == list:
             value = np.array(value)
-        if isinstance(value, (int, float)):
+        elif isinstance(value, (int, float)):
             shape = [len(s) for s in selection]
             value = np.full(shape, value, self.dtype)
         with ia.config(cfg=self.cfg) as cfg:
@@ -389,7 +389,7 @@ class IArray(ext.Container):
 
         Notes
         -----
-        As in Zarr, this function can also be replaced by `self.oindex[selection]`.
+        This function can also be replaced by `self.oindex[selection]`.
 
         See Also
         --------
