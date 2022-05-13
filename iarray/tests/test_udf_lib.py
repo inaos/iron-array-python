@@ -204,3 +204,63 @@ def test_conditional(name):
 
     out_ref = (a.data + b.data) > 3
     np.testing.assert_array_equal(out.data, out_ref)
+
+
+@udf.scalar(lib="lib")
+def fcond_f64(a: udf.float64, b: udf.float64) -> udf.float64:
+    if (a + b) > 3:
+        return 1
+    else:
+        return 0
+
+@udf.scalar(lib="lib")
+def fcond_f32(a: udf.float32, b: udf.float32) -> udf.float32:
+    if (a + b) > 3:
+        return 1
+    else:
+        return 0
+
+@udf.scalar(lib="lib")
+def fcond_i64(a: udf.int64, b: udf.int64) -> udf.int64:
+    if (a + b) > 3:
+        return 1
+    else:
+        return 0
+
+@udf.scalar(lib="lib")
+def fcond_i32(a: udf.int32, b: udf.int32) -> udf.int32:
+    if (a + b) > 3:
+        return 1
+    else:
+        return 0
+
+@udf.scalar(lib="lib")
+def fcond_i16(a: udf.int16, b: udf.int16) -> udf.int16:
+    if (a + b) > 3:
+        return 1
+    else:
+        return 0
+
+@udf.scalar(lib="lib")
+def fcond_i8(a: udf.int8, b: udf.int8) -> udf.int8:
+    if (a + b) > 3:
+        return 1
+    else:
+        return 0
+
+@pytest.mark.parametrize("name, dtype", [
+    ('fcond_f64', np.float64),
+    ('fcond_f32', np.float32),
+    ('fcond_i64', np.int64),
+    ('fcond_i32', np.int32),
+    ('fcond_i16', np.int16),
+    ('fcond_i8', np.int8),
+])
+def test_types(name, dtype):
+    a = ia.arange([10], dtype=dtype)
+    b = ia.ones([10], dtype=dtype)
+    expr = ia.expr_from_string(f"lib.{name}(a, b)", {"a": a, "b": b})
+    out = expr.eval()
+
+    out_ref = (a.data + b.data) > 3
+    np.testing.assert_array_equal(out.data, out_ref)

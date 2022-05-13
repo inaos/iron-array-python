@@ -13,7 +13,8 @@ from llvmlite import binding, ir
 from llvmlite.llvmpy.core import Module
 
 # Project
-import iarray
+import iarray as ia
+from iarray import udf
 from . import default
 from . import types
 
@@ -300,7 +301,7 @@ class NodeVisitor(BaseNodeVisitor):
         if name in self.root.globals:
             return self.root.globals[name]
 
-        libs = iarray.udf_registry.libs
+        libs = ia.udf_registry.libs
         if name in libs:
             return libs[name]
 
@@ -1318,7 +1319,7 @@ class LLVM:
         return dtype
 
     def jit(self, py_function=None, signature=None, ast=None, debug=0, optimize=True, lib=None):
-        f_globals = inspect.stack()[1].frame.f_globals
+        f_globals = {'math': math, 'udf': udf}
 
         if type(py_function) is FunctionType:
             function = self.fclass(self, py_function, signature, f_globals, optimize)
@@ -1332,7 +1333,7 @@ class LLVM:
             if function.can_be_compiled():
                 function.compile(node=ast, debug=debug)
             if lib is not None:
-                iarray.udf_registry[lib] = function
+                ia.udf_registry[lib] = function
             return function
 
         return wrapper
