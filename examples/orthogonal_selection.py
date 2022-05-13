@@ -21,3 +21,10 @@ print(a.data)
 
 b = a.get_orthogonal_selection(selection)
 print(b)
+
+c = ia.arange(shape=[3, 5], dtype=np.int64)
+print(c.oindex[[0, 2], :])
+print(c.oindex[:, [1, 3]])
+print(c.oindex[[0, 2], [1, 3]])
+c.oindex[[0, 2], [1, 3]] = [[-1, -2], [-3, -4]]
+print(c.data)

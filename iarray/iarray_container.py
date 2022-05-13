@@ -15,6 +15,16 @@ from typing import Union
 import ndindex
 from .info import InfoReporter
 
+class OIndex:
+
+    def __init__(self, array):
+        self.array = array
+
+    def __getitem__(self, selection):
+        return self.array.get_orthogonal_selection(selection)
+
+    def __setitem__(self, selection, value):
+        return self.array.set_orthogonal_selection(selection, value)
 
 def process_selection(selection, shape):
     mask = tuple(True if isinstance(s, int) else False for s in selection)
@@ -87,6 +97,10 @@ class IArray(ext.Container):
     @property
     def attrs(self):
         return ia.Attributes(self)
+
+    @property
+    def oindex(self):
+        return OIndex(self)
 
     def copy(self, cfg=None, **kwargs) -> IArray:
         """Return a copy of the array.
@@ -330,7 +344,30 @@ class IArray(ext.Container):
             return ext.set_slice(cfg, self, start, stop, value)
 
     def set_orthogonal_selection(self, selection, value):
+        """ Modify data via a selection for each dimension of the array.
+
+        Parameters
+        ----------
+        selection: int, slice or integer array.
+            The selection for each dimension of the array.
+        value: value or `np.ndarray <https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html>`_.
+            Value to be stored into the array.
+
+        Returns
+        -------
+        None
+
+        Notes
+        -----
+        As in Zarr, this function can also be replaced by `self.oindex[selection]`.
+
+        See Also
+        --------
+        get_orthogonal_selection
+        """
         selection = process_selection(selection, self.shape)
+        if type(value) == list:
+            value = np.array(value)
         if isinstance(value, (int, float)):
             shape = [len(s) for s in selection]
             value = np.full(shape, value, self.dtype)
@@ -338,6 +375,26 @@ class IArray(ext.Container):
             return ext.set_orthogonal_selection(cfg, self, selection, value)
 
     def get_orthogonal_selection(self, selection):
+        """ Retrieve data by making a selection for each dimension of the array.
+
+        Parameters
+        ----------
+        selection: list
+            The selection for each dimension. It can be either
+            an integer (indexing a single item), a slice or an array of integers.
+
+        Returns
+        -------
+        out: `np.ndarray <https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html>`_
+
+        Notes
+        -----
+        As in Zarr, this function can also be replaced by `self.oindex[selection]`.
+
+        See Also
+        --------
+        set_orthogonal_selection
+        """
         selection = process_selection(selection, self.shape)
         shape = tuple(len(s) for s in selection)
         with ia.config(cfg=self.cfg) as cfg:

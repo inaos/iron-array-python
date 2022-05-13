@@ -42,6 +42,8 @@ Methods
    IArray.insert
    IArray.append
    IArray.delete
+   IArray.get_orthogonal_selection
+   IArray.set_orthogonal_selection
 
 
 Mathematical methods

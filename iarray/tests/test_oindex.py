@@ -1,7 +1,6 @@
 import pytest
 import iarray as ia
 import numpy as np
-from math import isclose
 
 
 # Slice
@@ -33,10 +32,18 @@ def test_oindex(shape, chunks, blocks, dtype, acontiguous, aurlpath):
     cfg = ia.Config(chunks=chunks, blocks=blocks, contiguous=acontiguous, urlpath=aurlpath)
 
     a = ia.full(shape, 3.14, cfg=cfg, mode="w", dtype=dtype)
+    a_copy = a.copy()
 
     selection = [np.random.choice(np.arange(s), 40) for s in shape]
 
     a.set_orthogonal_selection(selection, 0)
     b = a.get_orthogonal_selection(selection)
-
+    c = a.oindex[selection]
     np.testing.assert_almost_equal(b, 0)
+    np.testing.assert_almost_equal(c, 0)
+
+    a_copy.oindex[selection] = 0
+    b = a_copy.get_orthogonal_selection(selection)
+    c = a_copy.oindex[selection]
+    np.testing.assert_almost_equal(b, 0)
+    np.testing.assert_almost_equal(c, 0)
