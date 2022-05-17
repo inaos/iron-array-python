@@ -9,6 +9,7 @@
 ###########################################################################################
 
 import iarray as ia
+from iarray.expr_udf import expr_udf
 
 
 def fuse_operands(operands1, operands2):
@@ -104,7 +105,6 @@ class LazyExpr:
         else:
             if value1 == value2:
                 self.operands = {"o0": value1}
-                self.operands = {"o0": value1}
                 self.expression = f"(o0 {op} o0)"
             elif isinstance(value1, LazyExpr) or isinstance(value2, LazyExpr):
                 if isinstance(value1, LazyExpr):
@@ -154,7 +154,10 @@ class LazyExpr:
                 except ValueError:
                     op_name = f"o{len(self.operands)}"
                     self.operands[op_name] = value1
-                self.expression = f"({op_name} {op} {self.expression})"
+                    if op == "[]":  # syntactic sugar for slicing
+                        self.expression = f"({op_name}[{self.expression}])"
+                    else:
+                        self.expression = f"({op_name} {op} {self.expression})"
         return self
 
     def __add__(self, value):
@@ -202,7 +205,8 @@ class LazyExpr:
             cfg = ia.get_config_defaults()
 
         with ia.config(cfg=cfg, **kwargs) as cfg:
-            expr = ia.expr_from_string(self.expression, self.operands, cfg=cfg)
+            #expr = ia.expr_from_string(self.expression, self.operands, cfg=cfg)
+            expr = expr_udf(self.expression, self.operands, debug=0)
             out = expr.eval()
             return out
 
