@@ -291,6 +291,11 @@ class BaseNodeVisitor:
 
 
 class NodeVisitor(BaseNodeVisitor):
+
+    def __init__(self, debug, function):
+        super().__init__(debug)
+        self.function = function
+
     def lookup(self, name):
         if name in self.locals:
             return self.locals[name]
@@ -432,10 +437,6 @@ class BlockVisitor(NodeVisitor):
     - We populate the AST attaching structure IR objects (module, functions,
       blocks). These will be used in the 2nd pass.
     """
-
-    def __init__(self, debug, function):
-        super().__init__(debug)
-        self.function = function
 
     def FunctionDef_returns(self, node, parent, returns):
         """
@@ -762,10 +763,20 @@ class GenVisitor(NodeVisitor):
         body = types.value_to_ir_value(self.builder, body)
         orelse = types.value_to_ir_value(self.builder, orelse)
 
-        ltype = types.value_to_type(body)
-        rtype = types.value_to_type(orelse)
-        assert ltype is rtype
-        phi = self.builder.phi(ltype)
+        # The phi instruction has a type, so first we need to convert the
+        # incoming edges to the same type.
+        ltype = types.value_to_ir_type(body)
+        rtype = types.value_to_ir_type(orelse)
+        type_ = values_to_type(body, orelse)
+        if ltype is not type_:
+            with self.builder.goto_block(node.block_true):
+                body = types.value_to_ir_value(self.builder, body, type_)
+        if rtype is not type_:
+            with self.builder.goto_block(node.block_false):
+                orelse = types.value_to_ir_value(self.builder, orelse, type_)
+
+        # The phi instruction
+        phi = self.builder.phi(type_)
         phi.add_incoming(body, node.block_true)
         phi.add_incoming(orelse, node.block_false)
         return phi
@@ -1250,7 +1261,7 @@ class Function:
         # (8) AST pass: generate
         if debug > 2:
             print("====== Debug: 2nd pass ======")
-        GenVisitor(debug).traverse(node)
+        GenVisitor(debug, self).traverse(node)
 
         # (9) IR code
         if debug > 2:
