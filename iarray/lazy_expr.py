@@ -87,7 +87,7 @@ class LazyExpr:
                 self.expression = f"{op}({self.expression})"
             else:
                 self.operands = {"o0": value1}
-                self.expression = f"{op}(o0)"
+                self.expression = "o0" if op is None else f"{op}(o0)"
             return
         elif op in ("atan2", "pow"):
             self.operands = {"o0": value1, "o1": value2}
