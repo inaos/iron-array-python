@@ -910,6 +910,31 @@ class IArray(ext.Container):
         """
         return ia.LazyExpr(new_op=(self, "tanh", None))
 
+    def min(self, axis=None, **kwargs):
+        with ia.config(cfg=self.cfg) as cfg:
+            res = reduce(self, ia.Reduce.MIN, axis, cfg, **kwargs)
+        return ia.LazyExpr(new_op=(res, None, None))
+
+    def max(self, axis=None, **kwargs):
+        with ia.config(cfg=self.cfg) as cfg:
+            res = reduce(self, ia.Reduce.MAX, axis, cfg, **kwargs)
+        return ia.LazyExpr(new_op=(res, None, None))
+
+    def sum(self, axis=None, **kwargs):
+        with ia.config(cfg=self.cfg) as cfg:
+            res = reduce(self, ia.Reduce.SUM, axis, cfg, **kwargs)
+        return ia.LazyExpr(new_op=(res, None, None))
+
+    def prod(self, axis=None, **kwargs):
+        with ia.config(cfg=self.cfg) as cfg:
+            res = reduce(self, ia.Reduce.PROD, axis, cfg, **kwargs)
+        return ia.LazyExpr(new_op=(res, None, None))
+
+    def mean(self, axis=None, **kwargs):
+        with ia.config(cfg=self.cfg) as cfg:
+            res = reduce(self, ia.Reduce.MEAN, axis, cfg, **kwargs)
+        return ia.LazyExpr(new_op=(res, None, None))
+
     @attrs.setter
     def attrs(self, value):
         self._attrs = value
