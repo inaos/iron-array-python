@@ -1039,7 +1039,7 @@ class GenVisitor(NodeVisitor):
         if func is range:
             return Range(self.builder, *args)
 
-        key = (func,) + tuple(types.value_to_ir_type(x) for x in args)
+        key = (func, types.value_to_ir_type(args[0]))
         func = self.root.compiled.get(key, func)
         if not hasattr(func, 'function_type'):
             raise TypeError(f"unexpected {func}")
@@ -1240,7 +1240,7 @@ class Function:
                     signatures[args] = signature
                 fname = name if t is types.float64 else f'{name}f'
                 func = ir.Function(self.ir_module, signature, name=fname)
-                node.compiled[(py_func,) + args] = func
+                node.compiled[(py_func, args[0])] = func
 
         # (6) The IR module and function
         self.ir_function_type = ir.FunctionType(
