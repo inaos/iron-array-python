@@ -263,6 +263,8 @@ _init_object = ext.IArrayInit()
 # Global registry for udfs
 udf_registry = UdfRegistry()
 
+# Whether a IArray.__eq__ should be bypassed or not (for private use)
+_disable_overloaded_equal = False
 
 from . import tests
 
