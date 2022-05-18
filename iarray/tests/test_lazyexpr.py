@@ -55,11 +55,10 @@ import numpy as np
             "x[y != 30] * z",
             "np.where(y != 30, x, np.nan) * z",
         ),
-        # FIXME: this fails
-        # (
-        #     "x[y != 30] * y[z < 30]",
-        #     "np.where(y != 30, x, np.nan) * np.where(z < 30, y, np.nan)",
-        # ),
+        (
+            "x[y != 30] * y[z < 30]",
+            "np.where(y != 30, x, np.nan) * np.where(z < 30, y, np.nan)",
+        ),
         # Reductions with sliced views
         (
             "(x.min(axis=1) - 1.35) *  y[:,1]",

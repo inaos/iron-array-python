@@ -45,10 +45,7 @@ def fuse_expressions(expr, new_base, dup_op):
             # This is a variable.  Find the end of it.
             j = i + 1
             for k in range(len(expr[j:])):
-                if expr[j + k] == " ":
-                    j = k
-                    break
-                if expr[j + k] == ")":
+                if expr[j + k] in " )[":
                     j = k
                     break
             if expr[i + j] == ")":
