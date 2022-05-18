@@ -6,7 +6,6 @@ import pytest
 
 import iarray as ia
 from iarray import udf
-from iarray.udf import int32
 
 
 def cmp_udf_np(
@@ -127,34 +126,28 @@ def f_fabs_copysign(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)
 
     return 0
 
-@pytest.mark.parametrize("f", [f_1dim, f_fabs_copysign])
-def test_1dim(f):
-    shape = [10 * 1000]
-    chunks = [3 * 1000]
-    blocks = [3 * 100]
-    dtype = np.float64
-    cparams = dict(nthreads=16)
-    start, stop = 0, 10
+@udf.jit
+def f_while(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
+    n = x.shape[0]
+    i = 0
+    while i < n:
+        out[i] = (math.sin(x[i]) - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
+        i = i + 1
 
-    cmp_udf_np(f, [(start, stop)], shape, chunks, blocks, dtype, cparams)
+    return 0
 
+@udf.jit
+def f_1dim_int(out: udf.Array(udf.int64, 1), x: udf.Array(udf.int64, 1)):
+    n = out.shape[0]
+    for i in range(n):
+        if i % 3 == 0:
+            out[i] = 0
+        elif x[i] > 1 or x[i] <= 3 and i % 2 == 0:
+            out[i] = (x[i] + 4) * (x[i] + 8)
+        else:
+            out[i] = (x[i] - 4) * (x[i] - 8)
 
-@pytest.mark.parametrize("f", [f_1dim])
-def test_partition_mismatch(f):
-    shape = [10 * 1000]
-    chunks = [3 * 1000]
-    blocks = [3 * 100]
-    dtype = np.float64
-    cparams = dict(nthreads=16)
-    start, stop = 0, 10
-
-    # For the test function to return the same output as the Python function
-    # the partition size must be multiple of 3. This is just an example of
-    # how the result is not always the same as in the Python function.
-    blocks = [4 * 100]
-    with pytest.raises(AssertionError):
-        cmp_udf_np(f, [(start, stop)], shape, chunks, blocks, dtype, cparams)
-
+    return 0
 
 @udf.jit
 def f_1dim_f32(out: udf.Array(udf.float32, 1), x: udf.Array(udf.float32, 1)):
@@ -168,7 +161,6 @@ def f_1dim_f32(out: udf.Array(udf.float32, 1), x: udf.Array(udf.float32, 1)):
             out[i] = (math.sin(x[i]) - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
 
     return 0
-
 
 @udf.jit
 def f_math(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
@@ -190,6 +182,81 @@ def f_math(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
 
 
 @udf.jit
+def f_avg(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
+    n = x.shape[0]
+    for i in range(n):
+        value = x[i]
+        value += x[i - 1] if i > 0 else x[i]
+        value += x[i + 1] if i < n - 1 else x[i]
+        out[i] = value / 3
+
+    return 0
+
+@udf.jit
+def f_idx_const(
+    out: udf.Array(udf.float64, 1),
+    x: udf.Array(udf.float64, 1)
+):
+    n = out.shape[0]
+    for i in range(n):
+        out[0] = x[i]
+
+    return 0
+
+@udf.jit
+def f_idx_var(
+    out: udf.Array(udf.float64, 1),
+    x: udf.Array(udf.float64, 1)
+):
+    var = 0
+    n = out.shape[0]
+    for i in range(n):
+        out[var] = x[i]
+
+    return 0
+
+@pytest.mark.parametrize(
+    "f, dtype", [
+        (f_1dim, np.float64),
+        (f_fabs_copysign, np.float64),
+        (f_while, np.float64),
+        (f_1dim_int, np.int64),
+        (f_1dim_f32, np.float32),
+        (f_math, np.float64),
+        (f_avg, np.float64),
+        # https://github.com/inaos/iron-array/issues/502
+        (f_idx_const, np.float64),
+        (f_idx_var, np.float64),
+    ]
+)
+def test_1dim(f, dtype):
+    shape = [10 * 1000]
+    chunks = [3 * 1000]
+    blocks = [3 * 100]
+    cparams = dict(nthreads=16)
+    start, stop = 0, 10 * 1000
+
+    cmp_udf_np_strict(f, start, stop, shape, (chunks, blocks), dtype, cparams)
+
+
+@pytest.mark.parametrize("f", [f_1dim])
+def test_partition_mismatch(f):
+    shape = [10 * 1000]
+    chunks = [3 * 1000]
+    blocks = [3 * 100]
+    dtype = np.float64
+    cparams = dict(nthreads=16)
+    start, stop = 0, 10
+
+    # For the test function to return the same output as the Python function
+    # the partition size must be multiple of 3. This is just an example of
+    # how the result is not always the same as in the Python function.
+    blocks = [4 * 100]
+    with pytest.raises(AssertionError):
+        cmp_udf_np(f, [(start, stop)], shape, chunks, blocks, dtype, cparams)
+
+
+@udf.jit
 def f_2dim(out: udf.Array(udf.float64, 2), x: udf.Array(udf.float64, 2)):
     n = x.shape[0]
     m = x.shape[1]
@@ -205,29 +272,6 @@ def test_2dim(f):
     shape = [40, 80]    # [400, 800]
     chunks = [6, 20]    # [60, 200]
     blocks = [4, 2]     # [11, 200]
-    dtype = np.float64
-    cparams = dict()
-    start, stop = 0, 10
-
-    cmp_udf_np(f, [(start, stop)], shape, chunks, blocks, dtype, cparams)
-
-
-@udf.jit
-def f_while(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
-    n = x.shape[0]
-    i = 0
-    while i < n:
-        out[i] = (math.sin(x[i]) - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
-        i = i + 1
-
-    return 0
-
-
-@pytest.mark.parametrize("f", [f_while])
-def test_while(f):
-    shape = [2000]
-    chunks = [1000]
-    blocks = [300]
     dtype = np.float64
     cparams = dict()
     start, stop = 0, 10
@@ -296,30 +340,6 @@ def test_ifexp2(f):
     cparams = dict()
 
     cmp_udf_np(f, [], shape, chunkshape, blockshape, dtype, cparams)
-
-
-@udf.jit
-def f_avg(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
-    n = x.shape[0]
-    for i in range(n):
-        value = x[i]
-        value += x[i - 1] if i > 0 else x[i]
-        value += x[i + 1] if i < n - 1 else x[i]
-        out[i] = value / 3
-
-    return 0
-
-
-@pytest.mark.parametrize("f", [f_avg])
-def test_avg(f):
-    shape = [1000]
-    chunks = [300]
-    blocks = [100]
-    dtype = np.float64
-    cparams = dict()
-    start, stop = 0, 10
-
-    cmp_udf_np_strict(f, start, stop, shape, (chunks, blocks), dtype, cparams)
 
 
 @udf.jit
@@ -433,75 +453,6 @@ def test_user_params(f):
         user_params=user_params
     )
 
-
-#
-# https://github.com/inaos/iron-array/issues/502
-#
-
-@udf.jit
-def f_idx_const(
-    out: udf.Array(udf.float64, 1),
-    x: udf.Array(udf.float64, 1)
-):
-    n = out.shape[0]
-    for i in range(n):
-        out[0] = x[i]
-
-    return 0
-
-
-@udf.jit
-def f_idx_var(
-    out: udf.Array(udf.float64, 1),
-    x: udf.Array(udf.float64, 1)
-):
-    var = 0
-    n = out.shape[0]
-    for i in range(n):
-        out[var] = x[i]
-
-    return 0
-
-
-@pytest.mark.parametrize("f", [f_idx_const, f_idx_var])
-def test_idx(f):
-    shape = [1000]
-    chunks = [100]
-    blocks = [10]
-    dtype = np.float64
-    cparams = dict(nthreads=16)
-    start, stop = 1, 1000
-
-    cmp_udf_np_strict(f, start, stop, shape, (chunks, blocks), dtype, cparams)
-
-
-@udf.jit
-def f_1dim_int(out: udf.Array(udf.int64, 1), x: udf.Array(udf.int64, 1)):
-    n = out.shape[0]
-    for i in range(n):
-        if i % 3 == 0:
-            out[i] = 0
-        elif x[i] > 1 or x[i] <= 3 and i % 2 == 0:
-            out[i] = (x[i] + 4) * (x[i] + 8)
-        else:
-            out[i] = (x[i] - 4) * (x[i] - 8)
-
-    return 0
-
-
-@pytest.mark.parametrize("f", [f_1dim_int])
-def test_1dim_int(f):
-    shape = [10 * 1000]
-    chunks = [3 * 1000]
-    blocks = [3 * 100]
-    dtype = np.int64
-    cparams = dict(nthreads=16)
-    start, stop = 0, 10 * 1000
-
-    cmp_udf_np(
-        f, [(start, stop)], shape, chunks, blocks, dtype, cparams,
-        input_factory=ia.arange
-    )
 
 @udf.jit
 def f_idx_int(
