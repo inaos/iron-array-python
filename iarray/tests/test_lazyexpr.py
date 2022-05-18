@@ -52,6 +52,18 @@ import numpy as np
             "np.where(y >= 30, x, np.nan)",
         ),
         (
+            "x[y == 30]",
+            "np.where(y == 30, x, np.nan)",
+        ),
+        (
+            "x[y == z]",
+            "np.where(y == z, x, np.nan)",
+        ),
+        (
+            "x[y == y]",
+            "np.where(y == y, x, np.nan)",
+        ),
+        (
             "x[y != 30] * z",
             "np.where(y != 30, x, np.nan) * z",
         ),

@@ -100,7 +100,7 @@ class LazyExpr:
             self.operands = {"o0": value2}
             self.expression = f"({value1} {op} o0)"
         else:
-            if value1 == value2:
+            if value1 is value2:
                 self.operands = {"o0": value1}
                 self.expression = f"(o0 {op} o0)"
             elif isinstance(value1, LazyExpr) or isinstance(value2, LazyExpr):
@@ -118,6 +118,8 @@ class LazyExpr:
                 self.expression = f"(o0 {op} o1)"
 
     def update_expr(self, new_op):
+        # We use a lot the original IArray.__eq__ as 'is', so deactivate the overloaded one
+        ia._disable_overloaded_equal = True
         # One of the two operands are LazyExpr instances
         value1, op, value2 = new_op
         if isinstance(value1, LazyExpr) and isinstance(value2, LazyExpr):
@@ -151,10 +153,11 @@ class LazyExpr:
                 except ValueError:
                     op_name = f"o{len(self.operands)}"
                     self.operands[op_name] = value1
-                    if op == "[]":  # syntactic sugar for slicing
-                        self.expression = f"({op_name}[{self.expression}])"
-                    else:
-                        self.expression = f"({op_name} {op} {self.expression})"
+                if op == "[]":  # syntactic sugar for slicing
+                    self.expression = f"({op_name}[{self.expression}])"
+                else:
+                    self.expression = f"({op_name} {op} {self.expression})"
+        ia._disable_overloaded_equal = False
         return self
 
     def __add__(self, value):
@@ -220,7 +223,7 @@ if __name__ == "__main__":
 
     print()
     # Create initial containers
-    dtshape_ = ia.DTShape([40, 20])
+    dtshape_ = [40, 20]
     a1 = ia.linspace(dtshape_, 0, 10)
     a2 = ia.linspace(dtshape_, 0, 10)
     a3 = ia.linspace(dtshape_, 0, 10)
