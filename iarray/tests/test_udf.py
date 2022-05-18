@@ -119,8 +119,15 @@ def f_1dim(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
 
     return 0
 
+@udf.jit
+def f_fabs_copysign(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
+    n = out.shape[0]
+    for i in range(n):
+        out[i] = math.fabs(x[i]) + math.copysign(x[i], -1.0)
 
-@pytest.mark.parametrize("f", [f_1dim])
+    return 0
+
+@pytest.mark.parametrize("f", [f_1dim, f_fabs_copysign])
 def test_1dim(f):
     shape = [10 * 1000]
     chunks = [3 * 1000]
@@ -130,6 +137,16 @@ def test_1dim(f):
     start, stop = 0, 10
 
     cmp_udf_np(f, [(start, stop)], shape, chunks, blocks, dtype, cparams)
+
+
+@pytest.mark.parametrize("f", [f_1dim])
+def test_partition_mismatch(f):
+    shape = [10 * 1000]
+    chunks = [3 * 1000]
+    blocks = [3 * 100]
+    dtype = np.float64
+    cparams = dict(nthreads=16)
+    start, stop = 0, 10
 
     # For the test function to return the same output as the Python function
     # the partition size must be multiple of 3. This is just an example of
