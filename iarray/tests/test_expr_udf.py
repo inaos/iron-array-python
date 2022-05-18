@@ -27,7 +27,8 @@ def fsum(a: udf.float64, b: udf.float64) -> float:
         ("x * y * ((x * y) + y)", {"x": ia.arange((10,)), "y": 2}),
         ("lib_expr_udf.fsum(x, x)", {"x": ia.arange((10,))}),
         ("x + y", {"x": ia.arange((10, 10)), "y": ia.arange((10, 10))}),
-        ("absolute(x) + abs(x) + negative(x) + negate(x)", {"x": ia.arange((10,))}),
+        ("absolute(x) + abs(x) + negative(x) + negate(x)", {"x": ia.arange([10])}),
+        ("absolute(x) + abs(x) + negative(x) + negate(x)", {"x": ia.arange([10], dtype=np.float32)}),
     ],
 )
 def test_simple(sexpr, inputs):
