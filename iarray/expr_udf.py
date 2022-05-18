@@ -111,6 +111,24 @@ class Transformer(ast.NodeTransformer):
             type_ignores=[],
         )
 
+    def visit_Call(self, node):
+        self.generic_visit(node)
+
+        # Translate negative(x) to math.copysign(x, -1.0)
+        # https://github.com/inaos/iron-array/issues/559
+        if isinstance(node.func, ast.Name):
+            if node.func.id in {'negative', 'negate'}:
+                node.func = ast.Attribute(
+                    value=name('math'),
+                    attr='copysign',
+                    ctx=node.func.ctx,
+                )
+                node.args.append(
+                    constant(-1.0)
+                )
+
+        return node
+
     def visit_Expr(self, node):
         self.generic_visit(node)
         return ast.Assign(
@@ -125,16 +143,20 @@ class Transformer(ast.NodeTransformer):
         )
 
     def visit_Name(self, node):
+        # Translate abs/absolute to fabs (and below this becomes math.fabs)
+        translate_map = {'abs': 'fabs', 'absolute': 'fabs'}
+        node_id = translate_map.get(node.id, node.id)
+
         # Math functions
-        if node.id in MATH_FUNCS:
+        if node_id in MATH_FUNCS:
             return ast.Attribute(
                 value=name('math'),
-                attr=node.id,
+                attr=node_id,
                 ctx=node.ctx,
             )
 
         # Access to arrays
-        arg = self.args.get(node.id)
+        arg = self.args.get(node_id)
         if isinstance(arg, ia.IArray):
             return ast.Subscript(
                 value=node,
