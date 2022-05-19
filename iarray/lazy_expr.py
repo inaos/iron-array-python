@@ -222,8 +222,10 @@ class LazyExpr:
             cfg = ia.get_config_defaults()
 
         with ia.config(cfg=cfg, **kwargs) as cfg:
-            #expr = ia.expr_from_string(self.expression, self.operands, cfg=cfg)
-            expr = expr_udf(self.expression, self.operands, debug=0)
+            # The one below uses the evaluator from minjugg
+            # expr = ia.expr_from_string(self.expression, self.operands, cfg=cfg)
+            # The next uses the expr -> UDF machinery, which has support for masks
+            expr = expr_udf(self.expression, self.operands, debug=0, cfg=cfg)
             out = expr.eval()
             return out
 
