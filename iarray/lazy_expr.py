@@ -9,6 +9,7 @@
 ###########################################################################################
 
 import iarray as ia
+from iarray.expr_udf import expr_udf
 
 
 def fuse_operands(operands1, operands2):
@@ -44,10 +45,7 @@ def fuse_expressions(expr, new_base, dup_op):
             # This is a variable.  Find the end of it.
             j = i + 1
             for k in range(len(expr[j:])):
-                if expr[j + k] == " ":
-                    j = k
-                    break
-                if expr[j + k] == ")":
+                if expr[j + k] in " )[":
                     j = k
                     break
             if expr[i + j] == ")":
@@ -87,7 +85,7 @@ class LazyExpr:
                 self.expression = f"{op}({self.expression})"
             else:
                 self.operands = {"o0": value1}
-                self.expression = f"{op}(o0)"
+                self.expression = "o0" if op is None else f"{op}(o0)"
             return
         elif op in ("atan2", "pow"):
             self.operands = {"o0": value1, "o1": value2}
@@ -102,8 +100,7 @@ class LazyExpr:
             self.operands = {"o0": value2}
             self.expression = f"({value1} {op} o0)"
         else:
-            if value1 == value2:
-                self.operands = {"o0": value1}
+            if value1 is value2:
                 self.operands = {"o0": value1}
                 self.expression = f"(o0 {op} o0)"
             elif isinstance(value1, LazyExpr) or isinstance(value2, LazyExpr):
@@ -121,6 +118,8 @@ class LazyExpr:
                 self.expression = f"(o0 {op} o1)"
 
     def update_expr(self, new_op):
+        # We use a lot the original IArray.__eq__ as 'is', so deactivate the overloaded one
+        ia._disable_overloaded_equal = True
         # One of the two operands are LazyExpr instances
         value1, op, value2 = new_op
         if isinstance(value1, LazyExpr) and isinstance(value2, LazyExpr):
@@ -132,7 +131,9 @@ class LazyExpr:
             self.expression = f"({self.expression} {op} {new_expr})"
             self.operands.update(new_op)
         elif isinstance(value1, LazyExpr):
-            if isinstance(value2, (int, float)):
+            if op == "not":
+                self.expression = f"({op}{self.expression})"
+            elif isinstance(value2, (int, float)):
                 self.expression = f"({self.expression} {op} {value2})"
             else:
                 try:
@@ -154,7 +155,11 @@ class LazyExpr:
                 except ValueError:
                     op_name = f"o{len(self.operands)}"
                     self.operands[op_name] = value1
-                self.expression = f"({op_name} {op} {self.expression})"
+                if op == "[]":  # syntactic sugar for slicing
+                    self.expression = f"({op_name}[{self.expression}])"
+                else:
+                    self.expression = f"({op_name} {op} {self.expression})"
+        ia._disable_overloaded_equal = False
         return self
 
     def __add__(self, value):
@@ -181,6 +186,21 @@ class LazyExpr:
     def __rtruediv__(self, value):
         return self.update_expr(new_op=(value, "/", self))
 
+    def __and__(self, value):
+        return self.update_expr(new_op=(self, "and", value))
+
+    def __rand__(self, value):
+        return self.update_expr(new_op=(value, "and", self))
+
+    def __or__(self, value):
+        return self.update_expr(new_op=(self, "or", value))
+
+    def __ror__(self, value):
+        return self.update_expr(new_op=(value, "or", self))
+
+    def __invert__(self):
+        return self.update_expr(new_op=(self, "not", None))
+
     def eval(self, cfg: ia.Config = None, **kwargs) -> ia.IArray:
         """Evaluate the lazy expression in self.
 
@@ -202,7 +222,8 @@ class LazyExpr:
             cfg = ia.get_config_defaults()
 
         with ia.config(cfg=cfg, **kwargs) as cfg:
-            expr = ia.expr_from_string(self.expression, self.operands, cfg=cfg)
+            #expr = ia.expr_from_string(self.expression, self.operands, cfg=cfg)
+            expr = expr_udf(self.expression, self.operands, debug=0)
             out = expr.eval()
             return out
 
@@ -219,7 +240,7 @@ if __name__ == "__main__":
 
     print()
     # Create initial containers
-    dtshape_ = ia.DTShape([40, 20])
+    dtshape_ = [40, 20]
     a1 = ia.linspace(dtshape_, 0, 10)
     a2 = ia.linspace(dtshape_, 0, 10)
     a3 = ia.linspace(dtshape_, 0, 10)

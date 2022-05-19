@@ -317,6 +317,8 @@ class IArray(ext.Container):
         return ext.WriteBlockIter(self, iterblock)
 
     def __getitem__(self, key):
+        if isinstance(key, ia.LazyExpr):
+            return key.update_expr(new_op=(self, f"[]", key))
         # Massage the key a bit so that it is compatible with self.shape
         key, mask = process_key(key, self.shape)
         start = [sl.start for sl in key]
@@ -437,6 +439,27 @@ class IArray(ext.Container):
 
     def __rtruediv__(self, value):
         return ia.LazyExpr(new_op=(value, "/", self))
+
+    def __lt__(self, value):
+        return ia.LazyExpr(new_op=(self, "<", value))
+
+    def __le__(self, value):
+        return ia.LazyExpr(new_op=(self, "<=", value))
+
+    def __gt__(self, value):
+        return ia.LazyExpr(new_op=(self, ">", value))
+
+    def __ge__(self, value):
+        return ia.LazyExpr(new_op=(self, ">=", value))
+
+    # FIXME: this overload is creating havoc
+    def __eq__(self, value):
+        if ia._disable_overloaded_equal:
+            return self is value
+        return ia.LazyExpr(new_op=(self, "==", value))
+
+    def __ne__(self, value):
+        return ia.LazyExpr(new_op=(self, "!=", value))
 
     # def __array_function__(self, func, types, args, kwargs):
     #     if not all(issubclass(t, np.ndarray) for t in types):
@@ -909,6 +932,31 @@ class IArray(ext.Container):
         `np.tanh <https://numpy.org/doc/stable/reference/generated/numpy.tanh.html>`_
         """
         return ia.LazyExpr(new_op=(self, "tanh", None))
+
+    def min(self, axis=None, **kwargs):
+        with ia.config(cfg=self.cfg) as cfg:
+            res = reduce(self, ia.Reduce.MIN, axis, cfg, **kwargs)
+        return ia.LazyExpr(new_op=(res, None, None))
+
+    def max(self, axis=None, **kwargs):
+        with ia.config(cfg=self.cfg) as cfg:
+            res = reduce(self, ia.Reduce.MAX, axis, cfg, **kwargs)
+        return ia.LazyExpr(new_op=(res, None, None))
+
+    def sum(self, axis=None, **kwargs):
+        with ia.config(cfg=self.cfg) as cfg:
+            res = reduce(self, ia.Reduce.SUM, axis, cfg, **kwargs)
+        return ia.LazyExpr(new_op=(res, None, None))
+
+    def prod(self, axis=None, **kwargs):
+        with ia.config(cfg=self.cfg) as cfg:
+            res = reduce(self, ia.Reduce.PROD, axis, cfg, **kwargs)
+        return ia.LazyExpr(new_op=(res, None, None))
+
+    def mean(self, axis=None, **kwargs):
+        with ia.config(cfg=self.cfg) as cfg:
+            res = reduce(self, ia.Reduce.MEAN, axis, cfg, **kwargs)
+        return ia.LazyExpr(new_op=(res, None, None))
 
     @attrs.setter
     def attrs(self, value):

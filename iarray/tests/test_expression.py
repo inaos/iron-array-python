@@ -412,7 +412,6 @@ def test_ufuncs(ufunc, ia_expr, xcontiguous, xurlpath, ycontiguous, yurlpath):
     chunks = [40, 40]
     bshape = [10, 17]
 
-
     ia.remove_urlpath(xurlpath)
     ia.remove_urlpath(yurlpath)
     ia.remove_urlpath("test_expression_res.iarr")
