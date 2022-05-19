@@ -184,6 +184,21 @@ class LazyExpr:
     def __rtruediv__(self, value):
         return self.update_expr(new_op=(value, "/", self))
 
+    def __and__(self, value):
+        return self.update_expr(new_op=(self, "and", value))
+
+    def __rand__(self, value):
+        return self.update_expr(new_op=(value, "and", self))
+
+    def __or__(self, value):
+        return self.update_expr(new_op=(self, "or", value))
+
+    def __ror__(self, value):
+        return self.update_expr(new_op=(value, "or", self))
+
+    def __neg__(self):
+        return self.update_expr(new_op=(self, "-", None))
+
     def eval(self, cfg: ia.Config = None, **kwargs) -> ia.IArray:
         """Evaluate the lazy expression in self.
 
