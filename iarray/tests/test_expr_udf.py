@@ -43,6 +43,7 @@ def test_simple(sexpr, inputs):
         ('b > 5', {'a': ia.arange([10]), 'b': ia.arange([10])}),
         ('b > 5', {'a': ia.arange([10], dtype=np.float32), 'b': ia.arange([10], dtype=np.float32)}),
         ('(b > 5) and not (a > 7) or (b > 42)', {'a': ia.arange([10, 10]), 'b': ia.arange([10, 10])}),
+        ('not (a == 4)', {'a': ia.arange([10])}),
     ]
 )
 def test_masks(condition, inputs):
@@ -54,7 +55,7 @@ def test_masks(condition, inputs):
     for k, v in replace.items():
         condition = condition.replace(k, v)
     a = inputs['a'].data
-    b = inputs['b'].data
+    b = inputs['b'].data if 'b' in inputs else None
     out_ref = np.where(eval(condition), a, np.nan)
 
     np.testing.assert_allclose(out.data, out_ref, rtol=TOL, atol=TOL)
