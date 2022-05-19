@@ -235,6 +235,7 @@ from . import random
 from .expression import (
     Expr,
     UdfRegistry,
+    ULib,
     expr_from_string,
     expr_from_udf,
     expr_get_operands,
@@ -260,8 +261,12 @@ from .iarray_ext import (
 # Keep the reference so as to avoid calling the destroyer immediately
 _init_object = ext.IArrayInit()
 
-# Global registry for udfs
+# Global registry for scalar UDFs
 udf_registry = UdfRegistry()
+# Default scalar UDF library (for lazy expressions)
+dfltulib = "ulib"
+# Accessor for scalar UDF registry (for lazy expressions)
+ulib = ULib(dfltulib)
 
 # Whether a IArray.__eq__ should be bypassed or not (for private use)
 _disable_overloaded_equal = False

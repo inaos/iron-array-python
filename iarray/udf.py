@@ -231,6 +231,8 @@ class Function(py2llvm.Function):
 class LLVM(py2llvm.LLVM):
     def jit(self, *args, **kwargs):
         kwargs["optimize"] = False  # iron-array optimizes, not py2llvm
+        # If "lib" param is not passed, use the default library for registration purposes
+        kwargs["lib"] = ia.dfltulib if "lib" not in kwargs else kwargs["lib"]
         return super().jit(*args, **kwargs)
 
 

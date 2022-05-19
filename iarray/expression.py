@@ -333,6 +333,30 @@ def expr_get_operands(sexpr):
     return expr_get_ops_funcs(sexpr)[0]
 
 
+# Accessor for the scalar UDF functions (for lazy expressions)
+class UFunc:
+
+    def __init__(self, name):
+        self.name = name
+
+    def __call__(self, *args, **kwargs):
+        return ia.LazyExpr(new_op=(self, self.name, [*args]))
+
+# Accessor for the default scalar UDF library (for lazy expressions)
+class ULib:
+
+    def __init__(self, dfltlib):
+        self.dfltlib = dfltlib
+
+    def __getattr__(self, name):
+        full_name = f"{self.dfltlib}.{name}"
+        try:
+            func = ia.udf_lookup_func(full_name)
+        except:
+            raise AttributeError(f"{full_name} scalar UDF function not found")
+        return UFunc(full_name)
+
+
 class UdfLibrary(ext.UdfLibrary):
 
     def __init__(self, name):
@@ -461,20 +485,6 @@ class UdfRegistry(MutableMapping):
         for name in self.libs:
             for func_name in self.libs[name].functions:
                 yield f"{name}.{func_name}"
-
-    def get_func_addr(self, func_name):
-        """
-        Return the address of the compiled UDF function.
-
-        Parameters
-        ----------
-        func_name : str
-            The name of the function in `lib_name.func_name` form.
-
-        Returns
-        -------
-        An integer with the address of the compiled UDF function.  Yes, this is mainly for devs.
-        """
 
     def __len__(self):
         return len(self.libs)

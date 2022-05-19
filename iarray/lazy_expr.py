@@ -79,6 +79,22 @@ class LazyExpr:
 
     def __init__(self, new_op):
         value1, op, value2 = new_op
+        if op is not None and op.startswith(f"{ia.dfltulib}"):
+            # A scalar UDF call
+            args = tuple(value2)
+            nops = 0
+            self.operands = {}
+            new_args = []
+            for arg in args:
+                if isinstance(arg, ia.IArray):
+                    self.operands[f"o{nops}"] = arg
+                    new_args.append(f"o{nops}")
+                    nops += 1
+                else:
+                    new_args.append(f"{arg}")
+            new_args = ", ".join(new_args)
+            self.expression = f"{op}({new_args})"
+            return
         if value2 is None:
             # ufunc
             if isinstance(value1, LazyExpr):
