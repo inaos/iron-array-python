@@ -23,7 +23,8 @@ for i in range(NITER):
     # res = ((x.sum(axis=1) - 1.35) *  x[:,1]).eval()
     # res = x[y < 4].eval()
     # res = (x[y == 30] * y[z < 30]).eval()
-    res = (x[(y == 3) & (z == 4)]).eval()
+    lazyexpr = (x[~(z == 4)])
+    res = lazyexpr.eval()
 print("Block evaluate via iarray.LazyExpr.eval('iarray_eval')):", round((time() - t0) / NITER, 4))
 print("- Result cratio:", round(res.cratio, 2))
 print(y.data)
@@ -38,6 +39,6 @@ for i in range(NITER):
     # resnp = (xnp.sum(axis=1) - 1.35) * xnp[:,1]
     # resnp = np.where(ynp < 4, xnp, np.nan)
     # resnp = np.where(ynp == 30, xnp, np.nan) * np.where(znp < 30, ynp, np.nan)
-    resnp = np.where((ynp == 3) & (znp == 4), xnp, np.nan)
+    resnp = np.where(~(znp == 4), xnp, np.nan)
 print("Block evaluate via numpy:", round((time() - t0) / NITER, 4))
 np.testing.assert_almost_equal(resnp, res.data, decimal=3)

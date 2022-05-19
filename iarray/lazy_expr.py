@@ -131,7 +131,9 @@ class LazyExpr:
             self.expression = f"({self.expression} {op} {new_expr})"
             self.operands.update(new_op)
         elif isinstance(value1, LazyExpr):
-            if isinstance(value2, (int, float)):
+            if op == "not":
+                self.expression = f"({op}{self.expression})"
+            elif isinstance(value2, (int, float)):
                 self.expression = f"({self.expression} {op} {value2})"
             else:
                 try:
@@ -196,8 +198,8 @@ class LazyExpr:
     def __ror__(self, value):
         return self.update_expr(new_op=(value, "or", self))
 
-    def __neg__(self):
-        return self.update_expr(new_op=(self, "-", None))
+    def __invert__(self):
+        return self.update_expr(new_op=(self, "not", None))
 
     def eval(self, cfg: ia.Config = None, **kwargs) -> ia.IArray:
         """Evaluate the lazy expression in self.
