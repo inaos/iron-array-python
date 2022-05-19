@@ -174,7 +174,7 @@ class Transformer(ast.NodeTransformer):
         if isinstance(slice, ast.Index):
             slice = slice.value
 
-        if isinstance(slice, (ast.BoolOp, ast.Compare)):
+        if isinstance(slice, (ast.UnaryOp, ast.BoolOp, ast.Compare)):
             return ast.IfExp(
                 test=slice,
                 body=node.value,
