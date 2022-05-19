@@ -184,12 +184,11 @@ class Transformer(ast.NodeTransformer):
         return node
 
 
-def expr_udf(expr, args, debug=0):
+def expr_udf(expr, args, debug=0, cfg=None, **kwargs):
     # There must be at least 1 argument
     assert len(args) > 0
 
     # Split input arrays from input scalars
-    # TODO Verify all arrays have the same shape
     arrays = []
     scalars = []
     for value in args.values():
@@ -214,5 +213,5 @@ def expr_udf(expr, args, debug=0):
     udf_func = udf.jit(py_func, ast=tree, debug=debug)
 
     # The IArray expression
-    ia_expr = ia.expr_from_udf(udf_func, arrays, scalars)
+    ia_expr = ia.expr_from_udf(udf_func, arrays, scalars, cfg=cfg, **kwargs)
     return ia_expr
