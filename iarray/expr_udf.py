@@ -57,7 +57,7 @@ class Transformer(ast.NodeTransformer):
             np.float32: 'udf.float32',
             np.float64: 'udf.float64',
             np.int32: 'udf.int32',
-            np.int32: 'udf.int64',
+            np.int64: 'udf.int64',
             float: 'udf.float64',
             int: 'udf.float64', # FIXME Should be int64
         }

@@ -17,6 +17,7 @@ import iarray as ia
 from iarray import iarray_ext as ext
 from iarray import py2llvm
 from iarray import udf
+from iarray.expr_udf import expr_udf
 
 
 # The main expression class
@@ -179,7 +180,7 @@ def check_inputs_string(inputs: dict, cfg : ia.Config):
 
 def expr_from_string(sexpr: str,
                      inputs: dict,
-                     params: Optional[dict] = None,
+                     debug: int = 0,
                      cfg: ia.Config = None,
                      **kwargs) -> Expr:
     """Create an :class:`Expr` instance from an expression in string form.
@@ -209,16 +210,20 @@ def expr_from_string(sexpr: str,
     with ia.config(cfg, **kwargs) as cfg:
         shape, dtype, array_inputs, new_inputs = check_inputs_string(inputs, cfg)
         np_dtype = cfg.np_dtype
-    check_expr(sexpr, {**array_inputs, **new_inputs})
     kwargs["dtype"] = dtype
     kwargs["np_dtype"] = np_dtype
-    expr = Expr(shape=shape, cfg=cfg, **kwargs)
-    for k, v in array_inputs.items():
-        expr.bind(k, v)
-    for k, v in new_inputs.items():
-        # These are arrays created anew.  Keep the reference to them.
-        expr.bind(k, v, keep_ref=True)
-    expr.compile(sexpr)
+    operands = {**array_inputs, **new_inputs}
+    # The lines below use the evaluator from minjugg
+    # check_expr(sexpr, operands)
+    # expr = Expr(shape=shape, cfg=cfg, **kwargs)
+    # for k, v in array_inputs.items():
+    #     expr.bind(k, v)
+    # for k, v in new_inputs.items():
+    #     # These are arrays created anew.  Keep the reference to them.
+    #     expr.bind(k, v, keep_ref=True)
+    # expr.compile(sexpr)
+    # The next uses the expr -> UDF machinery, which has support for masks and others bells and whistles
+    expr = expr_udf(sexpr, operands, debug=debug, cfg=cfg)
     return expr
 
 

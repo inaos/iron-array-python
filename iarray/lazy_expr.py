@@ -217,7 +217,7 @@ class LazyExpr:
     def __invert__(self):
         return self.update_expr(new_op=(self, "not", None))
 
-    def eval(self, cfg: ia.Config = None, **kwargs) -> ia.IArray:
+    def eval(self, debug = 0, cfg: ia.Config = None, **kwargs) -> ia.IArray:
         """Evaluate the lazy expression in self.
 
         Parameters
@@ -238,10 +238,7 @@ class LazyExpr:
             cfg = ia.get_config_defaults()
 
         with ia.config(cfg=cfg, **kwargs) as cfg:
-            # The one below uses the evaluator from minjugg
-            # expr = ia.expr_from_string(self.expression, self.operands, cfg=cfg)
-            # The next uses the expr -> UDF machinery, which has support for masks
-            expr = expr_udf(self.expression, self.operands, debug=0, cfg=cfg)
+            expr = ia.expr_from_string(self.expression, self.operands, debug=debug, cfg=cfg)
             out = expr.eval()
             return out
 
