@@ -726,19 +726,22 @@ class GenVisitor(NodeVisitor):
         """
         type_ = types.value_to_type(operand)
         if isinstance(type_, ir.Type):
-            # Python value
-            ops = {
-                ast.Not: self.builder.not_,
-                ast.USub: self.builder.neg,
-            }
-        else:
             # IR value
-            ops = {
+            if op is ast.Not:
+                op = self.builder.not_
+            elif op is ast.USub:
+                if isinstance(type_, ir.IntType):
+                    op = self.builder.neg
+                else:
+                    op = self.builder.fneg
+        else:
+            # Python value
+            op = {
                 ast.Not: operator.not_,
                 ast.USub: operator.neg,
-            }
+            }[op]
 
-        return ops[op](operand)
+        return op(operand)
 
     def IfExp_test(self, node, parent, test):
         """

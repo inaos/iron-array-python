@@ -193,10 +193,20 @@ def f_avg(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
     return 0
 
 @udf.jit
-def f_idx_const(
-    out: udf.Array(udf.float64, 1),
-    x: udf.Array(udf.float64, 1)
-):
+def f_unary_float(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
+    for i in range(out.shape[0]):
+        out[i] = - x[i]
+    return 0
+
+@udf.jit
+def f_unary_int(out: udf.Array(udf.int64, 1), x: udf.Array(udf.int64, 1)):
+    n = out.shape[0]
+    for i in range(out.shape[0]):
+        out[i] = - x[i]
+    return 0
+
+@udf.jit
+def f_idx_const(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
     n = out.shape[0]
     for i in range(n):
         out[0] = x[i]
@@ -204,10 +214,7 @@ def f_idx_const(
     return 0
 
 @udf.jit
-def f_idx_var(
-    out: udf.Array(udf.float64, 1),
-    x: udf.Array(udf.float64, 1)
-):
+def f_idx_var(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
     var = 0
     n = out.shape[0]
     for i in range(n):
@@ -224,6 +231,9 @@ def f_idx_var(
         (f_1dim_f32, np.float32),
         (f_math, np.float64),
         (f_avg, np.float64),
+        # Unary operator
+        (f_unary_float, np.float64),
+        (f_unary_int, np.int64),
         # https://github.com/inaos/iron-array/issues/502
         (f_idx_const, np.float64),
         (f_idx_var, np.float64),
