@@ -180,8 +180,8 @@ def check_inputs_string(inputs: dict, cfg : ia.Config):
 
 def expr_from_string(sexpr: str,
                      inputs: dict,
-                     debug: int = 0,
                      cfg: ia.Config = None,
+                     debug: int = 0,
                      **kwargs) -> Expr:
     """Create an :class:`Expr` instance from an expression in string form.
 
@@ -223,7 +223,7 @@ def expr_from_string(sexpr: str,
     #     expr.bind(k, v, keep_ref=True)
     # expr.compile(sexpr)
     # The next uses the expr -> UDF machinery, which has support for masks and others bells and whistles
-    expr = expr_udf(sexpr, operands, debug=debug, cfg=cfg)
+    expr = expr_udf(sexpr, operands, cfg=cfg, debug=debug)
     return expr
 
 
