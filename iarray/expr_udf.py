@@ -143,8 +143,17 @@ class Transformer(ast.NodeTransformer):
         )
 
     def visit_Name(self, node):
-        # Translate abs/absolute to fabs (and below this becomes math.fabs)
-        translate_map = {'abs': 'fabs', 'absolute': 'fabs'}
+        # Translate math function names from those used in mingjugg to those
+        # used in Python's math library
+        translate_map = {
+            'abs': 'fabs',
+            'absolute': 'fabs',
+            'arccos': 'acos',
+            'arcsin': 'asin',
+            'arctan': 'atan',
+            'arctan2': 'atan2',
+            'power': 'pow',
+        }
         node_id = translate_map.get(node.id, node.id)
 
         # Math functions

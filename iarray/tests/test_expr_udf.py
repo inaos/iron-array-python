@@ -29,6 +29,7 @@ def fsum(a: udf.float64, b: udf.float64) -> float:
         ("x + y", {"x": ia.arange((10, 10)), "y": ia.arange((10, 10))}),
         ("absolute(x) + abs(x) + negative(x) + negate(x)", {"x": ia.arange([10])}),
         ("absolute(x) + abs(x) + negative(x) + negate(x)", {"x": ia.arange([10], dtype=np.float32)}),
+        ("arccos(x) + arcsin(x) + arctan(x) + arctan2(x, x) + power(x, x)", {"x": ia.arange([10])}),
     ],
 )
 def test_simple(sexpr, inputs):
