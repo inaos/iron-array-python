@@ -184,7 +184,7 @@ class Transformer(ast.NodeTransformer):
         return node
 
 
-def expr_udf(expr, args, debug=0, cfg=None, **kwargs):
+def expr_udf(expr, args, cfg=None, debug=0, **kwargs):
     # There must be at least 1 argument
     assert len(args) > 0
 
