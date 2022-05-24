@@ -182,6 +182,14 @@ def f_math(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
 
 
 @udf.jit
+def f_math_int(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
+    n = out.shape[0]
+    for i in range(n):
+        out[i] = x[i] * math.cos(1)
+    return 0
+
+
+@udf.jit
 def f_avg(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
     n = x.shape[0]
     for i in range(n):
@@ -236,6 +244,7 @@ def f_idx_var(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
         (f_1dim_int, np.int64),
         (f_1dim_f32, np.float32),
         (f_math, np.float64),
+        (f_math_int, np.float64),
         (f_avg, np.float64),
         # Power
         (f_power, np.float64),
