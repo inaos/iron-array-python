@@ -1039,8 +1039,15 @@ class GenVisitor(NodeVisitor):
 
 
     def __call(self, func, *args):
-        key = (func, types.value_to_ir_type(args[0]))
-        func = self.root.compiled.get(key, func)
+        type_ = types.value_to_ir_type(args[0])
+        func = self.root.compiled.get((func, type_), func)
+
+        # Mathematical functions expect floats, but the argument may be an
+        # integer. This allows for instance to support math.cos(1)
+        if not hasattr(func, 'function_type'):
+            type_ = types.float64
+            func = self.root.compiled.get((func, type_), func)
+
         if not hasattr(func, 'function_type'):
             raise TypeError(f"unexpected {func}")
 
