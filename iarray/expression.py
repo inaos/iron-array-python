@@ -129,7 +129,7 @@ def check_expr(sexpr: str, inputs: dict):
     return ops_in_expr
 
 
-def check_inputs_string(inputs: dict, cfg : ia.Config):
+def check_inputs_string(inputs: dict, cfg : ia.Config, minjugg : bool = False):
     """
     Check the inputs for a expression in string form.
 
@@ -171,9 +171,14 @@ def check_inputs_string(inputs: dict, cfg : ia.Config):
     # Now convert the scalars to arrays with the proper shape and dtype
     new_inputs = {}
     for skey, svalue in scalars.items():
-        # Using them same chunks and blocks maximizes the chance to use ITERBLOSC
-        new_inputs[skey] = ia.full(shape=shape, fill_value=svalue, dtype=dtype, cfg=cfg,
-                                   chunks=chunks, blocks=blocks)
+        if minjugg:
+            # minjugg has not been tested for handling scalars as operands
+            # Using the same chunks and blocks maximizes the chances to use ITERBLOSC
+            new_inputs[skey] = ia.full(shape=shape, fill_value=svalue, dtype=dtype, cfg=cfg,
+                                       chunks=chunks, blocks=blocks)
+        else:
+            # The py2llvm backend does support handling scalars as operands
+            new_inputs[skey] = svalue
 
     return shape, dtype, arrays, new_inputs
 
@@ -208,7 +213,7 @@ def expr_from_string(sexpr: str,
     expr_from_udf
     """
     with ia.config(cfg, **kwargs) as cfg:
-        shape, dtype, array_inputs, new_inputs = check_inputs_string(inputs, cfg)
+        shape, dtype, array_inputs, new_inputs = check_inputs_string(inputs, cfg, minjugg=False)
         np_dtype = cfg.np_dtype
     kwargs["dtype"] = dtype
     kwargs["np_dtype"] = np_dtype
