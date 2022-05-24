@@ -56,6 +56,8 @@ class Transformer(ast.NodeTransformer):
         dtype_map = {
             np.float32: 'udf.float32',
             np.float64: 'udf.float64',
+            np.int8: 'udf.int8',
+            np.int16: 'udf.int16',
             np.int32: 'udf.int32',
             np.int64: 'udf.int64',
             float: 'udf.float64',
