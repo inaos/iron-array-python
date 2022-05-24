@@ -694,10 +694,13 @@ class GenVisitor(NodeVisitor):
                 )
             return py_op(left, right)
 
-        # One or more IR values
+        # Special case, power translated to math.pow
         left = self.convert(left, type_)
         right = self.convert(right, type_)
+        if op == ast.Pow:
+            return self.__call(math.pow, left, right)
 
+        # One or more IR values
         d = {
             (ast.Add, ir.IntType): self.builder.add,
             (ast.Sub, ir.IntType): self.builder.sub,
@@ -1034,14 +1037,8 @@ class GenVisitor(NodeVisitor):
         self.ltype = None
         return self.builder.ret(value)
 
-    def Call_exit(self, node, parent, func, args, keywords):
-        """
-        Call(expr func, expr* args, keyword* keywords)
-        """
-        assert not keywords
-        if func is range:
-            return Range(self.builder, *args)
 
+    def __call(self, func, *args):
         key = (func, types.value_to_ir_type(args[0]))
         func = self.root.compiled.get(key, func)
         if not hasattr(func, 'function_type'):
@@ -1064,6 +1061,16 @@ class GenVisitor(NodeVisitor):
         ]
 
         return self.builder.call(func, args)
+
+    def Call_exit(self, node, parent, func, args, keywords):
+        """
+        Call(expr func, expr* args, keyword* keywords)
+        """
+        assert not keywords
+        if func is range:
+            return Range(self.builder, *args)
+
+        return self.__call(func, *args)
 
 
 class Parameter:
