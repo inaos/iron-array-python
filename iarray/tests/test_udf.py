@@ -193,6 +193,12 @@ def f_avg(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
     return 0
 
 @udf.jit
+def f_power(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
+    for i in range(out.shape[0]):
+        out[i] = 2.71828 ** x[i]
+    return 0
+
+@udf.jit
 def f_unary_float(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
     for i in range(out.shape[0]):
         out[i] = - x[i]
@@ -231,6 +237,8 @@ def f_idx_var(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
         (f_1dim_f32, np.float32),
         (f_math, np.float64),
         (f_avg, np.float64),
+        # Power
+        (f_power, np.float64),
         # Unary operator
         (f_unary_float, np.float64),
         (f_unary_int, np.int64),
