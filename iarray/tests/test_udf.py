@@ -261,7 +261,7 @@ def test_1dim(f, dtype):
     chunks = [3 * 1000]
     blocks = [3 * 100]
     cparams = dict(nthreads=16)
-    start, stop = 0, 10 * 1000
+    start, stop = 0, 100  # to avoid overflows, don't use a too large stop here
 
     cmp_udf_np_strict(f, start, stop, shape, (chunks, blocks), dtype, cparams)
 

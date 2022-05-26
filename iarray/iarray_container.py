@@ -452,7 +452,6 @@ class IArray(ext.Container):
     def __ge__(self, value):
         return ia.LazyExpr(new_op=(self, ">=", value))
 
-    # FIXME: this overload is creating havoc
     def __eq__(self, value):
         if ia._disable_overloaded_equal:
             return self is value

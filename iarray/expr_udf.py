@@ -56,8 +56,10 @@ class Transformer(ast.NodeTransformer):
         dtype_map = {
             np.float32: 'udf.float32',
             np.float64: 'udf.float64',
+            np.int8: 'udf.int8',
+            np.int16: 'udf.int16',
             np.int32: 'udf.int32',
-            np.int32: 'udf.int64',
+            np.int64: 'udf.int64',
             float: 'udf.float64',
             int: 'udf.float64', # FIXME Should be int64
         }
@@ -193,7 +195,7 @@ class Transformer(ast.NodeTransformer):
         return node
 
 
-def expr_udf(expr, args, debug=0, cfg=None, **kwargs):
+def expr_udf(expr, args, cfg=None, debug=0, **kwargs):
     # There must be at least 1 argument
     assert len(args) > 0
 

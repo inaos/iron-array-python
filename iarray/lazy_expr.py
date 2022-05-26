@@ -79,6 +79,22 @@ class LazyExpr:
 
     def __init__(self, new_op):
         value1, op, value2 = new_op
+        if op is not None and op.startswith(f"{ia.dflt_ulib}"):
+            # A scalar UDF call
+            args = tuple(value2)
+            nops = 0
+            self.operands = {}
+            new_args = []
+            for arg in args:
+                if isinstance(arg, ia.IArray):
+                    self.operands[f"o{nops}"] = arg
+                    new_args.append(f"o{nops}")
+                    nops += 1
+                else:
+                    new_args.append(f"{arg}")
+            new_args = ", ".join(new_args)
+            self.expression = f"{op}({new_args})"
+            return
         if value2 is None:
             # ufunc
             if isinstance(value1, LazyExpr):
@@ -201,7 +217,7 @@ class LazyExpr:
     def __invert__(self):
         return self.update_expr(new_op=(self, "not", None))
 
-    def eval(self, cfg: ia.Config = None, **kwargs) -> ia.IArray:
+    def eval(self, debug=0, cfg: ia.Config = None, **kwargs) -> ia.IArray:
         """Evaluate the lazy expression in self.
 
         Parameters
@@ -222,10 +238,7 @@ class LazyExpr:
             cfg = ia.get_config_defaults()
 
         with ia.config(cfg=cfg, **kwargs) as cfg:
-            # The one below uses the evaluator from minjugg
-            # expr = ia.expr_from_string(self.expression, self.operands, cfg=cfg)
-            # The next uses the expr -> UDF machinery, which has support for masks
-            expr = expr_udf(self.expression, self.operands, debug=0, cfg=cfg)
+            expr = ia.expr_from_string(self.expression, self.operands, debug=debug, cfg=cfg)
             out = expr.eval()
             return out
 

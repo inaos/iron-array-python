@@ -137,11 +137,16 @@ class Reduce(Enum):
 
 # List of all know universal functions
 MATH_FUNC_LIST = (
-    "abs", "absolute",
-    "arccos", "acos",
-    "arcsin", "asin",
-    "arctan", "atan",
-    "arctan2", "atan2",
+    "abs",
+    "absolute",
+    "arccos",
+    "acos",
+    "arcsin",
+    "asin",
+    "arctan",
+    "atan",
+    "arctan2",
+    "atan2",
     "ceil",
     "cos",
     "cosh",
@@ -149,8 +154,10 @@ MATH_FUNC_LIST = (
     "floor",
     "log",
     "log10",
-    "negative", "negate",
-    "power", "pow",
+    "negative",
+    "negate",
+    "power",
+    "pow",
     "sin",
     "sinh",
     "sqrt",
@@ -235,6 +242,7 @@ from . import random
 from .expression import (
     Expr,
     UdfRegistry,
+    ULib,
     expr_from_string,
     expr_from_udf,
     expr_get_operands,
@@ -260,13 +268,18 @@ from .iarray_ext import (
 # Keep the reference so as to avoid calling the destroyer immediately
 _init_object = ext.IArrayInit()
 
-# Global registry for udfs
+# Global registry for scalar UDFs
 udf_registry = UdfRegistry()
+# Default scalar UDF library (for lazy expressions)
+dflt_ulib = "ulib"
+# Accessor for scalar UDF registry (for lazy expressions)
+ulib = ULib(dflt_ulib)
 
 # Whether a IArray.__eq__ should be bypassed or not (for private use)
 _disable_overloaded_equal = False
 
 from . import tests
+
 
 def test():
     retcode = pytest.main(["-x", os.path.dirname(tests.__file__)])

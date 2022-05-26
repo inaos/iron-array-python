@@ -17,6 +17,7 @@ import iarray as ia
 from iarray import iarray_ext as ext
 from iarray import py2llvm
 from iarray import udf
+from iarray.expr_udf import expr_udf
 
 
 # The main expression class
@@ -128,7 +129,7 @@ def check_expr(sexpr: str, inputs: dict):
     return ops_in_expr
 
 
-def check_inputs_string(inputs: dict, cfg : ia.Config):
+def check_inputs_string(inputs: dict, cfg : ia.Config, minjugg : bool = False):
     """
     Check the inputs for a expression in string form.
 
@@ -170,17 +171,22 @@ def check_inputs_string(inputs: dict, cfg : ia.Config):
     # Now convert the scalars to arrays with the proper shape and dtype
     new_inputs = {}
     for skey, svalue in scalars.items():
-        # Using them same chunks and blocks maximizes the chance to use ITERBLOSC
-        new_inputs[skey] = ia.full(shape=shape, fill_value=svalue, dtype=dtype, cfg=cfg,
-                                   chunks=chunks, blocks=blocks)
+        if minjugg:
+            # minjugg has not been tested for handling scalars as operands
+            # Using the same chunks and blocks maximizes the chances to use ITERBLOSC
+            new_inputs[skey] = ia.full(shape=shape, fill_value=svalue, dtype=dtype, cfg=cfg,
+                                       chunks=chunks, blocks=blocks)
+        else:
+            # The py2llvm backend does support handling scalars as operands
+            new_inputs[skey] = svalue
 
     return shape, dtype, arrays, new_inputs
 
 
 def expr_from_string(sexpr: str,
                      inputs: dict,
-                     params: Optional[dict] = None,
                      cfg: ia.Config = None,
+                     debug: int = 0,
                      **kwargs) -> Expr:
     """Create an :class:`Expr` instance from an expression in string form.
 
@@ -207,18 +213,22 @@ def expr_from_string(sexpr: str,
     expr_from_udf
     """
     with ia.config(cfg, **kwargs) as cfg:
-        shape, dtype, array_inputs, new_inputs = check_inputs_string(inputs, cfg)
+        shape, dtype, array_inputs, new_inputs = check_inputs_string(inputs, cfg, minjugg=False)
         np_dtype = cfg.np_dtype
-    check_expr(sexpr, {**array_inputs, **new_inputs})
     kwargs["dtype"] = dtype
     kwargs["np_dtype"] = np_dtype
-    expr = Expr(shape=shape, cfg=cfg, **kwargs)
-    for k, v in array_inputs.items():
-        expr.bind(k, v)
-    for k, v in new_inputs.items():
-        # These are arrays created anew.  Keep the reference to them.
-        expr.bind(k, v, keep_ref=True)
-    expr.compile(sexpr)
+    operands = {**array_inputs, **new_inputs}
+    # The lines below use the evaluator from minjugg
+    # check_expr(sexpr, operands)
+    # expr = Expr(shape=shape, cfg=cfg, **kwargs)
+    # for k, v in array_inputs.items():
+    #     expr.bind(k, v)
+    # for k, v in new_inputs.items():
+    #     # These are arrays created anew.  Keep the reference to them.
+    #     expr.bind(k, v, keep_ref=True)
+    # expr.compile(sexpr)
+    # The next uses the expr -> UDF machinery, which has support for masks and others bells and whistles
+    expr = expr_udf(sexpr, operands, cfg=cfg, debug=debug)
     return expr
 
 
@@ -333,6 +343,30 @@ def expr_get_operands(sexpr):
     return expr_get_ops_funcs(sexpr)[0]
 
 
+# Accessor for the scalar UDF functions (for lazy expressions)
+class UFunc:
+
+    def __init__(self, name):
+        self.name = name
+
+    def __call__(self, *args, **kwargs):
+        return ia.LazyExpr(new_op=(self, self.name, [*args]))
+
+# Accessor for the default scalar UDF library (for lazy expressions)
+class ULib:
+
+    def __init__(self, dfltlib):
+        self.dfltlib = dfltlib
+
+    def __getattr__(self, name):
+        full_name = f"{self.dfltlib}.{name}"
+        try:
+            func = ia.udf_lookup_func(full_name)
+        except:
+            raise AttributeError(f"{full_name} scalar UDF function not found")
+        return UFunc(full_name)
+
+
 class UdfLibrary(ext.UdfLibrary):
 
     def __init__(self, name):
@@ -353,7 +387,7 @@ class UdfLibrary(ext.UdfLibrary):
         try:
             address = ext.udf_lookup_func(full_name)
         except ia.IArrayError:
-            raise AttributeError(f"{type(self)} object has no attribute '{name}'")
+            raise ValueError(f"'{full_name}' is not a registered UDF function")
 
         # TODO I think it would be simpler and better to instead use
         # llvmlite.binding.add_symbol(name, address), but I discovered this a
@@ -461,20 +495,6 @@ class UdfRegistry(MutableMapping):
         for name in self.libs:
             for func_name in self.libs[name].functions:
                 yield f"{name}.{func_name}"
-
-    def get_func_addr(self, func_name):
-        """
-        Return the address of the compiled UDF function.
-
-        Parameters
-        ----------
-        func_name : str
-            The name of the function in `lib_name.func_name` form.
-
-        Returns
-        -------
-        An integer with the address of the compiled UDF function.  Yes, this is mainly for devs.
-        """
 
     def __len__(self):
         return len(self.libs)

@@ -316,7 +316,10 @@ class NodeVisitor(BaseNodeVisitor):
         return getattr(builtins, name)
 
     def load(self, name):
-        value = self.lookup(name)
+        try:
+            value = self.lookup(name)
+        except AttributeError:
+            raise ValueError("'name' argument is not found in `inputs` dict")
         if type(value) is ir.AllocaInstr:
             if not isinstance(value.type.pointee, ir.Aggregate):
                 return self.builder.load(value)
