@@ -133,8 +133,10 @@ jobs:
       conda install -y -c intel mkl-include
       conda install -y -c intel mkl-static
       conda install -y -c intel icc_rt
-      # LLVM 13 is necessary for calling int intrinsics
-      conda install -y -c conda-forge 'llvmdev>=13'
+      # LLVM 13 is necessary for calling int intrinsics, but we will stick with the LLVM
+      # in the numba channel (currently 11); see azure-pipelines.yml for why.
+      # conda install -y -c conda-forge 'llvmdev>=13'
+      conda install -y -c numba 'llvmdev'
       # For unix, cython can be installed from either PyPI or conda
       # python -m pip install cython
       conda install -y cython
@@ -252,6 +254,7 @@ jobs:
       conda install -y -c intel mkl-static
       conda install -y -c intel icc_rt
       # LLVM 13 from conda-forge is not working for windows yet
+      # See also other reasons in azure-pipelines.yml
       conda install -y -c numba 'llvmdev'
       conda install -y cython  # apparently cython from PyPI is not good for win
     displayName: 'Install build dependencies'
