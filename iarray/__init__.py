@@ -133,6 +133,9 @@ class Reduce(Enum):
     SUM = 2
     PROD = 3
     MEAN = 4
+    VAR = 5
+    STD = 6
+    MEDIAN = 7
 
 
 # List of all know universal functions
@@ -191,6 +194,9 @@ from .iarray_container import (
     sum,
     prod,
     mean,
+    std,
+    var,
+    median,
     # ufuncs
     abs,
     arccos,
