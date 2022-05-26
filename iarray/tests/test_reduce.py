@@ -5,28 +5,57 @@ from math import isclose
 
 params_names = "shape, chunks, blocks, axis, dtype, np_dtype, mode"
 params_data = [
-    ([100, 100], [50, 50], [20, 20], 0, np.float64, '>f4', "r"),
-    ([10, 10, 10, 10], [4, 4, 4, 4], [2, 2, 2, 2], 1, np.float32, 'i4', "r+"),
-    pytest.param([20, 100, 30, 50], [10, 40, 10, 11], [4, 5, 3, 7], 1, np.float64, None, "r+", marks=pytest.mark.heavy),
-    ([10, 10, 10, 10], [4, 4, 4, 4], [2, 2, 2, 2], 1, np.int16, 'u2', "w"),
-    ([40, 45], [20, 23], [9, 7], (0), np.int64, 'M8[ns]', "w-"),
-    pytest.param([70, 45, 56, 34], [20, 23, 30, 34], [9, 7, 8, 7], (0, 3), np.int64, '>m8[fs]', "w-", marks=pytest.mark.heavy),
-    ([10, 10, 10], [10, 10, 10], [10, 10, 10], None, np.uint32, 'f8', "a"),
-    ([10, 10, 10], [4, 4, 4], [2, 2, 2], 1, np.bool_, 'u1', "w"),
+    ([100, 100], [50, 50], [20, 20], 0, np.float64, ">f4", "r"),
+    ([10, 10, 10, 10], [4, 4, 4, 4], [2, 2, 2, 2], 1, np.float32, "i4", "r+"),
+    pytest.param(
+        [20, 100, 30, 50],
+        [10, 40, 10, 11],
+        [4, 5, 3, 7],
+        1,
+        np.float64,
+        None,
+        "r+",
+        marks=pytest.mark.heavy,
+    ),
+    ([10, 10, 10, 10], [4, 4, 4, 4], [2, 2, 2, 2], 1, np.int16, "u2", "w"),
+    ([40, 45], [20, 23], [9, 7], (0), np.int64, "M8[ns]", "w-"),
+    pytest.param(
+        [70, 45, 56, 34],
+        [20, 23, 30, 34],
+        [9, 7, 8, 7],
+        (0, 3),
+        np.int64,
+        ">m8[fs]",
+        "w-",
+        marks=pytest.mark.heavy,
+    ),
+    ([10, 10, 10], [10, 10, 10], [10, 10, 10], None, np.uint32, "f8", "a"),
+    ([10, 10, 10], [4, 4, 4], [2, 2, 2], 1, np.bool_, "u1", "w"),
 ]
 
 
 @pytest.mark.parametrize(params_names, params_data)
-@pytest.mark.parametrize("rfunc", ["mean", "sum", "prod", "max", "min"])
+@pytest.mark.parametrize("rfunc", ["mean", "sum", "prod", "max", "min", "median", "var", "std"])
 @pytest.mark.parametrize("contiguous", [True, False])
 @pytest.mark.parametrize("urlpath", [None, "test_reduce.iarr"])
 @pytest.mark.parametrize("view", [True, False])
-def test_reduce(shape, chunks, blocks, axis, dtype, np_dtype, rfunc, contiguous, urlpath, mode, view):
+def test_reduce(
+    shape, chunks, blocks, axis, dtype, np_dtype, rfunc, contiguous, urlpath, mode, view
+):
 
     ia.remove_urlpath(urlpath)
     ia.remove_urlpath("test_reduce_res.iarr")
     out_dtype = dtype if np_dtype is None else np.dtype(np_dtype)
-    if np_dtype is not None and out_dtype.str[1] in ['M', 'm'] and rfunc in ["mean", "prod", "sum"]:
+
+    if rfunc in ["var", "std"] and not isinstance(axis, int):
+        if axis is None or len(axis) != 1:
+            pytest.skip("cannot compute multiple axis reduction with this rfunc")
+
+    if (
+        np_dtype is not None
+        and out_dtype.str[1] in ["M", "m"]
+        and rfunc in ["var", "std", "median", "mean", "prod", "sum"]
+    ):
         pytest.skip("cannot compute this reduction with this dtype")
 
     cfg = ia.Config(chunks=chunks, blocks=blocks, contiguous=contiguous, urlpath=urlpath)

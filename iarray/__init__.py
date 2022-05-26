@@ -133,15 +133,23 @@ class Reduce(Enum):
     SUM = 2
     PROD = 3
     MEAN = 4
+    VAR = 5
+    STD = 6
+    MEDIAN = 7
 
 
 # List of all know universal functions
 MATH_FUNC_LIST = (
-    "abs", "absolute",
-    "arccos", "acos",
-    "arcsin", "asin",
-    "arctan", "atan",
-    "arctan2", "atan2",
+    "abs",
+    "absolute",
+    "arccos",
+    "acos",
+    "arcsin",
+    "asin",
+    "arctan",
+    "atan",
+    "arctan2",
+    "atan2",
     "ceil",
     "cos",
     "cosh",
@@ -149,8 +157,10 @@ MATH_FUNC_LIST = (
     "floor",
     "log",
     "log10",
-    "negative", "negate",
-    "power", "pow",
+    "negative",
+    "negate",
+    "power",
+    "pow",
     "sin",
     "sinh",
     "sqrt",
@@ -184,6 +194,9 @@ from .iarray_container import (
     sum,
     prod,
     mean,
+    std,
+    var,
+    median,
     # ufuncs
     abs,
     arccos,
@@ -267,6 +280,7 @@ udf_registry = UdfRegistry()
 _disable_overloaded_equal = False
 
 from . import tests
+
 
 def test():
     retcode = pytest.main(["-x", os.path.dirname(tests.__file__)])

@@ -1677,7 +1677,10 @@ reduce_to_c = {
     ia.Reduce.SUM: ciarray.IARRAY_REDUCE_SUM,
     ia.Reduce.PROD: ciarray.IARRAY_REDUCE_PROD,
     ia.Reduce.MEAN: ciarray.IARRAY_REDUCE_MEAN,
-          }
+    ia.Reduce.STD: ciarray.IARRAY_REDUCE_STD,
+    ia.Reduce.VAR: ciarray.IARRAY_REDUCE_VAR,
+    ia.Reduce.MEDIAN: ciarray.IARRAY_REDUCE_MEDIAN,
+}
 
 def reduce(cfg, a, method, axis):
     ctx = Context(cfg)

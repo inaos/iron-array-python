@@ -15,8 +15,8 @@ from typing import Union
 import ndindex
 from .info import InfoReporter
 
-class OIndex:
 
+class OIndex:
     def __init__(self, array):
         self.array = array
 
@@ -25,6 +25,7 @@ class OIndex:
 
     def __setitem__(self, selection, value):
         return self.array.set_orthogonal_selection(selection, value)
+
 
 def process_selection(selection, shape):
     mask = tuple(True if isinstance(s, int) else False for s in selection)
@@ -219,7 +220,7 @@ class IArray(ext.Container):
         if type(data) is np.ndarray:
             if data.dtype.itemsize != np.dtype(self.dtype).itemsize:
                 data = np.array(data, dtype=self.dtype)
-            elif data.dtype.str[0] == '>':
+            elif data.dtype.str[0] == ">":
                 data = data.byteswap()
         ext.insert(self, data, axis, start)
         return self.shape
@@ -253,7 +254,7 @@ class IArray(ext.Container):
         if type(data) is np.ndarray:
             if data.dtype.itemsize != np.dtype(self.dtype).itemsize:
                 data = np.array(data, dtype=self.dtype)
-            elif data.dtype.str[0] == '>':
+            elif data.dtype.str[0] == ">":
                 data = data.byteswap()
         ext.append(self, data, axis)
         return self.shape
@@ -346,7 +347,7 @@ class IArray(ext.Container):
             return ext.set_slice(cfg, self, start, stop, value)
 
     def set_orthogonal_selection(self, selection, value):
-        """ Modify data via a selection for each dimension of the array.
+        """Modify data via a selection for each dimension of the array.
 
         Parameters
         ----------
@@ -377,7 +378,7 @@ class IArray(ext.Container):
             return ext.set_orthogonal_selection(cfg, self, selection, value)
 
     def get_orthogonal_selection(self, selection):
-        """ Retrieve data by making a selection for each dimension of the array.
+        """Retrieve data by making a selection for each dimension of the array.
 
         Parameters
         ----------
@@ -958,6 +959,21 @@ class IArray(ext.Container):
             res = reduce(self, ia.Reduce.MEAN, axis, cfg, **kwargs)
         return ia.LazyExpr(new_op=(res, None, None))
 
+    def std(self, axis=None, **kwargs):
+        with ia.config(cfg=self.cfg) as cfg:
+            res = reduce(self, ia.Reduce.STD, axis, cfg, **kwargs)
+        return ia.LazyExpr(new_op=(res, None, None))
+
+    def var(self, axis=None, **kwargs):
+        with ia.config(cfg=self.cfg) as cfg:
+            res = reduce(self, ia.Reduce.VAR, axis, cfg, **kwargs)
+        return ia.LazyExpr(new_op=(res, None, None))
+
+    def median(self, axis=None, **kwargs):
+        with ia.config(cfg=self.cfg) as cfg:
+            res = reduce(self, ia.Reduce.MEDIAN, axis, cfg, **kwargs)
+        return ia.LazyExpr(new_op=(res, None, None))
+
     @attrs.setter
     def attrs(self, value):
         self._attrs = value
@@ -1226,6 +1242,103 @@ def mean(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwa
         :paramref:`a` is `np.float32` and `np.float64` otherwise.
     """
     return reduce(a, ia.Reduce.MEAN, axis, cfg, **kwargs)
+
+
+def std(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
+    """
+    Returns the standard deviation, a measure of the spread of a distribution,
+    of the array elements. The standard deviation is computed for the flattened
+    array by default, otherwise over the specified axis.
+
+    Parameters
+    ----------
+    a : :ref:`IArray`
+        Input data.
+    axis : None, int, tuple of ints, optional
+        Axis or axes along which the reduction is performed. The default (axis = None) is perform
+        the reduction over all dimensions of the input array.
+        If this is a tuple of ints, a reduction is performed on multiple axes, instead of a single
+        axis or all the axes as default.
+    cfg : :class:`Config` or None
+        The configuration for this operation. If None (default), the current configuration will be
+        used.
+    kwargs : dict
+        A dictionary for setting some or all of the fields in the :class:`Config` dataclass that should
+        override the current configuration.
+    Returns
+    -------
+    std : :ref:`IArray` or float
+        Standard deviation of a. If axis is None, the result is a value. If axis is given, the result is
+        an array of dimension a.ndim - len(axis). Its `dtype` is `np.float32` when the `dtype` of
+        :paramref:`a` is `np.float32` and `np.float64` otherwise.
+    """
+    if not isinstance(axis, int):
+        if axis is None or len(axis) != 1:
+            raise AttributeError("Multiple axis reduction is not supported yet in std")
+    return reduce(a, ia.Reduce.STD, axis, cfg, **kwargs)
+
+
+def var(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
+    """
+    Compute the variance along the specified axis. Returns the variance of the array elements,
+    a measure of the spread of a distribution. The variance is computed for the flattened
+    array by default, otherwise over the specified axis.
+
+    Parameters
+    ----------
+    a : :ref:`IArray`
+        Input data.
+    axis : None, int, tuple of ints, optional
+        Axis or axes along which the reduction is performed. The default (axis = None) is perform
+        the reduction over all dimensions of the input array.
+        If this is a tuple of ints, a reduction is performed on multiple axes, instead of a single
+        axis or all the axes as default.
+    cfg : :class:`Config` or None
+        The configuration for this operation. If None (default), the current configuration will be
+        used.
+    kwargs : dict
+        A dictionary for setting some or all of the fields in the :class:`Config` dataclass that should
+        override the current configuration.
+    Returns
+    -------
+    var : :ref:`IArray` or float
+        Variance of a. If axis is None, the result is a value. If axis is given, the result is
+        an array of dimension a.ndim - len(axis). Its `dtype` is `np.float32` when the `dtype` of
+        :paramref:`a` is `np.float32` and `np.float64` otherwise.
+    """
+    if not isinstance(axis, int):
+        if axis is None or len(axis) != 1:
+            raise AttributeError("Multiple axis reduction is not supported yet in var")
+    return reduce(a, ia.Reduce.VAR, axis, cfg, **kwargs)
+
+
+def median(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
+    """
+    Compute the median along the specified axis. Returns the median of the array elements.
+
+    Parameters
+    ----------
+    a : :ref:`IArray`
+        Input data.
+    axis : None, int, tuple of ints, optional
+        Axis or axes along which the reduction is performed. The default (axis = None) is perform
+        the reduction over all dimensions of the input array.
+        If this is a tuple of ints, a reduction is performed on multiple axes, instead of a single
+        axis or all the axes as default.
+    cfg : :class:`Config` or None
+        The configuration for this operation. If None (default), the current configuration will be
+        used.
+    kwargs : dict
+        A dictionary for setting some or all of the fields in the :class:`Config` dataclass that should
+        override the current configuration.
+    Returns
+    -------
+    median : :ref:`IArray` or float
+        Median of a. If axis is None, the result is a value. If axis is given, the result is
+        an array of dimension a.ndim - len(axis). Its `dtype` is `np.float32` when the `dtype` of
+        :paramref:`a` is `np.float32` and `np.float64` otherwise.
+    """
+    return reduce(a, ia.Reduce.MEDIAN, axis, cfg, **kwargs)
 
 
 # Linear Algebra
