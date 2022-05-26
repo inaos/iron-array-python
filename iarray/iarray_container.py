@@ -403,6 +403,27 @@ class IArray(ext.Container):
             dst = np.ones(shape, dtype=self.dtype)
             return ext.get_orthogonal_selection(cfg, self, dst, selection)
 
+    def astype(self, view_dtype):
+        """
+        Cast the array into a view of a specified type.
+
+        Parameters
+        ----------
+        view_dtype: (np.float64, np.float32, np.int64, np.int32, np.int16, np.int8, np.uint64, np.uint32, np.uint16,
+        np.uint8, np.bool_)
+            The dtype in which the array will be casted. Only upcast is supported.
+
+        Returns
+        -------
+        :ref:`IArray`
+            The new view as a normal IArray.
+        """
+        view_dtypesize = np.dtype(view_dtype).itemsize
+        src_dtypesize = np.dtype(self.dtype).itemsize
+        if view_dtypesize < src_dtypesize:
+            raise OverflowError("`view_dtype` itemsize must be greater or equal than `self.dtype`")
+        return ext.get_type_view(self.cfg, self, view_dtype)
+
     def __iter__(self):
         return self.iter_read_block()
 
@@ -1506,7 +1527,8 @@ def transpose(a: IArray, cfg=None, **kwargs):
         The array to transpose.
     cfg : :class:`Config`
         The configuration for running the expression.
-        If None (default), global defaults are used.
+        If None (default), global defaults are used. The `np_dtype` will be the one
+        from  :paramref:`a`.
     kwargs : dict
         A dictionary for setting some or all of the fields in the :class:`Config`
         dataclass that should override the current configuration.

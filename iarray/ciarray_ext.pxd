@@ -161,7 +161,7 @@ cdef extern from "libiarray/iarray.h":
         # iarray_auxshape_t *auxshape;
         # caterva_array_t *catarr;
         iarray_storage_t *storage
-        bool view
+        #iarray_container_t *container_viewed;
         bool transposed
         #union { float f; double d; } scalar_value;
 
@@ -272,6 +272,11 @@ cdef extern from "libiarray/iarray.h":
                                    bool view,
                                    iarray_storage_t *storage,
                                    iarray_container_t **container)
+
+    ina_rc_t iarray_get_type_view(iarray_context_t *ctx,
+                                    iarray_container_t *src,
+                                    iarray_data_type_t view_dtype,
+                                    iarray_container_t **container)
 
     ina_rc_t iarray_set_slice_buffer(iarray_context_t *ctx,
                                      iarray_container_t *container,

@@ -1091,8 +1091,29 @@ def get_slice(cfg, data, start, stop, squeeze_mask, view, storage):
     c_c = PyCapsule_New(c, <char*>"iarray_container_t*", NULL)
 
     b =  ia.IArray(ctx, c_c)
-    b.np_dtype = cfg.np_dtype
     b.view_ref = data  # Keep a reference of the parent container
+    if b.ndim == 0:
+        # Scalars will be represented by NumPy containers
+        return ia.iarray2numpy(b)
+
+    return b
+
+
+def get_type_view(cfg, iarray, view_dtype):
+    ctx = Context(cfg)
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(),
+                                                                                           <char*>"iarray_context_t*")
+    cdef ciarray.iarray_container_t *src = <ciarray.iarray_container_t*> PyCapsule_GetPointer(iarray.to_capsule(),
+                                                                                            <char*>"iarray_container_t*")
+    cdef ciarray.iarray_data_type_t dtype = np2ia_dtype[view_dtype]
+
+    cdef ciarray.iarray_container_t *c
+    iarray_check(ciarray.iarray_get_type_view(ctx_, src, dtype, &c))
+
+    c_c = PyCapsule_New(c, <char*>"iarray_container_t*", NULL)
+
+    b =  ia.IArray(ctx, c_c)
+    b.view_ref = iarray  # Keep a reference of the parent container ???
     if b.ndim == 0:
         # Scalars will be represented by NumPy containers
         return ia.iarray2numpy(b)
@@ -1111,7 +1132,6 @@ def resize(container, new_shape, start):
     cdef ciarray.int64_t new_shape_[ciarray.IARRAY_DIMENSION_MAX]
     for i in range(ndim):
         new_shape_[i] = new_shape[i]
-        print(new_shape_[i])
     cdef ciarray.int64_t start_[ciarray.IARRAY_DIMENSION_MAX]
     if start is None:
         iarray_check(ciarray.iarray_container_resize(ctx_, container_, new_shape_, NULL))
@@ -1666,7 +1686,9 @@ def transpose(cfg, a):
     iarray_check(ciarray.iarray_linalg_transpose(ctx_, a_, &c))
 
     c_c = PyCapsule_New(c, <char*>"iarray_container_t*", NULL)
-    return ia.IArray(ctx, c_c)
+    d = ia.IArray(ctx, c_c)
+
+    return d
 
 
 # Reductions

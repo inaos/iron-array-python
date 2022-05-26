@@ -348,7 +348,7 @@ def test_copy_zproxy(shape, chunks, blocks, dtype, contiguous, urlpath, urlpath2
     z[:] = np.arange(start=0, stop=np.prod(shape), dtype=z.dtype).reshape(shape)
 
     a_ = ia.zarr_proxy('test_copy.zarr', chunks=chunks, blocks=blocks, contiguous=contiguous, urlpath=urlpath)
-    sl = tuple([slice(0, s - 1) for s in shape])
+    sl = tuple([slice(0, s) for s in shape])
     a = a_[sl]
     b = a.copy(urlpath=urlpath2)
     an = ia.iarray2numpy(a)
@@ -597,3 +597,37 @@ def test_zproxy_attrs(shape, chunks, blocks, urlpath, dtype):
     # Remove file on disk
     ia.remove_urlpath(urlpath)
     ia.remove_urlpath(zarr_urlpath)
+
+
+# type and slice view
+@pytest.mark.parametrize(
+    "view_dtype, shape, chunks, blocks, dtype, contiguous, urlpath",
+    [
+        pytest.param(np.int64, [123, 432, 222], [24, 31, 15], [24, 31, 15], np.float64, True, None, marks=pytest.mark.heavy),
+        (np.float64, [567, 375], [52, 16], [52, 16], np.float32, False, "test_full_sparse.iarr"),
+        (np.float32, [10, 12, 5], [5, 5, 5], [5, 5, 5], np.int32, True, "test_full_contiguous.iarr"),
+        (np.uint64, [12, 16], [12, 16], [3, 5], np.int8, False, None),
+    ],
+)
+def test_type_slice_zproxy(view_dtype, shape, chunks, blocks, dtype, contiguous, urlpath):
+    z = zarr.open('test_type_view.zarr', mode='w', shape=shape, chunks=chunks, dtype=dtype)
+    nelem = np.prod(shape)
+    z[:] = np.arange(start=0, stop=nelem, dtype=z.dtype).reshape(shape)
+
+    ia.remove_urlpath(urlpath)
+    a = ia.zarr_proxy('test_type_view.zarr', contiguous=contiguous, urlpath=urlpath, blocks=blocks)
+
+    c = a.astype(view_dtype)
+    sl = tuple([slice(0, s) for s in shape])
+    f = c[sl]
+    b = ia.iarray2numpy(f)
+    d = np.arange(start=0, stop=nelem, dtype=z.dtype).reshape(shape)
+    d = d.astype(view_dtype)
+    e = d[sl]
+    if view_dtype in [np.float64, np.float32]:
+        np.testing.assert_almost_equal(b, e)
+    else:
+        np.testing.assert_array_equal(b, e)
+
+    ia.remove_urlpath(urlpath)
+    ia.remove_urlpath('test_type_view.zarr')
