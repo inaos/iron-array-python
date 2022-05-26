@@ -35,7 +35,7 @@ params_data = [
 
 
 @pytest.mark.parametrize(params_names, params_data)
-@pytest.mark.parametrize("rfunc", ["mean", "sum", "prod", "max", "min"])
+@pytest.mark.parametrize("rfunc", ["mean", "sum", "prod", "max", "min", "median", "var", "std"])
 @pytest.mark.parametrize("contiguous", [True, False])
 @pytest.mark.parametrize("urlpath", [None, "test_reduce.iarr"])
 @pytest.mark.parametrize("view", [True, False])
@@ -46,10 +46,15 @@ def test_reduce(
     ia.remove_urlpath(urlpath)
     ia.remove_urlpath("test_reduce_res.iarr")
     out_dtype = dtype if np_dtype is None else np.dtype(np_dtype)
+
+    if rfunc in ["var", "std"] and not isinstance(axis, int):
+        if axis is None or len(axis) != 1:
+            pytest.skip("cannot compute multiple axis reduction with this rfunc")
+
     if (
         np_dtype is not None
         and out_dtype.str[1] in ["M", "m"]
-        and rfunc in ["mean", "prod", "sum"]
+        and rfunc in ["var", "std", "median", "mean", "prod", "sum"]
     ):
         pytest.skip("cannot compute this reduction with this dtype")
 
