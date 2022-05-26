@@ -137,7 +137,6 @@ def Array(dtype, ndim):
 
 
 class Function(py2llvm.Function):
-
     def get_py_signature(self, signature):
         """
         The Python signature of the user defined function is as follows:
@@ -167,7 +166,7 @@ class Function(py2llvm.Function):
             if self.is_complex_param(param):
                 param.type.idx = idx
             else:
-                if self.is_complex_param(signature.parameters[i-1]):
+                if self.is_complex_param(signature.parameters[i - 1]):
                     idx = 0
 
                 param.idx = idx
@@ -232,7 +231,7 @@ class LLVM(py2llvm.LLVM):
     def jit(self, *args, **kwargs):
         kwargs["optimize"] = False  # iron-array optimizes, not py2llvm
         # If "lib" param is not passed, use the default library for registration purposes
-        kwargs["lib"] = ia.dfltulib if "lib" not in kwargs else kwargs["lib"]
+        kwargs["lib"] = ia.dflt_ulib if "lib" not in kwargs else kwargs["lib"]
         return super().jit(*args, **kwargs)
 
 

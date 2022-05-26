@@ -79,7 +79,7 @@ class LazyExpr:
 
     def __init__(self, new_op):
         value1, op, value2 = new_op
-        if op is not None and op.startswith(f"{ia.dfltulib}"):
+        if op is not None and op.startswith(f"{ia.dflt_ulib}"):
             # A scalar UDF call
             args = tuple(value2)
             nops = 0
@@ -217,7 +217,7 @@ class LazyExpr:
     def __invert__(self):
         return self.update_expr(new_op=(self, "not", None))
 
-    def eval(self, debug = 0, cfg: ia.Config = None, **kwargs) -> ia.IArray:
+    def eval(self, debug=0, cfg: ia.Config = None, **kwargs) -> ia.IArray:
         """Evaluate the lazy expression in self.
 
         Parameters
