@@ -4,7 +4,7 @@ from iarray import udf
 import numpy as np
 
 
-@udf.scalar()   # FIXME: be able to not use the empty ()
+@udf.scalar()  # FIXME: be able to not use the empty ()
 def clip(a: udf.float32, amin: udf.float32, amax: udf.float32) -> udf.float32:
     if a < amin:
         return amin
@@ -27,10 +27,7 @@ def clip(a: udf.float32, amin: udf.float32, amax: udf.float32) -> udf.float32:
             "x.cos() + y",
             "np.cos(x) + y",
         ),
-        (
-            "ia.cos(x) + y",
-            "np.cos(x) + y"
-        ),
+        ("ia.cos(x) + y", "np.cos(x) + y"),
         # Reductions
         (
             "x.sum(axis=1) - 1.35",
@@ -130,7 +127,7 @@ def clip(a: udf.float32, amin: udf.float32, amax: udf.float32) -> udf.float32:
     [
         np.float32,
         np.float64,
-    ]
+    ],
 )
 def test_expr_fusion(expr, np_expr, dtype):
     shape = [100, 100]
