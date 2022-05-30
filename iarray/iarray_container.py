@@ -411,8 +411,8 @@ class IArray(ext.Container):
         Parameters
         ----------
         view_dtype: (np.float64, np.float32, np.int64, np.int32, np.int16, np.int8, np.uint64, np.uint32, np.uint16,
-        np.uint8, np.bool_)
-            The dtype in which the array will be casted. Only upcast is supported.
+            np.uint8, np.bool_)
+            The dtype in which the array will be casted. Only upcasting is supported.
 
         Returns
         -------
