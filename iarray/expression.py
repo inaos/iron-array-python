@@ -79,6 +79,7 @@ class Expr(ext.Expression):
         a.np_dtype = self.cfg.np_dtype
         return a
 
+
 # Compile the regular expression to find operands
 # The expression below does not detect functions like 'lib.func()'
 # operands_regex = r"\w+(?=\()|((?!0)|[-+]|(?=0+\.))(\d*\.)?\d+(e\d+)?|(\w+)"
@@ -101,9 +102,9 @@ def expr_get_ops_funcs(sexpr):
         A tuple of tuples: ((operands), (regular_funcs), (udf_funcs)).
     """
     m2 = operands_regex_compiled.findall(sexpr)
-    operands = tuple(sorted(set(g[-1] for g in m2 if g[-1] != '')))
-    regular_funcs = tuple(sorted(set(g[0] for g in m2 if g[0] != '' and '.' not in g[0])))
-    udf_funcs = tuple(sorted(set(g[0] for g in m2 if g[0] != '' and '.' in g[0])))
+    operands = tuple(sorted(set(g[-1] for g in m2 if g[-1] != "")))
+    regular_funcs = tuple(sorted(set(g[0] for g in m2 if g[0] != "" and "." not in g[0])))
+    udf_funcs = tuple(sorted(set(g[0] for g in m2 if g[0] != "" and "." in g[0])))
     return operands, regular_funcs, udf_funcs
 
 
@@ -135,7 +136,7 @@ def check_expr(sexpr: str, inputs: dict):
     return ops_in_expr
 
 
-def check_inputs_string(inputs: dict, cfg : ia.Config, minjugg : bool = False):
+def check_inputs_string(inputs: dict, cfg: ia.Config, minjugg: bool = False):
     """
     Check the inputs for a expression in string form.
 
@@ -157,12 +158,14 @@ def check_inputs_string(inputs: dict, cfg : ia.Config, minjugg : bool = False):
     arrays = dict()
     scalars = dict()
     for iname, ivalue in inputs.items():
-        if hasattr(ivalue, 'shape') and ivalue.shape != ():
+        if hasattr(ivalue, "shape") and ivalue.shape != ():
             arrays[iname] = ivalue
         else:
             scalars[iname] = ivalue
     if len(arrays) == 0:
-        raise ValueError("You need to pass at least one array.  Use ia.empty() if values are not really needed.")
+        raise ValueError(
+            "You need to pass at least one array.  Use ia.empty() if values are not really needed."
+        )
 
     # Get the shape and dtype for array operands
     larrays = list(arrays.values())
@@ -172,7 +175,12 @@ def check_inputs_string(inputs: dict, cfg : ia.Config, minjugg : bool = False):
             raise ValueError("Arrays in inputs should have the same shape")
         if first_array.dtype != array.dtype:
             raise TypeError("Arrays in inputs should have the same dtype")
-    shape, chunks, blocks, dtype = first_array.shape, first_array.chunks, first_array.blocks, first_array.dtype
+    shape, chunks, blocks, dtype = (
+        first_array.shape,
+        first_array.chunks,
+        first_array.blocks,
+        first_array.dtype,
+    )
 
     # Now convert the scalars to arrays with the proper shape and dtype
     new_inputs = {}
@@ -180,8 +188,9 @@ def check_inputs_string(inputs: dict, cfg : ia.Config, minjugg : bool = False):
         if minjugg:
             # minjugg has not been tested for handling scalars as operands
             # Using the same chunks and blocks maximizes the chances to use ITERBLOSC
-            new_inputs[skey] = ia.full(shape=shape, fill_value=svalue, dtype=dtype, cfg=cfg,
-                                       chunks=chunks, blocks=blocks)
+            new_inputs[skey] = ia.full(
+                shape=shape, fill_value=svalue, dtype=dtype, cfg=cfg, chunks=chunks, blocks=blocks
+            )
         else:
             # The py2llvm backend does support handling scalars as operands
             new_inputs[skey] = svalue
@@ -189,11 +198,9 @@ def check_inputs_string(inputs: dict, cfg : ia.Config, minjugg : bool = False):
     return shape, dtype, arrays, new_inputs
 
 
-def expr_from_string(sexpr: str,
-                     inputs: dict,
-                     cfg: ia.Config = None,
-                     debug: int = 0,
-                     **kwargs) -> Expr:
+def expr_from_string(
+    sexpr: str, inputs: dict, cfg: ia.Config = None, debug: int = 0, **kwargs
+) -> Expr:
     """Create an :class:`Expr` instance from an expression in string form.
 
     Parameters
@@ -241,7 +248,9 @@ def expr_from_string(sexpr: str,
 
 def check_inputs_udf(inputs: list):
     if len(inputs) == 0:
-        raise ValueError("You need to pass at least one array.  Use ia.empty() if values are not really needed.")
+        raise ValueError(
+            "You need to pass at least one array.  Use ia.empty() if values are not really needed."
+        )
     first_input = inputs[0]
     for input_ in inputs[1:]:
         if first_input.shape != input_.shape:
@@ -257,7 +266,7 @@ def expr_from_udf(
     params: Optional[list] = None,
     shape=None,
     cfg=None,
-    **kwargs
+    **kwargs,
 ) -> Expr:
     """Create an :class:`Expr` instance from an UDF function.
 
@@ -309,7 +318,7 @@ def expr_from_udf(
 
     # Bind input scalars
     sig_params = udf.py_signature.parameters[1:]  # The first param is the output array
-    sig_params = sig_params[len(inputs):]  # Next come the input arrays
+    sig_params = sig_params[len(inputs) :]  # Next come the input arrays
     assert len(params) == len(sig_params)  # What is left are the user params (scalars)
 
     for value, sig_param in zip(params, sig_params):
@@ -352,16 +361,15 @@ def expr_get_operands(sexpr):
 
 # Accessor for the scalar UDF functions (for lazy expressions)
 class UFunc:
-
     def __init__(self, name):
         self.name = name
 
     def __call__(self, *args, **kwargs):
         return ia.LazyExpr(new_op=(self, self.name, [*args]))
 
+
 # Accessor for the default scalar UDF library (for lazy expressions)
 class ULib:
-
     def __init__(self, dfltlib):
         self.dfltlib = dfltlib
 
@@ -375,7 +383,6 @@ class ULib:
 
 
 class UdfLibrary(ext.UdfLibrary):
-
     def __init__(self, name):
         super().__init__(name)
         self.name = name
@@ -390,7 +397,7 @@ class UdfLibrary(ext.UdfLibrary):
         self.functions[name] = function
 
     def __getattr__(self, name):
-        full_name = f'{self.name}.{name}'
+        full_name = f"{self.name}.{name}"
         try:
             address = ext.udf_lookup_func(full_name)
         except ia.IArrayError:
@@ -411,10 +418,9 @@ class UdfLibrary(ext.UdfLibrary):
 
 
 class UdfRegistry(MutableMapping):
-
     def __init__(self):
-        self.libs = {}        # name: <UdfLibrary>
-        self.func_addr = {}   # name.fname: address (int)
+        self.libs = {}  # name: <UdfLibrary>
+        self.func_addr = {}  # name.fname: address (int)
 
     def __getitem__(self, name: str):
         """
