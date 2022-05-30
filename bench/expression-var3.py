@@ -29,7 +29,7 @@ dtype = np.float64
 nthreads = 8
 
 # Set global defaults
-#ia.set_config_defaults(chunks=chunks, blocks=blocks, favor=ia.Favor.SPEED, dtype=dtype)
+# ia.set_config_defaults(chunks=chunks, blocks=blocks, favor=ia.Favor.SPEED, dtype=dtype)
 ia.set_config_defaults()
 # Output required precision (in significant bits for the mantissa)
 # out_prec = 0
@@ -86,7 +86,7 @@ for i in range(NITER):
 print("Time for numpy eval:", round((time() - t0) / NITER, 3))
 # print(bn)
 
-#ne.set_num_threads(nthreads)
+# ne.set_num_threads(nthreads)
 t0 = time()
 for i in range(NITER):
     if NVARS == 1:

@@ -16,16 +16,21 @@ MEMPROF = True
 if MEMPROF:
     from memory_profiler import profile
 else:
+
     def profile(f):
         return f
 
 
 rootgrp = None
+
+
 @profile
 def open_datafile(filename):
     global rootgrp
-    rootgrp = netCDF4.Dataset(filename, mode='r')
-    return rootgrp['precipitation']
+    rootgrp = netCDF4.Dataset(filename, mode="r")
+    return rootgrp["precipitation"]
+
+
 t0 = time()
 precipitation = open_datafile("ia-data/rea6/tot_prec/2018.nc")
 t1 = time()
@@ -37,15 +42,19 @@ nt, nx, ny = precipitation.shape
 shape = (NSLICES * SLICE_THICKNESS, nx, ny)
 pshape = (1, nx, ny)
 
+
 @profile
 def concatenate_slices(dataset):
     # HDF5 is handier for outputing datasets
     iobytes = io.BytesIO()
     f = h5py.File(iobytes)
-    data = f.create_dataset("prec2", shape, chunks=pshape, compression="gzip", compression_opts=1, shuffle=True)
+    data = f.create_dataset(
+        "prec2", shape, chunks=pshape, compression="gzip", compression_opts=1, shuffle=True
+    )
     for i in range(NSLICES * SLICE_THICKNESS):
         data[i] = dataset[tslice + i]
     return (data, iobytes)
+
 
 np.random.seed(1)
 tslice = np.random.choice(nt - NSLICES * SLICE_THICKNESS)
@@ -83,11 +92,14 @@ def compute_expr(x):
         with h5py.File("outarray.h5") as f:
             data = f["/prec2_computed"]
     return data
+
+
 t0 = time()
 b2 = compute_expr(prec2)
 t1 = time()
 sexpr = "(sin(x) - 3.2) * (cos(x) + 1.2)"
 print("Time for computing '%s' expression (via dask + HDF5): %.3f" % (sexpr, (t1 - t0)))
+
 
 @profile
 def sum_concat(data):
@@ -95,6 +107,8 @@ def sum_concat(data):
     for i in range(len(data)):
         concatsum += data[i].sum()
     return concatsum
+
+
 t0 = time()
 concatsum = sum_concat(prec2)
 t1 = time()
@@ -108,12 +122,14 @@ def compute_expr2(x, y, z):
         dx = da.from_array(x)
         dy = da.from_array(y)
         dz = da.from_array(z)
-        res = (dx - dy) * (dz - 3.) * (dy - dx - 2)
+        res = (dx - dy) * (dz - 3.0) * (dy - dx - 2)
         # I don't see a way to use a memory handler for output
         da.to_hdf5("outarray.h5", "/prec2_computed", res)
         with h5py.File("outarray.h5") as f:
             data = f["/prec2_computed"]
     return data
+
+
 t0 = time()
 b3 = compute_expr2(prec1, prec2, prec3)
 t1 = time()

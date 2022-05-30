@@ -8,7 +8,7 @@ from itertools import zip_longest as izip
 @pytest.mark.parametrize(
     "shape, chunks, blocks, itershape, dtype, np_dtype, acontiguous, aurlpath, bcontiguous, burlpath, mode",
     [
-        ([100, 100], [20, 20], [10, 10], [20, 20], np.float64, 'f4', True, None, True, None, "r"),
+        ([100, 100], [20, 20], [10, 10], [20, 20], np.float64, "f4", True, None, True, None, "r"),
         (
             [100, 100],
             [15, 15],
@@ -28,7 +28,7 @@ from itertools import zip_longest as izip
             [2, 3, 6],
             [4, 5, 6],
             np.float64,
-            '>f8',
+            ">f8",
             False,
             "test_iter_asparse.iarr",
             False,
@@ -55,7 +55,7 @@ from itertools import zip_longest as izip
             [20, 20],
             [50, 50],
             np.uint64,
-            'm8[ms]',
+            "m8[ms]",
             False,
             "test_iter_asparse.iarr",
             True,
@@ -105,10 +105,22 @@ from itertools import zip_longest as izip
     ],
 )
 def test_iterator(
-    shape, chunks, blocks, itershape, dtype, np_dtype, acontiguous, aurlpath, bcontiguous, burlpath, mode
+    shape,
+    chunks,
+    blocks,
+    itershape,
+    dtype,
+    np_dtype,
+    acontiguous,
+    aurlpath,
+    bcontiguous,
+    burlpath,
+    mode,
 ):
     acfg = ia.Config(chunks=chunks, blocks=blocks, contiguous=acontiguous, urlpath=aurlpath)
-    bcfg = ia.Config(chunks=chunks, blocks=blocks, contiguous=bcontiguous, urlpath=burlpath, mode="a")
+    bcfg = ia.Config(
+        chunks=chunks, blocks=blocks, contiguous=bcontiguous, urlpath=burlpath, mode="a"
+    )
 
     ia.remove_urlpath(aurlpath)
     ia.remove_urlpath(burlpath)

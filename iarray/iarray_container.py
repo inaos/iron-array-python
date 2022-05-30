@@ -15,8 +15,8 @@ from typing import Union
 import ndindex
 from .info import InfoReporter
 
-class OIndex:
 
+class OIndex:
     def __init__(self, array):
         self.array = array
 
@@ -25,6 +25,7 @@ class OIndex:
 
     def __setitem__(self, selection, value):
         return self.array.set_orthogonal_selection(selection, value)
+
 
 def process_selection(selection, shape):
     mask = tuple(True if isinstance(s, int) else False for s in selection)
@@ -219,7 +220,7 @@ class IArray(ext.Container):
         if type(data) is np.ndarray:
             if data.dtype.itemsize != np.dtype(self.dtype).itemsize:
                 data = np.array(data, dtype=self.dtype)
-            elif data.dtype.str[0] == '>':
+            elif data.dtype.str[0] == ">":
                 data = data.byteswap()
         ext.insert(self, data, axis, start)
         return self.shape
@@ -253,7 +254,7 @@ class IArray(ext.Container):
         if type(data) is np.ndarray:
             if data.dtype.itemsize != np.dtype(self.dtype).itemsize:
                 data = np.array(data, dtype=self.dtype)
-            elif data.dtype.str[0] == '>':
+            elif data.dtype.str[0] == ">":
                 data = data.byteswap()
         ext.append(self, data, axis)
         return self.shape
@@ -346,7 +347,7 @@ class IArray(ext.Container):
             return ext.set_slice(cfg, self, start, stop, value)
 
     def set_orthogonal_selection(self, selection, value):
-        """ Modify data via a selection for each dimension of the array.
+        """Modify data via a selection for each dimension of the array.
 
         Parameters
         ----------
@@ -377,7 +378,7 @@ class IArray(ext.Container):
             return ext.set_orthogonal_selection(cfg, self, selection, value)
 
     def get_orthogonal_selection(self, selection):
-        """ Retrieve data by making a selection for each dimension of the array.
+        """Retrieve data by making a selection for each dimension of the array.
 
         Parameters
         ----------

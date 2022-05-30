@@ -20,7 +20,7 @@ z = ia.linspace(shape, 0.0, 10.0)
 res = None
 t0 = time()
 for i in range(NITER):
-    lazyexpr = (x[(y == 30) & ~(z == 4)])
+    lazyexpr = x[(y == 30) & ~(z == 4)]
     res = lazyexpr.eval()
 print("Block evaluate via iarray.LazyExpr.eval('iarray_eval')):", round((time() - t0) / NITER, 4))
 print("- Result cratio:", round(res.cratio, 2))

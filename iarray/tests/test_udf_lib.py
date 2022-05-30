@@ -23,10 +23,22 @@ def fmult(a: udf.float64, b: udf.float64) -> float:
         ("2 * (x + x)", "2 * lib.fsum(x, x)", {"x": ia.arange((10,))}),
         ("2 + x * x", "2 + lib2.fmult(x, x)", {"x": ia.arange((10,))}),
         ("2 + sin(x) + x * x", "2 + sin(x) + lib2.fmult(x, x)", {"x": ia.arange((10,))}),
-        ("2 * (sin(x) + cos(x)) + x * x", "2 * (sin(x) + cos(x)) + lib2.fmult(x, x)", {"x": ia.arange((10,))}),
+        (
+            "2 * (sin(x) + cos(x)) + x * x",
+            "2 * (sin(x) + cos(x)) + lib2.fmult(x, x)",
+            {"x": ia.arange((10,))},
+        ),
         ("2 + x * x * (x + x)", "2 + lib2.fmult(x, x) * lib.fsum(x, x)", {"x": ia.arange((10,))}),
-        ("2 + x * x * ((x * x) + x)", "2 + lib2.fmult(x, x) * lib.fsum(lib2.fmult(x, x), x)", {"x": ia.arange([10])}),
-        ("x * y * ((x * y) + y)", "lib2.fmult(x, y) * lib.fsum(lib2.fmult(x, y), y)", {"x": ia.arange([10]), "y": 2}),
+        (
+            "2 + x * x * ((x * x) + x)",
+            "2 + lib2.fmult(x, x) * lib.fsum(lib2.fmult(x, x), x)",
+            {"x": ia.arange([10])},
+        ),
+        (
+            "x * y * ((x * y) + y)",
+            "lib2.fmult(x, y) * lib.fsum(lib2.fmult(x, y), y)",
+            {"x": ia.arange([10]), "y": 2},
+        ),
     ],
 )
 def test_simple(sexpr, sexpr_udf, inputs):
@@ -71,11 +83,13 @@ def udf_sum(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
         out[i] = lib.fsum(x[i], x[i])
     return 0
 
+
 @udf.jit
 def udf_mult(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
     for i in range(out.shape[0]):
         out[i] = lib2.fmult(x[i], x[i])
     return 0
+
 
 @udf.jit
 def udf_scalar(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1), y: udf.float64):
@@ -83,11 +97,13 @@ def udf_scalar(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1), y: 
         out[i] = lib.fsum(x[i], y)
     return 0
 
+
 @udf.jit
 def udf_const_sum(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
     for i in range(out.shape[0]):
         out[i] = 2 * lib.fsum(x[i], x[i])
     return 0
+
 
 @udf.jit
 def udf_const_mult(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
@@ -95,11 +111,13 @@ def udf_const_mult(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1))
         out[i] = 2 + lib2.fmult(x[i], x[i])
     return 0
 
+
 @udf.jit
 def udf_sin(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
     for i in range(out.shape[0]):
         out[i] = 2 + math.sin(x[i]) + lib2.fmult(x[i], x[i])
     return 0
+
 
 @udf.jit
 def udf_sin_cos(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
@@ -107,11 +125,13 @@ def udf_sin_cos(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
         out[i] = 2 * (math.sin(x[i]) + math.cos(x[i])) + lib2.fmult(x[i], x[i])
     return 0
 
+
 @udf.jit
 def udf_mult_sum(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
     for i in range(out.shape[0]):
         out[i] = 2 + lib2.fmult(x[i], x[i]) * lib.fsum(x[i], x[i])
     return 0
+
 
 @udf.jit
 def udf_mult_sum_mult(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
@@ -119,11 +139,15 @@ def udf_mult_sum_mult(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 
         out[i] = 2 + lib2.fmult(x[i], x[i]) * lib.fsum(lib2.fmult(x[i], x[i]), x[i])
     return 0
 
+
 @udf.jit
-def udf_mult_sum_mult_scalar(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1), y: udf.float64):
+def udf_mult_sum_mult_scalar(
+    out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1), y: udf.float64
+):
     for i in range(out.shape[0]):
         out[i] = lib2.fmult(x[i], y) * lib.fsum(lib2.fmult(x[i], y), y)
     return 0
+
 
 @pytest.mark.parametrize(
     "sexpr, func, inputs",
@@ -138,7 +162,7 @@ def udf_mult_sum_mult_scalar(out: udf.Array(udf.float64, 1), x: udf.Array(udf.fl
         ("2 + x * x * (x + x)", udf_mult_sum, {"x": ia.arange((10,))}),
         ("2 + x * x * ((x * x) + x)", udf_mult_sum_mult, {"x": ia.arange((10,))}),
         ("x * y * ((x * y) + y)", udf_mult_sum_mult_scalar, {"x": ia.arange((10,)), "y": 2}),
-    ]
+    ],
 )
 def test_udf(sexpr, func, inputs):
     expr = ia.expr_from_string(sexpr, inputs)
@@ -168,12 +192,14 @@ def fcond_none(a: udf.float64, b: udf.float64) -> float:
 
     return x
 
+
 @udf.scalar(lib="lib")
 def fcond_both(a: udf.float64, b: udf.float64) -> float:
     if (a + b) > 3:
         return 1
     else:
         return 0
+
 
 @udf.scalar(lib="lib")
 def fcond_if(a: udf.float64, b: udf.float64) -> float:
@@ -184,6 +210,7 @@ def fcond_if(a: udf.float64, b: udf.float64) -> float:
 
     return x
 
+
 @udf.scalar(lib="lib")
 def fcond_else(a: udf.float64, b: udf.float64) -> float:
     if (a + b) > 3:
@@ -192,6 +219,7 @@ def fcond_else(a: udf.float64, b: udf.float64) -> float:
         return 0
 
     return x
+
 
 @pytest.mark.parametrize("name", ["fcond_none", "fcond_both", "fcond_if", "fcond_else"])
 def test_conditional(name):
@@ -211,12 +239,14 @@ def fcond_f64(a: udf.float64, b: udf.float64) -> udf.float64:
     else:
         return 0
 
+
 @udf.scalar(lib="lib")
 def fcond_f32(a: udf.float32, b: udf.float32) -> udf.float32:
     if (a + b) > 3:
         return 1
     else:
         return 0
+
 
 @udf.scalar(lib="lib")
 def fcond_i64(a: udf.int64, b: udf.int64) -> udf.int64:
@@ -225,12 +255,14 @@ def fcond_i64(a: udf.int64, b: udf.int64) -> udf.int64:
     else:
         return 0
 
+
 @udf.scalar(lib="lib")
 def fcond_i32(a: udf.int32, b: udf.int32) -> udf.int32:
     if (a + b) > 3:
         return 1
     else:
         return 0
+
 
 @udf.scalar(lib="lib")
 def fcond_i16(a: udf.int16, b: udf.int16) -> udf.int16:
@@ -239,6 +271,7 @@ def fcond_i16(a: udf.int16, b: udf.int16) -> udf.int16:
     else:
         return 0
 
+
 @udf.scalar(lib="lib")
 def fcond_i8(a: udf.int8, b: udf.int8) -> udf.int8:
     if (a + b) > 3:
@@ -246,14 +279,18 @@ def fcond_i8(a: udf.int8, b: udf.int8) -> udf.int8:
     else:
         return 0
 
-@pytest.mark.parametrize("name, dtype", [
-    ('fcond_f64', np.float64),
-    ('fcond_f32', np.float32),
-    ('fcond_i64', np.int64),
-    ('fcond_i32', np.int32),
-    ('fcond_i16', np.int16),
-    ('fcond_i8', np.int8),
-])
+
+@pytest.mark.parametrize(
+    "name, dtype",
+    [
+        ("fcond_f64", np.float64),
+        ("fcond_f32", np.float32),
+        ("fcond_i64", np.int64),
+        ("fcond_i32", np.int32),
+        ("fcond_i16", np.int16),
+        ("fcond_i8", np.int8),
+    ],
+)
 def test_types(name, dtype):
     a = ia.arange([10], dtype=dtype)
     b = ia.ones([10], dtype=dtype)

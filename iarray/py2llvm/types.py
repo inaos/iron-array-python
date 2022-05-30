@@ -15,6 +15,7 @@ if DEBUG:
     try:
         from numba.core.cgutils import printf
     except ImportError:
+
         def printf(builder, fmt, *args):
             pass
 

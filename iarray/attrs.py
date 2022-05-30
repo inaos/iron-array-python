@@ -16,7 +16,6 @@ from msgpack import packb, unpackb
 
 
 class Attributes(MutableMapping):
-
     def __init__(self, a: ia.IArray):
         self.iarr = a
 

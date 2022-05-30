@@ -22,6 +22,7 @@ MEMPROF = False
 if MEMPROF:
     from memory_profiler import profile
 else:
+
     def profile(f):
         return f
 
@@ -30,6 +31,8 @@ else:
 def open_datafile(filename):
     dataset = ia.load(filename, load_in_mem=IN_MEMORY)
     return dataset
+
+
 t0 = time()
 precipitation = open_datafile("ia-data/rea6/tot_prec/2018.iarray")
 t1 = time()
@@ -42,9 +45,11 @@ shape = (SLICE_THICKNESS, nx, ny)
 pshape = (1, nx, ny)
 tslices = np.random.choice(nt - SLICE_THICKNESS, NSLICES)
 
+
 def get_slice(dataset, i):
     tslice = tslices[i]
     return dataset[slice(tslice, tslice + SLICE_THICKNESS), :, :]
+
 
 @profile
 def compute_slices(dataset):
@@ -52,16 +57,21 @@ def compute_slices(dataset):
     # TODO: this shows a leak in the expr.eval() call
     for i in range(NSLICES):
         sl = get_slice(dataset, i)
-        expr = ia.Expr(eval_method="iterblock", blocksize=BLOCKSIZE, nthreads=NTHREADS, clevel=CLEVEL)
+        expr = ia.Expr(
+            eval_method="iterblock", blocksize=BLOCKSIZE, nthreads=NTHREADS, clevel=CLEVEL
+        )
         expr.bind("x", sl)
         expr.compile(sexpr)
         out = expr.eval(shape, pshape, sl.dtype)
         cslices.append(out)
     return cslices
+
+
 t0 = time()
 slices_computed = compute_slices(precipitation)
 t1 = time()
 print("Time for computing %d slices: %.3f" % (NSLICES, (t1 - t0)))
+
 
 @profile
 def sum_slices(slices):
@@ -69,6 +79,8 @@ def sum_slices(slices):
     for i in range(NSLICES):
         slsum.append(ia.iarray2numpy(slices[i]).sum())
     return slsum
+
+
 t0 = time()
 slsum = sum_slices(slices_computed)
 t1 = time()
@@ -82,10 +94,13 @@ def tonumpy(dataset):
         sl = get_slice(dataset, i)
         npslices.append(ia.iarray2numpy(sl))
     return npslices
+
+
 t0 = time()
 npslices = tonumpy(precipitation)
 t1 = time()
 print("Time for converting the slices into numpy: %.3f" % (t1 - t0))
+
 
 @profile
 def compute_numexpr(sexpr, npslices):
@@ -95,13 +110,16 @@ def compute_numexpr(sexpr, npslices):
     for i in range(NSLICES):
         x = npslices[i]
         out = np.empty(x.shape, x.dtype)
-        ne.evaluate(sexpr, local_dict={'x': x}, out=out, casting='unsafe')
+        ne.evaluate(sexpr, local_dict={"x": x}, out=out, casting="unsafe")
         npslices_computed.append(out)
     return npslices_computed
+
+
 t0 = time()
 npslices_computed = compute_numexpr(sexpr, npslices)
 t1 = time()
 print("Time for computing '%s' expression in slices (via numexpr): %.3f" % (sexpr, (t1 - t0)))
+
 
 @profile
 def sum_npslices(npslices):
@@ -109,9 +127,13 @@ def sum_npslices(npslices):
     for i in range(NSLICES):
         slsum.append(npslices[i].sum())
     return slsum
+
+
 t0 = time()
 npslsum = sum_npslices(npslices_computed)
 t1 = time()
 print("Time for summing up the computed slices (pure numpy): %.3f" % (t1 - t0))
 
-np.testing.assert_allclose(np.array(slsum, dtype=np.float32), np.array(npslsum, dtype=np.float32), rtol=1e-5)
+np.testing.assert_allclose(
+    np.array(slsum, dtype=np.float32), np.array(npslsum, dtype=np.float32), rtol=1e-5
+)

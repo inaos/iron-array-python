@@ -36,7 +36,7 @@ shape = [32 * 1024 * 1024]
 chunks = [4 * 1024 * 1024]
 blocks = [16 * 1024]
 size = int(np.prod(shape))
-sizeMB = int(np.prod(shape)) * 8 / 2 ** 20
+sizeMB = int(np.prod(shape)) * 8 / 2**20
 
 bcfg = ia.Config(chunks=chunks, blocks=blocks)
 

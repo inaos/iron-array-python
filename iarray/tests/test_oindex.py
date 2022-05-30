@@ -49,5 +49,5 @@ def test_oindex(shape, chunks, blocks, dtype, acontiguous, aurlpath):
     np.testing.assert_almost_equal(c, 0)
 
     if dtype == np.float64 and a.ndim == 2:
-        a_copy.oindex[[0, 2], [1, 3]] = [[-1., -2.], [-3., -4.]]
-        np.testing.assert_almost_equal(a_copy.oindex[[0, 2], [1, 3]], [[-1., -2.], [-3., -4.]])
+        a_copy.oindex[[0, 2], [1, 3]] = [[-1.0, -2.0], [-3.0, -4.0]]
+        np.testing.assert_almost_equal(a_copy.oindex[[0, 2], [1, 3]], [[-1.0, -2.0], [-3.0, -4.0]])

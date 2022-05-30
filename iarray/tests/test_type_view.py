@@ -4,25 +4,27 @@ import numpy as np
 from math import isclose
 
 
-@pytest.mark.parametrize("dtype, view_dtype",
-                         [
-                             (np.float32, np.int64),
-                             (np.uint64, np.float64),
-                             (np.int64, np.float64),
-                             (np.int8, np.bool_),
-                             (np.bool_, np.float32),
-                         ]
-                         )
+@pytest.mark.parametrize(
+    "dtype, view_dtype",
+    [
+        (np.float32, np.int64),
+        (np.uint64, np.float64),
+        (np.int64, np.float64),
+        (np.int8, np.bool_),
+        (np.bool_, np.float32),
+    ],
+)
 @pytest.mark.parametrize(
     "shape, chunks, blocks, contiguous, urlpath",
     [
-        pytest.param([123, 432, 222], [24, 31, 15], [24, 31, 15], True, None, marks=pytest.mark.heavy),
+        pytest.param(
+            [123, 432, 222], [24, 31, 15], [24, 31, 15], True, None, marks=pytest.mark.heavy
+        ),
         ([567, 375], [52, 16], [52, 16], False, "test_type_sparse.iarr"),
         ([10, 12, 5], [5, 5, 5], [5, 5, 5], True, "test_type_contiguous.iarr"),
         ([12, 16], [12, 16], [3, 5], False, None),
     ],
 )
-
 def test_type(shape, chunks, blocks, dtype, view_dtype, contiguous, urlpath):
     ia.remove_urlpath(urlpath)
 
@@ -49,24 +51,36 @@ def test_type(shape, chunks, blocks, dtype, view_dtype, contiguous, urlpath):
 slice_data = [
     ([30, 100], [20, 20], [10, 13], True, None),
     ([30, 130], [50, 50], [20, 25], False, None),
-    pytest.param([10, 78, 55, 21], [3, 30, 30, 21], [3, 12, 6, 21], True, "test_slice_acontiguous.iarr", marks=pytest.mark.heavy),
+    pytest.param(
+        [10, 78, 55, 21],
+        [3, 30, 30, 21],
+        [3, 12, 6, 21],
+        True,
+        "test_slice_acontiguous.iarr",
+        marks=pytest.mark.heavy,
+    ),
     ([30, 100], [30, 44], [30, 2], False, "test_slice_asparse.iarr"),
 ]
-@pytest.mark.parametrize("dtype, view_dtype",
-                         [
-                             (np.float32, np.uint64),
-                             (np.uint64, np.float64),
-                             (np.uint8, np.bool_),
-                             (np.int16, np.uint32),
-                         ]
-                         )
+
+
+@pytest.mark.parametrize(
+    "dtype, view_dtype",
+    [
+        (np.float32, np.uint64),
+        (np.uint64, np.float64),
+        (np.uint8, np.bool_),
+        (np.int16, np.uint32),
+    ],
+)
 @pytest.mark.parametrize(
     "shape, chunks, blocks, acontiguous, aurlpath",
     slice_data,
 )
 def test_slice_type(shape, chunks, blocks, acontiguous, aurlpath, dtype, view_dtype):
     ia.remove_urlpath(aurlpath)
-    cfg = ia.Config(chunks=chunks, blocks=blocks, contiguous=acontiguous, urlpath=aurlpath, nthreads=1)
+    cfg = ia.Config(
+        chunks=chunks, blocks=blocks, contiguous=acontiguous, urlpath=aurlpath, nthreads=1
+    )
     max = 1
     if dtype not in [np.float64, np.float32]:
         for i in range(len(shape)):
@@ -74,7 +88,7 @@ def test_slice_type(shape, chunks, blocks, acontiguous, aurlpath, dtype, view_dt
     a = ia.arange(shape, 0, max, cfg=cfg, mode="w", dtype=dtype)
     an = ia.iarray2numpy(a)
 
-    slices = tuple([slice(0, s-1) for s in shape])
+    slices = tuple([slice(0, s - 1) for s in shape])
     a[slices] = 0
     an[slices] = 0
     if dtype in [np.float32, np.float64]:
@@ -103,4 +117,3 @@ def test_slice_type(shape, chunks, blocks, acontiguous, aurlpath, dtype, view_dt
             np.testing.assert_equal(d, bn)
 
     ia.remove_urlpath(aurlpath)
-

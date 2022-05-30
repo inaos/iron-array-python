@@ -6,21 +6,31 @@ import zarr
 array_data = [
     ([30, 100], [20, 20], [10, 13], [30, 100], 1, True, None),
     ([30, 130], [50, 50], [20, 25], [40, 130], 0, False, None),
-    pytest.param([10, 78, 55, 21], [3, 30, 30, 21], [3, 12, 6, 21], [10, 78, 55, 2], 3, True, "test_append_acontiguous.iarr", marks=pytest.mark.heavy),
+    pytest.param(
+        [10, 78, 55, 21],
+        [3, 30, 30, 21],
+        [3, 12, 6, 21],
+        [10, 78, 55, 2],
+        3,
+        True,
+        "test_append_acontiguous.iarr",
+        marks=pytest.mark.heavy,
+    ),
     ([30, 100], [30, 44], [30, 2], [4, 100], 0, False, "test_append_asparse.iarr"),
 ]
 
 
-@pytest.mark.parametrize("dtype, np_dtype",
-                         [
-                             (np.float32, None),
-                             (np.uint64, '>M8[M]'),
-                             (np.int64, '<m8[ps]'),
-                             (np.int32, None),
-                             (np.uint64, '>i8'),
-                             (np.uint32, 'u8'),
-                         ]
-                         )
+@pytest.mark.parametrize(
+    "dtype, np_dtype",
+    [
+        (np.float32, None),
+        (np.uint64, ">M8[M]"),
+        (np.int64, "<m8[ps]"),
+        (np.int32, None),
+        (np.uint64, ">i8"),
+        (np.uint32, "u8"),
+    ],
+)
 @pytest.mark.parametrize(
     "shape, chunks, blocks, data_shape, axis, acontiguous, aurlpath",
     array_data,

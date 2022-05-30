@@ -32,7 +32,9 @@ print("Operand cratio:", round(xa.cratio, 2))
 ya = None
 
 t0 = time()
-expr = ia.expr_from_string("(x - 1.35) * (x - 4.45) * (x - 8.5)", {"x": xa}, btune=True, favor=ia.Favor.SPEED)
+expr = ia.expr_from_string(
+    "(x - 1.35) * (x - 4.45) * (x - 8.5)", {"x": xa}, btune=True, favor=ia.Favor.SPEED
+)
 for i in range(NITER):
     ya = expr.eval()
 print("Block evaluate via iarray.eval:", round((time() - t0) / NITER, 4))

@@ -18,7 +18,7 @@ else:
 mparams = ia.matmul_params(shape, shape)
 amchunks, amblocks, bmchunks, bmblocks = mparams
 print(mparams)
-#ia.set_config_defaults(chunks=amchunks, blocks=amblocks, favor=ia.Favor.SPEED)
+# ia.set_config_defaults(chunks=amchunks, blocks=amblocks, favor=ia.Favor.SPEED)
 # For some reason, disabling BTune make better cratio and similar speed.
 ia.set_config_defaults(chunks=amchunks, blocks=amblocks, btune=False)
 

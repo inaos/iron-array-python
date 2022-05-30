@@ -18,9 +18,10 @@ def clip(a: udf.float64, amin: udf.float64, amax: udf.float64) -> udf.float64:
         return amax
     return a
 
+
 expr = expr_udf(
-    'mylib.clip(a, 4, 13)',
-    {'a': a},
+    "mylib.clip(a, 4, 13)",
+    {"a": a},
     debug=1,
 )
 out = expr.eval()
@@ -29,8 +30,8 @@ print(out.data)
 
 # Syntactic sugar on where()
 expr = expr_udf(
-    'a[b > 5 and not (a < 8 or b > 42)]',
-    {'a': a, 'b': b},
+    "a[b > 5 and not (a < 8 or b > 42)]",
+    {"a": a, "b": b},
     debug=1,
 )
 out = expr.eval()

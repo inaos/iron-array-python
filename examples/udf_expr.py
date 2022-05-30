@@ -12,9 +12,11 @@ from iarray import udf
 # Define array params
 shape = [100_000_000]
 
+
 @udf.scalar(lib="lib")
 def fsum(a: udf.float64, b: udf.float64) -> float:
     return a + b
+
 
 @udf.scalar(lib="lib2")
 def fmult(a: udf.float64, b: udf.float64) -> float:
