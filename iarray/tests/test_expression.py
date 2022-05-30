@@ -877,3 +877,100 @@ def test_scalar_params(sexpr, sexpr_scalar, inputs):
     out_udf = expr_scalar.eval()
     tol = 1e-14
     np.testing.assert_allclose(out.data, out_udf.data, rtol=tol, atol=tol)
+
+
+# Expression evaluation from views
+@pytest.mark.parametrize(
+    "expr, np_expr, xcontiguous, xurlpath, ycontiguous, yurlpath, tcontiguous, turlpath, dtype, view_dtype",
+    [
+        (
+            "x + y",
+            "x + y",
+            True,
+            "test_expression_xcontiguous.iarr",
+            True,
+            None,
+            True,
+            None,
+            np.int16,
+            np.float32,
+        ),
+        # transcendental functions
+        (
+            "x.cos() + y",
+            "np.cos(x) + y",
+            True,
+            "test_expression_xcontiguous.iarr",
+            True,
+            "test_expression_ycontiguous.iarr",
+            True,
+            None,
+            np.bool_,
+            np.int8,
+        ),
+        (
+            "x.sin() * x.sin() + y.cos()",
+            "np.sin(x) * np.sin(x) + np.cos(y)",
+            False,
+            "test_expression_xsparse.iarr",
+            True,
+            "test_expression_xcontiguous.iarr",
+            False,
+            None,
+            np.float32,
+            np.float64,
+        ),
+    ],
+)
+def test_expr_type_view(
+    expr,
+    np_expr,
+    xcontiguous,
+    xurlpath,
+    ycontiguous,
+    yurlpath,
+    tcontiguous,
+    turlpath,
+    dtype,
+    view_dtype
+):
+    shape = [200, 300]
+    chunks = [40, 50]
+    bshape = [20, 20]
+
+    xcfg = ia.Config(chunks=chunks, blocks=bshape, contiguous=xcontiguous, urlpath=xurlpath)
+    ycfg = ia.Config(chunks=chunks, blocks=bshape, contiguous=ycontiguous, urlpath=yurlpath)
+    tcfg = ia.Config(chunks=chunks, blocks=bshape, contiguous=tcontiguous, urlpath=turlpath)
+
+    ia.remove_urlpath(xcfg.urlpath)
+    ia.remove_urlpath(ycfg.urlpath)
+    ia.remove_urlpath(tcfg.urlpath)
+
+    # The ranges below are important for not overflowing operations
+    x_ = ia.linspace(shape, 0.1, 0.9, dtype=dtype, cfg=xcfg)
+    y_ = ia.linspace(shape, 0.5, 1, dtype=dtype, cfg=ycfg)
+    t_ = ia.linspace(shape, 0.5, 1, dtype=dtype, cfg=tcfg)
+    x = x_.astype(view_dtype)
+    y = y_.astype(view_dtype)
+    t = t_.astype(view_dtype)
+
+    # NumPy computation
+    npx = ia.iarray2numpy(x)
+    npy = ia.iarray2numpy(y)
+    npt = ia.iarray2numpy(t)
+    npout = eval("%s" % np_expr, {"np": np, "x": npx, "y": npy, "t": npt})
+
+    # High-level ironarray eval
+    lazy_expr = eval(expr, {"ia": ia, "x": x, "y": y, "t": t})
+    iout2 = lazy_expr.eval()
+    npout2 = ia.iarray2numpy(iout2)
+
+    tol = 1e-6 if dtype is np.float32 else 1e-14
+    if dtype in [np.float32, np.float64]:
+        np.testing.assert_allclose(npout, npout2, rtol=tol, atol=tol)
+    else:
+        np.testing.assert_array_equal(npout, npout2)
+
+    ia.remove_urlpath(xcfg.urlpath)
+    ia.remove_urlpath(ycfg.urlpath)
+    ia.remove_urlpath(tcfg.urlpath)
