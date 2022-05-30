@@ -8,9 +8,11 @@ from iarray.expr_udf import expr_udf
 
 TOL = 1e-14
 
+
 @udf.scalar(lib="lib_expr_udf")
 def fsum(a: udf.float64, b: udf.float64) -> float:
     return a + b
+
 
 @pytest.mark.parametrize(
     "sexpr, inputs",
@@ -28,8 +30,14 @@ def fsum(a: udf.float64, b: udf.float64) -> float:
         ("lib_expr_udf.fsum(x, x)", {"x": ia.arange((10,))}),
         ("x + y", {"x": ia.arange((10, 10)), "y": ia.arange((10, 10))}),
         ("absolute(x) + abs(x) + negative(x) + negate(x)", {"x": ia.arange([10])}),
-        ("absolute(x) + abs(x) + negative(x) + negate(x)", {"x": ia.arange([10], dtype=np.float32)}),
-        ("arccos(x) + arcsin(x) + arctan(x) + arctan2(x, x) + power(x, x)", {"x": ia.arange([10])}),
+        (
+            "absolute(x) + abs(x) + negative(x) + negate(x)",
+            {"x": ia.arange([10], dtype=np.float32)},
+        ),
+        (
+            "arccos(x) + arcsin(x) + arctan(x) + arctan2(x, x) + power(x, x)",
+            {"x": ia.arange([10])},
+        ),
     ],
 )
 def test_simple(sexpr, inputs):
@@ -41,22 +49,28 @@ def test_simple(sexpr, inputs):
 @pytest.mark.parametrize(
     "condition, inputs",
     [
-        ('b > 5', {'a': ia.arange([10]), 'b': ia.arange([10])}),
-        ('b > 5', {'a': ia.arange([10], dtype=np.float32), 'b': ia.arange([10], dtype=np.float32)}),
-        ('(b > 5) and not (a > 7) or (b > 42)', {'a': ia.arange([10, 10]), 'b': ia.arange([10, 10])}),
-        ('not (a == 4)', {'a': ia.arange([10])}),
-    ]
+        ("b > 5", {"a": ia.arange([10]), "b": ia.arange([10])}),
+        (
+            "b > 5",
+            {"a": ia.arange([10], dtype=np.float32), "b": ia.arange([10], dtype=np.float32)},
+        ),
+        (
+            "(b > 5) and not (a > 7) or (b > 42)",
+            {"a": ia.arange([10, 10]), "b": ia.arange([10, 10])},
+        ),
+        ("not (a == 4)", {"a": ia.arange([10])}),
+    ],
 )
 def test_masks(condition, inputs):
-    sexpr = f'a[{condition}]'
+    sexpr = f"a[{condition}]"
     out = expr_udf(sexpr, inputs).eval()
 
     # Numpy
-    replace = {'and': '&', 'or': '|', 'not': '~'}
+    replace = {"and": "&", "or": "|", "not": "~"}
     for k, v in replace.items():
         condition = condition.replace(k, v)
-    a = inputs['a'].data
-    b = inputs['b'].data if 'b' in inputs else None
+    a = inputs["a"].data
+    b = inputs["b"].data if "b" in inputs else None
     out_ref = np.where(eval(condition), a, np.nan)
 
     np.testing.assert_allclose(out.data, out_ref, rtol=TOL, atol=TOL)

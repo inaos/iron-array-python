@@ -439,7 +439,7 @@ class Config(ext.Config):
         global RANDOM_SEED
         # Increase the random seed each time so as to prevent re-using them
         if self.seed is None:
-            if RANDOM_SEED >= 2 ** 32 - 1:
+            if RANDOM_SEED >= 2**32 - 1:
                 # In case we run out of values in uint32_t ints, reset to 0
                 RANDOM_SEED = 0
             RANDOM_SEED += 1
@@ -551,7 +551,11 @@ class Config(ext.Config):
         # codec = ZFP and zfp_meta = None
         zfp_meta = kwargs.get("zfp_meta", self.zfp_meta)
         codec = kwargs.get("codec", self.codec)
-        zfp_codecs = [ia.Codec.ZFP_FIXED_PRECISION, ia.Codec.ZFP_FIXED_RATE, ia.Codec.ZFP_FIXED_ACCURACY]
+        zfp_codecs = [
+            ia.Codec.ZFP_FIXED_PRECISION,
+            ia.Codec.ZFP_FIXED_RATE,
+            ia.Codec.ZFP_FIXED_ACCURACY,
+        ]
         if codec in zfp_codecs:
             if zfp_meta is None or zfp_meta == 0:
                 # Restore variable for next time
@@ -563,7 +567,9 @@ class Config(ext.Config):
                 # Restore variable for next time
                 defaults.compat_params = set()
                 defaults.check_compat = True
-                raise ValueError(f"`filters` must be `[ia.Filter.NOFILTER]` when using a ZFP codec.")
+                raise ValueError(
+                    f"`filters` must be `[ia.Filter.NOFILTER]` when using a ZFP codec."
+                )
         elif zfp_meta is not None and zfp_meta != 0:
             # Restore variable for next time
             defaults.compat_params = set()

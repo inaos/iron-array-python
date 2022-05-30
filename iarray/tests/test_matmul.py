@@ -473,14 +473,14 @@ def test_matmul_slice(
         ([1000, 555], [555], True, None, False, None),
     ],
 )
-@pytest.mark.parametrize("dtype, np_dtype",
-                         [
-                             (np.float32, None),
-                             (np.float64, '>f8'),
-                             (np.float32, '>f8'),
-
-                         ]
-                         )
+@pytest.mark.parametrize(
+    "dtype, np_dtype",
+    [
+        (np.float32, None),
+        (np.float64, ">f8"),
+        (np.float32, ">f8"),
+    ],
+)
 def test_matmul_opt(ashape, bshape, dtype, np_dtype, acontiguous, aurlpath, bcontiguous, burlpath):
 
     params = ia.matmul_params(ashape, bshape, chunk_size=16 * 1024)

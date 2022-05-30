@@ -39,7 +39,7 @@ def te_expression(method, shape, xcfg, ycfg, zcfg, dtype, expression):
         if ufunc in expression:
             idx = expression.find(ufunc)
             # Prevent replacing an ufunc with np.ufunc twice (not terribly solid, but else, test will crash)
-            if "np." not in expression[idx - len("np.arc"): idx]:
+            if "np." not in expression[idx - len("np.arc") : idx]:
                 expression = expression.replace(ufunc + "(", "np." + ufunc + "(")
     npout2 = eval(expression, {"x": npx, "y": npy, "np": numpy})
 
@@ -72,8 +72,9 @@ ia.remove_urlpath("test_expression_zarray.iarr")
 xcfg = ia.Config(chunks=chunks, blocks=blocks, contiguous=xcontiguous, urlpath=xurlpath)
 ycfg = ia.Config(chunks=chunks, blocks=blocks, contiguous=ycontiguous, urlpath=yurlpath)
 
-te_expression(method=method, shape=shape, xcfg=xcfg, ycfg=ycfg, zcfg=None, dtype=dtype,
-                expression=expression)
+te_expression(
+    method=method, shape=shape, xcfg=xcfg, ycfg=ycfg, zcfg=None, dtype=dtype, expression=expression
+)
 
 
 print("Expression with different chunks anb blocks for the operands")
@@ -94,8 +95,9 @@ xcfg = ia.Config(chunks=chunks, blocks=blocks, contiguous=xcontiguous, urlpath=x
 ycfg = ia.Config(chunks=[40, 300, 300], blocks=blocks, contiguous=ycontiguous, urlpath=yurlpath)
 
 print("config defaults ", ia.get_config_defaults())
-te_expression(method=method, shape=shape, xcfg=xcfg, ycfg=ycfg, zcfg=None, dtype=dtype,
-                expression=expression)
+te_expression(
+    method=method, shape=shape, xcfg=xcfg, ycfg=ycfg, zcfg=None, dtype=dtype, expression=expression
+)
 
 
 print("Expression with cfg parameters for the output")
@@ -115,8 +117,12 @@ ia.remove_urlpath("test_expression_zarray.iarr")
 xcfg = ia.Config(chunks=chunks, blocks=blocks, contiguous=xcontiguous, urlpath=xurlpath)
 ycfg = ia.Config(chunks=chunks, blocks=blocks, contiguous=ycontiguous, urlpath=yurlpath)
 zcfg = ia.Config(
-    chunks=[40, 300, 300], blocks=[10, 100, 100], contiguous=xcontiguous, urlpath="test_expression_zarray.iarr"
+    chunks=[40, 300, 300],
+    blocks=[10, 100, 100],
+    contiguous=xcontiguous,
+    urlpath="test_expression_zarray.iarr",
 )
 
-te_expression(method=method, shape=shape, xcfg=xcfg, ycfg=ycfg, zcfg=zcfg, dtype=dtype,
-                expression=expression)
+te_expression(
+    method=method, shape=shape, xcfg=xcfg, ycfg=ycfg, zcfg=zcfg, dtype=dtype, expression=expression
+)

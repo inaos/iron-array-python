@@ -52,7 +52,9 @@ def cmp_udf_np(
         input_factory(shape, start, stop, cfg=cfg, dtype=dtype, np_dtype=None, **cparams)
         for start, stop in start_stop
     ]
-    expr = ia.expr_from_udf(f, inputs, user_params, shape=shape, dtype=dtype, np_dtype=np_dtype, cfg=cfg, **cparams)
+    expr = ia.expr_from_udf(
+        f, inputs, user_params, shape=shape, dtype=dtype, np_dtype=np_dtype, cfg=cfg, **cparams
+    )
     out = expr.eval()
 
     out_dtype = dtype if np_dtype is None else np.dtype(np_dtype)
@@ -118,6 +120,7 @@ def f_1dim(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
 
     return 0
 
+
 @udf.jit
 def f_fabs_copysign(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
     n = out.shape[0]
@@ -125,6 +128,7 @@ def f_fabs_copysign(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)
         out[i] = math.fabs(x[i]) + math.copysign(x[i], -1.0)
 
     return 0
+
 
 @udf.jit
 def f_while(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
@@ -135,6 +139,7 @@ def f_while(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
         i = i + 1
 
     return 0
+
 
 @udf.jit
 def f_1dim_int(out: udf.Array(udf.int64, 1), x: udf.Array(udf.int64, 1)):
@@ -149,6 +154,7 @@ def f_1dim_int(out: udf.Array(udf.int64, 1), x: udf.Array(udf.int64, 1)):
 
     return 0
 
+
 @udf.jit
 def f_1dim_f32(out: udf.Array(udf.float32, 1), x: udf.Array(udf.float32, 1)):
     n = out.shape[0]
@@ -161,6 +167,7 @@ def f_1dim_f32(out: udf.Array(udf.float32, 1), x: udf.Array(udf.float32, 1)):
             out[i] = (math.sin(x[i]) - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
 
     return 0
+
 
 @udf.jit
 def f_math(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
@@ -200,24 +207,28 @@ def f_avg(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
 
     return 0
 
+
 @udf.jit
 def f_power(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
     for i in range(out.shape[0]):
         out[i] = 2.71828 ** x[i]
     return 0
 
+
 @udf.jit
 def f_unary_float(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
     for i in range(out.shape[0]):
-        out[i] = - x[i]
+        out[i] = -x[i]
     return 0
+
 
 @udf.jit
 def f_unary_int(out: udf.Array(udf.int64, 1), x: udf.Array(udf.int64, 1)):
     n = out.shape[0]
     for i in range(out.shape[0]):
-        out[i] = - x[i]
+        out[i] = -x[i]
     return 0
+
 
 @udf.jit
 def f_idx_const(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
@@ -226,6 +237,7 @@ def f_idx_const(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
         out[0] = x[i]
 
     return 0
+
 
 @udf.jit
 def f_idx_var(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
@@ -236,8 +248,10 @@ def f_idx_var(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
 
     return 0
 
+
 @pytest.mark.parametrize(
-    "f, dtype", [
+    "f, dtype",
+    [
         (f_1dim, np.float64),
         (f_fabs_copysign, np.float64),
         (f_while, np.float64),
@@ -254,7 +268,7 @@ def f_idx_var(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
         # https://github.com/inaos/iron-array/issues/502
         (f_idx_const, np.float64),
         (f_idx_var, np.float64),
-    ]
+    ],
 )
 def test_1dim(f, dtype):
     shape = [10 * 1000]
@@ -296,9 +310,9 @@ def f_2dim(out: udf.Array(udf.float64, 2), x: udf.Array(udf.float64, 2)):
 
 @pytest.mark.parametrize("f", [f_2dim])
 def test_2dim(f):
-    shape = [40, 80]    # [400, 800]
-    chunks = [6, 20]    # [60, 200]
-    blocks = [4, 2]     # [11, 200]
+    shape = [40, 80]  # [400, 800]
+    chunks = [6, 20]  # [60, 200]
+    blocks = [4, 2]  # [11, 200]
     dtype = np.float64
     cparams = dict()
     start, stop = 0, 10
@@ -447,7 +461,7 @@ def f_user_params(
     x: udf.Array(udf.float64, 1),
     a: udf.float64,
     b: udf.float64,
-    divide: udf.bool
+    divide: udf.bool,
 ):
     n = out.shape[0]
     for i in range(n):
@@ -469,28 +483,17 @@ def test_user_params(f):
     start, stop = 0, 10
 
     user_params = [2.5, 1, True]
-    cmp_udf_np(
-        f,
-        [(start, stop)],
-        shape,
-        chunks,
-        blocks,
-        dtype,
-        cparams,
-        user_params=user_params
-    )
+    cmp_udf_np(f, [(start, stop)], shape, chunks, blocks, dtype, cparams, user_params=user_params)
 
 
 @udf.jit
-def f_idx_int(
-    out: udf.Array(udf.int64, 1),
-    x: udf.Array(udf.int64, 1)
-):
+def f_idx_int(out: udf.Array(udf.int64, 1), x: udf.Array(udf.int64, 1)):
     n = out.shape[0]
     for i in range(n):
         out[i] = x[i]
 
     return 0
+
 
 @pytest.mark.parametrize("f", [f_idx_int])
 def test_idx_var_datetime(f):
@@ -502,6 +505,13 @@ def test_idx_var_datetime(f):
     start, stop = 0, 10 * 1000
 
     cmp_udf_np(
-        f, [(start, stop)], shape, chunks, blocks, dtype, cparams,
-        input_factory=ia.arange, np_dtype='m8[Y]'
+        f,
+        [(start, stop)],
+        shape,
+        chunks,
+        blocks,
+        dtype,
+        cparams,
+        input_factory=ia.arange,
+        np_dtype="m8[Y]",
     )

@@ -19,15 +19,20 @@ MEMPROF = True
 if MEMPROF:
     from memory_profiler import profile
 else:
+
     def profile(f):
         return f
 
+
 compressor = Blosc(cname=CNAME, clevel=CLEVEL, shuffle=Blosc.SHUFFLE)
+
 
 @profile
 def open_datafile(filename):
     data = zarr.open(filename)
     return data
+
+
 t0 = time()
 precipitation = open_datafile("ia-data/rea6/tot_prec/2018.zarr")
 t1 = time()
@@ -43,12 +48,15 @@ np.random.seed(1)
 # np.random.seed(3)
 tslice = np.random.choice(nt - NSLICES * SLICE_THICKNESS)
 
+
 @profile
 def concatenate_slices(dataset):
     data = zarr.empty(shape=shape, dtype=dataset.dtype, compressor=compressor, chunks=pshape)
     for i in range(NSLICES * SLICE_THICKNESS):
         data[i] = dataset[i]
     return data
+
+
 t0 = time()
 prec2 = concatenate_slices(precipitation)
 t1 = time()
@@ -65,11 +73,14 @@ def compute_expr(x):
         dx = da.from_zarr(x)
         res = (np.sin(dx) - 3.2) * (np.cos(dx) + 1.2)
         return da.to_zarr(res, z2)
+
+
 t0 = time()
 b2 = compute_expr(prec2)
 t1 = time()
 sexpr = "(sin(x) - 3.2) * (cos(x) + 1.2)"
 print("Time for computing '%s' expression (via dask + zarr): %.3f" % (sexpr, (t1 - t0)))
+
 
 @profile
 def sum_concat(data):
@@ -77,6 +88,8 @@ def sum_concat(data):
     for i in range(len(data)):
         concatsum += data[i].sum()
     return concatsum
+
+
 t0 = time()
 concatsum = sum_concat(prec2)
 t1 = time()

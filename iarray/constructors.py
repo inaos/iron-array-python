@@ -134,11 +134,17 @@ def arange(
         cfg = ia.get_config_defaults()
 
     with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
-        if cfg.np_dtype is not None and type(start) in [np.datetime64, np.timedelta64] \
-                and start.dtype.str[1:] != cfg.np_dtype[1:]:
+        if (
+            cfg.np_dtype is not None
+            and type(start) in [np.datetime64, np.timedelta64]
+            and start.dtype.str[1:] != cfg.np_dtype[1:]
+        ):
             raise ValueError("`start` has to be the same type as `cfg.np_dtype`")
-        if cfg.np_dtype is not None and type(stop) in [np.datetime64, np.timedelta64] \
-                and stop.dtype.str[1:] != cfg.np_dtype[1:]:
+        if (
+            cfg.np_dtype is not None
+            and type(stop) in [np.datetime64, np.timedelta64]
+            and stop.dtype.str[1:] != cfg.np_dtype[1:]
+        ):
             raise ValueError("`stop` has to be the same type as `cfg.np_dtype`")
         if (start, stop, step) == (None, None, None):
             stop = np.prod(shape)
@@ -258,8 +264,11 @@ def full(shape: Sequence, fill_value, cfg: ia.Config = None, **kwargs) -> ia.IAr
 
     with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
         dtshape = ia.DTShape(shape, cfg.dtype)
-        if cfg.np_dtype is not None and type(fill_value) in [np.datetime64, np.timedelta64] \
-                and fill_value.dtype.str[1:] != cfg.np_dtype[1:]:
+        if (
+            cfg.np_dtype is not None
+            and type(fill_value) in [np.datetime64, np.timedelta64]
+            and fill_value.dtype.str[1:] != cfg.np_dtype[1:]
+        ):
             raise ValueError("`fill_value` has to be the same type as `cfg.np_dtype`")
         fill_value = np.array(fill_value, dtype=cfg.dtype)
         return ext.full(cfg, fill_value, dtshape)

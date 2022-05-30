@@ -10,7 +10,7 @@ a = ia.linspace([10000, 10000], -10, 10, chunks=[2000, 2000], blocks=[256, 256],
 print(f"src chunks: {a.chunks}")
 
 # Do a regular copy changing the parameters
-params = {'chunks': [2048, 2048], 'blocks': [256, 256], 'codec': ia.Codec.LZ4, 'clevel': 5}
+params = {"chunks": [2048, 2048], "blocks": [256, 256], "codec": ia.Codec.LZ4, "clevel": 5}
 t0 = time()
 b = a.copy(**params)
 t1 = time()

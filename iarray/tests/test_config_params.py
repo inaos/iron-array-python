@@ -30,8 +30,17 @@ import numpy as np
     ],
 )
 def test_global_config(clevel, codec, filters, chunks, blocks, contiguous, urlpath):
-    ia.set_config_defaults(clevel=clevel, codec=codec, filters=filters, chunks=chunks, blocks=blocks,
-                           contiguous=contiguous, urlpath=urlpath, btune=False, zfp_meta=None)
+    ia.set_config_defaults(
+        clevel=clevel,
+        codec=codec,
+        filters=filters,
+        chunks=chunks,
+        blocks=blocks,
+        contiguous=contiguous,
+        urlpath=urlpath,
+        btune=False,
+        zfp_meta=None,
+    )
     config = ia.get_config_defaults()
     assert config.clevel == clevel
     assert config.codec == codec
@@ -162,14 +171,14 @@ def test_btune_incompat(clevel, codec, filters):
 @pytest.mark.parametrize(
     "np_dtype, dtype",
     [
-        ('f8', np.float64),
-        ('f4', np.float64),
-        ('datetime64[Y]', np.int32),
-        ('datetime64[D]', np.uint32),
-        ('timedelta64[ps]', np.int64),
-        ('timedelta64[as]', np.uint64),
-        ('i8', np.int16),
-        ('ui2', np.bool_),
+        ("f8", np.float64),
+        ("f4", np.float64),
+        ("datetime64[Y]", np.int32),
+        ("datetime64[D]", np.uint32),
+        ("timedelta64[ps]", np.int64),
+        ("timedelta64[as]", np.uint64),
+        ("i8", np.int16),
+        ("ui2", np.bool_),
     ],
 )
 def test_np_dtype(np_dtype, dtype):
@@ -180,7 +189,6 @@ def test_np_dtype(np_dtype, dtype):
         ia.set_config_defaults(np_dtype=np_dtype)
     with pytest.raises(ValueError):
         ia.Config(np_dtype=np_dtype)
-
 
 
 @pytest.mark.parametrize(
@@ -361,6 +369,7 @@ def test_default_params():
     assert cfg.mode == cfg2.mode
     ia.remove_urlpath(urlpath)
 
+
 def test_zfp_accuracy_codec():
     with pytest.raises(ValueError):
         ia.set_config_defaults(btune=False, codec=ia.Codec.ZFP_FIXED_ACCURACY)
@@ -377,11 +386,26 @@ def test_zfp_accuracy_codec():
     zfp_meta = -4
 
     ia.remove_urlpath(urlpath)
-    a = ia.random.random_sample(shape=shape, dtype=dtype, chunks=chunks, blocks=blocks, contiguous=contiguous,
-                    urlpath=urlpath)
+    a = ia.random.random_sample(
+        shape=shape,
+        dtype=dtype,
+        chunks=chunks,
+        blocks=blocks,
+        contiguous=contiguous,
+        urlpath=urlpath,
+    )
     b = ia.iarray2numpy(a)
-    c = a.copy(dtype=dtype, chunks=chunks, blocks=blocks, contiguous=contiguous, mode="w",
-               codec=codec, zfp_meta=zfp_meta, btune=False, filters=[ia.Filter.NOFILTER])
+    c = a.copy(
+        dtype=dtype,
+        chunks=chunks,
+        blocks=blocks,
+        contiguous=contiguous,
+        mode="w",
+        codec=codec,
+        zfp_meta=zfp_meta,
+        btune=False,
+        filters=[ia.Filter.NOFILTER],
+    )
     d = ia.iarray2numpy(c)
     np.testing.assert_allclose(b, d, rtol=1e-4, atol=1e-4)
 
@@ -390,8 +414,10 @@ def test_zfp_accuracy_codec():
 
     ia.remove_urlpath(urlpath)
 
+
 def test_zfp_precision_codec():
     import os
+
     with pytest.raises(ValueError):
         ia.set_config_defaults(btune=False, codec=ia.Codec.ZFP_FIXED_PRECISION)
 
@@ -405,11 +431,26 @@ def test_zfp_precision_codec():
     zfp_meta = 32
 
     ia.remove_urlpath(urlpath)
-    a = ia.random.random_sample(shape=shape, dtype=dtype, chunks=chunks, blocks=blocks, contiguous=contiguous,
-                    urlpath=urlpath)
+    a = ia.random.random_sample(
+        shape=shape,
+        dtype=dtype,
+        chunks=chunks,
+        blocks=blocks,
+        contiguous=contiguous,
+        urlpath=urlpath,
+    )
     b = ia.iarray2numpy(a)
-    c = a.copy(dtype=dtype, chunks=chunks, blocks=blocks, contiguous=contiguous, mode="w",
-               codec=codec, zfp_meta=zfp_meta, btune=False, filters=[ia.Filter.NOFILTER])
+    c = a.copy(
+        dtype=dtype,
+        chunks=chunks,
+        blocks=blocks,
+        contiguous=contiguous,
+        mode="w",
+        codec=codec,
+        zfp_meta=zfp_meta,
+        btune=False,
+        filters=[ia.Filter.NOFILTER],
+    )
     d = ia.iarray2numpy(c)
     e = a.copy(btune=False, filters=[ia.Filter.TRUNC_PREC], fp_mantissa_bits=16)
     f = ia.iarray2numpy(e)
@@ -438,17 +479,32 @@ def test_zfp_rate_codec():
     zfp_meta = 50
 
     ia.remove_urlpath(urlpath)
-    a = ia.random.random_sample(shape=shape, dtype=dtype, chunks=chunks, blocks=blocks, contiguous=contiguous,
-                    urlpath=urlpath)
+    a = ia.random.random_sample(
+        shape=shape,
+        dtype=dtype,
+        chunks=chunks,
+        blocks=blocks,
+        contiguous=contiguous,
+        urlpath=urlpath,
+    )
     b = ia.iarray2numpy(a)
-    c = a.copy(dtype=dtype, chunks=chunks, blocks=blocks, contiguous=contiguous, mode="w",
-               codec=codec, zfp_meta=zfp_meta, btune=False, filters=[ia.Filter.NOFILTER])
+    c = a.copy(
+        dtype=dtype,
+        chunks=chunks,
+        blocks=blocks,
+        contiguous=contiguous,
+        mode="w",
+        codec=codec,
+        zfp_meta=zfp_meta,
+        btune=False,
+        filters=[ia.Filter.NOFILTER],
+    )
     d = ia.iarray2numpy(c)
 
     np.testing.assert_allclose(b, d, rtol=1e-2, atol=1e-2)
     with pytest.raises(AssertionError):
         np.testing.assert_allclose(b, d, rtol=1e-6, atol=1e-6)
-    assert(round(c.cratio) == 2)
+    assert round(c.cratio) == 2
 
     ia.remove_urlpath(urlpath)
 

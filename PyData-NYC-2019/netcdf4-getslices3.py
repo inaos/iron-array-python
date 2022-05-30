@@ -16,16 +16,21 @@ MEMPROF = True
 if MEMPROF:
     from memory_profiler import profile
 else:
+
     def profile(f):
         return f
 
 
 rootgrp = None
+
+
 @profile
 def open_datafile(filename):
     global rootgrp
-    rootgrp = netCDF4.Dataset(filename, mode='r')
-    return rootgrp['precipitation']
+    rootgrp = netCDF4.Dataset(filename, mode="r")
+    return rootgrp["precipitation"]
+
+
 t0 = time()
 precipitation = open_datafile("ia-data/rea6/tot_prec/2018.nc")
 t1 = time()
@@ -42,14 +47,20 @@ np.random.seed(1)
 tslice = np.random.choice(nt - NSLICES * SLICE_THICKNESS)
 
 iobytes = io.BytesIO()
+
+
 @profile
 def concatenate_slices(dataset):
     # HDF5 is handier for outputing datasets
     f = h5py.File(iobytes)
-    data = f.create_dataset("prec2", shape, chunks=pshape, compression="gzip", compression_opts=1, shuffle=True)
+    data = f.create_dataset(
+        "prec2", shape, chunks=pshape, compression="gzip", compression_opts=1, shuffle=True
+    )
     for i in range(NSLICES * SLICE_THICKNESS):
         data[i] = dataset[i]
     return data
+
+
 t0 = time()
 prec2 = concatenate_slices(precipitation)
 t1 = time()
@@ -68,11 +79,14 @@ def compute_expr(x):
         with h5py.File("outarray.h5") as f:
             data = f["/prec2_computed"]
     return data
+
+
 t0 = time()
 b2 = compute_expr(prec2)
 t1 = time()
 sexpr = "(sin(x) - 3.2) * (cos(x) + 1.2)"
 print("Time for computing '%s' expression (via dask + HDF5): %.3f" % (sexpr, (t1 - t0)))
+
 
 @profile
 def sum_concat(data):
@@ -80,8 +94,9 @@ def sum_concat(data):
     for i in range(len(data)):
         concatsum += data[i].sum()
     return concatsum
+
+
 t0 = time()
 concatsum = sum_concat(prec2)
 t1 = time()
 print("Time for summing up the concatenated HDF5 container: %.3f" % (t1 - t0))
-

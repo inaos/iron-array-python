@@ -26,21 +26,44 @@ builtins.UDFJIT = 0
 plugins = [default]
 
 MATH_FUNCS = {
-    'fabs', 'fmod', 'remainder',
+    "fabs",
+    "fmod",
+    "remainder",
     # Exponential functions
-    'exp', 'expm1', 'log', 'log2', 'log10', 'log1p',
+    "exp",
+    "expm1",
+    "log",
+    "log2",
+    "log10",
+    "log1p",
     # Power functions
-    'sqrt', 'hypot', 'pow',
+    "sqrt",
+    "hypot",
+    "pow",
     # Trigonometric functions
-    'sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'atan2',
+    "sin",
+    "cos",
+    "tan",
+    "asin",
+    "acos",
+    "atan",
+    "atan2",
     # Hiperbolic functions
-    'sinh', 'cosh', 'tanh', 'asinh', 'acosh', 'atanh',
+    "sinh",
+    "cosh",
+    "tanh",
+    "asinh",
+    "acosh",
+    "atanh",
     # Error and gamma functions
-    'erf', 'lgamma',
+    "erf",
+    "lgamma",
     # Nearest ingeger floating-point operations
-    'ceil', 'floor', 'trunc',
+    "ceil",
+    "floor",
+    "trunc",
     # Floating-point manipulation functions
-    'copysign',
+    "copysign",
 }
 
 
@@ -291,7 +314,6 @@ class BaseNodeVisitor:
 
 
 class NodeVisitor(BaseNodeVisitor):
-
     def __init__(self, debug, function):
         super().__init__(debug)
         self.function = function
@@ -310,7 +332,7 @@ class NodeVisitor(BaseNodeVisitor):
         if name in libs:
             return libs[name]
 
-        if name == 'UDFJIT':
+        if name == "UDFJIT":
             return 1
 
         return getattr(builtins, name)
@@ -501,9 +523,9 @@ class BlockVisitor(NodeVisitor):
         node.f_rtype = ir_signature.return_type
 
     def Return_exit(self, node, parent, value):
-        return True # Means this statement terminates the block
+        return True  # Means this statement terminates the block
 
-    def If_test(self, node, parent, test, suffix_re=re.compile('if_true(.*)')):
+    def If_test(self, node, parent, test, suffix_re=re.compile("if_true(.*)")):
         """
         If(expr test, stmt* body, stmt* orelse)
         """
@@ -957,7 +979,11 @@ class GenVisitor(NodeVisitor):
         if isinstance(value, types.Node):
             value = value.Attribute_exit(self)
 
-        if isinstance(value, ir.Value) and value.type.is_pointer and not hasattr(value, 'function_type'):
+        if (
+            isinstance(value, ir.Value)
+            and value.type.is_pointer
+            and not hasattr(value, "function_type")
+        ):
             value = self.builder.load(value)
 
         return value
@@ -1040,18 +1066,17 @@ class GenVisitor(NodeVisitor):
         self.ltype = None
         return self.builder.ret(value)
 
-
     def __call(self, func, *args):
         type_ = types.value_to_ir_type(args[0])
         func = self.root.compiled.get((func, type_), func)
 
         # Mathematical functions expect floats, but the argument may be an
         # integer. This allows for instance to support math.cos(1)
-        if not hasattr(func, 'function_type'):
+        if not hasattr(func, "function_type"):
             type_ = types.float64
             func = self.root.compiled.get((func, type_), func)
 
-        if not hasattr(func, 'function_type'):
+        if not hasattr(func, "function_type"):
             raise TypeError(f"unexpected {func}")
 
         # Check the number of arguments is correct
@@ -1258,7 +1283,7 @@ class Function:
                 if signature is None:
                     signature = ir.FunctionType(t, args)
                     signatures[args] = signature
-                fname = name if t is types.float64 else f'{name}f'
+                fname = name if t is types.float64 else f"{name}f"
                 func = ir.Function(self.ir_module, signature, name=fname)
                 node.compiled[(py_func, args[0])] = func
 
@@ -1350,7 +1375,7 @@ class LLVM:
         return dtype
 
     def jit(self, py_function=None, signature=None, ast=None, debug=0, optimize=True, lib=None):
-        f_globals = {'math': math, 'udf': udf}
+        f_globals = {"math": math, "udf": udf}
 
         if type(py_function) is FunctionType:
             function = self.fclass(self, py_function, signature, f_globals, optimize)

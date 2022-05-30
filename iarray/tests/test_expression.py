@@ -27,14 +27,14 @@ import numpy as np
             [10, 99],
             [4, 12],
             np.int64,
-            'M8[Y]',
+            "M8[Y]",
             "x",
             False,
             None,
             False,
             None,
         ),
-        (ia.Eval.ITERBLOSC, [100], [20], [5], np.int64, 'M8[M]', "x-y", True, None, True, None),
+        (ia.Eval.ITERBLOSC, [100], [20], [5], np.int64, "M8[M]", "x-y", True, None, True, None),
         (ia.Eval.ITERBLOSC, [1000], [110], [55], np.float32, None, "y", True, None, True, None),
         (
             ia.Eval.ITERBLOSC,
@@ -248,7 +248,7 @@ import numpy as np
             None,
             False,
             "test_expression_ysparse.iarr",
-            marks=pytest.mark.heavy
+            marks=pytest.mark.heavy,
         ),
         (
             ia.Eval.ITERBLOSC,
@@ -289,27 +289,68 @@ import numpy as np
             "test_expression_xcontiguous.iarr",
             True,
             "test_expression_ycontiguous.iarr",
-        )
+        ),
     ],
 )
 def test_expression(
-    method, shape, chunks, blocks, dtype, np_dtype, expression, xcontiguous, xurlpath, ycontiguous, yurlpath
+    method,
+    shape,
+    chunks,
+    blocks,
+    dtype,
+    np_dtype,
+    expression,
+    xcontiguous,
+    xurlpath,
+    ycontiguous,
+    yurlpath,
 ):
     # The ranges below are important for not overflowing operations
     ia.remove_urlpath(xurlpath)
     ia.remove_urlpath(yurlpath)
     ia.remove_urlpath("test_expression_zarray.iarr")
 
-    x = ia.linspace(shape, 0.1, 0.2, dtype=dtype, np_dtype=np_dtype, chunks=chunks, blocks=blocks, contiguous=xcontiguous,
-                    urlpath=xurlpath)
-    y = ia.linspace(shape, 0, 1, dtype=dtype, np_dtype=np_dtype, chunks=chunks, blocks=blocks, contiguous=ycontiguous,
-                    urlpath=yurlpath)
+    x = ia.linspace(
+        shape,
+        0.1,
+        0.2,
+        dtype=dtype,
+        np_dtype=np_dtype,
+        chunks=chunks,
+        blocks=blocks,
+        contiguous=xcontiguous,
+        urlpath=xurlpath,
+    )
+    y = ia.linspace(
+        shape,
+        0,
+        1,
+        dtype=dtype,
+        np_dtype=np_dtype,
+        chunks=chunks,
+        blocks=blocks,
+        contiguous=ycontiguous,
+        urlpath=yurlpath,
+    )
     npx = ia.iarray2numpy(x)
     npy = ia.iarray2numpy(y)
 
-    out_dtype = 'm8[M]'if np_dtype is not None and np.dtype(np_dtype).str[1] == 'M' and expression == 'x-y' else np_dtype
-    expr = ia.expr_from_string(expression, {"x": x, "y": y}, chunks=chunks, blocks=blocks, contiguous=xcontiguous,
-                               urlpath="test_expression_zarray.iarr", dtype=dtype, np_dtype=out_dtype,  eval_method=method)
+    out_dtype = (
+        "m8[M]"
+        if np_dtype is not None and np.dtype(np_dtype).str[1] == "M" and expression == "x-y"
+        else np_dtype
+    )
+    expr = ia.expr_from_string(
+        expression,
+        {"x": x, "y": y},
+        chunks=chunks,
+        blocks=blocks,
+        contiguous=xcontiguous,
+        urlpath="test_expression_zarray.iarr",
+        dtype=dtype,
+        np_dtype=out_dtype,
+        eval_method=method,
+    )
 
     with pytest.raises(IOError):
         expr.cfg.mode = "r"
@@ -339,7 +380,7 @@ def test_expression(
         if ufunc in expression:
             idx = expression.find(ufunc)
             # Prevent replacing an ufunc with np.ufunc twice (not terribly solid, but else, test will crash)
-            if "np." not in expression[idx - len("np.arc"): idx]:
+            if "np." not in expression[idx - len("np.arc") : idx]:
                 expression = expression.replace(ufunc + "(", "np." + ufunc + "(")
     npout2 = eval(expression, {"x": npx, "y": npy, "np": numpy})
 
@@ -418,18 +459,38 @@ def test_ufuncs(ufunc, ia_expr, xcontiguous, xurlpath, ycontiguous, yurlpath):
 
     for dtype in np.float64, np.float32:
         # The ranges below are important for not overflowing operations
-        x = ia.linspace(shape, 0.1, 0.9, dtype=dtype, chunks=chunks, blocks=bshape, contiguous=xcontiguous,
-                        urlpath=xurlpath)
-        y = ia.linspace(shape, 0, 1, dtype=dtype, chunks=chunks, blocks=bshape, contiguous=ycontiguous,
-                        urlpath=yurlpath)
+        x = ia.linspace(
+            shape,
+            0.1,
+            0.9,
+            dtype=dtype,
+            chunks=chunks,
+            blocks=bshape,
+            contiguous=xcontiguous,
+            urlpath=xurlpath,
+        )
+        y = ia.linspace(
+            shape,
+            0,
+            1,
+            dtype=dtype,
+            chunks=chunks,
+            blocks=bshape,
+            contiguous=ycontiguous,
+            urlpath=yurlpath,
+        )
         npx = ia.iarray2numpy(x)
         npy = ia.iarray2numpy(y)
 
         if y.cfg.urlpath is not None:
-            expr = ia.expr_from_string(ia_expr, {"x": x, "y": y}, chunks=chunks,
+            expr = ia.expr_from_string(
+                ia_expr,
+                {"x": x, "y": y},
+                chunks=chunks,
                 blocks=bshape,
                 contiguous=ycontiguous,
-                urlpath="test_expression_res.iarr")
+                urlpath="test_expression_res.iarr",
+            )
         else:
             expr = ia.expr_from_string(ia_expr, {"x": x, "y": y}, y.cfg)
         iout = expr.eval()
@@ -488,7 +549,13 @@ def test_ufuncs(ufunc, ia_expr, xcontiguous, xurlpath, ycontiguous, yurlpath):
         ("floor", False, "test_expression_xsparse.iarr", False, "test_expression_ysparse.iarr"),
         ("log", False, "test_expression_xsparse.iarr", True, "test_expression_ycontiguous.iarr"),
         ("log10", True, "test_expression_xcontiguous.iarr", False, "test_expression_ysparse.iarr"),
-        ("negative", True, "test_expression_xcontiguous.iarr", False, "test_expression_ysparse.iarr"),
+        (
+            "negative",
+            True,
+            "test_expression_xcontiguous.iarr",
+            False,
+            "test_expression_ysparse.iarr",
+        ),
         ("power", True, "test_expression_xcontiguous.iarr", True, None),
         ("sin", True, "test_expression_xcontiguous.iarr", False, None),
         ("sinh", True, None, False, "test_expression_ysparse.iarr"),
@@ -503,8 +570,7 @@ def test_expr_ufuncs(ufunc, xcontiguous, xurlpath, ycontiguous, yurlpath):
     bshape = [20, 20]
 
     xcfg = ia.Config(chunks=cshape, blocks=bshape, contiguous=xcontiguous, urlpath=xurlpath)
-    x32cfg = ia.Config(chunks=cshape, blocks=bshape, contiguous=xcontiguous,
-                    urlpath="x32urlpath")
+    x32cfg = ia.Config(chunks=cshape, blocks=bshape, contiguous=xcontiguous, urlpath="x32urlpath")
     if xcfg.urlpath is None:
         x32cfg.urlpath = None
     ycfg = ia.Config(chunks=cshape, blocks=bshape, contiguous=ycontiguous, urlpath=yurlpath)
@@ -640,7 +706,7 @@ def test_expr_ufuncs(ufunc, xcontiguous, xurlpath, ycontiguous, yurlpath):
             "test_expression_zcontiguous.iarr",
             True,
             "test_expression_tcontiguous.iarr",
-            marks=pytest.mark.heavy
+            marks=pytest.mark.heavy,
         ),
         pytest.param(
             "(x - z + t + y) * (t - y + z - x)",
@@ -809,9 +875,9 @@ def test_expr_fusion(
             True,
             True,
             None,
-
         )
-    ])
+    ],
+)
 def test_chunks_blocks_params(expression, contiguous, zurlpath, zcontiguous):
     shape = [200]
     chunks = [40]
@@ -828,8 +894,8 @@ def test_chunks_blocks_params(expression, contiguous, zurlpath, zcontiguous):
 
     expr = ia.expr_from_string(expression, {"x": x, "y": y}, cfg=zcfg)
     iout = expr.eval()
-    assert(iout.cfg.chunks == chunks)
-    assert(iout.cfg.blocks == blocks)
+    assert iout.cfg.chunks == chunks
+    assert iout.cfg.blocks == blocks
     ia.remove_urlpath(zcfg.urlpath)
 
     # Now with default chunks and blocks when operands chunks and blocks are not equal
@@ -838,8 +904,8 @@ def test_chunks_blocks_params(expression, contiguous, zurlpath, zcontiguous):
     y = ia.linspace(shape, 0, 1, cfg=ycfg)
     expr = ia.expr_from_string(expression, {"x": x, "y": y}, cfg=zcfg)
     iout = expr.eval()
-    assert (iout.cfg.chunks != chunks)
-    assert (iout.cfg.blocks != blocks)
+    assert iout.cfg.chunks != chunks
+    assert iout.cfg.blocks != blocks
     ia.remove_urlpath(zcfg.urlpath)
 
     # Check that the provided chunks and blocks are used
@@ -848,8 +914,8 @@ def test_chunks_blocks_params(expression, contiguous, zurlpath, zcontiguous):
     y = ia.linspace(shape, 0, 1, cfg=ycfg)
     expr = ia.expr_from_string(expression, {"x": x, "y": y}, cfg=zcfg)
     iout = expr.eval()
-    assert (iout.cfg.chunks == zcfg.chunks)
-    assert (iout.cfg.blocks == zcfg.blocks)
+    assert iout.cfg.chunks == zcfg.chunks
+    assert iout.cfg.blocks == zcfg.blocks
 
 
 @pytest.mark.parametrize(
@@ -858,8 +924,12 @@ def test_chunks_blocks_params(expression, contiguous, zurlpath, zcontiguous):
         ("x + y", ("x", "y")),
         ("(3 + a) -c -1", ("a", "c")),
         ("(3.+a)/c", ("a", "c")),
-        ("2.3e9 + b + atan2(a + c / b) - 2**z + 12 % 3 * sin(9 - 9.9) - C", ("C", "a", "b", "c", "z")),
-    ])
+        (
+            "2.3e9 + b + atan2(a + c / b) - 2**z + 12 % 3 * sin(9 - 9.9) - C",
+            ("C", "a", "b", "c", "z"),
+        ),
+    ],
+)
 def test_get_operands(expression, operands):
     assert ia.expr_get_operands(expression) == operands
 
@@ -869,7 +939,8 @@ def test_get_operands(expression, operands):
     [
         ("x + 1", "x + y", {"x": ia.arange((10,)), "y": 1}),
         ("x + y + 1.35", "x + y + z", {"x": ia.arange((10,)), "y": 1, "z": 1.35}),
-    ])
+    ],
+)
 def test_scalar_params(sexpr, sexpr_scalar, inputs):
     expr = ia.expr_from_string(sexpr, inputs)
     expr_scalar = ia.expr_from_string(sexpr_scalar, inputs)
@@ -932,7 +1003,7 @@ def test_expr_type_view(
     tcontiguous,
     turlpath,
     dtype,
-    view_dtype
+    view_dtype,
 ):
     shape = [200, 300]
     chunks = [40, 50]

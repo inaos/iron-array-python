@@ -152,7 +152,7 @@ t0 = time()
 prec2np = tonumpy(prec2)
 t1 = time()
 print("Time for converting the concatenated ia container into numpy: %.3f" % (t1 - t0))
-print("Size of numpy array:", prec2np.size * 4 / 2 ** 20, "MB")
+print("Size of numpy array:", prec2np.size * 4 / 2**20, "MB")
 
 sexpr = "(sin(x) - 3.2) * (cos(x) + 1.2)"
 # sexpr = "(x - 3.2) * (x + 1.2)"

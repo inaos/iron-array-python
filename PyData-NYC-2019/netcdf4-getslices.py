@@ -17,8 +17,10 @@ MEMPROF = True
 if MEMPROF:
     from memory_profiler import profile
 else:
+
     def profile(f):
         return f
+
 
 in_filename = None
 out_filename = None
@@ -31,16 +33,20 @@ if not IN_MEMORY:
         os.remove(out_filename)
 
 rootgrp = None
+
+
 @profile
 def open_datafile(filename):
     global rootgrp
     if IN_MEMORY:
         with open(filename, "rb") as f:
             data = f.read()
-        rootgrp = netCDF4.Dataset("memory", mode='r', memory=data)
+        rootgrp = netCDF4.Dataset("memory", mode="r", memory=data)
     else:
-        rootgrp = netCDF4.Dataset(filename, mode='r')
-    return rootgrp['precipitation']
+        rootgrp = netCDF4.Dataset(filename, mode="r")
+    return rootgrp["precipitation"]
+
+
 t0 = time()
 precipitation = open_datafile("ia-data/rea6/tot_prec/2018.nc")
 t1 = time()
@@ -53,12 +59,15 @@ shape = (NSLICES * SLICE_THICKNESS, nx, ny)
 pshape = (1, nx, ny)
 tslices = np.random.choice(nt - SLICE_THICKNESS, NSLICES)
 
+
 @profile
 def get_slices(data):
     slices = []
     for tslice in tslices:
         slices.append(data[slice(tslice, tslice + SLICE_THICKNESS), :, :])
     return slices
+
+
 t0 = time()
 slices = get_slices(precipitation)
 t1 = time()
@@ -71,9 +80,12 @@ def get_accum(slices):
     for i in range(NSLICES):
         slsum += slices[i].sum()
     return slsum
+
+
 slsum = get_accum(slices)
 t1 = time()
 print("Time for summing up %d slices (via netcdf4): %.3f" % (NSLICES, (t1 - t0)))
+
 
 @profile
 def concatenate_slices(slices):
@@ -81,17 +93,22 @@ def concatenate_slices(slices):
     if IN_MEMORY:
         f = h5py.File(io.BytesIO())
     else:
-        f = h5py.File(in_filename, 'w')
-    data = f.create_dataset("prec2", shape, chunks=pshape, compression="gzip", compression_opts=1, shuffle=True)
+        f = h5py.File(in_filename, "w")
+    data = f.create_dataset(
+        "prec2", shape, chunks=pshape, compression="gzip", compression_opts=1, shuffle=True
+    )
     for i in range(NSLICES):
-        data[i * SLICE_THICKNESS: (i + 1) * SLICE_THICKNESS, :, :] = slices[i]
+        data[i * SLICE_THICKNESS : (i + 1) * SLICE_THICKNESS, :, :] = slices[i]
     return data
+
+
 t0 = time()
 prec2 = concatenate_slices(slices)
 t1 = time()
 print("Time for concatenating %d slices into HDF5 container: %.3f" % (NSLICES, (t1 - t0)))
 print(prec2)
-#print("cratio", prec2.nbytes / prec2.nbytes_stored)
+# print("cratio", prec2.nbytes / prec2.nbytes_stored)
+
 
 @profile
 def sum_concat(data):
@@ -99,6 +116,8 @@ def sum_concat(data):
     for i in range(len(data)):
         concatsum += data[i].sum()
     return concatsum
+
+
 t0 = time()
 concatsum = sum_concat(prec2)
 t1 = time()
@@ -110,11 +129,13 @@ def compute_expr(x):
     scheduler = "single-threaded" if NTHREADS == 1 else "threads"
     with dask.config.set(scheduler=scheduler):
         # I don't see a way on how to spit
-        fin = h5py.File(in_filename, 'r')
-        x = fin['prec2']
+        fin = h5py.File(in_filename, "r")
+        x = fin["prec2"]
         dx = da.from_array(x)
         res = (np.sin(dx) - 3.2) * (np.cos(dx) + 1.2)
         return da.to_hdf5(out_filename, "/prec2_computed", res)
+
+
 t0 = time()
 b2 = compute_expr(prec2)
 t1 = time()

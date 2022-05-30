@@ -40,7 +40,7 @@ acompressor = Blosc(
     blocksize=reduce(lambda x, y: x * y, ablocks) * 8,
 )
 
-#ia.set_config_defaults(codec=CODEC, clevel=CLEVEL, nthreads=NTHREADS, dtype=DTYPE)
+# ia.set_config_defaults(codec=CODEC, clevel=CLEVEL, nthreads=NTHREADS, dtype=DTYPE)
 ia.set_config_defaults()
 
 acfg = ia.Config(chunks=achunks, blocks=ablocks)
@@ -81,7 +81,7 @@ def ia_reduce(aia, func):
 
 @profile
 def dask_reduce(azarr, func):
-    #with dask.config.set(scheduler=scheduler, num_workers=NTHREADS):
+    # with dask.config.set(scheduler=scheduler, num_workers=NTHREADS):
     with dask.config.set(scheduler=scheduler):
         ad = da.from_zarr(azarr)
         cd = func(ad, axis=axis)

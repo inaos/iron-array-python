@@ -5,14 +5,15 @@ import numpy as np
 
 # Test load, open and save
 @pytest.mark.parametrize("contiguous", [True, False])
-@pytest.mark.parametrize("dtype, np_dtype",
-                         [
-                             (np.float32, '>f4'),
-                             (np.float64, 'i4'),
-                             (np.int32, 'M8[fs]'),
-                             (np.uint32, None),
-                         ]
-                         )
+@pytest.mark.parametrize(
+    "dtype, np_dtype",
+    [
+        (np.float32, ">f4"),
+        (np.float64, "i4"),
+        (np.int32, "M8[fs]"),
+        (np.uint32, None),
+    ],
+)
 @pytest.mark.parametrize(
     "shape, chunks, blocks",
     [
@@ -51,27 +52,27 @@ def test_load_save(shape, chunks, blocks, dtype, np_dtype, func, contiguous):
     ia.save(urlpath, a, contiguous=contiguous)
 
     b = ia.open(urlpath)
-    assert(b.cfg.contiguous == contiguous)
-    assert(isinstance(b.cfg.urlpath, bytes))
-    assert(b.cfg.urlpath == urlpath.encode("utf-8"))
-    assert(b.cfg.chunks == a.chunks)
-    assert(b.cfg.blocks == a.blocks)
-    assert(b.cfg.filters == a.cfg.filters)
-    assert(b.cfg.fp_mantissa_bits == a.cfg.fp_mantissa_bits)
-    assert(b.dtype == a.dtype)
-    assert(b.np_dtype == a.np_dtype)
-    assert(b.cfg.mode == "a")
+    assert b.cfg.contiguous == contiguous
+    assert isinstance(b.cfg.urlpath, bytes)
+    assert b.cfg.urlpath == urlpath.encode("utf-8")
+    assert b.cfg.chunks == a.chunks
+    assert b.cfg.blocks == a.blocks
+    assert b.cfg.filters == a.cfg.filters
+    assert b.cfg.fp_mantissa_bits == a.cfg.fp_mantissa_bits
+    assert b.dtype == a.dtype
+    assert b.np_dtype == a.np_dtype
+    assert b.cfg.mode == "a"
 
     c = ia.load(urlpath)
-    assert(c.cfg.contiguous is False)
-    assert(c.cfg.urlpath is None)
-    assert(c.cfg.chunks == a.chunks)
-    assert(c.cfg.blocks == a.blocks)
-    assert(c.cfg.codec == a.cfg.codec)
-    assert(c.cfg.filters == a.cfg.filters)
-    assert(c.cfg.fp_mantissa_bits == a.cfg.fp_mantissa_bits)
-    assert(c.dtype == a.dtype)
-    assert(c.np_dtype == a.np_dtype)
-    assert(c.cfg.mode == "a")
+    assert c.cfg.contiguous is False
+    assert c.cfg.urlpath is None
+    assert c.cfg.chunks == a.chunks
+    assert c.cfg.blocks == a.blocks
+    assert c.cfg.codec == a.cfg.codec
+    assert c.cfg.filters == a.cfg.filters
+    assert c.cfg.fp_mantissa_bits == a.cfg.fp_mantissa_bits
+    assert c.dtype == a.dtype
+    assert c.np_dtype == a.np_dtype
+    assert c.cfg.mode == "a"
 
     ia.remove_urlpath(urlpath)

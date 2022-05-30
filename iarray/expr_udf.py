@@ -14,12 +14,14 @@ except AttributeError:
     # Python 3.8
     from ast_decompiler import decompile
 else:
+
     def decompile(tree):
         return ast.unparse(tree)
 
 
 def name(id, ctx=ast.Load()):
     return ast.Name(id, ctx=ctx)
+
 
 def constant(value):
     return ast.Constant(value, kind=None)
@@ -28,18 +30,18 @@ def constant(value):
 def For(dim, ndim, body):
     body = [For(dim + 1, ndim, body)] if dim < ndim - 1 else body
     return ast.For(
-        target=name(f'i{dim}', ctx=ast.Store()),
+        target=name(f"i{dim}", ctx=ast.Store()),
         iter=ast.Call(
-            func=name('range'),
+            func=name("range"),
             args=[
                 ast.Subscript(
                     value=ast.Attribute(
-                        value=name('out'),
-                        attr='shape',
+                        value=name("out"),
+                        attr="shape",
                         ctx=ast.Load(),
                     ),
                     slice=ast.Index(value=constant(dim)),
-                    ctx=ast.Load()
+                    ctx=ast.Load(),
                 )
             ],
             keywords=[],
@@ -48,27 +50,27 @@ def For(dim, ndim, body):
         orelse=[],
     )
 
-class Transformer(ast.NodeTransformer):
 
+class Transformer(ast.NodeTransformer):
     def __init__(self, args):
         self.args = args
         # The function arguments
         dtype_map = {
-            np.float32: 'udf.float32',
-            np.float64: 'udf.float64',
-            np.int8: 'udf.int8',
-            np.int16: 'udf.int16',
-            np.int32: 'udf.int32',
-            np.int64: 'udf.int64',
-            float: 'udf.float64',
-            int: 'udf.float64', # FIXME Should be int64
+            np.float32: "udf.float32",
+            np.float64: "udf.float64",
+            np.int8: "udf.int8",
+            np.int16: "udf.int16",
+            np.int32: "udf.int32",
+            np.int64: "udf.int64",
+            float: "udf.float64",
+            int: "udf.float64",  # FIXME Should be int64
         }
         self.func_args = []
         for key, value in args.items():
             if isinstance(value, ia.IArray):
                 ndim = value.ndim
                 dtype = dtype_map[value.dtype]
-                annotation = ast.parse(f'udf.Array({dtype}, {ndim})')
+                annotation = ast.parse(f"udf.Array({dtype}, {ndim})")
             else:
                 dtype = dtype_map[type(value)]
                 annotation = ast.parse(dtype)
@@ -77,13 +79,13 @@ class Transformer(ast.NodeTransformer):
         # The output is the first argument
         # FIXME output name is hardcoded, may conflict with expression names
         # FIXME Cast args types to find out type
-        annotation = ast.parse(f'udf.Array({dtype}, {ndim})')
-        self.func_args.insert(0, ast.arg('out', annotation))
+        annotation = ast.parse(f"udf.Array({dtype}, {ndim})")
+        self.func_args.insert(0, ast.arg("out", annotation))
 
         # Keep the ndim, and the index used to access the arrays
         self.ndim = ndim
         self.index = ast.Tuple(
-            elts=[name(f'i{i}') for i in range(ndim)],
+            elts=[name(f"i{i}") for i in range(ndim)],
             ctx=ast.Load(),
         )
 
@@ -92,7 +94,7 @@ class Transformer(ast.NodeTransformer):
         return ast.Module(
             body=[
                 ast.FunctionDef(
-                    name='f',
+                    name="f",
                     args=ast.arguments(
                         posonlyargs=[],
                         args=self.func_args,
@@ -100,7 +102,7 @@ class Transformer(ast.NodeTransformer):
                         kwonlyargs=[],
                         kw_defaults=[],
                         kwarg=None,
-                        defaults=[]
+                        defaults=[],
                     ),
                     body=[
                         For(0, self.ndim, node.body),
@@ -119,49 +121,47 @@ class Transformer(ast.NodeTransformer):
         # Translate negative(x) to math.copysign(x, -1.0)
         # https://github.com/inaos/iron-array/issues/559
         if isinstance(node.func, ast.Name):
-            if node.func.id in {'negative', 'negate'}:
+            if node.func.id in {"negative", "negate"}:
                 node.func = ast.Attribute(
-                    value=name('math'),
-                    attr='copysign',
+                    value=name("math"),
+                    attr="copysign",
                     ctx=node.func.ctx,
                 )
-                node.args.append(
-                    constant(-1.0)
-                )
+                node.args.append(constant(-1.0))
 
         return node
 
     def visit_Expr(self, node):
         self.generic_visit(node)
         return ast.Assign(
-            targets = [
+            targets=[
                 ast.Subscript(
-                    value=name('out'),
+                    value=name("out"),
                     slice=ast.Index(value=self.index),
                     ctx=ast.Store(),
                 )
             ],
-            value = node.value,
+            value=node.value,
         )
 
     def visit_Name(self, node):
         # Translate math function names from those used in mingjugg to those
         # used in Python's math library
         translate_map = {
-            'abs': 'fabs',
-            'absolute': 'fabs',
-            'arccos': 'acos',
-            'arcsin': 'asin',
-            'arctan': 'atan',
-            'arctan2': 'atan2',
-            'power': 'pow',
+            "abs": "fabs",
+            "absolute": "fabs",
+            "arccos": "acos",
+            "arcsin": "asin",
+            "arctan": "atan",
+            "arctan2": "atan2",
+            "power": "pow",
         }
         node_id = translate_map.get(node.id, node.id)
 
         # Math functions
         if node_id in MATH_FUNCS:
             return ast.Attribute(
-                value=name('math'),
+                value=name("math"),
                 attr=node_id,
                 ctx=node.ctx,
             )
@@ -209,16 +209,16 @@ def expr_udf(expr, args, cfg=None, debug=0, **kwargs):
             scalars.append(value)
 
     # From the string expression produce the udf function source
-    tree = ast.parse(expr)               # AST of the input expression
-    tree = Transformer(args).visit(tree) # AST of the UDF function
+    tree = ast.parse(expr)  # AST of the input expression
+    tree = Transformer(args).visit(tree)  # AST of the UDF function
     ast.fix_missing_locations(tree)
-    source = decompile(tree)             # Source code of the UDF function
+    source = decompile(tree)  # Source code of the UDF function
     if debug > 0:
         print(source)
 
     # The Python function
     exec(source, globals(), locals())
-    py_func = locals()['f']
+    py_func = locals()["f"]
 
     # The UDF function
     udf_func = udf.jit(py_func, ast=tree, debug=debug)
