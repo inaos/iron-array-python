@@ -58,3 +58,42 @@ def test_reduce(shape, chunks, blocks, axis, dtype, np_dtype, rfunc, contiguous,
 
     ia.remove_urlpath(urlpath)
     ia.remove_urlpath("test_reduce_res.iarr")
+
+params_names = "shape, chunks, blocks, axis, dtype, view_dtype"
+params_data = [
+    ([100, 100], [50, 50], [20, 20], 0, np.float64, np.uint64),
+    pytest.param([70, 45, 56, 34], [20, 23, 30, 34], [9, 7, 8, 7], (0, 3), np.int64, np.float64, marks=pytest.mark.heavy),
+    ([10, 10, 10], [4, 4, 4], [2, 2, 2], 1, np.bool_, np.uint16),
+]
+
+
+@pytest.mark.parametrize(params_names, params_data)
+@pytest.mark.parametrize("rfunc", ["mean", "sum", "prod", "max", "min"])
+@pytest.mark.parametrize("contiguous", [True, False])
+@pytest.mark.parametrize("urlpath", [None, "test_reduce.iarr"])
+def test_red_type_view(shape, chunks, blocks, axis, dtype, view_dtype, rfunc, contiguous, urlpath):
+
+    ia.remove_urlpath(urlpath)
+    ia.remove_urlpath("test_reduce_res.iarr")
+
+    cfg = ia.Config(chunks=chunks, blocks=blocks, contiguous=contiguous, urlpath=urlpath)
+    a1 = ia.ones(shape, dtype=dtype, cfg=cfg)
+    a2 = a1.astype(view_dtype)
+
+    b2 = getattr(np, rfunc)(a2.data, axis=axis)
+    b1 = getattr(ia, rfunc)(a2, axis=axis, urlpath="test_reduce_res.iarr")
+
+    if view_dtype in [np.float64, np.float32] or rfunc == "mean":
+        rtol = 1e-6 if view_dtype == np.float32 else 1e-14
+        if b2.ndim == 0:
+            isclose(b1, b2, rel_tol=rtol, abs_tol=0.0)
+        else:
+            np.testing.assert_allclose(ia.iarray2numpy(b1), b2, rtol=rtol, atol=0)
+    else:
+        if b2.ndim == 0:
+            assert b1 == b2
+        else:
+            np.testing.assert_array_equal(ia.iarray2numpy(b1), b2)
+
+    ia.remove_urlpath(urlpath)
+    ia.remove_urlpath("test_reduce_res.iarr")
