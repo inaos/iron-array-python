@@ -994,6 +994,47 @@ class IArray(ext.Container):
             res = reduce(self, ia.Reduce.MEDIAN, axis, cfg, **kwargs)
         return ia.LazyExpr(new_op=(res, None, None))
 
+    def nanmin(self, axis=None, **kwargs):
+        with ia.config(cfg=self.cfg) as cfg:
+            res = reduce(self, ia.Reduce.NAN_MIN, axis, cfg, **kwargs)
+        return ia.LazyExpr(new_op=(res, None, None))
+
+    def nanmax(self, axis=None, **kwargs):
+        with ia.config(cfg=self.cfg) as cfg:
+            res = reduce(self, ia.Reduce.NAN_MAX, axis, cfg, **kwargs)
+        return ia.LazyExpr(new_op=(res, None, None))
+
+    def nansum(self, axis=None, **kwargs):
+        with ia.config(cfg=self.cfg) as cfg:
+            res = reduce(self, ia.Reduce.NAN_SUM, axis, cfg, **kwargs)
+        return ia.LazyExpr(new_op=(res, None, None))
+
+    def nanprod(self, axis=None, **kwargs):
+        with ia.config(cfg=self.cfg) as cfg:
+            res = reduce(self, ia.Reduce.NAN_PROD, axis, cfg, **kwargs)
+        return ia.LazyExpr(new_op=(res, None, None))
+
+    def nanmean(self, axis=None, **kwargs):
+        print("nanmean")
+        with ia.config(cfg=self.cfg) as cfg:
+            res = reduce(self, ia.Reduce.NAN_MEAN, axis, cfg, **kwargs)
+        return ia.LazyExpr(new_op=(res, None, None))
+
+    def nanstd(self, axis=None, **kwargs):
+        with ia.config(cfg=self.cfg) as cfg:
+            res = reduce(self, ia.Reduce.NAN_STD, axis, cfg, **kwargs)
+        return ia.LazyExpr(new_op=(res, None, None))
+
+    def nanvar(self, axis=None, **kwargs):
+        with ia.config(cfg=self.cfg) as cfg:
+            res = reduce(self, ia.Reduce.NAN_VAR, axis, cfg, **kwargs)
+        return ia.LazyExpr(new_op=(res, None, None))
+
+    def nanmedian(self, axis=None, **kwargs):
+        with ia.config(cfg=self.cfg) as cfg:
+            res = reduce(self, ia.Reduce.NAN_MEDIAN, axis, cfg, **kwargs)
+        return ia.LazyExpr(new_op=(res, None, None))
+
     @attrs.setter
     def attrs(self, value):
         self._attrs = value
@@ -1359,6 +1400,271 @@ def median(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **k
         :paramref:`a` is `np.float32` and `np.float64` otherwise.
     """
     return reduce(a, ia.Reduce.MEDIAN, axis, cfg, **kwargs)
+
+
+def nanmax(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
+    """
+    Return the maximum of an array or maximum along an axis ignoring NaNs.
+
+    Parameters
+    ----------
+    a : :ref:`IArray`
+        Input data.
+    axis : None, int, tuple of ints, optional
+        Axis or axes along which the reduction is performed. The default (axis = None) is perform
+        the reduction over all dimensions of the input array.
+        If this is a tuple of ints, a reduction is performed on multiple axes, instead of a single
+        axis or all the axes as default.
+    cfg : :class:`Config` or None
+        The configuration for this operation. If None (default), the current configuration will be
+        used.
+    kwargs : dict
+        A dictionary for setting some or all of the fields in the :class:`Config` dataclass that should
+        override the current configuration.
+    Returns
+    -------
+    max : :ref:`IArray` or float
+        Maximum of a. If axis is None, the result is a value. If axis is given, the result is
+        an array of dimension a.ndim - len(axis). The `dtype` is always the `dtype` of :paramref:`a`.
+
+    See Also
+    --------
+    max
+    """
+
+    return reduce(a, ia.Reduce.NAN_MAX, axis, cfg, **kwargs)
+
+
+def nanmin(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
+    """
+    Return the minimum of an array or minimum along an axis ignoring NaNs.
+
+    Parameters
+    ----------
+    a : :ref:`IArray`
+        Input data.
+    axis : None, int, tuple of ints, optional
+        Axis or axes along which the reduction is performed. The default (axis = None) is perform
+        the reduction over all dimensions of the input array.
+        If this is a tuple of ints, a reduction is performed on multiple axes, instead of a single
+        axis or all the axes as default.
+    cfg : :class:`Config` or None
+        The configuration for this operation. If None (default), the current configuration will be
+        used.
+    kwargs : dict
+        A dictionary for setting some or all of the fields in the :class:`Config` dataclass that should
+        override the current configuration.
+    Returns
+    -------
+    min : :ref:`IArray` or float
+        Minimum of a. If axis is None, the result is a value. If axis is given, the result is
+        an array of dimension a.ndim - len(axis). The `dtype` is always the `dtype` of :paramref:`a`.
+
+    See Also
+    --------
+    min
+    """
+    return reduce(a, ia.Reduce.NAN_MIN, axis, cfg, **kwargs)
+
+
+def nansum(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
+    """
+    Return the sum of array elements over a given axis ignoring NaNs.
+
+    Parameters
+    ----------
+    a : :ref:`IArray`
+        Input data.
+    axis : None, int, tuple of ints, optional
+        Axis or axes along which the reduction is performed. The default (axis = None) is perform
+        the reduction over all dimensions of the input array.
+        If this is a tuple of ints, a reduction is performed on multiple axes, instead of a single
+        axis or all the axes as default.
+    cfg : :class:`Config` or None
+        The configuration for this operation. If None (default), the current configuration will be
+        used.
+    kwargs : dict
+        A dictionary for setting some or all of the fields in the :class:`Config` dataclass that should
+        override the current configuration.
+    Returns
+    -------
+    sum : :ref:`IArray` or float
+        Sum of a. If axis is None, the result is a value. If axis is given, the result is
+        an array of dimension a.ndim - len(axis). The `dtype` is always the `dtype` of :paramref:`a`.
+
+    See Also
+    --------
+    sum
+    """
+    return reduce(a, ia.Reduce.NAN_SUM, axis, cfg, **kwargs)
+
+
+def nanprod(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
+    """
+    Return the product of array elements over a given axis ignoring NaNs.
+
+    Parameters
+    ----------
+    a : :ref:`IArray`
+        Input data.
+    axis : None, int, tuple of ints, optional
+        Axis or axes along which the reduction is performed. The default (axis = None) is perform
+        the reduction over all dimensions of the input array.
+        If this is a tuple of ints, a reduction is performed on multiple axes, instead of a single
+        axis or all the axes as default.
+    cfg : :class:`Config` or None
+        The configuration for this operation. If None (default), the current configuration will be
+        used.
+    kwargs : dict
+        A dictionary for setting some or all of the fields in the :class:`Config` dataclass that should
+        override the current configuration.
+    Returns
+    -------
+    prod : :ref:`IArray` or float
+        Product of a. If axis is None, the result is a value. If axis is given, the result is
+        an array of dimension a.ndim - len(axis). The `dtype` is always the `dtype` of :paramref:`a`.
+
+    See Also
+    --------
+    prod
+    """
+    return reduce(a, ia.Reduce.NAN_PROD, axis, cfg, **kwargs)
+
+
+def nanmean(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
+    """
+    Compute the arithmetic mean along the specified axis ignoring NaNs.
+
+    Parameters
+    ----------
+    a : :ref:`IArray`
+        Input data.
+    axis : None, int, tuple of ints, optional
+        Axis or axes along which the reduction is performed. The default (axis = None) is perform
+        the reduction over all dimensions of the input array.
+        If this is a tuple of ints, a reduction is performed on multiple axes, instead of a single
+        axis or all the axes as default.
+    cfg : :class:`Config` or None
+        The configuration for this operation. If None (default), the current configuration will be
+        used.
+    kwargs : dict
+        A dictionary for setting some or all of the fields in the :class:`Config` dataclass that should
+        override the current configuration.
+    Returns
+    -------
+    mean : :ref:`IArray` or float
+        Mean of a. If axis is None, the result is a value. If axis is given, the result is
+        an array of dimension a.ndim - len(axis). The `dtype` is always the `dtype` of :paramref:`a`.
+
+    See Also
+    --------
+    mean
+    """
+    print("nan mean del self")
+    return reduce(a, ia.Reduce.NAN_MEAN, axis, cfg, **kwargs)
+
+
+def nanstd(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
+    """
+    Returns the standard deviation  ignoring NaNs.
+
+    Parameters
+    ----------
+    a : :ref:`IArray`
+        Input data.
+    axis : None, int, tuple of ints, optional
+        Axis or axes along which the reduction is performed. The default (axis = None) is perform
+        the reduction over all dimensions of the input array.
+        If this is a tuple of ints, a reduction is performed on multiple axes, instead of a single
+        axis or all the axes as default.
+    cfg : :class:`Config` or None
+        The configuration for this operation. If None (default), the current configuration will be
+        used.
+    kwargs : dict
+        A dictionary for setting some or all of the fields in the :class:`Config` dataclass that should
+        override the current configuration.
+    Returns
+    -------
+    std : :ref:`IArray` or float
+        Standard deviation of a. If axis is None, the result is a value. If axis is given, the result is
+        an array of dimension a.ndim - len(axis). The `dtype` is always the `dtype` of :paramref:`a`.
+
+    See Also
+    --------
+    std
+    """
+    if not isinstance(axis, int):
+        if axis is None or len(axis) != 1:
+            raise AttributeError("Multiple axis reduction is not supported yet in std")
+    return reduce(a, ia.Reduce.NAN_STD, axis, cfg, **kwargs)
+
+
+def nanvar(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
+    """
+    Compute the variance along the specified axis ignoring NaNs. The variance is computed for the flattened
+    array by default, otherwise over the specified axis.
+
+    Parameters
+    ----------
+    a : :ref:`IArray`
+        Input data.
+    axis : None, int, tuple of ints, optional
+        Axis or axes along which the reduction is performed. The default (axis = None) is perform
+        the reduction over all dimensions of the input array.
+        If this is a tuple of ints, a reduction is performed on multiple axes, instead of a single
+        axis or all the axes as default.
+    cfg : :class:`Config` or None
+        The configuration for this operation. If None (default), the current configuration will be
+        used.
+    kwargs : dict
+        A dictionary for setting some or all of the fields in the :class:`Config` dataclass that should
+        override the current configuration.
+    Returns
+    -------
+    var : :ref:`IArray` or float
+        Variance of a. If axis is None, the result is a value. If axis is given, the result is
+        an array of dimension a.ndim - len(axis). The `dtype` is always the `dtype` of :paramref:`a`.
+
+    See Also
+    --------
+    var
+    """
+    if not isinstance(axis, int):
+        if axis is None or len(axis) != 1:
+            raise AttributeError("Multiple axis reduction is not supported yet in var")
+    return reduce(a, ia.Reduce.NAN_VAR, axis, cfg, **kwargs)
+
+
+def nanmedian(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
+    """
+    Compute the median ignoring NaNs along the specified axis. Returns the median of the array elements.
+
+    Parameters
+    ----------
+    a : :ref:`IArray`
+        Input data.
+    axis : None, int, tuple of ints, optional
+        Axis or axes along which the reduction is performed. The default (axis = None) is perform
+        the reduction over all dimensions of the input array.
+        If this is a tuple of ints, a reduction is performed on multiple axes, instead of a single
+        axis or all the axes as default.
+    cfg : :class:`Config` or None
+        The configuration for this operation. If None (default), the current configuration will be
+        used.
+    kwargs : dict
+        A dictionary for setting some or all of the fields in the :class:`Config` dataclass that should
+        override the current configuration.
+    Returns
+    -------
+    median : :ref:`IArray` or float
+        Median of a. If axis is None, the result is a value. If axis is given, the result is
+        an array of dimension a.ndim - len(axis). The `dtype` is always the `dtype` of :paramref:`a`.
+
+    See Also
+    --------
+    median
+    """
+    return reduce(a, ia.Reduce.NAN_MEDIAN, axis, cfg, **kwargs)
 
 
 # Linear Algebra
