@@ -136,6 +136,14 @@ class Reduce(Enum):
     VAR = 5
     STD = 6
     MEDIAN = 7
+    NAN_MAX = 8
+    NAN_MIN = 9
+    NAN_SUM = 10
+    NAN_PROD = 11
+    NAN_MEAN = 12
+    NAN_VAR = 13
+    NAN_STD = 14
+    NAN_MEDIAN = 15
 
 
 # List of all know universal functions
@@ -197,6 +205,14 @@ from .iarray_container import (
     std,
     var,
     median,
+    nanmax,
+    nanmin,
+    nansum,
+    nanprod,
+    nanmean,
+    nanstd,
+    nanvar,
+    nanmedian,
     # ufuncs
     abs,
     arccos,

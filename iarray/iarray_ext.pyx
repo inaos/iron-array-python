@@ -1702,6 +1702,14 @@ reduce_to_c = {
     ia.Reduce.STD: ciarray.IARRAY_REDUCE_STD,
     ia.Reduce.VAR: ciarray.IARRAY_REDUCE_VAR,
     ia.Reduce.MEDIAN: ciarray.IARRAY_REDUCE_MEDIAN,
+    ia.Reduce.NAN_MAX: ciarray.IARRAY_REDUCE_NAN_MAX,
+    ia.Reduce.NAN_MIN: ciarray.IARRAY_REDUCE_NAN_MIN,
+    ia.Reduce.NAN_SUM: ciarray.IARRAY_REDUCE_NAN_SUM,
+    ia.Reduce.NAN_PROD: ciarray.IARRAY_REDUCE_NAN_PROD,
+    ia.Reduce.NAN_MEAN: ciarray.IARRAY_REDUCE_NAN_MEAN,
+    ia.Reduce.NAN_STD: ciarray.IARRAY_REDUCE_NAN_STD,
+    ia.Reduce.NAN_VAR: ciarray.IARRAY_REDUCE_NAN_VAR,
+    ia.Reduce.NAN_MEDIAN: ciarray.IARRAY_REDUCE_NAN_MEDIAN,
 }
 
 def reduce(cfg, a, method, axis):
