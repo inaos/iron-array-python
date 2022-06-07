@@ -64,6 +64,15 @@ Reductions
    sum
    prod
    mean
+   var
+   std
+   nanmax
+   nanmin
+   nansum
+   nanprod
+   nanmean
+   nanvar
+   nanstd
 
 
 Miscellaneous
