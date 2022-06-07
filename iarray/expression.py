@@ -228,7 +228,6 @@ def expr_from_string(
     with ia.config(cfg, **kwargs) as cfg:
         shape, dtype, array_inputs, new_inputs = check_inputs_string(inputs, cfg, minjugg=False)
         np_dtype = cfg.np_dtype
-    check_expr(sexpr, {**array_inputs, **new_inputs})
     kwargs["dtype"] = dtype
     kwargs["np_dtype"] = np_dtype
     operands = {**array_inputs, **new_inputs}
@@ -401,7 +400,7 @@ class UdfLibrary(ext.UdfLibrary):
         try:
             address = ext.udf_lookup_func(full_name)
         except ia.IArrayError:
-            raise AttributeError(f"{type(self)} object has no attribute '{name}'")
+            raise ValueError(f"'{full_name}' is not a registered UDF function")
 
         # TODO I think it would be simpler and better to instead use
         # llvmlite.binding.add_symbol(name, address), but I discovered this a
