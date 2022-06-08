@@ -26,7 +26,7 @@ np.where(((y == 3) & (z == 4)) | ~(x == 0), x, np.nan)
 
 * Lazy expressions gained the same functionality than recent enhancements in expressions (actually, expressions are now evaluated as lazy expressions).
 
-* IArray objects can be expanded/shrinked in any dimension *and* in any desired position.  See the new docstrings for `IArray.resize`, `IArray.insert`, `IArray.append` and `IArray.remove`.
+* IArray objects can be expanded/shrinked in any dimension *and* in any desired position.  See the new docstrings for `IArray.resize`, `IArray.insert`, `IArray.append` and `IArray.delete`.
 
 * Support for lossy ZFP.  This has been inherited from its recent addition to the Blosc2 compressor.  For more info see: https://www.blosc.org/posts/support-lossy-zfp/
 
@@ -35,6 +35,8 @@ np.where(((y == 3) & (z == 4)) | ~(x == 0), x, np.nan)
 * Added support for the `**` operator (meaning `power()`) to expressions.  This is to mimic the Python operators.
 
 * Multi-threaded constructors.  Now constructors work in multi-threading mode by default, meaning that they are much faster now.  This specially improves the speed of the random constructors (up to 10x faster than the equivalent in Numpy, as measured on a machine with 16 cores).
+
+* Support for NumPy dtypes. Now you can set the `np_dtype` parameter in constructors to any NumPy dtype that you want. This will be used when data is converted from an IArray container to NumPy. The only missing NumPy dtypes are strings, complex and structured dtypes.
 
 * Views of promoted types.  Now arrays with any type can be viewed as any other type that has a better representation range (e.g. float32 -> float64).  A view means that no copy is done, and that values are converted on the flight.
 

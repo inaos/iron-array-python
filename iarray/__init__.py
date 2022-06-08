@@ -20,7 +20,7 @@ import pytest
 # https://packaging.python.org/guides/single-sourcing-package-version/
 # __version__ = "1.0.0-$IA_BUILD_VER"
 # Change to use a YEAR.MINOR-BUILD_VER
-__version__ = "2022.1-$IA_BUILD_VER"
+__version__ = "2022.2-$IA_BUILD_VER"
 
 
 binding.initialize()

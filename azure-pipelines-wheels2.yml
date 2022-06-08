@@ -1,5 +1,13 @@
+# trigger:
+# - develop
+# We want to trigger this on any tag.  Hope this is enough.
 trigger:
-- develop
+  tags:
+    include:
+    - '*'
+  branches:
+    exclude:
+    - develop
 
 variables: # This activates => BUILD_WHEELS: 1
 - group: wheels
