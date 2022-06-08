@@ -436,7 +436,7 @@ cdef class Container:
         """Tuple of chunk dimensions."""
         cdef ciarray.iarray_storage_t storage
         iarray_check(ciarray.iarray_get_storage(self.context.ia_ctx, self.ia_container, &storage))
-        if self.is_view():
+        if self.is_view:
             return None
         chunks = [storage.chunkshape[i] for i in range(self.ndim)]
         return tuple(chunks)
@@ -446,7 +446,7 @@ cdef class Container:
         """Tuple of block dimensions."""
         cdef ciarray.iarray_storage_t storage
         iarray_check(ciarray.iarray_get_storage(self.context.ia_ctx, self.ia_container, &storage))
-        if self.is_view():
+        if self.is_view:
             return None
         blocks = [storage.blockshape[i] for i in range(self.ndim)]
         return tuple(blocks)
@@ -509,7 +509,10 @@ cdef class Container:
         with ia.config(cfg=self.cfg) as cfg:
             return get_slice(cfg, self, start, stop, squeeze_mask, True, None)
 
+    @property
     def is_view(self):
+        """Whether the :ref:`IArray` is a view or not.
+        """
         cdef ciarray.bool view
         iarray_check(ciarray.iarray_is_view(self.context.ia_ctx, self.ia_container, &view))
         return view

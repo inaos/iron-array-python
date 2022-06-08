@@ -26,6 +26,7 @@ Attributes
    IArray.shape
    IArray.info
    IArray.attrs
+   IArray.is_view
 
 
 Methods

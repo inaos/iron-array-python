@@ -34,8 +34,9 @@ def test_type(shape, chunks, blocks, dtype, view_dtype, contiguous, urlpath):
     else:
         a = ia.arange(shape=shape, start=0, stop=size, dtype=dtype)
     b = ia.iarray2numpy(a)
-
+    assert(not a.is_view)
     c = a.astype(view_dtype)
+    assert c.is_view
     c = ia.iarray2numpy(c)
     d = b.astype(view_dtype)
 
