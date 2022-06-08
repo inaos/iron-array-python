@@ -83,3 +83,31 @@ Mathematical methods
 .. seealso::
 
    :ref:`Mathematical Functions`
+
+
+Reductions
+----------
+
+.. autosummary::
+   :toctree: autofiles/ndarray/
+   :nosignatures:
+
+   IArray.max
+   IArray.min
+   IArray.sum
+   IArray.prod
+   IArray.mean
+   IArray.var
+   IArray.std
+   IArray.nanmax
+   IArray.nanmin
+   IArray.nansum
+   IArray.nanprod
+   IArray.nanmean
+   IArray.nanvar
+   IArray.nanstd
+
+
+.. seealso::
+
+   :ref:`Mathematical Functions`

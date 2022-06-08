@@ -144,3 +144,40 @@ window_strides
 ~~~~~~~~~~~~~~
 
 Number of elements to step in each dimension for reaching the next element when traversing the window.
+
+Libraries of scalar UDFs
+------------------------
+
+Scalar UDFs are a special case of UDFs that only accept scalars as parameters instead of arrays. The advantage of scalar UDFs
+is that they can be called either from expressions or from regular UDFs (also known as vector UDFs). These scalar UDFs
+needs to be registered in libraries in order to be used.
+
+For instance, we can create a scalar UDF like the following::
+
+    @udf.scalar(lib="lib")
+    def fsum(a: udf.float64, b: udf.float64) -> float:
+        if a < 0:
+            return -a + b
+        else:
+            return a + b
+
+This function has been registered to the UDFRegistry "lib", which has been automatically created.
+
+To use this function inside an expression, you need to specify the library in the following way::
+
+    expr = "4 * lib.fsum(x, y)"
+    expr = ia.expr_from_string(expr, {"x": x, "y": 1})
+    z = expr.eval()
+
+You can also use them inside a regular UDF::
+
+    @udf.jit
+    def udf_sum(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1), y: udf.float64):
+        for i in range(out.shape[0]):
+            out[i] = 4 * lib.fsum(x[i], y)
+        return 0
+
+    expr2 = ia.expr_from_udf(udf_sum, [x], [1])
+    z = expr2.eval()
+
+For more info on how to deal with the libraries registry see :ref:`UdfRegistry`.
