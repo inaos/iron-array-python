@@ -25,7 +25,7 @@ import iarray
 # -- Project information -----------------------------------------------------
 
 project = "ironArray for Python"
-copyright = "2020-2021, ironArray Development Team"
+copyright = "2021-, ironArray Development Team"
 author = "ironArray Development Team"
 
 # The full version, including alpha/beta/rc tags
