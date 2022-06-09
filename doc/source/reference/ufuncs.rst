@@ -66,6 +66,7 @@ Reductions
    mean
    var
    std
+   median
    nanmax
    nanmin
    nansum
@@ -73,6 +74,7 @@ Reductions
    nanmean
    nanvar
    nanstd
+   nanmedian
 
 
 Miscellaneous

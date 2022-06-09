@@ -79,7 +79,6 @@ Methods
    UdfRegistry.__delitem__
    UdfRegistry.iter_funcs
    UdfRegistry.iter_all_func_names
-   UdfRegistry.get_func_addr
    UdfRegistry.clear
 
 Utils

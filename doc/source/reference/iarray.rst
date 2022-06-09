@@ -99,6 +99,7 @@ Reductions
    IArray.mean
    IArray.var
    IArray.std
+   IArray.median
    IArray.nanmax
    IArray.nanmin
    IArray.nansum
@@ -106,6 +107,7 @@ Reductions
    IArray.nanmean
    IArray.nanvar
    IArray.nanstd
+   IArray.nanmedian
 
 
 .. seealso::
