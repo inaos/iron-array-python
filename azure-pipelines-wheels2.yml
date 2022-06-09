@@ -7,7 +7,7 @@ trigger:
     - '*'
   branches:
     exclude:
-    - develop
+    - '*'
 
 variables: # This activates => BUILD_WHEELS: 1
 - group: wheels
