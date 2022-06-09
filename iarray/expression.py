@@ -230,7 +230,6 @@ def expr_from_string(
         np_dtype = cfg.np_dtype
     kwargs["dtype"] = dtype
     kwargs["np_dtype"] = np_dtype
-    operands = {**array_inputs, **new_inputs}
     # The lines below use the evaluator from minjugg
     # check_expr(sexpr, operands)
     # expr = Expr(shape=shape, cfg=cfg, **kwargs)
@@ -241,7 +240,9 @@ def expr_from_string(
     #     expr.bind(k, v, keep_ref=True)
     # expr.compile(sexpr)
     # The next uses the expr -> UDF machinery, which has support for masks and others bells and whistles
-    expr = expr_udf(sexpr, operands, cfg=cfg, debug=debug)
+    operands = {**array_inputs, **new_inputs}
+    with ia.config(cfg, **kwargs) as cfg:
+        expr = expr_udf(sexpr, operands, cfg=cfg, debug=debug)
     return expr
 
 
