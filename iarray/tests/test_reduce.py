@@ -6,7 +6,7 @@ from math import isclose
 params_names = "shape, chunks, blocks, axis, dtype, np_dtype, mode"
 params_data = [
     ([100, 100], [50, 50], [20, 20], 0, np.float64, ">f4", "r"),
-    ([10, 10, 10, 10], [4, 4, 4, 4], [2, 2, 2, 2], 1, np.float32, "i4", "r+"),
+    ([10, 10, 10], [5, 5, 4], [5, 5, 2], 1, np.float32, "i4", "r+"),
     pytest.param(
         [20, 100, 30, 50],
         [10, 40, 10, 11],
@@ -17,8 +17,7 @@ params_data = [
         "r+",
         marks=pytest.mark.heavy,
     ),
-    ([10, 10, 10, 10], [4, 4, 4, 4], [2, 2, 2, 2], 1, np.int16, "u2", "w"),
-    ([40, 45], [20, 23], [9, 7], (0), np.int64, "M8[ns]", "w-"),
+    ([40, 45], [20, 23], [9, 7], 0, np.int64, "M8[ns]", "w-"),
     pytest.param(
         [70, 45, 56, 34],
         [20, 23, 30, 34],
@@ -29,7 +28,7 @@ params_data = [
         "w-",
         marks=pytest.mark.heavy,
     ),
-    ([10, 10, 10], [10, 10, 10], [10, 10, 10], None, np.uint32, "f8", "a"),
+    ([30], [20], [20], None, np.uint32, "f8", "a"),
     ([10, 10, 10], [4, 4, 4], [2, 2, 2], 1, np.bool_, "u1", "w"),
 ]
 
@@ -91,9 +90,8 @@ def test_reduce(
 
 params_names = "shape, chunks, blocks, axis, dtype, np_dtype, mode"
 params_data = [
-    ([100, 100], [50, 50], [20, 20], 0, np.float64, None, "r"),
-    ([10, 10, 10, 10], [4, 4, 4, 4], [2, 2, 2, 2], 1, np.float32, None, "w"),
-    ([40, 45], [20, 23], [9, 7], (0), np.float32, None, "a"),
+    ([30], [8], [4], 0, np.float32, None, "w"),
+    ([40, 45], [20, 23], [9, 7], 0, np.float32, None, "a"),
     pytest.param(
         [70, 45, 56, 34],
         [20, 23, 30, 34],
@@ -104,7 +102,7 @@ params_data = [
         "w-",
         marks=pytest.mark.heavy,
     ),
-    ([10, 10, 10], [4, 4, 4], [2, 2, 2], 1, np.float64, None, "r+"),
+    ([10, 10, 10], [5, 5, 4], [5, 5, 2], 1, np.float64, None, "r+"),
 ]
 
 
@@ -168,10 +166,10 @@ params_names = "shape, chunks, blocks, axis, dtype, view_dtype"
 params_data = [
     ([100, 100], [50, 50], [20, 20], 0, np.float64, np.uint64),
     pytest.param(
-        [70, 45, 56, 34],
-        [20, 23, 30, 34],
-        [9, 7, 8, 7],
-        (0, 3),
+        [45, 56, 34],
+        [23, 30, 34],
+        [7, 8, 7],
+        (0, 2),
         np.int64,
         np.float64,
         marks=pytest.mark.heavy,

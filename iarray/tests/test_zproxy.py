@@ -13,9 +13,9 @@ import iarray as ia
         (
             0,
             10,
-            [100, 120, 50],
-            [33, 21, 34],
-            [10, 10, 10],
+            [66, 91],
+            [33, 21],
+            [10, 10],
             "f8",
             False,
             "test_linspace_sparse.iarr",
@@ -34,14 +34,14 @@ import iarray as ia
         (
             0,
             10,
-            [55, 24, 31],
-            [55, 24, 15],
-            [25, 24, 10],
+            [55, 24],
+            [55, 24],
+            [25, 24],
             "float64",
             True,
             "test_linspace_contiguous.iarr",
         ),
-        (-0.1, -0.2, [4, 3, 5, 2], [4, 3, 5, 2], [4, 3, 5, 2], "f4", False, None),
+        (-0.1, -0.2, [4, 3, 5], [4, 3, 5], [4, 3, 5], "f4", False, None),
     ],
 )
 def test_linspace_zproxy(start, stop, shape, chunks, blocks, dtype, contiguous, urlpath):
@@ -123,9 +123,9 @@ def test_arange_zproxy(start, stop, shape, chunks, blocks, dtype, contiguous, ur
         pytest.param(
             -0.1,
             -0.10,
-            [10, 12, 21, 31, 11],
-            [4, 3, 5, 5, 2],
-            [2, 3, 2, 2, 1],
+            [10, 12, 21, 31],
+            [4, 3, 5, 5],
+            [2, 3, 2, 2],
             "float32",
             True,
             "test.fromfile2.iarr",
@@ -159,17 +159,6 @@ def test_from_file_zproxy(start, stop, shape, chunks, blocks, dtype, contiguous,
 @pytest.mark.parametrize(
     "start, stop, slice, shape, chunks, blocks, dtype, contiguous, urlpath",
     [
-        (
-            0,
-            10,
-            (slice(2, 4), slice(5, 10), slice(1, 2)),
-            [21, 31, 21],
-            [10, 12, 5],
-            [5, 16, 2],
-            "float64",
-            True,
-            None,
-        ),
         (
             -0.1,
             -0.2,
@@ -232,7 +221,7 @@ def test_slice_zproxy(start, stop, slice, shape, chunks, blocks, dtype, contiguo
     "shape, chunks, blocks, dtype, contiguous, urlpath",
     [
         pytest.param(
-            [134, 1234, 238],
+            [134, 412, 238],
             [10, 25, 35],
             [5, 15, 15],
             np.float64,
@@ -242,8 +231,7 @@ def test_slice_zproxy(start, stop, slice, shape, chunks, blocks, dtype, contiguo
         ),
         ([456, 431], [102, 16], [50, 16], np.float32, False, "test_zeros_sparse.iarr"),
         ([10, 12, 5], [10, 1, 1], [10, 1, 1], np.int16, False, None),
-        ([12, 16], [1, 4], [1, 3], np.uint8, True, None),
-        ([12, 16], [1, 16], [1, 16], "b", True, "test_zeros_contiguous.iarr"),
+        ([12, 16], [1, 16], [1, 16], "b", True, None),
     ],
 )
 def test_zeros_zproxy(shape, chunks, blocks, dtype, contiguous, urlpath):
@@ -270,7 +258,7 @@ def test_zeros_zproxy(shape, chunks, blocks, dtype, contiguous, urlpath):
     "shape, chunks, blocks, dtype, contiguous, urlpath",
     [
         pytest.param(
-            [456, 12, 234],
+            [356, 12, 134],
             [55, 6, 21],
             [6, 3, 11],
             np.float64,
@@ -279,7 +267,6 @@ def test_zeros_zproxy(shape, chunks, blocks, dtype, contiguous, urlpath):
             marks=pytest.mark.heavy,
         ),
         ([1024, 55], [66, 22], [22, 11], np.float32, True, "test_ones_contiguous.iarr"),
-        ([10, 12, 5], [5, 6, 5], [5, 6, 5], np.int8, True, None),
         ([120, 130], [45, 64], [25, 34], np.uint16, False, "test_ones_sparse.iarr"),
         ([10, 12, 5], [5, 6, 5], [5, 6, 5], np.bool_, True, None),
     ],
@@ -317,7 +304,7 @@ def test_ones_zproxy(shape, chunks, blocks, dtype, contiguous, urlpath):
             None,
             marks=pytest.mark.heavy,
         ),
-        (2.00001, [567, 375], [52, 16], [52, 16], np.float32, False, "test_full_sparse.iarr"),
+        (2.00001, [167, 75], [52, 16], [52, 16], np.float32, False, "test_full_sparse.iarr"),
         (8, [10, 12, 5], [5, 5, 5], [5, 5, 5], np.int32, True, "test_full_contiguous.iarr"),
         (True, [12, 16], [12, 16], [3, 5], np.bool_, False, None),
     ],
@@ -345,7 +332,7 @@ def test_full_zproxy(fill_value, shape, chunks, blocks, dtype, contiguous, urlpa
     "shape, chunks, blocks",
     [
         ([100, 100], [50, 50], [50, 50]),
-        pytest.param([20, 60, 30, 50], [10, 40, 10, 11], [5, 5, 5, 5], marks=pytest.mark.heavy),
+        pytest.param([20, 60, 30], [10, 40, 10], [5, 5, 5], marks=pytest.mark.heavy),
     ],
 )
 @pytest.mark.parametrize("dtype", [np.float32, np.int64, np.uint16])
@@ -633,7 +620,7 @@ def test_zproxy_attrs(shape, chunks, blocks, urlpath, dtype):
             None,
             marks=pytest.mark.heavy,
         ),
-        (np.float64, [567, 375], [52, 16], [52, 16], np.float32, False, "test_full_sparse.iarr"),
+        (np.float64, [367, 200], [52, 16], [52, 16], np.float32, False, "test_full_sparse.iarr"),
         (
             np.float32,
             [10, 12, 5],
