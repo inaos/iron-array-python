@@ -26,7 +26,7 @@ import numpy as np
             True,
             None,
         ),
-        (
+        pytest.param(
             [100, 100],
             [100, 100],
             [10, 10],
@@ -42,6 +42,7 @@ import numpy as np
             np.float32,
             False,
             "test_matmul_csparse.iarr",
+            marks=pytest.mark.heavy,
         ),
         (
             [100, 100],

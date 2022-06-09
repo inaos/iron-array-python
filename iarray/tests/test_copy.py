@@ -7,11 +7,11 @@ import numpy as np
     "shape, chunks, blocks",
     [
         ([100, 100], [50, 50], [20, 20]),
-        ([20, 10, 30, 20], [10, 4, 10, 11], [4, 5, 3, 7]),
+        ([20, 10, 30], [10, 4, 10], [4, 5, 3]),
         pytest.param(
-            [10, 13, 12, 14, 12, 10],
-            [5, 4, 6, 2, 3, 7],
-            [2, 2, 2, 2, 2, 2],
+            [10, 13, 12, 14, 12],
+            [5, 4, 6, 2, 3],
+            [2, 2, 2, 2, 2],
             marks=pytest.mark.heavy,
         ),
     ],
@@ -30,7 +30,6 @@ import numpy as np
 @pytest.mark.parametrize(
     "contiguous, urlpath, urlpath2",
     [
-        (False, None, None),
         (False, None, None),
         (True, None, None),
         (True, "test_copy.iarr", "test_copy2.iarr"),

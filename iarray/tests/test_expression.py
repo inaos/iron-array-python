@@ -105,7 +105,7 @@ import numpy as np
         ),
         pytest.param(
             ia.Eval.ITERCHUNK,
-            [100, 100, 55],
+            [40, 50, 55],
             [10, 5, 10],
             [3, 4, 3],
             np.float64,
@@ -145,7 +145,7 @@ import numpy as np
         ),
         pytest.param(
             ia.Eval.ITERCHUNK,
-            [100, 100, 55],
+            [100, 50, 55],
             [10, 5, 10],
             [3, 4, 3],
             np.float64,
@@ -211,9 +211,9 @@ import numpy as np
         ),
         pytest.param(
             ia.Eval.ITERCHUNK,
-            [8, 6, 7, 4, 5],
-            [2, 2, 2, 2, 2],
-            [2, 2, 2, 2, 2],
+            [8, 6, 7, 4],
+            [2, 2, 2, 2],
+            [2, 2, 2, 2],
             np.float32,
             None,
             "(x - cos(y)) * (sin(x) + y) + 2 * x + y",
@@ -410,24 +410,26 @@ def test_expression(
             True,
             "test_expression_ycontiguous.iarr",
         ),
-        (
+        pytest.param(
             "arctan2(x, y)",
             "atan2(x, y)",
             True,
             "test_expression_xcontiguous.iarr",
             False,
             "test_expression_ysparse.iarr",
+            marks=pytest.mark.heavy,
         ),
         ("ceil(x)", "ceil(x)", False, None, True, None),
         ("cos(x)", "cos(x)", True, None, False, None),
         ("cosh(x)", "cosh(x)", True, "test_expression_xcontiguous.iarr", False, None),
-        (
+        pytest.param(
             "exp(x)",
             "exp(x)",
             False,
             "test_expression_xsparse.iarr",
             True,
             "test_expression_ycontiguous.iarr",
+            marks=pytest.mark.heavy,
         ),
         ("floor(x)", "floor(x)", False, None, False, None),
         ("log(x)", "log(x)", True, None, False, None),
@@ -444,12 +446,12 @@ def test_expression(
         ("sin(x)", "sin(x)", True, None, True, None),
         ("sinh(x)", "sinh(x)", False, None, False, None),
         ("sqrt(x)", "sqrt(x)", True, "test_expression_xcontiugous.iarr", True, None),
-        ("tan(x)", "tan(x)", True, None, True, "test_expression_ycontiguous.iarr"),
+        pytest.param("tan(x)", "tan(x)", True, None, True, "test_expression_ycontiguous.iarr", marks=pytest.mark.heavy),
         ("tanh(x)", "tanh(x)", False, None, False, "test_expression_ysparse.iarr"),
     ],
 )
 def test_ufuncs(ufunc, ia_expr, xcontiguous, xurlpath, ycontiguous, yurlpath):
-    shape = [100, 200]
+    shape = [100, 150]
     chunks = [40, 40]
     bshape = [10, 17]
 
@@ -560,12 +562,12 @@ def test_ufuncs(ufunc, ia_expr, xcontiguous, xurlpath, ycontiguous, yurlpath):
         ("sin", True, "test_expression_xcontiguous.iarr", False, None),
         ("sinh", True, None, False, "test_expression_ysparse.iarr"),
         ("sqrt", False, None, True, None),
-        ("tan", False, "test_expression_xsparse.iarr", False, "test_expression_ysparse"),
+        pytest.param("tan", False, "test_expression_xsparse.iarr", False, "test_expression_ysparse", marks=pytest.mark.heavy),
         ("tanh", True, None, True, None),
     ],
 )
 def test_expr_ufuncs(ufunc, xcontiguous, xurlpath, ycontiguous, yurlpath):
-    shape = [200, 300]
+    shape = [100, 150]
     cshape = [40, 50]
     bshape = [20, 20]
 
@@ -683,18 +685,6 @@ def test_expr_ufuncs(ufunc, xcontiguous, xurlpath, ycontiguous, yurlpath):
             False,
             None,
         ),
-        (
-            "(x - z + t) * (x + y - z)",
-            "(x - z + t) * (x + y - z)",
-            False,
-            None,
-            False,
-            "test_expression_ysparse.iarr",
-            False,
-            "test_expression_zsparse.iarr",
-            True,
-            None,
-        ),
         pytest.param(
             "(x - z + t) * (z + t - x)",
             "(x - z + t) * (z + t - x)",
@@ -774,8 +764,8 @@ def test_expr_ufuncs(ufunc, xcontiguous, xurlpath, ycontiguous, yurlpath):
         ),
         # Use another order than before (precision needs to be relaxed a bit)
         (
-            "t.tan() * (x.sin() * x.sin() + y.cos()) + (z.sqrt() * 2)",
-            "np.tan(t) * (np.sin(x) * np.sin(x) + np.cos(y)) + (np.sqrt(z) * 2)",
+            "t.tan() * (x.sin() + y.cos()) + (z.sqrt() * 2)",
+            "np.tan(t) * (np.sin(x) + np.cos(y)) + (np.sqrt(z) * 2)",
             False,
             None,
             True,
@@ -799,7 +789,7 @@ def test_expr_fusion(
     tcontiguous,
     turlpath,
 ):
-    shape = [200, 300]
+    shape = [100, 200]
     chunks = [40, 50]
     bshape = [20, 20]
 
