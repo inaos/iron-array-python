@@ -1628,27 +1628,24 @@ def min(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwar
 def sum(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
     return a.sum(axis, cfg, **kwargs)
 
+
 @is_documented_by(IArray.prod)
 def prod(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
     return a.prod(axis, cfg, **kwargs)
+
 
 @is_documented_by(IArray.mean)
 def mean(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
     return a.mean(axis, cfg, **kwargs)
 
+
 @is_documented_by(IArray.std)
 def std(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
-    if not isinstance(axis, int):
-        if axis is None or len(axis) != 1:
-            raise AttributeError("Multiple axis reduction is not supported yet in std")
     return a.std(axis, cfg, **kwargs)
 
 
 @is_documented_by(IArray.var)
 def var(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
-    if not isinstance(axis, int):
-        if axis is None or len(axis) != 1:
-            raise AttributeError("Multiple axis reduction is not supported yet in var")
     return a.var(axis, cfg, **kwargs)
 
 
@@ -1684,17 +1681,11 @@ def nanmean(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **
 
 @is_documented_by(IArray.nanstd)
 def nanstd(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
-    if not isinstance(axis, int):
-        if axis is None or len(axis) != 1:
-            raise AttributeError("Multiple axis reduction is not supported yet in std")
     return a.nanstd(axis, cfg, **kwargs)
 
 
 @is_documented_by(IArray.nanvar)
 def nanvar(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
-    if not isinstance(axis, int):
-        if axis is None or len(axis) != 1:
-            raise AttributeError("Multiple axis reduction is not supported yet in var")
     return a.nanvar(axis, cfg, **kwargs)
 
 
