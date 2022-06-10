@@ -52,31 +52,6 @@ Exponents and logarithms
    log10
 
 
-Reductions
-==========
-
-.. autosummary::
-   :toctree: autofiles/ufuncs/
-   :nosignatures:
-
-   max
-   min
-   sum
-   prod
-   mean
-   var
-   std
-   median
-   nanmax
-   nanmin
-   nansum
-   nanprod
-   nanmean
-   nanvar
-   nanstd
-   nanmedian
-
-
 Miscellaneous
 =============
 .. autosummary::

@@ -112,4 +112,4 @@ Reductions
 
 .. seealso::
 
-   :ref:`Mathematical Functions`
+   :ref:`Reductions_doc`

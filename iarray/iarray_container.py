@@ -526,8 +526,9 @@ class IArray(ext.Container):
 
         Returns
         -------
-        abs: :ref:`IArray`
-           An array containing the absolute value of each element in x.
+        abs: :ref:`iarray.Expr`
+           A lazy expression that must be evaluated via `out.eval()`, which will compute the
+           absolute value of each element in x.
 
         References
         ----------
@@ -548,8 +549,9 @@ class IArray(ext.Container):
 
         Returns
         -------
-        angle: :ref:`IArray`
-            The angle of the ray intersecting the unit circle at the given x-coordinate in radians
+        angle: :ref:`iarray.Expr`
+            A lazy expression that must be evaluated via `out.eval()`, which will compute the
+            angle of the ray intersecting the unit circle at the given x-coordinate in radians
             :math:`[0, \\pi]`.
 
         Notes
@@ -577,8 +579,9 @@ class IArray(ext.Container):
 
         Returns
         -------
-        angle: :ref:`IArray`
-           The inverse sine of each element in :math:`x`, in radians and in the closed interval
+        angle: :ref:`iarray.Expr`
+           A lazy expression that must be evaluated via `out.eval()`, which will compute the inverse
+           sine of each element in :math:`x`, in radians and in the closed interval
            :math:`\\left[-\\frac{\\pi}{2}, \\frac{\\pi}{2}\\right]`.
 
         Notes
@@ -606,9 +609,9 @@ class IArray(ext.Container):
 
         Returns
         -------
-        angle: :ref:`IArray`
-            Array of angles in radians, in the range
-            :math:`\\left[-\\frac{\\pi}{2}, \\frac{\\pi}{2}\\right]`.
+        angle: :ref:`iarray.Expr`
+           A lazy expression that must be evaluated via `out.eval()`, which will compute the
+           angles in radians, in the range :math:`\\left[-\\frac{\\pi}{2}, \\frac{\\pi}{2}\\right]`.
 
         Notes
         -----
@@ -636,8 +639,9 @@ class IArray(ext.Container):
 
         Returns
         -------
-        angle: :ref:`IArray`
-            Array of angles in radians, in the range :math:`[-\\pi, \\pi]`.
+        angle: :ref:`iarray.Expr`
+            A lazy expression that must be evaluated via `out.eval()`, which will compute the
+            angles in radians, in the range :math:`[-\\pi, \\pi]`.
 
         References
         ----------
@@ -672,8 +676,9 @@ class IArray(ext.Container):
 
         Returns
         -------
-        out: :ref:`IArray`
-            The ceiling of each element in :math:`x`.
+        out: :ref:`iarray.Expr`
+            A lazy expression that must be evaluated via `out.eval()`, which will compute the
+            ceiling of each element in :math:`x`.
 
         References
         ----------
@@ -692,8 +697,9 @@ class IArray(ext.Container):
 
         Returns
         -------
-        out: :ref:`IArray`
-            The corresponding cosine values.
+        out: :ref:`iarray.Expr`
+            A lazy expression that must be evaluated via `out.eval()`, which will compute the actual
+            cosine values.
 
         References
         ----------
@@ -714,8 +720,9 @@ class IArray(ext.Container):
 
         Returns
         -------
-        out: :ref:`IArray`
-            The corresponding hyperbolic cosine values.
+        out: :ref:`iarray.Expr`
+            A lazy expression that must be evaluated via `out.eval()`, which will compute the actual
+            hyperbolic cosine values.
 
         References
         ----------
@@ -734,8 +741,9 @@ class IArray(ext.Container):
 
         Returns
         -------
-        out: :ref:`IArray`
-            Element-wise exponential of input data.
+        out: :ref:`iarray.Expr`
+            A lazy expression that must be evaluated via `out.eval()`, which will compute the
+            element-wise exponential of input data.
 
         References
         ----------
@@ -754,8 +762,9 @@ class IArray(ext.Container):
 
         Returns
         -------
-        out: :ref:`IArray`
-            The floor of each element in input data.
+        out: :ref:`iarray.Expr`
+            A lazy expression that must be evaluated via `out.eval()`, which will compute the
+            floor of each element in input data.
 
         References
         ----------
@@ -777,8 +786,9 @@ class IArray(ext.Container):
 
         Returns
         -------
-        out: :ref:`IArray`
-            The natural logarithm of input data, element-wise.
+        out: :ref:`iarray.Expr`
+            A lazy expression that must be evaluated via `out.eval()`, which will compute the
+            natural logarithm of input data, element-wise.
 
         References
         ----------
@@ -797,8 +807,9 @@ class IArray(ext.Container):
 
         Returns
         -------
-        out: :ref:`IArray`
-            The logarithm to the base 10 of input data, element-wise.
+        out: :ref:`iarray.Expr`
+            A lazy expression that must be evaluated via `out.eval()`, which will compute the
+            logarithm to the base 10 of input data, element-wise.
 
         References
         ----------
@@ -817,8 +828,9 @@ class IArray(ext.Container):
 
         Returns
         -------
-        out: :ref:`IArray`
-            Returned array :math:`out = -iarr`.
+        out: :ref:`iarray.Expr`
+            A lazy expression that must be evaluated via `out.eval()`, which will compute
+            :math:`out = -iarr`.
 
         References
         ----------
@@ -839,8 +851,9 @@ class IArray(ext.Container):
 
         Returns
         -------
-        out: :ref:`IArray`
-            The bases raised to the exponents.
+        out: :ref:`iarray.Expr`
+            A lazy expression that must be evaluated via `out.eval()`, which will compute the
+            bases raised to the exponents.
 
         References
         ----------
@@ -859,8 +872,9 @@ class IArray(ext.Container):
 
         Returns
         -------
-        out: :ref:`IArray`
-            The corresponding sine values.
+        out: :ref:`iarray.Expr`
+            A lazy expression that must be evaluated via `out.eval()`, which will compute the actual
+            sine values.
 
         References
         ----------
@@ -881,8 +895,9 @@ class IArray(ext.Container):
 
         Returns
         -------
-        out: :ref:`IArray`
-            The corresponding hyperbolic sine values.
+        out: :ref:`iarray.Expr`
+            A lazy expression that must be evaluated via `out.eval()`, which will compute the actual
+            hyperbolic sine values.
 
         References
         ----------
@@ -901,8 +916,9 @@ class IArray(ext.Container):
 
         Returns
         -------
-        out: :ref:`IArray`
-            An array containing the positive square-root of each element in input data.
+        out: :ref:`iarray.Expr`
+            A lazy expression that must be evaluated via `out.eval()`, which will compute the actual
+            positive square-root of each element in input data.
 
         References
         ----------
@@ -923,8 +939,9 @@ class IArray(ext.Container):
 
         Returns
         -------
-        out: :ref:`IArray`
-            The corresponding tangent values.
+        out: :ref:`iarray.Expr`
+            A lazy expression that must be evaluated via `out.eval()`, which will compute the actual
+            tangent values.
 
         References
         ----------
@@ -945,8 +962,9 @@ class IArray(ext.Container):
 
         Returns
         -------
-        out: :ref:`IArray`
-            The corresponding hyperbolic tangent values.
+        out: :ref:`iarray.Expr`
+            A lazy expression that must be evaluated via `out.eval()`, which will compute the actual
+            hyperbolic tangent values.
 
         References
         ----------
@@ -979,13 +997,10 @@ class IArray(ext.Container):
         min : :ref:`IArray` or float
             Minimum of a. If axis is None, the result is a value. If axis is given, the result is
             an array of dimension a.ndim - len(axis). The `dtype` is always the `dtype` of :paramref:`a`.
-            Note that in case this is called as a method, a LazyExpr subexpression object is returned.
-            This is meant to be part of lazy expressions.
         """
         cfg = self.cfg if cfg is None else cfg
         with ia.config(cfg=cfg) as cfg:
-            res = reduce(self, ia.Reduce.MIN, axis, cfg, **kwargs)
-        return ia.LazyExpr(new_op=(res, None, None))
+            return reduce(self, ia.Reduce.MIN, axis, cfg, **kwargs)
 
     def max(self, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
         """
@@ -1012,13 +1027,10 @@ class IArray(ext.Container):
         max : :ref:`IArray` or float
             Maximum of a. If axis is None, the result is a value. If axis is given, the result is
             an array of dimension a.ndim - len(axis). The `dtype` is always the `dtype` of :paramref:`a`.
-            Note that in case this is called as a method, a LazyExpr subexpression object is returned.
-            This is meant to be part of lazy expressions.
         """
         cfg = self.cfg if cfg is None else cfg
         with ia.config(cfg=cfg) as cfg:
-            res = reduce(self, ia.Reduce.MAX, axis, cfg, **kwargs)
-        return ia.LazyExpr(new_op=(res, None, None))
+            return reduce(self, ia.Reduce.MAX, axis, cfg, **kwargs)
 
     def sum(self, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
         """
@@ -1039,18 +1051,17 @@ class IArray(ext.Container):
         kwargs : dict
             A dictionary for setting some or all of the fields in the :class:`Config` dataclass that should
             override the current configuration.
+
         Returns
         -------
         sum : :ref:`IArray` or float
             Sum of a. If axis is None, the result is a value. If axis is given, the result is
             an array of dimension a.ndim - len(axis). Its `dtype` is `np.int64` for integers and bools,
             `np.uint64` for unsigned integers and the `dtype` of :paramref:`a` otherwise.
-            Note that in case this is called as a method, a LazyExpr subexpression object is returned.
-            This is meant to be part of lazy expressions.
         """
+        cfg = self.cfg if cfg is None else cfg
         with ia.config(cfg=self.cfg) as cfg:
-            res = reduce(self, ia.Reduce.SUM, axis, cfg, **kwargs)
-        return ia.LazyExpr(new_op=(res, None, None))
+            return reduce(self, ia.Reduce.SUM, axis, cfg, **kwargs)
 
     def prod(self, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
         """
@@ -1078,13 +1089,10 @@ class IArray(ext.Container):
             Product of a. If axis is None, the result is a value. If axis is given, the result is
             an array of dimension a.ndim - len(axis). Its `dtype` is `np.int64` for integers and bools,
             `np.uint64` for unsigned integers and the `dtype` of :paramref:`a` otherwise.
-            Note that in case this is called as a method, a LazyExpr subexpression object is returned.
-            This is meant to be part of lazy expressions.
         """
         cfg = self.cfg if cfg is None else cfg
         with ia.config(cfg=cfg) as cfg:
-            res = reduce(self, ia.Reduce.PROD, axis, cfg, **kwargs)
-        return ia.LazyExpr(new_op=(res, None, None))
+            return reduce(self, ia.Reduce.PROD, axis, cfg, **kwargs)
 
     def mean(self, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
         """
@@ -1112,13 +1120,10 @@ class IArray(ext.Container):
             Mean of a. If axis is None, the result is a value. If axis is given, the result is
             an array of dimension a.ndim - len(axis). Its `dtype` is `np.float32` when the `dtype` of
             :paramref:`a` is `np.float32` and `np.float64` otherwise.
-            Note that in case this is called as a method, a LazyExpr subexpression object is returned.
-            This is meant to be part of lazy expressions.
         """
         cfg = self.cfg if cfg is None else cfg
         with ia.config(cfg=cfg) as cfg:
-            res = reduce(self, ia.Reduce.MEAN, axis, cfg, **kwargs)
-        return ia.LazyExpr(new_op=(res, None, None))
+            return reduce(self, ia.Reduce.MEAN, axis, cfg, **kwargs)
 
     def std(self, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
         """Returns the standard deviation, a measure of the spread of a distribution,
@@ -1147,13 +1152,10 @@ class IArray(ext.Container):
             Standard deviation of a. If axis is None, the result is a value. If axis is given, the result is
             an array of dimension a.ndim - len(axis). Its `dtype` is `np.float32` when the `dtype` of
             :paramref:`a` is `np.float32` and `np.float64` otherwise.
-            Note that in case this is called as a method, a LazyExpr subexpression object is returned.
-            This is meant to be part of lazy expressions.
         """
         cfg = self.cfg if cfg is None else cfg
         with ia.config(cfg=cfg) as cfg:
-            res = reduce(self, ia.Reduce.STD, axis, cfg, **kwargs)
-        return ia.LazyExpr(new_op=(res, None, None))
+            return reduce(self, ia.Reduce.STD, axis, cfg, **kwargs)
 
     def var(self, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
         """Compute the variance along the specified axis. Returns the variance of the array elements,
@@ -1182,13 +1184,10 @@ class IArray(ext.Container):
             Variance of a. If axis is None, the result is a value. If axis is given, the result is
             an array of dimension a.ndim - len(axis). Its `dtype` is `np.float32` when the `dtype` of
             :paramref:`a` is `np.float32` and `np.float64` otherwise.
-            Note that in case this is called as a method, a LazyExpr subexpression object is returned.
-            This is meant to be part of lazy expressions.
         """
         cfg = self.cfg if cfg is None else cfg
         with ia.config(cfg=cfg) as cfg:
-            res = reduce(self, ia.Reduce.VAR, axis, cfg, **kwargs)
-        return ia.LazyExpr(new_op=(res, None, None))
+            return reduce(self, ia.Reduce.VAR, axis, cfg, **kwargs)
 
     def median(self, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
         """
@@ -1216,13 +1215,10 @@ class IArray(ext.Container):
             Median of a. If axis is None, the result is a value. If axis is given, the result is
             an array of dimension a.ndim - len(axis). Its `dtype` is `np.float32` when the `dtype` of
             :paramref:`a` is `np.float32` and `np.float64` otherwise.
-            Note that in case this is called as a method, a LazyExpr subexpression object is returned.
-            This is meant to be part of lazy expressions.
         """
         cfg = self.cfg if cfg is None else cfg
         with ia.config(cfg=cfg) as cfg:
-            res = reduce(self, ia.Reduce.MEDIAN, axis, cfg, **kwargs)
-        return ia.LazyExpr(new_op=(res, None, None))
+            return reduce(self, ia.Reduce.MEDIAN, axis, cfg, **kwargs)
 
     def nanmin(self, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
         """
@@ -1249,8 +1245,6 @@ class IArray(ext.Container):
         min : :ref:`IArray` or float
             Minimum of a. If axis is None, the result is a value. If axis is given, the result is
             an array of dimension a.ndim - len(axis). The `dtype` is always the `dtype` of :paramref:`a`.
-            Note that in case this is called as a method, a LazyExpr subexpression object is returned.
-            This is meant to be part of lazy expressions.
 
         See Also
         --------
@@ -1258,8 +1252,7 @@ class IArray(ext.Container):
         """
         cfg = self.cfg if cfg is None else cfg
         with ia.config(cfg=cfg) as cfg:
-            res = reduce(self, ia.Reduce.NAN_MIN, axis, cfg, **kwargs)
-        return ia.LazyExpr(new_op=(res, None, None))
+            return reduce(self, ia.Reduce.NAN_MIN, axis, cfg, **kwargs)
 
     def nanmax(self, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
         """
@@ -1286,8 +1279,6 @@ class IArray(ext.Container):
         max : :ref:`IArray` or float
             Maximum of a. If axis is None, the result is a value. If axis is given, the result is
             an array of dimension a.ndim - len(axis). The `dtype` is always the `dtype` of :paramref:`a`.
-            Note that in case this is called as a method, a LazyExpr subexpression object is returned.
-            This is meant to be part of lazy expressions.
 
         See Also
         --------
@@ -1295,8 +1286,7 @@ class IArray(ext.Container):
         """
         cfg = self.cfg if cfg is None else cfg
         with ia.config(cfg=cfg) as cfg:
-            res = reduce(self, ia.Reduce.NAN_MAX, axis, cfg, **kwargs)
-        return ia.LazyExpr(new_op=(res, None, None))
+            return reduce(self, ia.Reduce.NAN_MAX, axis, cfg, **kwargs)
 
     def nansum(self, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
         """
@@ -1317,21 +1307,20 @@ class IArray(ext.Container):
         kwargs : dict
             A dictionary for setting some or all of the fields in the :class:`Config` dataclass that should
             override the current configuration.
+
         Returns
         -------
         sum : :ref:`IArray` or float
             Sum of a. If axis is None, the result is a value. If axis is given, the result is
             an array of dimension a.ndim - len(axis). The `dtype` is always the `dtype` of :paramref:`a`.
-            Note that in case this is called as a method, a LazyExpr subexpression object is returned.
-            This is meant to be part of lazy expressions.
+
         See Also
         --------
         sum
         """
         cfg = self.cfg if cfg is None else cfg
         with ia.config(cfg=cfg) as cfg:
-            res = reduce(self, ia.Reduce.NAN_SUM, axis, cfg, **kwargs)
-        return ia.LazyExpr(new_op=(res, None, None))
+            return reduce(self, ia.Reduce.NAN_SUM, axis, cfg, **kwargs)
 
     def nanprod(self, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
         """Return the product of array elements over a given axis ignoring NaNs.
@@ -1351,21 +1340,20 @@ class IArray(ext.Container):
         kwargs : dict
             A dictionary for setting some or all of the fields in the :class:`Config` dataclass that should
             override the current configuration.
+
         Returns
         -------
         prod : :ref:`IArray` or float
             Product of a. If axis is None, the result is a value. If axis is given, the result is
             an array of dimension a.ndim - len(axis). The `dtype` is always the `dtype` of :paramref:`a`.
-            Note that in case this is called as a method, a LazyExpr subexpression object is returned.
-            This is meant to be part of lazy expressions.
+
         See Also
         --------
         prod
         """
         cfg = self.cfg if cfg is None else cfg
         with ia.config(cfg=cfg) as cfg:
-            res = reduce(self, ia.Reduce.NAN_PROD, axis, cfg, **kwargs)
-        return ia.LazyExpr(new_op=(res, None, None))
+            return reduce(self, ia.Reduce.NAN_PROD, axis, cfg, **kwargs)
 
     def nanmean(self, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
         """Compute the arithmetic mean along the specified axis ignoring NaNs.
@@ -1385,13 +1373,12 @@ class IArray(ext.Container):
         kwargs : dict
             A dictionary for setting some or all of the fields in the :class:`Config` dataclass that should
             override the current configuration.
+
         Returns
         -------
         mean : :ref:`IArray` or float
             Mean of a. If axis is None, the result is a value. If axis is given, the result is
             an array of dimension a.ndim - len(axis). The `dtype` is always the `dtype` of :paramref:`a`.
-            Note that in case this is called as a method, a LazyExpr subexpression object is returned.
-            This is meant to be part of lazy expressions.
 
         See Also
         --------
@@ -1399,8 +1386,7 @@ class IArray(ext.Container):
         """
         cfg = self.cfg if cfg is None else cfg
         with ia.config(cfg=cfg) as cfg:
-            res = reduce(self, ia.Reduce.NAN_MEAN, axis, cfg, **kwargs)
-        return ia.LazyExpr(new_op=(res, None, None))
+            return reduce(self, ia.Reduce.NAN_MEAN, axis, cfg, **kwargs)
 
     def nanstd(self, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
         """Returns the standard deviation  ignoring NaNs.
@@ -1420,13 +1406,12 @@ class IArray(ext.Container):
         kwargs : dict
             A dictionary for setting some or all of the fields in the :class:`Config` dataclass that should
             override the current configuration.
+
         Returns
         -------
         std : :ref:`IArray` or float
             Standard deviation of a. If axis is None, the result is a value. If axis is given, the result is
             an array of dimension a.ndim - len(axis). The `dtype` is always the `dtype` of :paramref:`a`.
-            Note that in case this is called as a method, a LazyExpr subexpression object is returned.
-            This is meant to be part of lazy expressions.
 
         See Also
         --------
@@ -1434,8 +1419,7 @@ class IArray(ext.Container):
         """
         cfg = self.cfg if cfg is None else cfg
         with ia.config(cfg=cfg) as cfg:
-            res = reduce(self, ia.Reduce.NAN_STD, axis, cfg, **kwargs)
-        return ia.LazyExpr(new_op=(res, None, None))
+            return reduce(self, ia.Reduce.NAN_STD, axis, cfg, **kwargs)
 
     def nanvar(self, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
         """Compute the variance along the specified axis ignoring NaNs. The variance is computed for the flattened
@@ -1456,13 +1440,12 @@ class IArray(ext.Container):
         kwargs : dict
             A dictionary for setting some or all of the fields in the :class:`Config` dataclass that should
             override the current configuration.
+
         Returns
         -------
         var : :ref:`IArray` or float
             Variance of a. If axis is None, the result is a value. If axis is given, the result is
             an array of dimension a.ndim - len(axis). The `dtype` is always the `dtype` of :paramref:`a`.
-            Note that in case this is called as a method, a LazyExpr subexpression object is returned.
-            This is meant to be part of lazy expressions.
 
         See Also
         --------
@@ -1470,8 +1453,7 @@ class IArray(ext.Container):
         """
         cfg = self.cfg if cfg is None else cfg
         with ia.config(cfg=cfg) as cfg:
-            res = reduce(self, ia.Reduce.NAN_VAR, axis, cfg, **kwargs)
-        return ia.LazyExpr(new_op=(res, None, None))
+            return reduce(self, ia.Reduce.NAN_VAR, axis, cfg, **kwargs)
 
     def nanmedian(self, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
         """Compute the median ignoring NaNs along the specified axis. Returns the median of the array elements.
@@ -1497,8 +1479,6 @@ class IArray(ext.Container):
         median : :ref:`IArray` or float
             Median of a. If axis is None, the result is a value. If axis is given, the result is
             an array of dimension a.ndim - len(axis). The `dtype` is always the `dtype` of :paramref:`a`.
-            Note that in case this is called as a method, a LazyExpr subexpression object is returned.
-            This is meant to be part of lazy expressions.
 
         See Also
         --------
@@ -1506,8 +1486,7 @@ class IArray(ext.Container):
         """
         cfg = self.cfg if cfg is None else cfg
         with ia.config(cfg=cfg) as cfg:
-            res = reduce(self, ia.Reduce.NAN_MEDIAN, axis, cfg, **kwargs)
-        return ia.LazyExpr(new_op=(res, None, None))
+            return reduce(self, ia.Reduce.NAN_MEDIAN, axis, cfg, **kwargs)
 
     @attrs.setter
     def attrs(self, value):
@@ -1637,32 +1616,32 @@ def reduce(
 
 @is_documented_by(IArray.max)
 def max(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
-    return reduce(a, ia.Reduce.MAX, axis, cfg, **kwargs)
+    return a.max(axis, cfg, **kwargs)
 
 
 @is_documented_by(IArray.min)
 def min(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
-    return reduce(a, ia.Reduce.MIN, axis, cfg, **kwargs)
+    return a.min(axis, cfg, **kwargs)
 
 
 @is_documented_by(IArray.sum)
 def sum(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
-    return reduce(a, ia.Reduce.SUM, axis, cfg, **kwargs)
+    return a.sum(axis, cfg, **kwargs)
 
 @is_documented_by(IArray.prod)
 def prod(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
-    return reduce(a, ia.Reduce.PROD, axis, cfg, **kwargs)
+    return a.prod(axis, cfg, **kwargs)
 
 @is_documented_by(IArray.mean)
 def mean(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
-    return reduce(a, ia.Reduce.MEAN, axis, cfg, **kwargs)
+    return a.mean(axis, cfg, **kwargs)
 
 @is_documented_by(IArray.std)
 def std(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
     if not isinstance(axis, int):
         if axis is None or len(axis) != 1:
             raise AttributeError("Multiple axis reduction is not supported yet in std")
-    return reduce(a, ia.Reduce.STD, axis, cfg, **kwargs)
+    return a.std(axis, cfg, **kwargs)
 
 
 @is_documented_by(IArray.var)
@@ -1670,37 +1649,37 @@ def var(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwar
     if not isinstance(axis, int):
         if axis is None or len(axis) != 1:
             raise AttributeError("Multiple axis reduction is not supported yet in var")
-    return reduce(a, ia.Reduce.VAR, axis, cfg, **kwargs)
+    return a.var(axis, cfg, **kwargs)
 
 
 @is_documented_by(IArray.median)
 def median(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
-    return reduce(a, ia.Reduce.MEDIAN, axis, cfg, **kwargs)
+    return a.median(axis, cfg, **kwargs)
 
 
 @is_documented_by(IArray.nanmax)
 def nanmax(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
-    return reduce(a, ia.Reduce.NAN_MAX, axis, cfg, **kwargs)
+    return a.nanmax(axis, cfg, **kwargs)
 
 
 @is_documented_by(IArray.nanmin)
 def nanmin(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
-    return reduce(a, ia.Reduce.NAN_MIN, axis, cfg, **kwargs)
+    return a.nanmin(axis, cfg, **kwargs)
 
 
 @is_documented_by(IArray.nansum)
 def nansum(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
-    return reduce(a, ia.Reduce.NAN_SUM, axis, cfg, **kwargs)
+    return a.nansum(axis, cfg, **kwargs)
 
 
 @is_documented_by(IArray.nanprod)
 def nanprod(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
-    return reduce(a, ia.Reduce.NAN_PROD, axis, cfg, **kwargs)
+    return a.nanprod(axis, cfg, **kwargs)
 
 
 @is_documented_by(IArray.nanmean)
 def nanmean(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
-    return reduce(a, ia.Reduce.NAN_MEAN, axis, cfg, **kwargs)
+    return a.nanmean(axis, cfg, **kwargs)
 
 
 @is_documented_by(IArray.nanstd)
@@ -1708,7 +1687,7 @@ def nanstd(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **k
     if not isinstance(axis, int):
         if axis is None or len(axis) != 1:
             raise AttributeError("Multiple axis reduction is not supported yet in std")
-    return reduce(a, ia.Reduce.NAN_STD, axis, cfg, **kwargs)
+    return a.nanstd(axis, cfg, **kwargs)
 
 
 @is_documented_by(IArray.nanvar)
@@ -1716,12 +1695,12 @@ def nanvar(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **k
     if not isinstance(axis, int):
         if axis is None or len(axis) != 1:
             raise AttributeError("Multiple axis reduction is not supported yet in var")
-    return reduce(a, ia.Reduce.NAN_VAR, axis, cfg, **kwargs)
+    return a.nanvar(axis, cfg, **kwargs)
 
 
 @is_documented_by(IArray.nanmedian)
 def nanmedian(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
-    return reduce(a, ia.Reduce.NAN_MEDIAN, axis, cfg, **kwargs)
+    return a.nanmedian(axis, cfg, **kwargs)
 
 
 # Linear Algebra
