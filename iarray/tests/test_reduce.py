@@ -73,11 +73,11 @@ def test_reduce(
     b1 = getattr(ia, rfunc)(a1, axis=axis, urlpath="test_reduce_res.iarr", mode=mode)
 
     if out_dtype in [np.float64, np.float32] or rfunc == "mean":
-        rtol = 1e-6 if out_dtype == np.float32 else 1e-14
         if b2.ndim == 0:
-            isclose(b1, b2, rel_tol=rtol, abs_tol=0.0)
+            isclose(b1, b2)
         else:
-            np.testing.assert_allclose(ia.iarray2numpy(b1), b2, rtol=rtol, atol=0)
+            tol = 1e-5 if dtype is np.float32 else 1e-14
+            np.testing.assert_allclose(ia.iarray2numpy(b1), b2, rtol=tol, atol=tol)
     else:
         if b2.ndim == 0:
             assert b1 == b2
@@ -120,10 +120,6 @@ def test_reduce_nan(
     ia.remove_urlpath(urlpath)
     ia.remove_urlpath("test_reduce_nan_res.iarr")
     out_dtype = dtype if np_dtype is None else np.dtype(np_dtype)
-
-    if rfunc in ["nanvar", "nanstd"] and not isinstance(axis, int):
-        if axis is None or len(axis) != 1:
-            pytest.skip("cannot compute multiple axis reduction with this rfunc")
 
     if (
         np_dtype is not None
