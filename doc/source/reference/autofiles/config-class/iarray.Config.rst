@@ -12,17 +12,4 @@
    .. rubric:: Methods
 
    .. autosummary::
-   
       ~Config.__init__
-   
-   
-
-   
-   
-   .. rubric:: Attributes
-
-   .. autosummary::
-   
-      ~Config.store
-   
-   

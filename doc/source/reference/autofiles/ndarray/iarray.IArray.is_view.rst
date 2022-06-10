@@ -3,4 +3,4 @@
 
 .. currentmodule:: iarray
 
-.. automethod:: IArray.is_view
+.. autoattribute:: IArray.is_view

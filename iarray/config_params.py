@@ -426,7 +426,7 @@ class Config(ext.Config):
         if self.zfp_meta is None:
             self.zfp_meta = 0
         if defaults.check_compat:
-            self.check_config_params()
+            self._check_config_params()
         # Restore variable for next time
         defaults.compat_params = set()
         defaults.check_compat = True
@@ -503,7 +503,7 @@ class Config(ext.Config):
         cfg = Config(**kwargs)
         return cfg
 
-    def check_config_params(self, **kwargs):
+    def _check_config_params(self, **kwargs):
         # Check incompatibilities
         # dtype set when np_dtype also set
         if kwargs != {} and "np_dtype" in kwargs:
@@ -645,7 +645,7 @@ def set_config_defaults(cfg: Config = None, shape=None, **kwargs):
         cfg = copy.deepcopy(cfg)
 
     if kwargs != {}:
-        cfg.check_config_params(**kwargs)
+        cfg._check_config_params(**kwargs)
         # The default when creating frames on-disk is to use contiguous storage (mainly because of performance  reasons)
         if (
             kwargs.get("contiguous", None) is None
