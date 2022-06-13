@@ -265,7 +265,7 @@ jobs:
       # LLVM 13 from conda-forge is not working for windows yet
       # See also other reasons in azure-pipelines.yml
       # Let's try with latest llvmdev again (locally everything seems good here)
-      # conda install -y -c conda-forge 'llvmdev>=13'
+      # conda install -y -c conda-forge 'llvmdev>=14'
       # Tried the above, but on Win, the conda-forge lib still does not link properly
       conda install -y -c numba 'llvmdev'
       conda install -y cython  # apparently cython from PyPI is not good for win
