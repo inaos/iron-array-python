@@ -8,7 +8,7 @@ from time import time
 import numpy as np
 
 import iarray as ia
-from iarray.udf import jit, Array, float64, int64
+from iarray.udf import jit, Array, float64
 
 
 # Number of iterations per benchmark
@@ -23,7 +23,7 @@ ia.set_config_defaults(favor=ia.Favor.SPEED, dtype=dtype)
 
 
 @jit
-def f(out: Array(float64, 2), x: Array(float64, 2)) -> int64:
+def f(out: Array(float64, 2), x: Array(float64, 2)) -> int:
     n = x.window_shape[0]
     m = x.window_shape[1]
     for i in range(n):

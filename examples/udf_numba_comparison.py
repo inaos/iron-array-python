@@ -28,7 +28,7 @@ np_a1 = np.linspace(0, 10, shape[0])
 
 
 @jit
-def func_udf(y: Array(float64, 1), x: Array(float64, 1)) -> int64:
+def func_udf(y: Array(float64, 1), x: Array(float64, 1)) -> int:
     n = x.shape[0]
     for i in range(n):
         s = math.sin(x[i])

@@ -18,7 +18,7 @@ ia.set_config_defaults(favor=ia.Favor.SPEED, dtype=dtype)
 
 
 @jit
-def tri(out: Array(float64, 2), k: int64) -> int64:
+def tri(out: Array(float64, 2), k: int64) -> int:
     n = out.window_shape[0]
     m = out.window_shape[1]
     row_start = out.window_start[0]
