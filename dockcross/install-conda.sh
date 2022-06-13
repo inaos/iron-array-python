@@ -39,8 +39,8 @@ conda clean -tipy
 # LLVM 13 should be necessary for calling int intrinsics, but these do not work yet
 # conda install -y -c conda-forge 'llvmdev>=13'
 # New attempt with LLVM 14 in conda-forge
-conda install -y -c conda-forge 'llvmdev>=14'
-# conda install -y -c conda-forge/label/cf202003 'llvmdev>=13'
+# conda install -y -c conda-forge 'llvmdev>=14'
+conda install -y -c conda-forge/label/cf202003 'llvmdev>=14'
 conda install -y --quiet -c intel mkl-include
 conda install -y --quiet -c intel mkl-static
 conda install -y --quiet -c intel icc_rt
