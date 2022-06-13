@@ -87,19 +87,19 @@ steps:
     conda install -y -c intel icc_rt
     # LLVM 13 is necessary for calling int intrinsics, but:
     # 1) LLVM 13 from conda-forge is not working for windows yet
-    # 2) It is not compatible enough with llvmlite
+    # 2) It is not compatible for building wheels for Linux (Mac seems fine)
     # conda install -y -c conda-forge 'llvmdev>=13'
     # So, let's keep using llvmdev in the numba channel, as they maintain compatible versions
-    # conda install -y -c numba 'llvmdev'
+    conda install -y -c numba 'llvmdev'
     # For some reason, Win continues to prefer the llvmdev in the numba channel,
-    # but the one in conda-forge (14) works just well on Linux and Mac
-    if [ "$AGENT_OS" == "Windows_NT" ]
-      then
-        conda install -y -c numba 'llvmdev'
-    else
-        # LLVM 13 is necessary for calling int intrinsics
-        conda install -y -c conda-forge 'llvmdev>=14'
-    fi
+    # but the one in conda-forge (14) works just well on Linux and Mac (but not for wheels yet)
+    # if [ "$AGENT_OS" == "Windows_NT" ]
+    #   then
+    #     conda install -y -c numba 'llvmdev'
+    # else
+    #     # LLVM 13 is necessary for calling int intrinsics
+    #     conda install -y -c conda-forge 'llvmdev>=14'
+    # fi
 
     conda install -y cython  # apparently cython from PyPI is not good for win, and this works well for unix too
   displayName: Download dependencies

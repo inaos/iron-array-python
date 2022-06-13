@@ -144,8 +144,9 @@ jobs:
       # LLVM 13 is necessary for calling int intrinsics, but we will stick with the LLVM
       # in the numba channel (currently 11); see azure-pipelines.yml for why.
       # Let's try with latest llvmdev again (locally everything seems good here)
-      conda install -y -c conda-forge 'llvmdev>=13'
-      # conda install -y -c numba 'llvmdev'
+      # Unfortunately, this is not good when building wheels for Linux (Mac seems fine)
+      # conda install -y -c conda-forge 'llvmdev>=14'
+      conda install -y -c numba 'llvmdev'
       # For unix, cython can be installed from either PyPI or conda
       # python -m pip install cython
       conda install -y cython
