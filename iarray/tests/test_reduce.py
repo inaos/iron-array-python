@@ -46,10 +46,6 @@ def test_reduce(
     ia.remove_urlpath("test_reduce_res.iarr")
     out_dtype = dtype if np_dtype is None else np.dtype(np_dtype)
 
-    if rfunc in ["var", "std"] and not isinstance(axis, int):
-        if axis is None or len(axis) != 1:
-            pytest.skip("cannot compute multiple axis reduction with this rfunc")
-
     if (
         np_dtype is not None
         and out_dtype.str[1] in ["M", "m"]
@@ -72,7 +68,7 @@ def test_reduce(
         mode = "a"
     b1 = getattr(ia, rfunc)(a1, axis=axis, urlpath="test_reduce_res.iarr", mode=mode)
 
-    if out_dtype in [np.float64, np.float32] or rfunc == "mean":
+    if out_dtype in [np.float64, np.float32] or rfunc in ("mean", "var"):
         if b2.ndim == 0:
             isclose(b1, b2)
         else:
