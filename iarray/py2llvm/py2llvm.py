@@ -1150,6 +1150,7 @@ class Function:
         return type(param.type) is type and issubclass(param.type, types.ComplexType)
 
     def get_py_signature(self, signature):
+        self.is_scalar = True
         inspect_signature = inspect.signature(self.py_function)
         if signature is not None:
             assert len(signature) == len(inspect_signature.parameters) + 1
@@ -1388,7 +1389,8 @@ class LLVM:
             function = self.fclass(self, py_function, signature, f_globals, optimize)
             if function.can_be_compiled():
                 function.compile(node=ast, debug=debug)
-            if lib is not None:
+            if function.is_scalar:
+                # Register scalar UDFs only
                 ia.udf_registry[lib] = function
             return function
 

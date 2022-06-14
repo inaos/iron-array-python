@@ -160,6 +160,7 @@ class Function(py2llvm.Function):
         reduce the risk of breaking current behaviour.
         """
         signature = super().get_py_signature(signature)
+        self.is_scalar = False
 
         idx = 0
         for i, param in enumerate(signature.parameters):

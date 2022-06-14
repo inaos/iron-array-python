@@ -107,7 +107,7 @@ def cmp_udf_np_strict(f, start, stop, shape, partitions, dtype, cparams):
     ia.cmp_arrays(out, out_ref)
 
 
-@udf.jit
+@udf.jit()
 def f_1dim(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1)):
     n = out.shape[0]
     for i in range(n):
