@@ -7,6 +7,9 @@
 * Make sure that `RELEASE-NOTES.md` and `ANNOUNCE.md` are up to date with
  the latest news in the release.
 
+* Re-run tutorials and benchmarks in the `iron-array-notebooks` submodule.  Update
+ any possible change in the API or issue that it might appear.
+
 * Check that `__version__` in `iarray/__init__.py` file contains the correct number.
 
 * Commit the changes:
