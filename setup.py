@@ -82,7 +82,7 @@ setup(
     version=get_version("iarray/__init__.py"),
     description=DESCRIPTION,
     # long_description=LONG_DESCRIPTION,
-    python_requires=">=3.7",
+    python_requires=">=3.8",
     extras_require={"doc": doc_deps, "examples": examples_deps},
     **package_info,
 )
