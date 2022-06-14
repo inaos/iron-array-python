@@ -136,7 +136,10 @@ def test_reduce_nan(
         with pytest.raises(IOError):
             getattr(ia, rfunc)(a1, axis=axis, urlpath="test_reduce_nan_res.iarr", mode=mode)
         mode = "a"
-    b1 = getattr(ia, rfunc)(a1, axis=axis, urlpath="test_reduce_nan_res.iarr", mode=mode)
+    if urlpath is not None:
+        b1 = getattr(ia, rfunc)(a1, axis=axis, mode=mode)
+    else:
+        b1 = getattr(ia, rfunc)(a1, axis=axis, urlpath="test_reduce_nan_res.iarr", mode=mode)
 
     if out_dtype in [np.float64, np.float32] or rfunc == "nanmean":
         rtol = 1e-6 if out_dtype == np.float32 else 1e-14
