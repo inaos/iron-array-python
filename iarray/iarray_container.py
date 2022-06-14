@@ -998,7 +998,9 @@ class IArray(ext.Container):
             Minimum of a. If axis is None, the result is a value. If axis is given, the result is
             an array of dimension a.ndim - len(axis). The `dtype` is always the `dtype` of :paramref:`a`.
         """
-        cfg = self.cfg if cfg is None else cfg
+        if cfg is None:
+            cfg = self.cfg
+            cfg.urlpath = None
         with ia.config(cfg=cfg) as cfg:
             return reduce(self, ia.Reduce.MIN, axis, cfg, **kwargs)
 
@@ -1028,7 +1030,9 @@ class IArray(ext.Container):
             Maximum of a. If axis is None, the result is a value. If axis is given, the result is
             an array of dimension a.ndim - len(axis). The `dtype` is always the `dtype` of :paramref:`a`.
         """
-        cfg = self.cfg if cfg is None else cfg
+        if cfg is None:
+            cfg = self.cfg
+            cfg.urlpath = None
         with ia.config(cfg=cfg) as cfg:
             return reduce(self, ia.Reduce.MAX, axis, cfg, **kwargs)
 
@@ -1059,8 +1063,10 @@ class IArray(ext.Container):
             an array of dimension a.ndim - len(axis). Its `dtype` is `np.int64` for integers and bools,
             `np.uint64` for unsigned integers and the `dtype` of :paramref:`a` otherwise.
         """
-        cfg = self.cfg if cfg is None else cfg
-        with ia.config(cfg=self.cfg) as cfg:
+        if cfg is None:
+            cfg = self.cfg
+            cfg.urlpath = None
+        with ia.config(cfg=cfg) as cfg:
             return reduce(self, ia.Reduce.SUM, axis, cfg, **kwargs)
 
     def prod(self, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
@@ -1090,7 +1096,9 @@ class IArray(ext.Container):
             an array of dimension a.ndim - len(axis). Its `dtype` is `np.int64` for integers and bools,
             `np.uint64` for unsigned integers and the `dtype` of :paramref:`a` otherwise.
         """
-        cfg = self.cfg if cfg is None else cfg
+        if cfg is None:
+            cfg = self.cfg
+            cfg.urlpath = None
         with ia.config(cfg=cfg) as cfg:
             return reduce(self, ia.Reduce.PROD, axis, cfg, **kwargs)
 
@@ -1121,7 +1129,9 @@ class IArray(ext.Container):
             an array of dimension a.ndim - len(axis). Its `dtype` is `np.float32` when the `dtype` of
             :paramref:`a` is `np.float32` and `np.float64` otherwise.
         """
-        cfg = self.cfg if cfg is None else cfg
+        if cfg is None:
+            cfg = self.cfg
+            cfg.urlpath = None
         with ia.config(cfg=cfg) as cfg:
             return reduce(self, ia.Reduce.MEAN, axis, cfg, **kwargs)
 
@@ -1153,7 +1163,9 @@ class IArray(ext.Container):
             an array of dimension a.ndim - len(axis). Its `dtype` is `np.float32` when the `dtype` of
             :paramref:`a` is `np.float32` and `np.float64` otherwise.
         """
-        cfg = self.cfg if cfg is None else cfg
+        if cfg is None:
+            cfg = self.cfg
+            cfg.urlpath = None
         with ia.config(cfg=cfg) as cfg:
             return reduce(self, ia.Reduce.STD, axis, cfg, **kwargs)
 
@@ -1185,7 +1197,9 @@ class IArray(ext.Container):
             an array of dimension a.ndim - len(axis). Its `dtype` is `np.float32` when the `dtype` of
             :paramref:`a` is `np.float32` and `np.float64` otherwise.
         """
-        cfg = self.cfg if cfg is None else cfg
+        if cfg is None:
+            cfg = self.cfg
+            cfg.urlpath = None
         with ia.config(cfg=cfg) as cfg:
             return reduce(self, ia.Reduce.VAR, axis, cfg, **kwargs)
 
@@ -1216,7 +1230,9 @@ class IArray(ext.Container):
             an array of dimension a.ndim - len(axis). Its `dtype` is `np.float32` when the `dtype` of
             :paramref:`a` is `np.float32` and `np.float64` otherwise.
         """
-        cfg = self.cfg if cfg is None else cfg
+        if cfg is None:
+            cfg = self.cfg
+            cfg.urlpath = None
         with ia.config(cfg=cfg) as cfg:
             return reduce(self, ia.Reduce.MEDIAN, axis, cfg, **kwargs)
 
@@ -1250,7 +1266,9 @@ class IArray(ext.Container):
         --------
         min
         """
-        cfg = self.cfg if cfg is None else cfg
+        if cfg is None:
+            cfg = self.cfg
+            cfg.urlpath = None
         with ia.config(cfg=cfg) as cfg:
             return reduce(self, ia.Reduce.NAN_MIN, axis, cfg, **kwargs)
 
@@ -1284,7 +1302,9 @@ class IArray(ext.Container):
         --------
         max
         """
-        cfg = self.cfg if cfg is None else cfg
+        if cfg is None:
+            cfg = self.cfg
+            cfg.urlpath = None
         with ia.config(cfg=cfg) as cfg:
             return reduce(self, ia.Reduce.NAN_MAX, axis, cfg, **kwargs)
 
@@ -1318,7 +1338,9 @@ class IArray(ext.Container):
         --------
         sum
         """
-        cfg = self.cfg if cfg is None else cfg
+        if cfg is None:
+            cfg = self.cfg
+            cfg.urlpath = None
         with ia.config(cfg=cfg) as cfg:
             return reduce(self, ia.Reduce.NAN_SUM, axis, cfg, **kwargs)
 
@@ -1351,7 +1373,9 @@ class IArray(ext.Container):
         --------
         prod
         """
-        cfg = self.cfg if cfg is None else cfg
+        if cfg is None:
+            cfg = self.cfg
+            cfg.urlpath = None
         with ia.config(cfg=cfg) as cfg:
             return reduce(self, ia.Reduce.NAN_PROD, axis, cfg, **kwargs)
 
@@ -1384,7 +1408,9 @@ class IArray(ext.Container):
         --------
         mean
         """
-        cfg = self.cfg if cfg is None else cfg
+        if cfg is None:
+            cfg = self.cfg
+            cfg.urlpath = None
         with ia.config(cfg=cfg) as cfg:
             return reduce(self, ia.Reduce.NAN_MEAN, axis, cfg, **kwargs)
 
@@ -1417,7 +1443,9 @@ class IArray(ext.Container):
         --------
         std
         """
-        cfg = self.cfg if cfg is None else cfg
+        if cfg is None:
+            cfg = self.cfg
+            cfg.urlpath = None
         with ia.config(cfg=cfg) as cfg:
             return reduce(self, ia.Reduce.NAN_STD, axis, cfg, **kwargs)
 
@@ -1451,7 +1479,9 @@ class IArray(ext.Container):
         --------
         var
         """
-        cfg = self.cfg if cfg is None else cfg
+        if cfg is None:
+            cfg = self.cfg
+            cfg.urlpath = None
         with ia.config(cfg=cfg) as cfg:
             return reduce(self, ia.Reduce.NAN_VAR, axis, cfg, **kwargs)
 
@@ -1484,7 +1514,9 @@ class IArray(ext.Container):
         --------
         median
         """
-        cfg = self.cfg if cfg is None else cfg
+        if cfg is None:
+            cfg = self.cfg
+            cfg.urlpath = None
         with ia.config(cfg=cfg) as cfg:
             return reduce(self, ia.Reduce.NAN_MEDIAN, axis, cfg, **kwargs)
 
