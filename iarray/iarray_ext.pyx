@@ -478,7 +478,7 @@ cdef class Container:
         """Array compression ratio."""
         # Return zarr array values if it is a zproxy
         if "zproxy_urlpath" in self.attrs:
-            urlpath = self.attrs["zproxy_urlpath"].decode()
+            urlpath = self.attrs["zproxy_urlpath"]
             z = _zarray_from_proxy(urlpath)
             return z.nbytes / z.nbytes_stored
         # It is a normal iarray

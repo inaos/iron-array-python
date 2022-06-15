@@ -249,6 +249,8 @@ def test_zeros_zproxy(shape, chunks, blocks, dtype, contiguous, urlpath):
     else:
         np.testing.assert_array_equal(b, c)
 
+    # Check info
+    print(a.info)
     ia.remove_urlpath(urlpath)
     ia.remove_urlpath("test_zeros.zarr")
 
