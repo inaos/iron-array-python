@@ -68,7 +68,7 @@ def test_reduce(
         mode = "a"
     b1 = getattr(ia, rfunc)(a1, axis=axis, urlpath="test_reduce_res.iarr", mode=mode)
 
-    if out_dtype in [np.float64, np.float32] or rfunc in ("mean", "var"):
+    if out_dtype in [np.float64, np.float32] or rfunc in ("mean", "var", "std"):
         if b2.ndim == 0:
             isclose(b1, b2)
         else:
