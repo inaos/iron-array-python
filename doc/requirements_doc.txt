@@ -1,7 +1,0 @@
-numpydoc
-sphinx
-nbsphinx
-sphinx_rtd_theme
-sphinx-paramlinks
-pydata_sphinx_theme
-pandoc
