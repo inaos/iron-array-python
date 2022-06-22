@@ -20,6 +20,7 @@ def fsum(a: udf.float64, b: udf.float64) -> float:
     else:
         return a + b
 
+
 # With the new mechanism for registering functions in the udf.scalar decorator,
 # it is not necessary to register functions manually anymore.
 print("Registered UDF funcs:", tuple(ia.udf_registry.iter_all_func_names()))
@@ -43,6 +44,7 @@ def udf_sum(out: udf.Array(udf.float64, 1), x: udf.Array(udf.float64, 1), y: udf
     for i in range(out.shape[0]):
         out[i] = 4 * ulib.fsum(x[i], y)
     return 0
+
 
 expr2 = ia.expr_from_udf(udf_sum, [a1], [1])
 print("** udf evaluation ...")

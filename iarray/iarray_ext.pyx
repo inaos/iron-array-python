@@ -522,6 +522,7 @@ cdef class Expression:
     cdef object expression
     cdef ciarray.iarray_expression_t *ia_expr
     cdef Context context
+    cdef ciarray.bool zproxy_op
 
     def __init__(self, cfg):
         self.cfg = cfg
@@ -533,6 +534,7 @@ cdef class Expression:
         self.ia_expr = e
         self.expression = None
         self.dtshape = None
+        self.zproxy_op = False
 
     def __dealloc__(self):
         if self.context is not None and self.context.ia_ctx != NULL:
@@ -541,6 +543,9 @@ cdef class Expression:
 
     def bind(self, var, c):
         var2 = var.encode("utf-8") if isinstance(var, str) else var
+        if "zproxy_urlpath" in c.attrs:
+            # To not release the GIL when evaluating
+            self.zproxy_op = True
         cdef ciarray.iarray_container_t *c_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(
             c.to_capsule(), <char*>"iarray_container_t*")
         iarray_check(ciarray.iarray_expr_bind(self.ia_expr, var2, c_))
@@ -592,8 +597,11 @@ cdef class Expression:
         ia._check_access_mode(self.cfg.urlpath, self.cfg.mode)
         # Update the chunks and blocks with the correct values
         self.update_chunks_blocks()
-        with nogil:
+        if self.zproxy_op:
             error = ciarray.iarray_eval(self.ia_expr, &c)
+        else:
+            with nogil:
+                error = ciarray.iarray_eval(self.ia_expr, &c)
         iarray_check(error)
         c_c = PyCapsule_New(c, <char*>"iarray_container_t*", NULL)
         return ia.IArray(self.context, c_c)

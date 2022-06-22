@@ -658,3 +658,345 @@ def test_type_slice_zproxy(view_dtype, shape, chunks, blocks, dtype, contiguous,
 
     ia.remove_urlpath(urlpath)
     ia.remove_urlpath("test_type_view.zarr")
+
+
+# Expression
+@pytest.mark.parametrize(
+    "method, shape, chunks, blocks, dtype, expression, xcontiguous, xurlpath",
+    [
+        (
+            ia.Eval.ITERBLOSC,
+            [100, 100],
+            [23, 32],
+            [10, 10],
+            np.float64,
+            "cos(x)",
+            True,
+            "test_expression_xcontiguous.iarr",
+        ),  # TODO: fix this
+        (
+            ia.Eval.AUTO,
+            [1000],
+            [100],
+            [25],
+            np.float64,
+            "(cos(x) - 1.35) * (sin(x) - 4.45) * tan(x - 8.5)",
+            True,
+            None,
+        ),
+        (
+            ia.Eval.ITERCHUNK,
+            [1000],
+            [367],
+            [77],
+            np.float32,
+            "(abs(-x) - 1.35) * ceil(x) * floor(x - 8.5)",
+            False,
+            None,
+        ),
+    ],
+)
+def test_zproxy_expression(
+    method, shape, chunks, blocks, dtype, expression, xcontiguous, xurlpath
+):
+    # The ranges below are important for not overflowing operations
+    ia.remove_urlpath(xurlpath)
+    ia.remove_urlpath("test_expression_zarray.iarr")
+
+    zx = zarr.open("x.zarr", mode="w", shape=shape, chunks=chunks, dtype=dtype)
+    zx[:] = ia.linspace(start=0.1, stop=0.2, shape=shape, dtype=dtype).data
+
+    x = ia.zarr_proxy(
+        "x.zarr", chunks=chunks, blocks=blocks, contiguous=xcontiguous, urlpath=xurlpath
+    )
+
+    npx = ia.iarray2numpy(x)
+
+    expr = ia.expr_from_string(
+        expression,
+        {"x": x},
+        chunks=chunks,
+        blocks=blocks,
+        contiguous=xcontiguous,
+        urlpath="test_expression_zarray.iarr",
+        dtype=dtype,
+        eval_method=method,
+    )
+
+    with pytest.raises(IOError):
+        expr.cfg.mode = "r"
+        expr.eval()
+    with pytest.raises(IOError):
+        expr.cfg.mode = "r+"
+        expr.eval()
+    expr.cfg.mode = "w-"
+    iout = expr.eval()
+    npout = ia.iarray2numpy(iout)
+
+    # Evaluate using a different engine (numpy)
+    ufunc_repls = {
+        "asin": "arcsin",
+        "acos": "arccos",
+        "atan": "arctan",
+        "atan2": "arctan2",
+        "pow": "power",
+    }
+    for ufunc in ufunc_repls.keys():
+        if ufunc in expression:
+            if ufunc == "pow" and "power" in expression:
+                # Don't do a replacement twice
+                break
+            expression = expression.replace(ufunc, ufunc_repls[ufunc])
+    for ufunc in ia.MATH_FUNC_LIST:
+        if ufunc in expression:
+            idx = expression.find(ufunc)
+            # Prevent replacing an ufunc with np.ufunc twice (not terribly solid, but else, test will crash)
+            if "np." not in expression[idx - len("np.arc") : idx]:
+                expression = expression.replace(ufunc + "(", "np." + ufunc + "(")
+    npout2 = eval(expression, {"x": npx, "np": np})
+
+    tol = 1e-6 if dtype is np.float32 else 1e-14
+    np.testing.assert_allclose(npout, npout2, rtol=tol, atol=tol)
+
+    ia.remove_urlpath(x.cfg.urlpath)
+    ia.remove_urlpath("x.zarr")
+    ia.remove_urlpath(iout.cfg.urlpath)
+
+
+# ufuncs
+@pytest.mark.parametrize(
+    "ufunc, ia_expr, xcontiguous, xurlpath",
+    [
+        ("arcsin(x)", "asin(x)", True, "test_expression_xcontiguous.iarr"),
+        ("floor(x)", "floor(x)", False, None),
+    ],
+)
+def test_ufuncs(ufunc, ia_expr, xcontiguous, xurlpath):
+    shape = [100, 150]
+    chunks = [40, 40]
+    bshape = [10, 17]
+
+    ia.remove_urlpath(xurlpath)
+    ia.remove_urlpath("test_expression_res.iarr")
+
+    for dtype in np.float64, np.float32:
+        # The ranges below are important for not overflowing operations
+        zx = zarr.open("x.zarr", mode="w", shape=shape, chunks=chunks, dtype=dtype)
+        zx[:] = ia.linspace(start=0.1, stop=0.9, shape=shape, dtype=dtype).data
+
+        x = ia.zarr_proxy(
+            "x.zarr", chunks=chunks, blocks=bshape, contiguous=xcontiguous, urlpath=xurlpath
+        )
+        npx = ia.iarray2numpy(x)
+
+        if x.cfg.urlpath is not None:
+            expr = ia.expr_from_string(
+                ia_expr,
+                {"x": x},
+                chunks=chunks,
+                blocks=bshape,
+                contiguous=xcontiguous,
+                urlpath="test_expression_res.iarr",
+            )
+        else:
+            expr = ia.expr_from_string(ia_expr, {"x": x}, x.cfg)
+        iout = expr.eval()
+        npout = ia.iarray2numpy(iout)
+
+        tol = 1e-5 if dtype is np.float32 else 1e-13
+
+        # Lazy expression eval
+        lazy_expr = eval("ia." + ufunc, {"ia": ia, "x": x})
+        iout2 = lazy_expr.eval()
+        npout2 = ia.iarray2numpy(iout2)
+        np.testing.assert_allclose(npout, npout2, rtol=tol, atol=tol)
+
+        # Lazy expression eval, but via numpy ufunc machinery
+        # TODO: the next ufuncs still have some problems with the numpy machinery (bug?)
+        # abs(x) : TypeError: bad operand type for abs(): 'IArray'
+        # ceil(x) : TypeError: must be real number, not IArray
+        # floor(x): TypeError: must be real number, not IArray
+        # negative(x) : TypeError: bad operand type for unary -: 'IArray'
+        # power(x,y) : TypeError: unsupported operand type(s) for ** or pow(): 'IArray' and 'IArray'
+        if ufunc not in ("abs(x)", "ceil(x)", "floor(x)", "negative(x)", "power(x, y)"):
+            lazy_expr = eval("np." + ufunc, {"np": np, "x": x})
+            iout2 = lazy_expr.eval()
+            npout2 = ia.iarray2numpy(iout2)
+        else:
+            npout2 = eval("np." + ufunc, {"np": np, "x": x.data})
+        np.testing.assert_allclose(npout, npout2, rtol=tol, atol=tol)
+
+        npout2 = eval("np." + ufunc, {"np": np, "x": npx})  # pure numpy
+        np.testing.assert_allclose(npout, npout2, rtol=tol, atol=tol)
+
+        ia.remove_urlpath(x.cfg.urlpath)
+        ia.remove_urlpath("x.zarr")
+        ia.remove_urlpath(iout.cfg.urlpath)
+
+
+# ufuncs inside of expressions
+@pytest.mark.parametrize(
+    "ufunc, xcontiguous, xurlpath, ycontiguous, yurlpath",
+    [
+        ("arccos", False, "test_expression_xsparse.iarr", True, None),
+        (
+            "negative",
+            True,
+            "test_expression_xcontiguous.iarr",
+            False,
+            "test_expression_ysparse.iarr",
+        ),
+        ("sqrt", False, None, True, None),
+    ],
+)
+def test_expr_ufuncs(ufunc, xcontiguous, xurlpath, ycontiguous, yurlpath):
+    shape = [100, 150]
+    cshape = [40, 50]
+    bshape = [20, 20]
+
+    ycfg = ia.Config(chunks=cshape, blocks=bshape, contiguous=ycontiguous, urlpath=yurlpath)
+
+    ia.remove_urlpath(xurlpath)
+    ia.remove_urlpath(ycfg.urlpath)
+
+    dtype = np.float32
+    zx = zarr.open("x.zarr", mode="w", shape=shape, chunks=cshape, dtype=dtype)
+    zx[:] = ia.linspace(start=0.1, stop=0.9, shape=shape, dtype=dtype).data
+    x = ia.zarr_proxy(
+        "x.zarr", chunks=cshape, blocks=bshape, contiguous=xcontiguous, urlpath=xurlpath
+    )
+    y = ia.linspace(shape, 0.5, 1, dtype=dtype, cfg=ycfg)
+
+    # NumPy computation
+    npx = ia.iarray2numpy(x)
+    npy = ia.iarray2numpy(y)
+    if ufunc in ("arctan2", "power"):
+        npout = eval("1 + 2 * np.%s(x, y)" % ufunc, {"np": np, "x": npx, "y": npy})
+    else:
+        npout = eval("1 + 2 * np.%s(x)" % ufunc, {"np": np, "x": npx})
+
+    # Lazy expression eval
+    if ufunc in ("arctan2", "power"):
+        lazy_expr = eval("1 + 2* x.%s(y)" % ufunc, {"x": x, "y": y})
+    else:
+        lazy_expr = eval("1 + 2 * x.%s()" % ufunc, {"x": x})
+    iout2 = lazy_expr.eval()
+    npout2 = ia.iarray2numpy(iout2)
+
+    np.testing.assert_allclose(npout, npout2, rtol=1e-5, atol=1e-5)
+
+    ia.remove_urlpath("x.zarr")
+    ia.remove_urlpath(xurlpath)
+    ia.remove_urlpath(ycfg.urlpath)
+
+
+# Different operand fusions inside expressions
+@pytest.mark.parametrize(
+    "expr, np_expr, xcontiguous, xurlpath, ycontiguous, yurlpath",
+    [
+        ("x + y", "x + y", True, "test_expression_xcontiguous.iarr", True, None),
+        ("ia.cos(x) + y", "np.cos(x) + y", False, None, False, None),
+    ],
+)
+def test_expr_fusion(expr, np_expr, xcontiguous, xurlpath, ycontiguous, yurlpath):
+    shape = [100, 200]
+    chunks = [40, 50]
+    bshape = [20, 20]
+
+    ycfg = ia.Config(chunks=chunks, blocks=bshape, contiguous=ycontiguous, urlpath=yurlpath)
+
+    ia.remove_urlpath(xurlpath)
+    ia.remove_urlpath(ycfg.urlpath)
+
+    dtype = np.float64
+    zx = zarr.open("x.zarr", mode="w", shape=shape, chunks=chunks, dtype=dtype)
+    zx[:] = ia.linspace(start=0.1, stop=0.9, shape=shape, dtype=dtype).data
+    x = ia.zarr_proxy(
+        "x.zarr", chunks=chunks, blocks=bshape, contiguous=xcontiguous, urlpath=xurlpath
+    )
+    y = ia.linspace(shape, 0.5, 1, dtype=dtype, cfg=ycfg)
+
+    # NumPy computation
+    npx = ia.iarray2numpy(x)
+    npy = ia.iarray2numpy(y)
+
+    npout = eval("%s" % np_expr, {"np": np, "x": npx, "y": npy})
+
+    # High-level ironarray eval
+    lazy_expr = eval(expr, {"ia": ia, "x": x, "y": y})
+    iout2 = lazy_expr.eval()
+    npout2 = ia.iarray2numpy(iout2)
+
+    tol = 1e-14
+    np.testing.assert_allclose(npout, npout2, rtol=tol, atol=tol)
+
+    ia.remove_urlpath("x.zarr")
+    ia.remove_urlpath(xurlpath)
+    ia.remove_urlpath(ycfg.urlpath)
+
+
+# Expression evaluation from views
+@pytest.mark.parametrize(
+    "expr, np_expr, xcontiguous, xurlpath, ycontiguous, yurlpath, dtype, view_dtype",
+    [
+        (
+            "x + y",
+            "x + y",
+            True,
+            "test_expression_xcontiguous.iarr",
+            True,
+            None,
+            np.int16,
+            np.float32,
+        ),
+    ],
+)
+def test_expr_type_view(
+    expr,
+    np_expr,
+    xcontiguous,
+    xurlpath,
+    ycontiguous,
+    yurlpath,
+    dtype,
+    view_dtype,
+):
+    shape = [200, 300]
+    chunks = [40, 50]
+    bshape = [20, 20]
+
+    ycfg = ia.Config(chunks=chunks, blocks=bshape, contiguous=ycontiguous, urlpath=yurlpath)
+
+    ia.remove_urlpath(xurlpath)
+    ia.remove_urlpath(ycfg.urlpath)
+
+    # The ranges below are important for not overflowing operations
+    zx = zarr.open("x.zarr", mode="w", shape=shape, chunks=chunks, dtype=dtype)
+    zx[:] = ia.linspace(start=0.1, stop=0.9, shape=shape, dtype=dtype).data
+    x_ = ia.zarr_proxy(
+        "x.zarr", chunks=chunks, blocks=bshape, contiguous=xcontiguous, urlpath=xurlpath
+    )
+
+    y_ = ia.linspace(shape, 0.5, 1, dtype=dtype, cfg=ycfg)
+    x = x_.astype(view_dtype)
+    y = y_.astype(view_dtype)
+
+    # NumPy computation
+    npx = ia.iarray2numpy(x)
+    npy = ia.iarray2numpy(y)
+    npout = eval("%s" % np_expr, {"np": np, "x": npx, "y": npy})
+
+    # High-level ironarray eval
+    lazy_expr = eval(expr, {"ia": ia, "x": x, "y": y})
+    iout2 = lazy_expr.eval()
+    npout2 = ia.iarray2numpy(iout2)
+
+    tol = 1e-6 if dtype is np.float32 else 1e-14
+    if dtype in [np.float32, np.float64]:
+        np.testing.assert_allclose(npout, npout2, rtol=tol, atol=tol)
+    else:
+        np.testing.assert_array_equal(npout, npout2)
+
+    ia.remove_urlpath("x.zarr")
+    ia.remove_urlpath(xurlpath)
+    ia.remove_urlpath(ycfg.urlpath)

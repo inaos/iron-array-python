@@ -446,7 +446,15 @@ def test_expression(
         ("sin(x)", "sin(x)", True, None, True, None),
         ("sinh(x)", "sinh(x)", False, None, False, None),
         ("sqrt(x)", "sqrt(x)", True, "test_expression_xcontiugous.iarr", True, None),
-        pytest.param("tan(x)", "tan(x)", True, None, True, "test_expression_ycontiguous.iarr", marks=pytest.mark.heavy),
+        pytest.param(
+            "tan(x)",
+            "tan(x)",
+            True,
+            None,
+            True,
+            "test_expression_ycontiguous.iarr",
+            marks=pytest.mark.heavy,
+        ),
         ("tanh(x)", "tanh(x)", False, None, False, "test_expression_ysparse.iarr"),
     ],
 )
@@ -562,7 +570,14 @@ def test_ufuncs(ufunc, ia_expr, xcontiguous, xurlpath, ycontiguous, yurlpath):
         ("sin", True, "test_expression_xcontiguous.iarr", False, None),
         ("sinh", True, None, False, "test_expression_ysparse.iarr"),
         ("sqrt", False, None, True, None),
-        pytest.param("tan", False, "test_expression_xsparse.iarr", False, "test_expression_ysparse", marks=pytest.mark.heavy),
+        pytest.param(
+            "tan",
+            False,
+            "test_expression_xsparse.iarr",
+            False,
+            "test_expression_ysparse",
+            marks=pytest.mark.heavy,
+        ),
         ("tanh", True, None, True, None),
     ],
 )
