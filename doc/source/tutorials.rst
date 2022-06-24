@@ -19,4 +19,5 @@ The results shown here have been rendered on a specific server for your convenie
    tutorials/08.Expression_Evaluation_(On-Disk)
    tutorials/09.Error_handling
    tutorials/10.Matrix_Multiplication
-   tutorials/11.Zarr_proxy
+   tutorials/11.Parallel-Constructors.ipynb
+   tutorials/13.Zarr_proxy.ipynb
