@@ -9,6 +9,7 @@ The results shown here have been rendered on a specific server for your convenie
    :caption: Index
    :maxdepth: 1
 
+   tutorials/00.Gentle-Intro
    tutorials/01.Creating_arrays
    tutorials/02.Configuring_ironArray
    tutorials/03.Slicing_Datasets_and_Creating_Views
