@@ -141,17 +141,21 @@ def test_reduce_nan(
     else:
         b1 = getattr(ia, rfunc)(a1, axis=axis, urlpath="test_reduce_nan_res.iarr", mode=mode)
 
-    if out_dtype in [np.float64, np.float32] or rfunc == "nanmean":
-        rtol = 1e-6 if out_dtype == np.float32 else 1e-14
-        if b2.ndim == 0:
-            isclose(b1, b2, rel_tol=rtol, abs_tol=0.0)
-        else:
-            np.testing.assert_allclose(ia.iarray2numpy(b1), b2, rtol=rtol, atol=0)
+    rtol = 1e-6 if out_dtype == np.float32 else 1e-14
+    if b2.ndim == 0:
+        isclose(b1, b2, rel_tol=rtol, abs_tol=0.0)
     else:
-        if b2.ndim == 0:
-            assert b1 == b2
-        else:
-            np.testing.assert_array_equal(ia.iarray2numpy(b1), b2)
+        np.testing.assert_allclose(ia.iarray2numpy(b1), b2, rtol=rtol, atol=0)
+
+    a1[:] = np.nan
+    a2 = a1.data
+    c1 = getattr(ia, rfunc)(a1, axis=axis, mode=mode)
+    c2 = getattr(np, rfunc)(a2, axis=axis)
+
+    if type(c2) == np.ndarray:
+        np.testing.assert_allclose(ia.iarray2numpy(c1), c2, rtol=rtol, atol=0)
+    else:
+        isclose(c1, c2, rel_tol=rtol, abs_tol=0.0)
 
     ia.remove_urlpath(urlpath)
     ia.remove_urlpath("test_reduce_nan_res.iarr")
