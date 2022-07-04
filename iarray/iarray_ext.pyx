@@ -585,7 +585,8 @@ cdef class Expression:
 
     def compile_bc(self, bc, name):
         name = name.encode()
-        iarray_check(ciarray.iarray_expr_compile_udf(self.ia_expr, len(bc), bc, name))
+        cdef int bc_len = len(bc)
+        iarray_check(ciarray.iarray_expr_compile_udf(self.ia_expr, bc_len, bc, name))
         self.expression = "user_defined_function"
 
     def compile_udf(self, func):
@@ -1765,7 +1766,8 @@ def reduce_multi(cfg, a, method, axis):
     # Check that we are not inadvertently overwriting anything
     ia._check_access_mode(cfg.urlpath, cfg.mode)
 
-    iarray_check(ciarray.iarray_reduce_multi(ctx_, a_, func, len(axis), axis_, &store_, &c))
+    cdef ciarray.int8_t naxis = len(axis)
+    iarray_check(ciarray.iarray_reduce_multi(ctx_, a_, func, naxis, axis_, &store_, &c))
 
     c_c = PyCapsule_New(c, <char*>"iarray_container_t*", NULL)
     cfg2 = get_cfg_from_container(cfg, ctx_, c, cfg.urlpath)
@@ -1949,11 +1951,13 @@ cdef class UdfLibrary:
         PyObject_GetBuffer(nparr, buf, PyBUF_SIMPLE)
 
         name = name.encode("utf-8") if isinstance(name, str) else name
+        cdef int llvm_bc_len = len(llvm_bc)
+        cdef int num_args = len(arg_types)
         iarray_check(ciarray.iarray_udf_func_register(self.udf_library,
-                                                      len(llvm_bc),
+                                                      llvm_bc_len,
                                                       llvm_bc,
                                                       dtype,
-                                                      len(arg_types),
+                                                      num_args,
                                                       <ciarray.iarray_data_type_t *>buf.buf,
                                                       name)
                      )
@@ -2007,7 +2011,8 @@ def poly_cython_nogil(xa):
     shape = xa.shape
     cdef np.ndarray[cnp.npy_float64] y = np.empty(xa.shape, xa.dtype).flatten()
     cdef np.ndarray[cnp.npy_float64] x = xa.flatten()
-    poly_nogil(&x[0], &y[0], len(x))
+    cdef int n = len(x)
+    poly_nogil(&x[0], &y[0], n)
     return y.reshape(shape)
 
 # TODO: End of the benchmarking code
