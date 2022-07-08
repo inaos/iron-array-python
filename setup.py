@@ -49,7 +49,7 @@ with open("README.md") as f:
 if platform == "linux" or platform == "linux2":
     copy_libs = ["libiarray.so", "libsvml.so", "libintlc.so.5"]
 elif platform == "darwin":
-    copy_libs = ["libiarray.dylib"]
+    copy_libs = ["libiarray.dylib", "libsvml.dylib"]
 elif platform == "win32":
     copy_libs = ["iarray.dll", "svml_dispmd.dll"]
 else:
@@ -58,7 +58,7 @@ else:
 if BUILD_WHEELS:
     print("BUILD_WHEELS mode is ON!")
     install_requires = open("requirements-test.txt").read().split()
-    install_requires = open("requirements-runtime.txt").read().split()
+    install_requires += open("requirements-runtime.txt").read().split()
     package_info = dict(
         package_dir={"iarray": "iarray"},
         packages=["iarray", "iarray.py2llvm", "iarray.tests"],
