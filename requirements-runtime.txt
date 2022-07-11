@@ -1,4 +1,4 @@
-numpy<1.23  # numba requires this for now
+numpy
 llvmlite
 ndindex
 msgpack
