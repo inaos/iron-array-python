@@ -69,6 +69,18 @@ def test_reduce(shape, chunks, blocks, axis, dtype, rfunc, contiguous, urlpath, 
         tol = 1e-5 if dtype is np.float32 else 1e-14
         np.testing.assert_allclose(ia.iarray2numpy(b1), b2, rtol=tol, atol=tol)
 
+    if rfunc in ["mean", "sum", "prod", "max", "min"]:
+        if urlpath:
+            b1 = getattr(ia, rfunc)(a1, axis=axis, oneshot=True, mode="w", urlpath="test_reduce_res.iarr")
+        else:
+            b1 = getattr(ia, rfunc)(a1, axis=axis, oneshot=True)
+
+        if b2.ndim == 0:
+            isclose(b1, b2)
+        else:
+            tol = 1e-5 if dtype is np.float32 else 1e-14
+            np.testing.assert_allclose(ia.iarray2numpy(b1), b2, rtol=tol, atol=tol)
+
     ia.remove_urlpath(urlpath)
     ia.remove_urlpath("test_reduce_res.iarr")
 
@@ -127,6 +139,18 @@ def test_reduce_nan(shape, chunks, blocks, axis, dtype, rfunc, contiguous, urlpa
     else:
         tol = 1e-5 if dtype is np.float32 else 1e-14
         np.testing.assert_allclose(ia.iarray2numpy(b1), b2, rtol=tol, atol=tol)
+
+    if rfunc in ["nansum", "nanprod", "nanmax", "nanmin"]:
+        if urlpath:
+            b1 = getattr(ia, rfunc)(a1, axis=axis, oneshot=True, mode="w", urlpath="test_reduce_nan_res.iarr")
+        else:
+            b1 = getattr(ia, rfunc)(a1, axis=axis, oneshot=True,)
+
+        if b2.ndim == 0:
+            isclose(b1, b2)
+        else:
+            tol = 1e-5 if dtype is np.float32 else 1e-14
+            np.testing.assert_allclose(ia.iarray2numpy(b1), b2, rtol=tol, atol=tol)
 
     ia.remove_urlpath(urlpath)
     ia.remove_urlpath("test_reduce_nan_res.iarr")
