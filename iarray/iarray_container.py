@@ -972,7 +972,7 @@ class IArray(ext.Container):
         """
         return ia.LazyExpr(new_op=(self, "tanh", None))
 
-    def min(self, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
+    def min(self, axis: Union[int, tuple] = None, oneshot=False, cfg: ia.Config = None, **kwargs):
         """
         Return the minimum of an array or minimum along an axis.
 
@@ -985,6 +985,9 @@ class IArray(ext.Container):
             the reduction over all dimensions of the input array.
             If this is a tuple of ints, a reduction is performed on multiple axes, instead of a single
             axis or all the axes as default.
+        oneshot : bool
+            Enforce the use of the oneshot algorithm.  Oneshot normally uses less memory,
+            albeit is slower in general. Default is False.
         cfg : :class:`Config` or None
             The configuration for this operation. If None (default), the current configuration will be
             used.
@@ -1002,9 +1005,9 @@ class IArray(ext.Container):
             cfg = self.cfg
             cfg.urlpath = None
         with ia.config(cfg=cfg) as cfg:
-            return reduce(self, ia.Reduce.MIN, axis, cfg, **kwargs)
+            return reduce(self, ia.Reduce.MIN, axis, oneshot, cfg, **kwargs)
 
-    def max(self, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
+    def max(self, axis: Union[int, tuple] = None, oneshot=False, cfg: ia.Config = None, **kwargs):
         """
         Return the maximum of an array or maximum along an axis.
 
@@ -1017,6 +1020,9 @@ class IArray(ext.Container):
             the reduction over all dimensions of the input array.
             If this is a tuple of ints, a reduction is performed on multiple axes, instead of a single
             axis or all the axes as default.
+        oneshot : bool
+            Enforce the use of the oneshot algorithm.  Oneshot normally uses less memory,
+            albeit is slower in general. Default is False.
         cfg : :class:`Config` or None
             The configuration for this operation. If None (default), the current configuration will be
             used.
@@ -1034,9 +1040,9 @@ class IArray(ext.Container):
             cfg = self.cfg
             cfg.urlpath = None
         with ia.config(cfg=cfg) as cfg:
-            return reduce(self, ia.Reduce.MAX, axis, cfg, **kwargs)
+            return reduce(self, ia.Reduce.MAX, axis, oneshot, cfg, **kwargs)
 
-    def sum(self, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
+    def sum(self, axis: Union[int, tuple] = None, oneshot=False, cfg: ia.Config = None, **kwargs):
         """
         Return the sum of array elements over a given axis.
 
@@ -1049,6 +1055,9 @@ class IArray(ext.Container):
             the reduction over all dimensions of the input array.
             If this is a tuple of ints, a reduction is performed on multiple axes, instead of a single
             axis or all the axes as default.
+        oneshot : bool
+            Enforce the use of the oneshot algorithm.  Oneshot normally uses less memory,
+            albeit is slower in general. Default is False.
         cfg : :class:`Config` or None
             The configuration for this operation. If None (default), the current configuration will be
             used.
@@ -1067,9 +1076,9 @@ class IArray(ext.Container):
             cfg = self.cfg
             cfg.urlpath = None
         with ia.config(cfg=cfg) as cfg:
-            return reduce(self, ia.Reduce.SUM, axis, cfg, **kwargs)
+            return reduce(self, ia.Reduce.SUM, axis, oneshot, cfg, **kwargs)
 
-    def prod(self, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
+    def prod(self, axis: Union[int, tuple] = None, oneshot=False, cfg: ia.Config = None, **kwargs):
         """
         Return the product of array elements over a given axis.
 
@@ -1082,6 +1091,9 @@ class IArray(ext.Container):
             the reduction over all dimensions of the input array.
             If this is a tuple of ints, a reduction is performed on multiple axes, instead of a single
             axis or all the axes as default.
+        oneshot : bool
+            Enforce the use of the oneshot algorithm.  Oneshot normally uses less memory,
+            albeit is slower in general. Default is False.
         cfg : :class:`Config` or None
             The configuration for this operation. If None (default), the current configuration will be
             used.
@@ -1100,9 +1112,9 @@ class IArray(ext.Container):
             cfg = self.cfg
             cfg.urlpath = None
         with ia.config(cfg=cfg) as cfg:
-            return reduce(self, ia.Reduce.PROD, axis, cfg, **kwargs)
+            return reduce(self, ia.Reduce.PROD, axis, oneshot, cfg, **kwargs)
 
-    def mean(self, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
+    def mean(self, axis: Union[int, tuple] = None, oneshot=False, cfg: ia.Config = None, **kwargs):
         """
         Compute the arithmetic mean along the specified axis. Returns the average of the array elements.
 
@@ -1115,6 +1127,9 @@ class IArray(ext.Container):
             the reduction over all dimensions of the input array.
             If this is a tuple of ints, a reduction is performed on multiple axes, instead of a single
             axis or all the axes as default.
+        oneshot : bool
+            Enforce the use of the oneshot algorithm.  Oneshot normally uses less memory,
+            albeit is slower in general. Default is False.
         cfg : :class:`Config` or None
             The configuration for this operation. If None (default), the current configuration will be
             used.
@@ -1133,7 +1148,7 @@ class IArray(ext.Container):
             cfg = self.cfg
             cfg.urlpath = None
         with ia.config(cfg=cfg) as cfg:
-            return reduce(self, ia.Reduce.MEAN, axis, cfg, **kwargs)
+            return reduce(self, ia.Reduce.MEAN, axis, oneshot, cfg, **kwargs)
 
     def std(self, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
         """Returns the standard deviation, a measure of the spread of a distribution,
@@ -1167,7 +1182,7 @@ class IArray(ext.Container):
             cfg = self.cfg
             cfg.urlpath = None
         with ia.config(cfg=cfg) as cfg:
-            return reduce(self, ia.Reduce.STD, axis, cfg, **kwargs)
+            return reduce(self, ia.Reduce.STD, axis, True, cfg, **kwargs)
 
     def var(self, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
         """Compute the variance along the specified axis. Returns the variance of the array elements,
@@ -1201,7 +1216,7 @@ class IArray(ext.Container):
             cfg = self.cfg
             cfg.urlpath = None
         with ia.config(cfg=cfg) as cfg:
-            return reduce(self, ia.Reduce.VAR, axis, cfg, **kwargs)
+            return reduce(self, ia.Reduce.VAR, axis, True, cfg, **kwargs)
 
     def median(self, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
         """
@@ -1234,9 +1249,11 @@ class IArray(ext.Container):
             cfg = self.cfg
             cfg.urlpath = None
         with ia.config(cfg=cfg) as cfg:
-            return reduce(self, ia.Reduce.MEDIAN, axis, cfg, **kwargs)
+            return reduce(self, ia.Reduce.MEDIAN, axis, True, cfg, **kwargs)
 
-    def nanmin(self, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
+    def nanmin(
+        self, axis: Union[int, tuple] = None, oneshot=False, cfg: ia.Config = None, **kwargs
+    ):
         """
         Return the minimum of an array or minimum along an axis ignoring NaNs.
 
@@ -1249,6 +1266,9 @@ class IArray(ext.Container):
             the reduction over all dimensions of the input array.
             If this is a tuple of ints, a reduction is performed on multiple axes, instead of a single
             axis or all the axes as default.
+        oneshot : bool
+            Enforce the use of the oneshot algorithm.  Oneshot normally uses less memory,
+            albeit is slower in general. Default is False.
         cfg : :class:`Config` or None
             The configuration for this operation. If None (default), the current configuration will be
             used.
@@ -1270,9 +1290,11 @@ class IArray(ext.Container):
             cfg = self.cfg
             cfg.urlpath = None
         with ia.config(cfg=cfg) as cfg:
-            return reduce(self, ia.Reduce.NAN_MIN, axis, cfg, **kwargs)
+            return reduce(self, ia.Reduce.NAN_MIN, axis, oneshot, cfg, **kwargs)
 
-    def nanmax(self, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
+    def nanmax(
+        self, axis: Union[int, tuple] = None, oneshot=False, cfg: ia.Config = None, **kwargs
+    ):
         """
         Return the maximum of an array or maximum along an axis ignoring NaNs.
 
@@ -1285,6 +1307,9 @@ class IArray(ext.Container):
             the reduction over all dimensions of the input array.
             If this is a tuple of ints, a reduction is performed on multiple axes, instead of a single
             axis or all the axes as default.
+        oneshot : bool
+            Enforce the use of the oneshot algorithm.  Oneshot normally uses less memory,
+            albeit is slower in general. Default is False.
         cfg : :class:`Config` or None
             The configuration for this operation. If None (default), the current configuration will be
             used.
@@ -1306,9 +1331,11 @@ class IArray(ext.Container):
             cfg = self.cfg
             cfg.urlpath = None
         with ia.config(cfg=cfg) as cfg:
-            return reduce(self, ia.Reduce.NAN_MAX, axis, cfg, **kwargs)
+            return reduce(self, ia.Reduce.NAN_MAX, axis, oneshot, cfg, **kwargs)
 
-    def nansum(self, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
+    def nansum(
+        self, axis: Union[int, tuple] = None, oneshot=False, cfg: ia.Config = None, **kwargs
+    ):
         """
         Return the sum of array elements over a given axis ignoring NaNs.
 
@@ -1321,6 +1348,9 @@ class IArray(ext.Container):
             the reduction over all dimensions of the input array.
             If this is a tuple of ints, a reduction is performed on multiple axes, instead of a single
             axis or all the axes as default.
+        oneshot : bool
+            Enforce the use of the oneshot algorithm.  Oneshot normally uses less memory,
+            albeit is slower in general. Default is False.
         cfg : :class:`Config` or None
             The configuration for this operation. If None (default), the current configuration will be
             used.
@@ -1342,9 +1372,11 @@ class IArray(ext.Container):
             cfg = self.cfg
             cfg.urlpath = None
         with ia.config(cfg=cfg) as cfg:
-            return reduce(self, ia.Reduce.NAN_SUM, axis, cfg, **kwargs)
+            return reduce(self, ia.Reduce.NAN_SUM, axis, oneshot, cfg, **kwargs)
 
-    def nanprod(self, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
+    def nanprod(
+        self, axis: Union[int, tuple] = None, oneshot=False, cfg: ia.Config = None, **kwargs
+    ):
         """Return the product of array elements over a given axis ignoring NaNs.
 
         Parameters
@@ -1356,6 +1388,9 @@ class IArray(ext.Container):
             the reduction over all dimensions of the input array.
             If this is a tuple of ints, a reduction is performed on multiple axes, instead of a single
             axis or all the axes as default.
+        oneshot : bool
+            Enforce the use of the oneshot algorithm.  Oneshot normally uses less memory,
+            albeit is slower in general. Default is False.
         cfg : :class:`Config` or None
             The configuration for this operation. If None (default), the current configuration will be
             used.
@@ -1377,7 +1412,7 @@ class IArray(ext.Container):
             cfg = self.cfg
             cfg.urlpath = None
         with ia.config(cfg=cfg) as cfg:
-            return reduce(self, ia.Reduce.NAN_PROD, axis, cfg, **kwargs)
+            return reduce(self, ia.Reduce.NAN_PROD, axis, oneshot, cfg, **kwargs)
 
     def nanmean(self, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
         """Compute the arithmetic mean along the specified axis ignoring NaNs.
@@ -1412,7 +1447,7 @@ class IArray(ext.Container):
             cfg = self.cfg
             cfg.urlpath = None
         with ia.config(cfg=cfg) as cfg:
-            return reduce(self, ia.Reduce.NAN_MEAN, axis, cfg, **kwargs)
+            return reduce(self, ia.Reduce.NAN_MEAN, axis, True, cfg, **kwargs)
 
     def nanstd(self, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
         """Returns the standard deviation  ignoring NaNs.
@@ -1447,7 +1482,7 @@ class IArray(ext.Container):
             cfg = self.cfg
             cfg.urlpath = None
         with ia.config(cfg=cfg) as cfg:
-            return reduce(self, ia.Reduce.NAN_STD, axis, cfg, **kwargs)
+            return reduce(self, ia.Reduce.NAN_STD, axis, True, cfg, **kwargs)
 
     def nanvar(self, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
         """Compute the variance along the specified axis ignoring NaNs. The variance is computed for the flattened
@@ -1483,7 +1518,7 @@ class IArray(ext.Container):
             cfg = self.cfg
             cfg.urlpath = None
         with ia.config(cfg=cfg) as cfg:
-            return reduce(self, ia.Reduce.NAN_VAR, axis, cfg, **kwargs)
+            return reduce(self, ia.Reduce.NAN_VAR, axis, True, cfg, **kwargs)
 
     def nanmedian(self, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
         """Compute the median ignoring NaNs along the specified axis. Returns the median of the array elements.
@@ -1518,7 +1553,7 @@ class IArray(ext.Container):
             cfg = self.cfg
             cfg.urlpath = None
         with ia.config(cfg=cfg) as cfg:
-            return reduce(self, ia.Reduce.NAN_MEDIAN, axis, cfg, **kwargs)
+            return reduce(self, ia.Reduce.NAN_MEDIAN, axis, True, cfg, **kwargs)
 
     @attrs.setter
     def attrs(self, value):
@@ -1624,7 +1659,12 @@ def tanh(iarr: IArray):
 
 
 def reduce(
-    a: IArray, method: ia.Reduce, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs
+    a: IArray,
+    method: ia.Reduce,
+    axis: Union[int, tuple] = None,
+    oneshot=True,
+    cfg: ia.Config = None,
+    **kwargs,
 ):
     if axis is None:
         axis = range(a.ndim)
@@ -1638,7 +1678,7 @@ def reduce(
 
     dtype = kwargs.get("dtype")
     with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
-        c = ext.reduce_multi(cfg, a, method, axis)
+        c = ext.reduce_multi(cfg, a, method, axis, oneshot)
         if dtype is not None and dtype != c.dtype:
             raise RuntimeError("Cannot set the result's data type")
         if c.ndim == 0:
@@ -1647,28 +1687,58 @@ def reduce(
 
 
 @is_documented_by(IArray.max)
-def max(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
-    return a.max(axis, cfg, **kwargs)
+def max(
+    a: IArray,
+    axis: Union[int, tuple] = None,
+    oneshot: bool = False,
+    cfg: ia.Config = None,
+    **kwargs,
+):
+    return a.max(axis, oneshot, cfg, **kwargs)
 
 
 @is_documented_by(IArray.min)
-def min(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
-    return a.min(axis, cfg, **kwargs)
+def min(
+    a: IArray,
+    axis: Union[int, tuple] = None,
+    oneshot: bool = False,
+    cfg: ia.Config = None,
+    **kwargs,
+):
+    return a.min(axis, oneshot, cfg, **kwargs)
 
 
 @is_documented_by(IArray.sum)
-def sum(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
-    return a.sum(axis, cfg, **kwargs)
+def sum(
+    a: IArray,
+    axis: Union[int, tuple] = None,
+    oneshot: bool = False,
+    cfg: ia.Config = None,
+    **kwargs,
+):
+    return a.sum(axis, oneshot, cfg, **kwargs)
 
 
 @is_documented_by(IArray.prod)
-def prod(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
-    return a.prod(axis, cfg, **kwargs)
+def prod(
+    a: IArray,
+    axis: Union[int, tuple] = None,
+    oneshot: bool = False,
+    cfg: ia.Config = None,
+    **kwargs,
+):
+    return a.prod(axis, oneshot, cfg, **kwargs)
 
 
 @is_documented_by(IArray.mean)
-def mean(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
-    return a.mean(axis, cfg, **kwargs)
+def mean(
+    a: IArray,
+    axis: Union[int, tuple] = None,
+    oneshot: bool = False,
+    cfg: ia.Config = None,
+    **kwargs,
+):
+    return a.mean(axis, oneshot, cfg, **kwargs)
 
 
 @is_documented_by(IArray.std)
@@ -1687,23 +1757,47 @@ def median(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **k
 
 
 @is_documented_by(IArray.nanmax)
-def nanmax(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
-    return a.nanmax(axis, cfg, **kwargs)
+def nanmax(
+    a: IArray,
+    axis: Union[int, tuple] = None,
+    oneshot: bool = False,
+    cfg: ia.Config = None,
+    **kwargs,
+):
+    return a.nanmax(axis, oneshot, cfg, **kwargs)
 
 
 @is_documented_by(IArray.nanmin)
-def nanmin(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
-    return a.nanmin(axis, cfg, **kwargs)
+def nanmin(
+    a: IArray,
+    axis: Union[int, tuple] = None,
+    oneshot: bool = False,
+    cfg: ia.Config = None,
+    **kwargs,
+):
+    return a.nanmin(axis, oneshot, cfg, **kwargs)
 
 
 @is_documented_by(IArray.nansum)
-def nansum(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
-    return a.nansum(axis, cfg, **kwargs)
+def nansum(
+    a: IArray,
+    axis: Union[int, tuple] = None,
+    oneshot: bool = False,
+    cfg: ia.Config = None,
+    **kwargs,
+):
+    return a.nansum(axis, oneshot, cfg, **kwargs)
 
 
 @is_documented_by(IArray.nanprod)
-def nanprod(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
-    return a.nanprod(axis, cfg, **kwargs)
+def nanprod(
+    a: IArray,
+    axis: Union[int, tuple] = None,
+    oneshot: bool = False,
+    cfg: ia.Config = None,
+    **kwargs,
+):
+    return a.nanprod(axis, oneshot, cfg, **kwargs)
 
 
 @is_documented_by(IArray.nanmean)
