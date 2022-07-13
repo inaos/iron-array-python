@@ -1005,7 +1005,7 @@ class IArray(ext.Container):
             cfg = self.cfg
             cfg.urlpath = None
         with ia.config(cfg=cfg) as cfg:
-            return reduce(self, ia.Reduce.MIN, axis, oneshot, cfg, **kwargs)
+            return reduce(self, ia.Reduce.MIN, axis, oneshot=oneshot, cfg=cfg, **kwargs)
 
     def max(self, axis: Union[int, tuple] = None, oneshot=False, cfg: ia.Config = None, **kwargs):
         """
@@ -1040,7 +1040,7 @@ class IArray(ext.Container):
             cfg = self.cfg
             cfg.urlpath = None
         with ia.config(cfg=cfg) as cfg:
-            return reduce(self, ia.Reduce.MAX, axis, oneshot, cfg, **kwargs)
+            return reduce(self, ia.Reduce.MAX, axis, oneshot=oneshot, cfg=cfg, **kwargs)
 
     def sum(self, axis: Union[int, tuple] = None, oneshot=False, cfg: ia.Config = None, **kwargs):
         """
@@ -1076,7 +1076,7 @@ class IArray(ext.Container):
             cfg = self.cfg
             cfg.urlpath = None
         with ia.config(cfg=cfg) as cfg:
-            return reduce(self, ia.Reduce.SUM, axis, oneshot, cfg, **kwargs)
+            return reduce(self, ia.Reduce.SUM, axis, oneshot=oneshot, cfg=cfg, **kwargs)
 
     def prod(self, axis: Union[int, tuple] = None, oneshot=False, cfg: ia.Config = None, **kwargs):
         """
@@ -1112,7 +1112,7 @@ class IArray(ext.Container):
             cfg = self.cfg
             cfg.urlpath = None
         with ia.config(cfg=cfg) as cfg:
-            return reduce(self, ia.Reduce.PROD, axis, oneshot, cfg, **kwargs)
+            return reduce(self, ia.Reduce.PROD, axis, oneshot=oneshot, cfg=cfg, **kwargs)
 
     def mean(self, axis: Union[int, tuple] = None, oneshot=False, cfg: ia.Config = None, **kwargs):
         """
@@ -1148,7 +1148,7 @@ class IArray(ext.Container):
             cfg = self.cfg
             cfg.urlpath = None
         with ia.config(cfg=cfg) as cfg:
-            return reduce(self, ia.Reduce.MEAN, axis, oneshot, cfg, **kwargs)
+            return reduce(self, ia.Reduce.MEAN, axis, oneshot=oneshot, cfg=cfg, **kwargs)
 
     def std(self, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
         """Returns the standard deviation, a measure of the spread of a distribution,
@@ -1182,7 +1182,7 @@ class IArray(ext.Container):
             cfg = self.cfg
             cfg.urlpath = None
         with ia.config(cfg=cfg) as cfg:
-            return reduce(self, ia.Reduce.STD, axis, True, cfg, **kwargs)
+            return reduce(self, ia.Reduce.STD, axis, oneshot=True, cfg=cfg, **kwargs)
 
     def var(self, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
         """Compute the variance along the specified axis. Returns the variance of the array elements,
@@ -1216,7 +1216,7 @@ class IArray(ext.Container):
             cfg = self.cfg
             cfg.urlpath = None
         with ia.config(cfg=cfg) as cfg:
-            return reduce(self, ia.Reduce.VAR, axis, True, cfg, **kwargs)
+            return reduce(self, ia.Reduce.VAR, axis, oneshot=True, cfg=cfg, **kwargs)
 
     def median(self, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
         """
@@ -1249,7 +1249,7 @@ class IArray(ext.Container):
             cfg = self.cfg
             cfg.urlpath = None
         with ia.config(cfg=cfg) as cfg:
-            return reduce(self, ia.Reduce.MEDIAN, axis, True, cfg, **kwargs)
+            return reduce(self, ia.Reduce.MEDIAN, axis, oneshot=True, cfg=cfg, **kwargs)
 
     def nanmin(
         self, axis: Union[int, tuple] = None, oneshot=False, cfg: ia.Config = None, **kwargs
@@ -1290,7 +1290,7 @@ class IArray(ext.Container):
             cfg = self.cfg
             cfg.urlpath = None
         with ia.config(cfg=cfg) as cfg:
-            return reduce(self, ia.Reduce.NAN_MIN, axis, oneshot, cfg, **kwargs)
+            return reduce(self, ia.Reduce.NAN_MIN, axis, oneshot=oneshot, cfg=cfg, **kwargs)
 
     def nanmax(
         self, axis: Union[int, tuple] = None, oneshot=False, cfg: ia.Config = None, **kwargs
@@ -1331,7 +1331,7 @@ class IArray(ext.Container):
             cfg = self.cfg
             cfg.urlpath = None
         with ia.config(cfg=cfg) as cfg:
-            return reduce(self, ia.Reduce.NAN_MAX, axis, oneshot, cfg, **kwargs)
+            return reduce(self, ia.Reduce.NAN_MAX, axis, oneshot=oneshot, cfg=cfg, **kwargs)
 
     def nansum(
         self, axis: Union[int, tuple] = None, oneshot=False, cfg: ia.Config = None, **kwargs
@@ -1372,7 +1372,7 @@ class IArray(ext.Container):
             cfg = self.cfg
             cfg.urlpath = None
         with ia.config(cfg=cfg) as cfg:
-            return reduce(self, ia.Reduce.NAN_SUM, axis, oneshot, cfg, **kwargs)
+            return reduce(self, ia.Reduce.NAN_SUM, axis, oneshot=oneshot, cfg=cfg, **kwargs)
 
     def nanprod(
         self, axis: Union[int, tuple] = None, oneshot=False, cfg: ia.Config = None, **kwargs
@@ -1412,7 +1412,7 @@ class IArray(ext.Container):
             cfg = self.cfg
             cfg.urlpath = None
         with ia.config(cfg=cfg) as cfg:
-            return reduce(self, ia.Reduce.NAN_PROD, axis, oneshot, cfg, **kwargs)
+            return reduce(self, ia.Reduce.NAN_PROD, axis, oneshot=oneshot, cfg=cfg, **kwargs)
 
     def nanmean(self, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
         """Compute the arithmetic mean along the specified axis ignoring NaNs.
@@ -1447,7 +1447,7 @@ class IArray(ext.Container):
             cfg = self.cfg
             cfg.urlpath = None
         with ia.config(cfg=cfg) as cfg:
-            return reduce(self, ia.Reduce.NAN_MEAN, axis, True, cfg, **kwargs)
+            return reduce(self, ia.Reduce.NAN_MEAN, axis, oneshot=True, cfg=cfg, **kwargs)
 
     def nanstd(self, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
         """Returns the standard deviation  ignoring NaNs.
@@ -1482,7 +1482,7 @@ class IArray(ext.Container):
             cfg = self.cfg
             cfg.urlpath = None
         with ia.config(cfg=cfg) as cfg:
-            return reduce(self, ia.Reduce.NAN_STD, axis, True, cfg, **kwargs)
+            return reduce(self, ia.Reduce.NAN_STD, axis, oneshot=True, cfg=cfg, **kwargs)
 
     def nanvar(self, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
         """Compute the variance along the specified axis ignoring NaNs. The variance is computed for the flattened
@@ -1518,7 +1518,7 @@ class IArray(ext.Container):
             cfg = self.cfg
             cfg.urlpath = None
         with ia.config(cfg=cfg) as cfg:
-            return reduce(self, ia.Reduce.NAN_VAR, axis, True, cfg, **kwargs)
+            return reduce(self, ia.Reduce.NAN_VAR, axis, oneshot=True, cfg=cfg, **kwargs)
 
     def nanmedian(self, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
         """Compute the median ignoring NaNs along the specified axis. Returns the median of the array elements.
@@ -1553,7 +1553,7 @@ class IArray(ext.Container):
             cfg = self.cfg
             cfg.urlpath = None
         with ia.config(cfg=cfg) as cfg:
-            return reduce(self, ia.Reduce.NAN_MEDIAN, axis, True, cfg, **kwargs)
+            return reduce(self, ia.Reduce.NAN_MEDIAN, axis, oneshot=True, cfg=cfg, **kwargs)
 
     @attrs.setter
     def attrs(self, value):
