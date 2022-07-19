@@ -7,8 +7,21 @@
 * Make sure that `RELEASE-NOTES.md` and `ANNOUNCE.md` are up to date with
  the latest news in the release.
 
-* Re-run tutorials and benchmarks in the `iron-array-notebooks` submodule.  Update
- any possible change in the API or issue that it might appear.
+* Re-run tutorials and benchmarks in the `iron-array-notebooks` submodule. This includes the benchmarks in `iron-array-notebooks/perf-history`. After the last ones are run, the new `iron-array-notebooks/perf-history/perf-history.csv` file must be added to `iron-array-notebooks`:
+```
+cd iron-array-notebooks/
+git commit perf-history/perf-history.csv -m "Getting ready for release X.Y.Z"
+git push
+```
+* Update
+ any possible change in the API or issue that it might appear. 
+
+* Push a tag in `iron-array-notebooks` so that the `.csv` file is renamed according to the tag in the `iron-array-notebooks`. The tag does not have to be the same as in `iron-array-python`.
+```
+cd iron-array-notebooks/
+git tag -a vX.Y.Z -m "Tagging version X.Y.Z"
+git push --tags
+```
 
 * Check that `__version__` in `iarray/__init__.py` file contains the correct number.
 
