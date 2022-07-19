@@ -7,23 +7,29 @@
 * Make sure that `RELEASE-NOTES.md` and `ANNOUNCE.md` are up to date with
  the latest news in the release.
 
-* Re-run tutorials and benchmarks in the `iron-array-notebooks` submodule. This includes the benchmarks in `iron-array-notebooks/perf-history`. After the last ones are run, the new `iron-array-notebooks/perf-history/perf-history.csv` file must be added to `iron-array-notebooks`:
+* Re-run tutorials and benchmarks in the `iron-array-notebooks` submodule. This includes the benchmarks in `iron-array-notebooks/perf-history`.
+
+* Fix any possible change in the API or possible performance or memory consumption regressions you may detect.
+
+* After completion, add the new `iron-array-notebooks/perf-history/perf-history.csv` file to the `iron-array-notebooks` repo:
 ```
 cd iron-array-notebooks/
+git switch main
 git commit perf-history/perf-history.csv -m "Getting ready for release X.Y.Z"
 git push
 ```
-* Update
- any possible change in the API or issue that it might appear. 
 
 * Push a tag in `iron-array-notebooks` so that the `.csv` file is renamed according to the tag in the `iron-array-notebooks`. The tag does not have to be the same as in `iron-array-python`.
 ```
-cd iron-array-notebooks/
 git tag -a vX.Y.Z -m "Tagging version X.Y.Z"
 git push --tags
 ```
 
-* Check that `__version__` in `iarray/__init__.py` file contains the correct number.
+* Go back to the top repo and check that `__version__` in `iarray/__init__.py` file contains the correct number.
+```
+cd ..
+cat iarray/__init__.py
+```
 
 * Commit the changes:
 ```
@@ -41,7 +47,7 @@ git push
 git tag -a vX.Y.Z -m "Tagging version X.Y.Z"
 ```
 
-* Push the tag to the github repo::
+* Push the tag to the github repo:
 ```
 git push
 git push --tags
@@ -76,7 +82,7 @@ pip install --index-url https://distribution.ironarray.io:443/simple iarray -U -
 * Edit ``VERSION`` in develop to increment the version to the next
   minor one (i.e. X.Y.Z --> X.Y.(Z+1).dev0).
 
-* Commit your changes with::
+* Commit your changes with:
 
     git commit -a -m "Post X.Y.Z release actions done"
     git push
