@@ -5,5 +5,4 @@ msgpack
 ast_decompiler
 fastapi
 uvicorn
-json
 requests
