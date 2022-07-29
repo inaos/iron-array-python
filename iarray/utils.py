@@ -7,6 +7,7 @@
 # ("Confidential Information"). You shall not disclose such Confidential Information
 # and shall use it only in accordance with the terms of the license agreement.
 ###########################################################################################
+from typing import Union
 
 import numpy as np
 
@@ -15,6 +16,8 @@ from iarray import iarray_ext as ext
 import os
 import shutil
 
+import json
+import requests
 
 zarr_to_iarray_dtypes = {
     "int8": np.int8,
@@ -153,7 +156,8 @@ def open(urlpath: str, mode="a") -> ia.IArray:
     Parameters
     ----------
     urlpath : str
-        The url path to read.
+        The url path to read. If it starts with "iarr://", it opens a view from a remote array. In
+        this case, the urlpath must be of the form "iarr://host:port/array_urlpath". Default port is 28800.
     mode : str
         The open mode. This parameter supersedes the mode in the default :class:`Config`.
 
@@ -167,10 +171,70 @@ def open(urlpath: str, mode="a") -> ia.IArray:
     save : Save an array to disk.
     """
     cfg = ia.get_config_defaults()
+
+    if urlpath[:7] == "iarr://":
+        host_port, array_id = urlpath[7:].split("/")
+        params = host_port.split(":")
+        if len(params) == 1:
+            # Default value for port
+            port = ia.HTTP_PORT
+        else:
+            port = params[1]
+        host = params[0]
+
+        url = "http://" + host + ":" + port
+        with ia.config(cfg=cfg, mode=mode, nthreads=1) as cfg:
+            return request_view(server_urlpath=url, array_id=array_id, cfg=cfg)
+
     if not os.path.exists(urlpath):
         raise IOError("The file does not exist.")
     with ia.config(cfg=cfg, mode=mode) as cfg:
         return ext.open(cfg, urlpath)
+
+
+def request_view(server_urlpath: str, array_id: str, cfg: ia.Config = None, **kwargs) -> ia.IArray:
+    if cfg is None:
+        cfg = ia.get_config_defaults()
+    # Get meta to create empty array
+    url = server_urlpath + "/v1/meta/" + "?array_id=" + array_id
+    r = requests.get(url)
+    params = json.loads(r.text)
+    kwargs["chunks"] = params["chunks"]
+    kwargs["blocks"] = params["blocks"]
+    dtype = np.dtype(params["dtype"]).type
+    kwargs["dtype"] = dtype
+
+    with ia.config(cfg=cfg, urlpath=None, **kwargs) as cfg:
+        a = ia.uninit(shape=params["shape"], cfg=cfg)
+
+    # Assign postfilter
+    ext.set_request_postfilter(a, server_urlpath, array_id)
+    return a
+
+
+def list_arrays(host: str, port: Union[str, int] = 28800):
+    """
+    Return a list of the registered arrays in the server.
+
+    Parameters
+    ----------
+    host: str
+        server ip
+    port: str or int
+        The port to use to connect to the host.
+
+    Returns
+    -------
+    out: list
+        List of the arrays that the client has access to.
+
+    Notes
+    -----
+    The server must be running when calling this function.
+
+    """
+    response = requests.get("http://" + host + ":" + str(port) + "/v1/catalog/")
+    return json.loads(response.text)
 
 
 # TODO: are cfg and kwargs needed here?

@@ -654,3 +654,12 @@ cdef extern from "libiarray/iarray.h":
                                     void *buffer,
                                     int64_t *buffer_shape,
                                     int64_t buffer_size);
+
+    # Server
+    ctypedef int32_t (*rhandler_ptr) (char *server_urlpath, char *array_urlpath, int64_t nchunk,
+                                      int32_t start, int32_t nitems, int32_t destsize, uint8_t *cblock);
+    ina_rc_t iarray_add_request_postfilter(iarray_container_t *src, char *server_urlpath, char *urlpath,
+                                             rhandler_ptr request_handler);
+
+    ina_rc_t iarray_server_job(iarray_context_t *ctx, iarray_container_t *a, int64_t nchunk,
+                           int32_t start, int32_t nitems, int32_t size, uint8_t *dest, int32_t *block_size);

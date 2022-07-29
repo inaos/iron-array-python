@@ -22,15 +22,18 @@ import zarr
 import s3fs
 import cython
 from cpython.pycapsule cimport PyCapsule_New, PyCapsule_GetPointer
-from libc.stdlib cimport malloc, free
+from libc.stdlib cimport malloc, free, realloc
 from libc.string cimport memcpy
 import iarray as ia
 from iarray import udf
+import requests
+import json
 
 from cpython cimport (
     PyObject_GetBuffer,
     PyBuffer_Release,
     PyBUF_SIMPLE,
+    PyBytes_FromStringAndSize,
 )
 
 # dtype conversion tables: udf <-> iarray
@@ -1925,6 +1928,50 @@ def set_zproxy_postfilter(iarr):
     urlpath = urlpath.encode("utf-8") if isinstance(urlpath, str) else urlpath
 
     iarray_check(ciarray.iarray_add_zproxy_postfilter(c, urlpath, func))
+
+
+def set_request_postfilter(iarr, server_urlpath, array_urlpath):
+    cdef ciarray.iarray_container_t *c
+    c = <ciarray.iarray_container_t *> PyCapsule_GetPointer(iarr.to_capsule(), <char *> "iarray_container_t*")
+    cdef ciarray.rhandler_ptr func = server_accessor
+    server_urlpath = server_urlpath.encode("utf-8") if isinstance(server_urlpath, str) else server_urlpath
+    array_urlpath = array_urlpath.encode("utf-8") if isinstance(array_urlpath, str) else array_urlpath
+
+    iarray_check(ciarray.iarray_add_request_postfilter(c, server_urlpath, array_urlpath, func))
+
+
+cdef ciarray.int32_t server_accessor(char *server_urlpath, char *array_id,
+                                    ciarray.int64_t nchunk, ciarray.int32_t start,
+                                    ciarray.int32_t nitems, ciarray.int32_t size, ciarray.uint8_t* cblock) with gil:
+    pyarray_id = array_id.decode()
+    pyserver_urlpath = server_urlpath.decode()
+    url = pyserver_urlpath + "/v1/blocks/"
+    params = {"array_id": pyarray_id, "nchunk": nchunk, "start": start, "nitems": nitems, "size": size}
+    r = requests.post(url, json.dumps(params))
+
+    cdef Py_buffer *buf = <Py_buffer *> malloc(sizeof(Py_buffer))
+    PyObject_GetBuffer(r.content, buf, PyBUF_SIMPLE)
+    cdef ciarray.int32_t len_ = buf.len
+    memcpy(cblock, buf.buf, len_)
+    PyBuffer_Release(buf)
+    return len_
+
+
+def _server_job(iarr, nchunk, start, nitems, size):
+    cdef ciarray.iarray_container_t *c
+    c = <ciarray.iarray_container_t *> PyCapsule_GetPointer(iarr.to_capsule(), <char *> "iarray_container_t*")
+    ctx = Context(iarr.cfg)
+    cdef ciarray.iarray_context_t *ctx_
+    ctx_ = <ciarray.iarray_context_t *> PyCapsule_GetPointer(ctx.to_capsule(), <char *> "iarray_context_t*")
+
+    res = b"0" * (size + 32)  # BLOSC_MAX_OVERHEAD
+    cdef ciarray.int32_t csize
+    cdef Py_buffer *buf = <Py_buffer *> malloc(sizeof(Py_buffer))
+    PyObject_GetBuffer(res, buf, PyBUF_SIMPLE)
+    iarray_check(ciarray.iarray_server_job(ctx_, c, nchunk, start, nitems, size, <ciarray.uint8_t *>buf.buf, &csize))
+    PyBuffer_Release(buf)
+
+    return res[:csize]
 
 
 cdef class UdfLibrary:
