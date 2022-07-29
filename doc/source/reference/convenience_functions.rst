@@ -12,6 +12,7 @@ Convenience functions
 
    load
    open
+   list_arrays
    save
    cmp_arrays
    iarray2numpy

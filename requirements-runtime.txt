@@ -3,3 +3,7 @@ llvmlite
 ndindex
 msgpack
 ast_decompiler
+fastapi
+uvicorn
+json
+requests
