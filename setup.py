@@ -85,5 +85,5 @@ setup(
     python_requires=">=3.8",
     extras_require={"doc": doc_deps, "examples": examples_deps},
     **package_info,
-    scripts=["scripts/iarr_server", "iarray/http_server"],
+    # scripts=["scripts/iarr_server"],
 )
