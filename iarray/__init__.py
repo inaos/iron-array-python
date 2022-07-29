@@ -282,6 +282,7 @@ from .attrs import (
 
 # Global catalog
 global_catalog = {}
+HTTP_PORT = 28800
 
 from . import http_server
 

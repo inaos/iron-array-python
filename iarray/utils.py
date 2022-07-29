@@ -177,7 +177,7 @@ def open(urlpath: str, mode="a") -> ia.IArray:
         params = host_port.split(":")
         if len(params) == 1:
             # Default value for port
-            port = 28800
+            port = ia.HTTP_PORT
         else:
             port = params[1]
         host = params[0]

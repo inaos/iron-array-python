@@ -14,11 +14,11 @@ ia.arange(shape=[10, 10], urlpath="arange.iarr", dtype=np.int32, mode="w")
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 host = "127.0.0.1"
-port = "28800"
+port = str(ia.HTTP_PORT)
 
 server = subprocess.Popen(["python", "../../scripts/iarr_server.py", host, port, dir_path])
 time.sleep(5)
-print(server.stdout)
+
 
 @pytest.fixture(scope="module", autouse=True)
 def terminate_server():
