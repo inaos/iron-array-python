@@ -1,5 +1,6 @@
 numpy
 llvmlite
+icc_rt
 ndindex
 msgpack
 ast_decompiler
