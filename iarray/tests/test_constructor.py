@@ -259,7 +259,7 @@ def test_from_file(start, stop, shape, chunks, blocks, np_dtype, contiguous, url
             [8, 9],
             [3, 4],
             [3, 2],
-            np.float64,
+            np.dtype(np.float64),
             "M8[M]",
             True,
             None,
@@ -300,7 +300,7 @@ def test_slice(start, stop, slice, shape, chunks, blocks, dtype, np_dtype, conti
 @pytest.mark.parametrize(
     "shape, chunks, blocks, dtype, np_dtype, contiguous, urlpath",
     [
-        ([55, 123, 72], [10, 12, 25], [2, 3, 7], np.float64, ">M8[h]", True, None),
+        ([55, 123, 72], [10, 12, 25], [2, 3, 7], np.dtype(np.float64), ">M8[h]", True, None),
         ([10, 12, 5], [10, 12, 1], [5, 12, 1], np.float32, "i8", False, "test_empty_sparse.iarr"),
         (
             [55, 123, 72],
@@ -423,7 +423,7 @@ def test_ones(shape, chunks, blocks, dtype, np_dtype, contiguous, urlpath):
             [123, 432, 222],
             [24, 31, 15],
             [6, 6, 6],
-            np.float64,
+            np.dtype(np.float64),
             None,
             True,
             None,

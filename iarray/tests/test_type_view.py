@@ -7,9 +7,9 @@ from math import isclose
 @pytest.mark.parametrize(
     "dtype, view_dtype",
     [
-        (np.float32, np.int64),
-        (np.uint64, np.float64),
-        (np.int64, np.float64),
+        (np.dtype(np.float32), np.dtype(np.int64)),
+        (np.dtype(np.uint64), np.float64),
+        (np.int64, np.dtype(np.float64)),
         (np.int8, np.bool_),
         (np.bool_, np.float32),
     ],

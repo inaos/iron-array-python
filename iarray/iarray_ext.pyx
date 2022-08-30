@@ -83,6 +83,12 @@ dtype_str2dtype.update({bo + 'f' + size: dtype for bo in ['<', '>']
 dtype_str2dtype.update({'|b1': np.bool_, '|u1': np.bool_})
 
 
+def f_np2ia_dtype(dtype):
+    if type(dtype) != type:
+        return np2ia_dtype[dtype.type]
+    return np2ia_dtype[dtype]
+
+
 def compress_squeeze(data, selectors):
     return tuple(d for d, s in zip(data, selectors) if not s)
 
@@ -132,7 +138,7 @@ cdef class ReadBlockIter:
 
         iarray_check(ciarray.iarray_iter_read_block_new(self.container.context.ia_ctx, &self.ia_read_iter,
                                                         self.container.ia_container, block_, &self.ia_block_val, False))
-        self.dtype = np2ia_dtype[self.container.dtype]
+        self.dtype = f_np2ia_dtype(self.container.dtype)
         self.Info = namedtuple('Info', 'index elemindex nblock shape size slice')
 
     def __dealloc__(self):
@@ -211,7 +217,7 @@ cdef class WriteBlockIter:
                                                          &self.ia_block_val,
                                                          False))
 
-        self.dtype = np2ia_dtype[self.container.dtype]
+        self.dtype = f_np2ia_dtype(self.container.dtype)
         self.Info = namedtuple('Info', 'index elemindex nblock shape size')
 
     def __dealloc__(self):
@@ -335,7 +341,7 @@ cdef class IaDTShape:
 
     def __cinit__(self, dtshape):
         self.ia_dtshape.ndim = len(dtshape.shape)
-        self.ia_dtshape.dtype = np2ia_dtype[dtshape.dtype]
+        self.ia_dtshape.dtype = f_np2ia_dtype(dtshape.dtype)
         for i in range(len(dtshape.shape)):
             self.ia_dtshape.shape[i] = dtshape.shape[i]
 
@@ -529,7 +535,7 @@ cdef class Expression:
         self.context = Context(cfg)
         cdef ciarray.iarray_expression_t* e
         iarray_check(
-            ciarray.iarray_expr_new(self.context.ia_ctx, np2ia_dtype[cfg.dtype], &e)
+            ciarray.iarray_expr_new(self.context.ia_ctx, f_np2ia_dtype(cfg.dtype), &e)
         )
         self.ia_expr = e
         self.expression = None
@@ -1117,7 +1123,7 @@ def get_type_view(cfg, iarray, view_dtype):
                                                                                            <char*>"iarray_context_t*")
     cdef ciarray.iarray_container_t *src = <ciarray.iarray_container_t*> PyCapsule_GetPointer(iarray.to_capsule(),
                                                                                             <char*>"iarray_container_t*")
-    cdef ciarray.iarray_data_type_t dtype = np2ia_dtype[view_dtype]
+    cdef ciarray.iarray_data_type_t dtype = f_np2ia_dtype(view_dtype)
 
     cdef ciarray.iarray_container_t *c
     iarray_check(ciarray.iarray_get_type_view(ctx_, src, dtype, &c))
