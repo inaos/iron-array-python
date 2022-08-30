@@ -34,7 +34,6 @@ def tri(out: Array(float64, 2), k: int64) -> int:
 
 # Build an Expr() instance with not input arrays, and a single scalar param
 # As there are no input arrays, we need to specify a shape!
-ia_in = ia.empty(shape)
 expr = ia.expr_from_udf(tri, [], [1], shape=shape)
 ia_out = expr.eval()
 print(ia_out.info)
