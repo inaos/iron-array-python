@@ -1667,7 +1667,7 @@ def reduce(
     **kwargs,
 ):
     if axis is None:
-        axis = range(a.ndim)
+        axis = range(a.ndim)[::-1]
     if isinstance(axis, int):
         axis = (axis,)
 
