@@ -19,6 +19,7 @@ cdef extern from "<stdint.h>":
     ctypedef unsigned short uint16_t
     ctypedef unsigned int   uint32_t
     ctypedef unsigned long long uint64_t
+    ctypedef unsigned long int uintptr_t
 
 
 cdef extern from "libiarray/iarray.h":
@@ -352,6 +353,18 @@ cdef extern from "libiarray/iarray.h":
     ina_rc_t iarray_container_open(iarray_context_t *ctx,
                                         char *urlpath,
                                         iarray_container_t **container)
+
+    ina_rc_t iarray_to_cframe(iarray_context_t *ctx,
+                             iarray_container_t *src,
+                             uint8_t ** frame,
+                             int64_t *frame_len,
+                             bool *needs_free);
+
+    ina_rc_t iarray_from_cframe(iarray_context_t *ctx,
+                               uint8_t *frame,
+                               int64_t frame_len,
+                               bool copy,
+                               iarray_container_t ** container);
 
     bool iarray_is_empty(iarray_container_t *container)
 
