@@ -67,6 +67,12 @@ class IArray(ext.Container):
     This is not meant to be called from user space.
     """
 
+    @classmethod
+    def cast(cls, cont):
+        cont.__class__ = cls
+        assert isinstance(cont, IArray)
+        return cont
+
     @property
     def info(self):
         """

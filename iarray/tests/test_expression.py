@@ -401,7 +401,7 @@ def test_expression(
     [
         ("abs(x)", "absolute(x)", True, None, True, None),
         ("arccos(x)", "acos(x)", False, None, False, None),
-        ("arcsin(x)", "asin(x)", True, "test_expression_xcontiguous.iarr", True, None),
+        ("arcsin(x)", "asin(x)", True, None, True, None),
         (
             "arctan(x)",
             "atan(x)",

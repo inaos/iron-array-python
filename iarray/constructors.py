@@ -221,6 +221,16 @@ def zeros(shape: Sequence, cfg: ia.Config = None, **kwargs) -> ia.IArray:
         return ext.zeros(cfg, dtshape)
 
 
+def from_cframe(
+    cframe: [bytes, bytearray], copy: bool = False, cfg: ia.Config = None, **kwargs
+) -> ia.IArray:
+    if not cfg:
+        cfg = ia.get_config_defaults()
+
+    with ia.config(cfg=cfg, **kwargs) as cfg:
+        return ext.from_cframe(cfg, cframe, copy)
+
+
 def ones(shape: Sequence, cfg: ia.Config = None, **kwargs) -> ia.IArray:
     """Return a new array of given shape and type, filled with ones.
 

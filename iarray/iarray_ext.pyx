@@ -404,6 +404,12 @@ cpdef _zarray_from_proxy(urlpath):
 cdef class Container:
     cdef ciarray.iarray_container_t *ia_container
     cdef Context context
+    cdef Py_ssize_t bp_shape[ciarray.IARRAY_DIMENSION_MAX]
+    cdef Py_ssize_t bp_strides[ciarray.IARRAY_DIMENSION_MAX]
+    cdef int view_count
+    def __array_function__(self, func, types, args, kwargs):
+        print("HOLA")
+        return NotImplemented
 
     def __init__(self, ctx, c):
         if ctx is None:
@@ -412,15 +418,60 @@ cdef class Container:
             raise ValueError("You must pass a Capsule to the C container struct of the Container constructor")
         self.context = ctx
         self.ia_container = <ciarray.iarray_container_t*> PyCapsule_GetPointer(c, <char*>"iarray_container_t*")
-
+        self.buffer = None
+        self.view_count = 0
 
     def __dealloc__(self):
         if self.context is not None and self.context.ia_ctx != NULL:
+
+            if self.view_count > 0:
+                # TODO: set Blosc flag `cframe_avoid_free = True`
+                pass
+
             ciarray.iarray_container_free(self.context.ia_ctx, &self.ia_container)
             self.context = None
 
+    # THERE ARE COLLISIONS WITH LAZY EXPRESSIONS
+    #
+    # def __getbuffer__(self, Py_buffer *buffer, int flags):
+    #     dtype = np.dtype(self.dtype)
+    #
+    #     ctx = Context(ia.Config())
+    #     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t *> PyCapsule_GetPointer(
+    #         ctx.to_capsule(),
+    #         <char *> "iarray_context_t*")
+    #
+    #     cdef ciarray.uint8_t *cframe
+    #     cdef ciarray.int64_t cframe_len
+    #     cdef ciarray.bool needs_free
+    #     iarray_check(ciarray.iarray_to_cframe(ctx_, self.ia_container, &cframe, &cframe_len, &needs_free))
+    #
+    #     self.bp_shape[0] = cframe_len
+    #     self.bp_strides[0] = 1
+    #
+    #     buffer.buf = <char *> cframe
+    #     buffer.format = 'B'  # unsigned bytes (compressed array)
+    #     buffer.internal = NULL  # see References
+    #     buffer.readonly = 1
+    #     buffer.obj = self
+    #     buffer.itemsize = 1
+    #     buffer.len = cframe_len
+    #     buffer.ndim = 1
+    #     buffer.shape = self.bp_shape
+    #     buffer.strides = self.bp_strides
+    #     buffer.suboffsets = NULL
+    #     if not needs_free:
+    #         self.view_count += 1
+    # def __releasebuffer__(self, Py_buffer *buffer):
+    #     self.view_count -= 1
+
+
     def to_capsule(self):
         return PyCapsule_New(self.ia_container, <char*>"iarray_container_t*", NULL)
+
+    @property
+    def cframe(self):
+        return get_cframe(self)
 
     @property
     def ndim(self):
@@ -854,7 +905,6 @@ def full(cfg, fill_value, dtshape):
 
     return a
 
-
 cdef get_cfg_from_container(cfg, ciarray.iarray_context_t *ctx, ciarray.iarray_container_t *c, urlpath):
     cdef ciarray.iarray_config_t cfg_
     ciarray.iarray_get_cfg(ctx, c, &cfg_)
@@ -994,6 +1044,26 @@ def set_orthogonal_selection(cfg, dst, selection, ndarray):
     PyBuffer_Release(&buf)
 
     return dst
+
+
+cdef get_cframe(data):
+    ctx = Context(ia.Config())
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t *> PyCapsule_GetPointer(
+        ctx.to_capsule(),
+        <char *> "iarray_context_t*")
+
+    cdef ciarray.iarray_container_t *data_ = <ciarray.iarray_container_t*> PyCapsule_GetPointer(data.to_capsule(),
+                                                                                                <char*>"iarray_container_t*")
+    cdef ciarray.uint8_t *cframe
+    cdef ciarray.int64_t cframe_len
+    cdef ciarray.bool needs_free
+    iarray_check(
+        ciarray.iarray_to_cframe(ctx_, data_, &cframe, &cframe_len, &needs_free))
+    b = bytes(memoryview(cframe[:cframe_len]))  # copy is done
+    if needs_free:
+        free(cframe)
+    return b
+
 
 
 def set_slice(cfg, data, start, stop, buffer):
@@ -1252,6 +1322,28 @@ def numpy2iarray(cfg, a, dtshape):
     c_c =  PyCapsule_New(c, <char*>"iarray_container_t*", NULL)
     b = ia.IArray(ctx, c_c)
     b.np_dtype = cfg.np_dtype
+
+    return b
+
+
+def from_cframe(cfg, cframe: [bytes, bytearray], copy: bool = False):
+    ctx = Context(cfg)
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(),
+                                                                                           <char *> "iarray_context_t*")
+
+    cdef Py_buffer *buf = <Py_buffer *> malloc(sizeof(Py_buffer))
+    PyObject_GetBuffer(cframe, buf, PyBUF_SIMPLE)
+
+    cdef ciarray.iarray_container_t *c
+    iarray_check(
+        ciarray.iarray_from_cframe(ctx_, <ciarray.uint8_t*> <char *> buf.buf, buf.len, copy, &c))
+    c_c = PyCapsule_New(c, <char *> "iarray_container_t*", NULL)
+    b = ia.IArray(ctx, c_c)
+    b.buffer = cframe
+
+    b.np_dtype = cfg.np_dtype  # No idea :(
+
+    b = ia.IArray.cast(b)
 
     return b
 
