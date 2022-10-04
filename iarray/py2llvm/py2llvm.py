@@ -10,7 +10,7 @@ import typing
 
 # Requirements
 from llvmlite import binding, ir
-from llvmlite.llvmpy.core import Module
+from llvmlite.ir import Module
 
 # Project
 import iarray as ia
