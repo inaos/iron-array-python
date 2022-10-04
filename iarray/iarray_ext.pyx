@@ -1844,8 +1844,9 @@ def attr_setitem(iarr, name, content):
     a = len(content)
     if a >= 2**31:
         raise ValueError("The size of `content` cannot be larger than 2**31 - 1")
+    cdef ciarray.int32_t size = a
     meta.name = name
-    meta.size = a
+    meta.size = size
     meta.sdata = content
     if exists:
         iarray_check(ciarray.iarray_vlmeta_update(ctx_, c_, &meta))
