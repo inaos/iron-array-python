@@ -16,6 +16,8 @@ from collections import namedtuple
 import msgpack
 
 from . cimport ciarray_ext as ciarray
+from .ciarray_ext cimport int64_t
+
 import numpy as np
 cimport numpy as np
 import zarr
@@ -342,6 +344,7 @@ cdef class IaDTShape:
     def __cinit__(self, dtshape):
         self.ia_dtshape.ndim = len(dtshape.shape)
         self.ia_dtshape.dtype = f_np2ia_dtype(dtshape.dtype)
+        self.ia_dtshape.dtype_size = np.dtype(dtshape.dtype).itemsize
         for i in range(len(dtshape.shape)):
             self.ia_dtshape.shape[i] = dtshape.shape[i]
 
@@ -355,6 +358,10 @@ cdef class IaDTShape:
     @property
     def dtype(self):
         return ia2np_dtype[self.ia_dtshape.dtype]
+
+    @property
+    def dtype_size(self):
+        return self.ia_dtshape.dtype_size
 
     @property
     def shape(self):
@@ -407,9 +414,6 @@ cdef class Container:
     cdef Py_ssize_t bp_shape[ciarray.IARRAY_DIMENSION_MAX]
     cdef Py_ssize_t bp_strides[ciarray.IARRAY_DIMENSION_MAX]
     cdef int view_count
-    def __array_function__(self, func, types, args, kwargs):
-        print("HOLA")
-        return NotImplemented
 
     def __init__(self, ctx, c):
         if ctx is None:
@@ -1322,6 +1326,56 @@ def numpy2iarray(cfg, a, dtshape):
     return b
 
 
+def split(cfg, container):
+    ctx = Context(cfg)
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t *> PyCapsule_GetPointer(ctx.to_capsule(), <char *> "iarray_context_t*")
+
+    cdef ciarray.iarray_container_t *container_
+    container_ = <ciarray.iarray_container_t *> PyCapsule_GetPointer(container.to_capsule(),
+                                                                     <char *> "iarray_container_t*")
+
+    nchunks = 1
+    for s, c in zip(container.shape, container.chunks):
+        nchunks *= s // c if s % c == 0 else s // c + 1
+
+    cdef ciarray.iarray_container_t **dst_ = <ciarray.iarray_container_t **> malloc(nchunks * sizeof(ciarray.iarray_container_t *))
+    iarray_check(ciarray.iarray_split(ctx_, container_, dst_))
+
+    l = []
+    for i in range(nchunks):
+        c_c = PyCapsule_New(dst_[i], <char *> "iarray_container_t*", NULL)
+        l += [ia.IArray(ctx, c_c)]
+
+    free(dst_)
+    return l
+
+
+def concatenate(cfg, l, dtshape):
+    ctx = Context(cfg)
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t *> PyCapsule_GetPointer(ctx.to_capsule(), <char *> "iarray_context_t*")
+
+    cdef ciarray.iarray_container_t **dst_ = <ciarray.iarray_container_t **> malloc(len(l) * sizeof(ciarray.iarray_container_t *))
+
+    for i in range(len(l)):
+        dst_[i] = <ciarray.iarray_container_t *> PyCapsule_GetPointer(l[i].to_capsule(),
+                                                                     <char *> "iarray_container_t*")
+
+    dtshape = IaDTShape(dtshape).to_dict()
+    cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
+
+    cdef ciarray.iarray_storage_t store_
+    set_storage(cfg, &store_)
+
+
+    cdef ciarray.iarray_container_t *c_
+    iarray_check(ciarray.iarray_concatenate(ctx_, dst_, &dtshape_, &store_, &c_))
+
+    c_c = PyCapsule_New(c_, <char *> "iarray_container_t*", NULL)
+    b = ia.IArray(ctx, c_c)
+
+    return b
+
+
 def from_cframe(cfg, cframe: [bytes, bytearray], copy: bool = False):
     ctx = Context(cfg)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(),
@@ -1340,6 +1394,35 @@ def from_cframe(cfg, cframe: [bytes, bytearray], copy: bool = False):
     b.np_dtype = cfg.np_dtype  # No idea :(
 
     b = ia.IArray.cast(b)
+
+    return b
+
+
+def from_chunk_index(cfg, src, shape, chunk_index):
+    ctx = Context(cfg)
+    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t *> PyCapsule_GetPointer(ctx.to_capsule(),
+                                                                                            <char *> "iarray_context_t*")
+
+
+    cdef ciarray.iarray_container_t *src_
+    src_ = <ciarray.iarray_container_t *> PyCapsule_GetPointer(src.to_capsule(),
+                                                                     <char *> "iarray_container_t*")
+
+    cdef int64_t *shape_ = <int64_t *> malloc(ciarray.IARRAY_DIMENSION_MAX * sizeof(int64_t))
+    for i in range(src.ndim):
+        shape_[i] = shape[i]
+
+    cdef int64_t *chunk_indexes_ = <int64_t *> malloc(len(chunk_index) * sizeof(int64_t))
+    cdef int64_t chunk_indexes_len_ = len(chunk_index)
+    for i in range(len(chunk_index)):
+        chunk_indexes_[i] = chunk_index[i]
+
+    cdef ciarray.iarray_container_t *c_
+    iarray_check(ciarray.iarray_from_chunk_index(ctx_, src_, shape_, chunk_indexes_, chunk_indexes_len_, &c_))
+    free(shape_)
+    free(chunk_indexes_)
+    c_c = PyCapsule_New(c_, <char *> "iarray_container_t*", NULL)
+    b = ia.IArray(ctx, c_c)
 
     return b
 

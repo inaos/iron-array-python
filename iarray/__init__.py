@@ -246,6 +246,7 @@ from .constructors import (
     uninit,
     zarr_proxy,
     from_cframe,
+    concatenate,
 )
 
 from .utils import (

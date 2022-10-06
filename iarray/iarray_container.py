@@ -109,6 +109,14 @@ class IArray(ext.Container):
     def oindex(self):
         return OIndex(self)
 
+    def split(self):
+        with ia.config() as cfg:
+            return ext.split(cfg, self)
+
+    def slice_chunk_index(self, shape, chunk_index):
+        with ia.config() as cfg:
+            return ext.from_chunk_index(cfg, self, shape, chunk_index)
+
     def copy(self, cfg=None, **kwargs) -> IArray:
         """Return a copy of the array.
 
