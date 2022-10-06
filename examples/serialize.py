@@ -10,7 +10,7 @@ a = ia.linspace(
     [100, 100], -10, 10, chunks=[50, 50], blocks=[20, 20], contiguous=True, dtype=np.float64
 )
 
-cframe = a.cframe
+cframe = a.to_cframe()
 
 b = ia.from_cframe(cframe)
 

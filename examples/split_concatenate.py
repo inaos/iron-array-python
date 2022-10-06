@@ -14,4 +14,4 @@ print(a.split())
 
 b = ia.concatenate(a.shape, split)
 
-print(b.data)
+print(b.slice_chunk_index((4, 10), [0, 1]).data)
