@@ -473,8 +473,7 @@ cdef class Container:
     def to_capsule(self):
         return PyCapsule_New(self.ia_container, <char*>"iarray_container_t*", NULL)
 
-    @property
-    def cframe(self):
+    def to_cframe(self):
         return get_cframe(self)
 
     @property
