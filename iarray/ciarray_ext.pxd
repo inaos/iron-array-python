@@ -366,6 +366,23 @@ cdef extern from "libiarray/iarray.h":
                                bool copy,
                                iarray_container_t ** container);
 
+    ina_rc_t iarray_split(iarray_context_t *ctx,
+                 iarray_container_t *src,
+                 iarray_container_t ** dest);
+
+    ina_rc_t iarray_from_chunk_index(iarray_context_t *ctx,
+                            iarray_container_t *src,
+                            int64_t *shape,
+                            int64_t *chunk_indexes,
+                            int64_t chunk_indexes_len,
+                            iarray_container_t ** dest);
+
+    ina_rc_t iarray_concatenate(iarray_context_t *ctx,
+                       iarray_container_t ** src,
+                       iarray_dtshape_t *dtshape,
+                       iarray_storage_t *storage,
+                       iarray_container_t ** dest);
+
     bool iarray_is_empty(iarray_container_t *container)
 
     ina_rc_t iarray_expr_new(iarray_context_t *ctx,

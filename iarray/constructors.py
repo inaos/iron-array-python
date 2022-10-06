@@ -221,6 +221,17 @@ def zeros(shape: Sequence, cfg: ia.Config = None, **kwargs) -> ia.IArray:
         return ext.zeros(cfg, dtshape)
 
 
+def concatenate(shape: Sequence, data: list, cfg: ia.Config = None, **kwargs) -> ia.IArray:
+    if cfg is None:
+        cfg = ia.get_config_defaults()
+
+    with ia.config(
+        shape=shape, cfg=cfg, chunks=data[0].chunks, blocks=data[0].blocks, **kwargs
+    ) as cfg:
+        dtshape = ia.DTShape(shape, data[0].dtype)
+        return ext.concatenate(cfg, data, dtshape)
+
+
 def from_cframe(
     cframe: [bytes, bytearray], copy: bool = False, cfg: ia.Config = None, **kwargs
 ) -> ia.IArray:
