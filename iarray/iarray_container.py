@@ -11,7 +11,7 @@
 import iarray as ia
 from iarray import iarray_ext as ext
 import numpy as np
-from typing import Union
+from typing import Union, Sequence
 import ndindex
 from .info import InfoReporter
 
@@ -110,10 +110,31 @@ class IArray(ext.Container):
         return OIndex(self)
 
     def split(self):
+        """Split the array in a list of one-chunk array.
+
+        Returns
+        -------
+        A list with one-chunk arrays.
+        """
         with ia.config() as cfg:
             return ext.split(cfg, self)
 
-    def slice_chunk_index(self, shape, chunk_index):
+    def slice_chunk_index(self, shape: Sequence, chunk_index: list):
+        """Slice the array using chunk indexes.
+
+        Parameters
+        ----------
+        shape: Sequence
+            The shape of the result.
+        chunk_index: lsit
+            The indexes of the chunks that will create the slice.
+
+        Returns
+        -------
+        :ref:`IArray`
+            A new array containing the chunk that are specified.
+
+        """
         with ia.config() as cfg:
             return ext.from_chunk_index(cfg, self, shape, chunk_index)
 

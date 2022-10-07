@@ -474,6 +474,12 @@ cdef class Container:
         return PyCapsule_New(self.ia_container, <char*>"iarray_container_t*", NULL)
 
     def to_cframe(self):
+        """ Create a cframe.
+
+        Returns
+        -------
+        A bytes object containing the cframe
+        """
         return get_cframe(self)
 
     @property

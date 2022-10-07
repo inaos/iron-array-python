@@ -18,6 +18,8 @@ Basic constructors
    full
    arange
    linspace
+   concatenate
+   from_cframe
 
 
 Random distributions

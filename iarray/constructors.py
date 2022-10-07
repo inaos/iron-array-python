@@ -222,6 +222,22 @@ def zeros(shape: Sequence, cfg: ia.Config = None, **kwargs) -> ia.IArray:
 
 
 def concatenate(shape: Sequence, data: list, cfg: ia.Config = None, **kwargs) -> ia.IArray:
+    """
+
+    Parameters
+    ----------
+    shape: Sequence
+        The shape of the concatenated array.
+    data: list
+        A list with the arrays (with one chunk) to concatenate
+
+    cfg` and `kwargs` are the same as for :func:`empty`.
+
+    Returns
+    -------
+    :ref:`IArray`
+        The concatenated array.
+    """
     if cfg is None:
         cfg = ia.get_config_defaults()
 
@@ -235,6 +251,23 @@ def concatenate(shape: Sequence, data: list, cfg: ia.Config = None, **kwargs) ->
 def from_cframe(
     cframe: [bytes, bytearray], copy: bool = False, cfg: ia.Config = None, **kwargs
 ) -> ia.IArray:
+    """
+    Create an array from a cframe in bytes.
+
+    Parameters
+    ----------
+    cframe: bytes
+        The cframe in bytes.
+    copy: bool
+        If `copy` is True, a copy is made.
+
+    cfg` and `kwargs` are the same as for :func:`empty`.
+
+    Returns
+    -------
+    :ref:`IArray`
+        The new array.
+    """
     if not cfg:
         cfg = ia.get_config_defaults()
 
