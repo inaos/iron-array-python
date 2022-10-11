@@ -504,10 +504,6 @@ cdef class Container:
     def mode(self):
         return self.context.cfg.mode
 
-    @property
-    def attrs(self):
-        return self.attrs
-
     def __getitem__(self, key):
         # key has been massaged already
         start, stop, squeeze_mask = key
@@ -1861,7 +1857,7 @@ def attr_getitem(iarr, name):
     ctx_ = <ciarray.iarray_context_t *> PyCapsule_GetPointer(ctx.to_capsule(), <char *> "iarray_context_t*")
 
     name = name.encode("utf-8") if isinstance(name, str) else name
-    cdef ciarray.bool exists
+    cdef ciarray.bool exists = False
     iarray_check(ciarray.iarray_vlmeta_exists(ctx_, c_, name, &exists))
     if not exists:
         raise KeyError("attr does not exist")
