@@ -79,7 +79,7 @@ np.testing.assert_almost_equal(np1, np0)
 
 # iarray internal engine (lazy expressions)
 t0 = time()
-b1 = (a1.sin() * a1.atan()).eval()
+b1 = (ia.sin(a1) * ia.atan(a1)).eval()
 t1 = time()
 print("Time for iarray (lazy eval, internal engine):", round(t1 - t0, 3))
 # Compare results

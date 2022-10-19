@@ -14,5 +14,5 @@ Basic algebra operations
 
 
    matmul
-   transpose
+   matrix_transpose
    matmul_params

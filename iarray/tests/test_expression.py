@@ -190,7 +190,7 @@ import numpy as np
             [250],
             np.float32,
             None,
-            "sqrt(x) + arctan2(x, x) + power(x, x)",
+            "sqrt(x) + atan2(x, x) + pow(x, x)",
             False,
             "test_expression_xsparse.iarr",
             True,
@@ -376,7 +376,7 @@ def test_expression(
                 # Don't do a replacement twice
                 break
             expression = expression.replace(ufunc, ufunc_repls[ufunc])
-    for ufunc in ia.MATH_FUNC_LIST:
+    for ufunc in ia.UNIVERSAL_MATH_FUNCS:
         if ufunc in expression:
             idx = expression.find(ufunc)
             # Prevent replacing an ufunc with np.ufunc twice (not terribly solid, but else, test will crash)
@@ -399,7 +399,7 @@ def test_expression(
 @pytest.mark.parametrize(
     "ufunc, ia_expr, xcontiguous, xurlpath, ycontiguous, yurlpath",
     [
-        ("abs(x)", "absolute(x)", True, None, True, None),
+        ("abs(x)", "abs(x)", True, None, True, None),
         ("arccos(x)", "acos(x)", False, None, False, None),
         ("arcsin(x)", "asin(x)", True, None, True, None),
         (
@@ -434,7 +434,7 @@ def test_expression(
         ("floor(x)", "floor(x)", False, None, False, None),
         ("log(x)", "log(x)", True, None, False, None),
         ("log10(x)", "log10(x)", True, "test_expression_xcontiguous.iarr", False, None),
-        ("negative(x)", "negate(x)", True, "test_expression_xcontiguous.iarr", False, None),
+        ("negative(x)", "negative(x)", True, "test_expression_xcontiguous.iarr", False, None),
         (
             "power(x, y)",
             "pow(x, y)",
@@ -509,7 +509,7 @@ def test_ufuncs(ufunc, ia_expr, xcontiguous, xurlpath, ycontiguous, yurlpath):
         tol = 1e-5 if dtype is np.float32 else 1e-13
 
         # Lazy expression eval
-        lazy_expr = eval("ia." + ufunc, {"ia": ia, "x": x, "y": y})
+        lazy_expr = eval("ia." + ia_expr, {"ia": ia, "x": x, "y": y})
         iout2 = lazy_expr.eval()
         npout2 = ia.iarray2numpy(iout2)
         np.testing.assert_allclose(npout, npout2, rtol=tol, atol=tol)
@@ -521,12 +521,12 @@ def test_ufuncs(ufunc, ia_expr, xcontiguous, xurlpath, ycontiguous, yurlpath):
         # floor(x): TypeError: must be real number, not IArray
         # negative(x) : TypeError: bad operand type for unary -: 'IArray'
         # power(x,y) : TypeError: unsupported operand type(s) for ** or pow(): 'IArray' and 'IArray'
-        if ufunc not in ("abs(x)", "ceil(x)", "floor(x)", "negative(x)", "power(x, y)"):
-            lazy_expr = eval("np." + ufunc, {"np": np, "x": x, "y": y})
-            iout2 = lazy_expr.eval()
-            npout2 = ia.iarray2numpy(iout2)
-        else:
-            npout2 = eval("np." + ufunc, {"np": np, "x": x.data, "y": y.data})
+        # if ufunc not in ("abs(x)", "ceil(x)", "floor(x)", "negative(x)", "power(x, y)"):
+        #     lazy_expr = eval("np." + ufunc, {"np": np, "x": x, "y": y})
+        #     iout2 = lazy_expr.eval()
+        #     npout2 = ia.iarray2numpy(iout2)
+        # else:
+        npout2 = eval("np." + ufunc, {"np": np, "x": x.data, "y": y.data})
         np.testing.assert_allclose(npout, npout2, rtol=tol, atol=tol)
 
         npout2 = eval("np." + ufunc, {"np": np, "x": npx, "y": npy})  # pure numpy
@@ -542,10 +542,10 @@ def test_ufuncs(ufunc, ia_expr, xcontiguous, xurlpath, ycontiguous, yurlpath):
     "ufunc, xcontiguous, xurlpath, ycontiguous, yurlpath",
     [
         ("abs", True, None, True, None),
-        ("arccos", False, "test_expression_xsparse.iarr", True, None),
-        ("arcsin", False, None, True, "test_expression_ycontiguous.iarr"),
-        ("arctan", False, None, False, None),
-        ("arctan2", True, None, True, "test_expression_ycontiguous.iarr"),
+        ("acos", False, "test_expression_xsparse.iarr", True, None),
+        ("asin", False, None, True, "test_expression_ycontiguous.iarr"),
+        ("atan", False, None, False, None),
+        ("atan2", True, None, True, "test_expression_ycontiguous.iarr"),
         ("ceil", False, None, False, "test_expression_ysparse.iarr"),
         (
             "cos",
@@ -566,7 +566,7 @@ def test_ufuncs(ufunc, ia_expr, xcontiguous, xurlpath, ycontiguous, yurlpath):
             False,
             "test_expression_ysparse.iarr",
         ),
-        ("power", True, "test_expression_xcontiguous.iarr", True, None),
+        ("pow", True, "test_expression_xcontiguous.iarr", True, None),
         ("sin", True, "test_expression_xcontiguous.iarr", False, None),
         ("sinh", True, None, False, "test_expression_ysparse.iarr"),
         ("sqrt", False, None, True, None),
@@ -614,16 +614,21 @@ def test_expr_ufuncs(ufunc, xcontiguous, xurlpath, ycontiguous, yurlpath):
         # NumPy computation
         npx = ia.iarray2numpy(x)
         npy = ia.iarray2numpy(y)
-        if ufunc in ("arctan2", "power"):
-            npout = eval("1 + 2 * np.%s(x, y)" % ufunc, {"np": np, "x": npx, "y": npy})
+        np_ufunc = ufunc
+        if np_ufunc in ["asin", "acos", "atan", "atan2"]:
+            np_ufunc = "arc" + ufunc[1:]
+        elif np_ufunc == "pow":
+            np_ufunc = "power"
+        if np_ufunc in ("arctan2", "power"):
+            npout = eval("1 + 2 * np.%s(x, y)" % np_ufunc, {"np": np, "x": npx, "y": npy})
         else:
-            npout = eval("1 + 2 * np.%s(x)" % ufunc, {"np": np, "x": npx})
+            npout = eval("1 + 2 * np.%s(x)" % np_ufunc, {"np": np, "x": npx})
 
         # Lazy expression eval
-        if ufunc in ("arctan2", "power"):
-            lazy_expr = eval("1 + 2* x.%s(y)" % ufunc, {"x": x, "y": y})
+        if ufunc in ("atan2", "pow"):
+            lazy_expr = eval("1 + 2* ia.%s(x, y)" % ufunc, {"ia": ia, "x": x, "y": y})
         else:
-            lazy_expr = eval("1 + 2 * x.%s()" % ufunc, {"x": x})
+            lazy_expr = eval("1 + 2 * ia.%s(x)" % ufunc, {"ia": ia, "x": x})
         iout2 = lazy_expr.eval()
         npout2 = ia.iarray2numpy(iout2)
 
@@ -740,7 +745,7 @@ def test_expr_ufuncs(ufunc, xcontiguous, xurlpath, ycontiguous, yurlpath):
         ),
         # transcendental functions
         (
-            "x.cos() + y",
+            "ia.cos(x) + y",
             "np.cos(x) + y",
             True,
             "test_expression_xcontiguous.iarr",
@@ -753,7 +758,7 @@ def test_expr_ufuncs(ufunc, xcontiguous, xurlpath, ycontiguous, yurlpath):
         ),
         ("ia.cos(x) + y", "np.cos(x) + y", False, None, False, None, False, None, False, None),
         (
-            "x.sin() * x.sin() + y.cos()",
+            "ia.sin(x) * ia.sin(x) + ia.cos(y)",
             "np.sin(x) * np.sin(x) + np.cos(y)",
             False,
             "test_expression_xsparse.iarr",
@@ -765,7 +770,7 @@ def test_expr_ufuncs(ufunc, xcontiguous, xurlpath, ycontiguous, yurlpath):
             None,
         ),
         pytest.param(
-            "x.tan() * (y.sin() * y.sin() + z.cos()) + (t.sqrt() * 2)",
+            "ia.tan(x) * (ia.sin(y) * ia.sin(y) + ia.cos(z)) + (ia.sqrt(t) * 2)",
             "np.tan(x) * (np.sin(y) * np.sin(y) + np.cos(z)) + (np.sqrt(t) * 2)",
             True,
             None,
@@ -779,7 +784,7 @@ def test_expr_ufuncs(ufunc, xcontiguous, xurlpath, ycontiguous, yurlpath):
         ),
         # Use another order than before (precision needs to be relaxed a bit)
         (
-            "t.tan() * (x.sin() + y.cos()) + (z.sqrt() * 2)",
+            "ia.tan(t) * (ia.sin(x) + ia.cos(y)) + (ia.sqrt(z) * 2)",
             "np.tan(t) * (np.sin(x) + np.cos(y)) + (np.sqrt(z) * 2)",
             False,
             None,
@@ -973,7 +978,7 @@ def test_scalar_params(sexpr, sexpr_scalar, inputs):
         ),
         # transcendental functions
         (
-            "x.cos() + y",
+            "ia.cos(x) + y",
             "np.cos(x) + y",
             True,
             "test_expression_xcontiguous.iarr",
@@ -985,7 +990,7 @@ def test_scalar_params(sexpr, sexpr_scalar, inputs):
             np.int8,
         ),
         (
-            "x.sin() * x.sin() + y.cos()",
+            "ia.sin(x) * ia.sin(x) + ia.cos(y)",
             "np.sin(x) * np.sin(x) + np.cos(y)",
             False,
             "test_expression_xsparse.iarr",
@@ -1010,6 +1015,11 @@ def test_expr_type_view(
     dtype,
     view_dtype,
 ):
+    if (view_dtype not in [np.float32, np.float64]
+        and any(func in expr for func in ["cos", "sin", "tan", "acos", "asin", "atan"])
+    ):
+        pytest.skip("cannot compute this reduction with this dtype")
+
     shape = [200, 300]
     chunks = [40, 50]
     bshape = [20, 20]

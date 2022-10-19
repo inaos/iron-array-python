@@ -15,8 +15,8 @@ b = ia.arange([2000, 1000], clevel=0, btune=False)
 
 an = ia.iarray2numpy(a)
 
-ia.cmp_arrays(a.T, ia.transpose(b))
-ia.cmp_arrays(a.transpose().copy(), ia.transpose(b))
+ia.cmp_arrays(a.T, ia.matrix_transpose(b))
+ia.cmp_arrays(a.transpose().copy(), ia.matrix_transpose(b))
 
 cn = ia.iarray2numpy(a.T)
 cn2 = an.T

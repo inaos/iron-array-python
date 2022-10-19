@@ -16,10 +16,10 @@ Trigonometric functions
    sin
    cos
    tan
-   arcsin
-   arccos
-   arctan
-   arctan2
+   asin
+   acos
+   atan
+   atan2
 
 Hyperbolic functions
 ====================
@@ -59,6 +59,6 @@ Miscellaneous
    :nosignatures:
 
    sqrt
-   power
+   pow
    abs
    negative

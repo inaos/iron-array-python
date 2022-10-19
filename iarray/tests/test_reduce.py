@@ -40,7 +40,8 @@ def test_reduce(shape, chunks, blocks, axis, dtype, rfunc, contiguous, urlpath, 
     ia.remove_urlpath(urlpath)
     ia.remove_urlpath("test_reduce_res.iarr")
 
-    if dtype not in [np.float32, np.float64] and nan is True:
+    if (dtype not in [np.float32, np.float64] and (nan is True or rfunc in ["mean", "var", "std"]))\
+            or dtype == ia.bool and rfunc in ["sum", "prod", "max", "min"]:
         pytest.skip("cannot compute this reduction with this dtype")
 
     a1 = ia.linspace(
@@ -189,6 +190,11 @@ def test_red_type_view(shape, chunks, blocks, axis, dtype, view_dtype, rfunc, co
     ia.remove_urlpath(urlpath)
     ia.remove_urlpath("test_reduce_res.iarr")
 
+    if (view_dtype not in [np.float32, np.float64] and rfunc in ["mean", "var", "std"])\
+            or view_dtype == ia.bool and rfunc in ["sum", "prod"]:
+        pytest.skip("cannot compute this reduction with this dtype")
+    elif view_dtype == ia.bool and rfunc in ["max", "min"]:
+        rfunc = "any" if rfunc == "max" else "all"
     cfg = ia.Config(chunks=chunks, blocks=blocks, contiguous=contiguous, urlpath=urlpath)
     a1 = ia.linspace(shape, 0, 100, dtype=dtype, cfg=cfg)
     a2 = a1.astype(view_dtype)

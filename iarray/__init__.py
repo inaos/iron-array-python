@@ -147,7 +147,7 @@ class Reduce(Enum):
 
 
 # List of all know universal functions
-MATH_FUNC_LIST = (
+UNIVERSAL_MATH_FUNCS = (
     "abs",
     "absolute",
     "arccos",
@@ -176,6 +176,28 @@ MATH_FUNC_LIST = (
     "tanh",
 )
 
+MATH_FUNC_LIST = (
+    "abs",
+    "acos",
+    "asin",
+    "atan",
+    "atan2",
+    "ceil",
+    "cos",
+    "cosh",
+    "exp",
+    "floor",
+    "log",
+    "log10",
+    "negative",
+    "pow",
+    "sin",
+    "sinh",
+    "sqrt",
+    "tan",
+    "tanh",
+)
+
 
 # That must come here so as to avoid circular import errors
 
@@ -195,8 +217,10 @@ from .iarray_container import (
     IArray,
     matmul_params,
     matmul,
-    transpose,
+    matrix_transpose,
     # reductions
+    all,
+    any,
     max,
     min,
     sum,
@@ -215,10 +239,10 @@ from .iarray_container import (
     nanmedian,
     # ufuncs
     abs,
-    arccos,
-    arcsin,
-    arctan,
-    arctan2,
+    acos,
+    asin,
+    atan,
+    atan2,
     ceil,
     cos,
     cosh,
@@ -227,7 +251,7 @@ from .iarray_container import (
     log,
     log10,
     negative,
-    power,
+    pow,
     sin,
     sinh,
     sqrt,
@@ -279,6 +303,20 @@ from .lazy_expr import (
 
 from .attrs import (
     Attributes,
+)
+
+from ._dtypes import (
+    int8,
+    int16,
+    int32,
+    int64,
+    uint8,
+    uint16,
+    uint32,
+    uint64,
+    float32,
+    float64,
+    bool,
 )
 
 # For some reason this needs to go to the end, else matmul function does not work.
