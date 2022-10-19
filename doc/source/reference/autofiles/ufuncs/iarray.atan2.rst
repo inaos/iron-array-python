@@ -1,6 +1,6 @@
-﻿iarray.power
+﻿iarray.atan2
 ============
 
 .. currentmodule:: iarray
 
-.. autofunction:: power
+.. autofunction:: atan2

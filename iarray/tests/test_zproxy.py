@@ -747,7 +747,7 @@ def test_zproxy_expression(
                 # Don't do a replacement twice
                 break
             expression = expression.replace(ufunc, ufunc_repls[ufunc])
-    for ufunc in ia.MATH_FUNC_LIST:
+    for ufunc in ia.UNIVERSAL_MATH_FUNCS:
         if ufunc in expression:
             idx = expression.find(ufunc)
             # Prevent replacing an ufunc with np.ufunc twice (not terribly solid, but else, test will crash)
@@ -806,7 +806,7 @@ def test_ufuncs(ufunc, ia_expr, xcontiguous, xurlpath):
         tol = 1e-5 if dtype is np.float32 else 1e-13
 
         # Lazy expression eval
-        lazy_expr = eval("ia." + ufunc, {"ia": ia, "x": x})
+        lazy_expr = eval("ia." + ia_expr, {"ia": ia, "x": x})
         iout2 = lazy_expr.eval()
         npout2 = ia.iarray2numpy(iout2)
         np.testing.assert_allclose(npout, npout2, rtol=tol, atol=tol)
@@ -818,12 +818,12 @@ def test_ufuncs(ufunc, ia_expr, xcontiguous, xurlpath):
         # floor(x): TypeError: must be real number, not IArray
         # negative(x) : TypeError: bad operand type for unary -: 'IArray'
         # power(x,y) : TypeError: unsupported operand type(s) for ** or pow(): 'IArray' and 'IArray'
-        if ufunc not in ("abs(x)", "ceil(x)", "floor(x)", "negative(x)", "power(x, y)"):
-            lazy_expr = eval("np." + ufunc, {"np": np, "x": x})
-            iout2 = lazy_expr.eval()
-            npout2 = ia.iarray2numpy(iout2)
-        else:
-            npout2 = eval("np." + ufunc, {"np": np, "x": x.data})
+        # if ufunc not in ("abs(x)", "ceil(x)", "floor(x)", "negative(x)", "power(x, y)"):
+        #     lazy_expr = eval("np." + ufunc, {"np": np, "x": x})
+        #     iout2 = lazy_expr.eval()
+        #     npout2 = ia.iarray2numpy(iout2)
+        # else:
+        npout2 = eval("np." + ufunc, {"np": np, "x": x.data})
         np.testing.assert_allclose(npout, npout2, rtol=tol, atol=tol)
 
         npout2 = eval("np." + ufunc, {"np": np, "x": npx})  # pure numpy
@@ -838,7 +838,7 @@ def test_ufuncs(ufunc, ia_expr, xcontiguous, xurlpath):
 @pytest.mark.parametrize(
     "ufunc, xcontiguous, xurlpath, ycontiguous, yurlpath",
     [
-        ("arccos", False, "test_expression_xsparse.iarr", True, None),
+        ("acos", False, "test_expression_xsparse.iarr", True, None),
         (
             "negative",
             True,
@@ -870,16 +870,25 @@ def test_expr_ufuncs(ufunc, xcontiguous, xurlpath, ycontiguous, yurlpath):
     # NumPy computation
     npx = ia.iarray2numpy(x)
     npy = ia.iarray2numpy(y)
-    if ufunc in ("arctan2", "power"):
-        npout = eval("1 + 2 * np.%s(x, y)" % ufunc, {"np": np, "x": npx, "y": npy})
+    np_ufunc = ufunc
+    if np_ufunc in ["asin", "acos", "atan", "atan2"]:
+        np_ufunc = "arc" + ufunc[1:]
+    elif np_ufunc == "__pow__":
+        np_ufunc = "power"
+    elif np_ufunc == "__neg__":
+        np_ufunc = "negative"
+    elif "__" in np_ufunc:
+        np_ufunc = ufunc[2:-2]
+    if np_ufunc in ("arctan2", "power"):
+        npout = eval("1 + 2 * np.%s(x, y)" % np_ufunc, {"np": np, "x": npx, "y": npy})
     else:
-        npout = eval("1 + 2 * np.%s(x)" % ufunc, {"np": np, "x": npx})
+        npout = eval("1 + 2 * np.%s(x)" % np_ufunc, {"np": np, "x": npx})
 
     # Lazy expression eval
-    if ufunc in ("arctan2", "power"):
-        lazy_expr = eval("1 + 2* x.%s(y)" % ufunc, {"x": x, "y": y})
+    if ufunc in ("atan2", "__pow__"):
+        lazy_expr = eval("1 + 2* ia.%s(x, y)" % ufunc, {"ia": ia, "x": x, "y": y})
     else:
-        lazy_expr = eval("1 + 2 * x.%s()" % ufunc, {"x": x})
+        lazy_expr = eval("1 + 2 * ia.%s(x)" % ufunc, {"ia": ia, "x": x})
     iout2 = lazy_expr.eval()
     npout2 = ia.iarray2numpy(iout2)
 

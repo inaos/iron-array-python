@@ -35,7 +35,7 @@ def te_expression(method, shape, xcfg, ycfg, zcfg, dtype, expression):
                 # Don't do a replacement twice
                 break
             expression = expression.replace(ufunc, ufunc_repls[ufunc])
-    for ufunc in ia.MATH_FUNC_LIST:
+    for ufunc in ia.UNIVERSAL_MATH_FUNCS:
         if ufunc in expression:
             idx = expression.find(ufunc)
             # Prevent replacing an ufunc with np.ufunc twice (not terribly solid, but else, test will crash)

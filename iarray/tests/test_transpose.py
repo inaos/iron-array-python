@@ -74,10 +74,10 @@ def test_transpose(shape, chunks, blocks, dtype, np_dtype, contiguous, urlpath, 
 
     if mode in ["r", "r+"]:
         with pytest.raises(IOError):
-            at = ia.transpose(a, mode=mode)
-        at = ia.transpose(a)
+            at = ia.matrix_transpose(a, mode=mode)
+        at = ia.matrix_transpose(a)
     else:
-        at = ia.transpose(a, mode=mode)
+        at = ia.matrix_transpose(a, mode=mode)
 
     an = ia.iarray2numpy(at)
     if npdtype in [np.float16, np.float32, np.float64]:

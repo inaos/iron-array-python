@@ -24,25 +24,21 @@ def clip(a: udf.float32, amin: udf.float32, amax: udf.float32) -> udf.float32:
         ),
         # Transcendental functions
         (
-            "x.cos() + y",
+            "ia.cos(x) + y",
             "np.cos(x) + y",
         ),
         ("ia.cos(x) + y", "np.cos(x) + y"),
         # Reductions
         (
-            "x.sum(axis=1) - 1.35",
-            "x.sum(axis=1) - 1.35",
-        ),
-        (
             "ia.sum(x, axis=1) - 1.35",
             "np.sum(x, axis=1) - 1.35",
         ),
         (
-            "1.35 + x.max(axis=1)",
+            "1.35 + ia.max(x, axis=1)",
             "1.35 + x.max(axis=1)",
         ),
         (
-            "x.mean(axis=0) - y.mean(axis=0)",
+            "ia.mean(x, axis=0) - ia.mean(y, axis=0)",
             "x.mean(axis=0) - y.mean(axis=0)",
         ),
         # Extended slicing (np.where flavored)
@@ -104,11 +100,11 @@ def clip(a: udf.float32, amin: udf.float32, amax: udf.float32) -> udf.float32:
         ),
         # Reductions with sliced views
         (
-            "(x.min(axis=1) - 1.35) *  y[:,1]",
+            "(ia.min(x, axis=1) - 1.35) *  y[:,1]",
             "(x.min(axis=1) - 1.35) *  y[:,1]",
         ),
         (
-            "(x.prod(axis=1) - 1.35) *  ia.cos(y[:,1])",
+            "(ia.prod(x, axis=1) - 1.35) *  ia.cos(y[:,1])",
             "(x.prod(axis=1) - 1.35) *  np.cos(y[:,1])",
         ),
         # Call scalar UDFs
