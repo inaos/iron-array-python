@@ -31,12 +31,25 @@ The behaviour in special cases may also differ from the array API standard.
 
 The behaviour of some methods regarding `Nan` and `infinity` values is implementation defined and may not follow the standard.
 
+## Data Type Functions
+
+Since the code is optimized for doing so, `astype`'s `copy` param is `False` by default and the copy can be avoided even when dtypes are different. Thus, it only performs a copy if `copy` is specified as `True`.
+
+## Element-wise functions
+
+* `acosh`, `asinh`, `atanh`, all the bitwise functions, `floor_divide`, `isfinite`, `isinf`, `isnan`, `log2`, `logical_and`, `logical_not`, `logical_or`, `logical_xor`, `remainder`, `round`, `sign`, `trunc`, are not supported yet.
+* The behaviour with special cases is implementation defined.
+* Type promotion rules do not exist since the operands must have the same dtype. The only exception to this rule is when one of the operands is a scalar, in which case it is casted to the dtype of the other array operand.
+* All these functions return a lazy expression except for `positive`.
+
+## Linear Algebra Functions
+
+Cannot compute transpose of a stack of matrices, only 2-dim arrays.
+
 ## Statistical functions
 
 The `keepdims` param will always be `False`. If it is set to `True` an error will be raised.
 
-In case the reduction is performed over the whole array, the result is a scalar.
-
 ## Utility functions
 
-`any` and `all` only accept bool dtype arrays. The parameter `keepdims` is not supported yet since ironArray never includes the reduced axes in the result. In case the reduction is performed over the whole array, the result is a boolean.
+`any` and `all` only accept bool dtype arrays. The parameter `keepdims` is not supported yet since ironArray never includes the reduced axes in the result.

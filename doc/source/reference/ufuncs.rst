@@ -48,8 +48,11 @@ Exponents and logarithms
    :nosignatures:
 
    exp
+   expm1
    log
+   log1p
    log10
+   logaddexp
 
 
 Miscellaneous
@@ -58,7 +61,19 @@ Miscellaneous
    :toctree: autofiles/ufuncs/
    :nosignatures:
 
-   sqrt
-   pow
    abs
+   add
+   divide
+   equal
+   greater
+   greater_equal
+   less
+   less_equal
+   multiply
    negative
+   not_equal
+   positive
+   pow
+   sqrt
+   square
+   subtract

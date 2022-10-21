@@ -158,8 +158,15 @@ def check_inputs_string(inputs: dict, cfg: ia.Config, minjugg: bool = False):
     arrays = dict()
     scalars = dict()
     for iname, ivalue in inputs.items():
-        if hasattr(ivalue, "shape") and ivalue.shape != ():
-            arrays[iname] = ivalue
+        if hasattr(ivalue, "shape"):
+            if ivalue.shape != ():
+                arrays[iname] = ivalue
+            else:
+                # Promote a 0-dim array to 1-dim
+                a = ia.full(shape=(1,), fill_value=ivalue.data[()], cfg=ivalue.cfg, urlpath=None,
+                            chunks=(1,), blocks=(1,))
+                inputs[iname] = a
+                arrays[iname] = a
         else:
             scalars[iname] = ivalue
     if len(arrays) == 0:

@@ -146,7 +146,7 @@ class Reduce(Enum):
     NAN_MEDIAN = 15
 
 
-# List of all know universal functions
+# List of all know universal functions including NumPy aliases
 UNIVERSAL_MATH_FUNCS = (
     "abs",
     "absolute",
@@ -176,6 +176,8 @@ UNIVERSAL_MATH_FUNCS = (
     "tanh",
 )
 
+
+# List of the array API standard functions
 MATH_FUNC_LIST = (
     "abs",
     "acos",
@@ -239,6 +241,7 @@ from .iarray_container import (
     nanmedian,
     # ufuncs
     abs,
+    add,
     acos,
     asin,
     atan,
@@ -246,12 +249,27 @@ from .iarray_container import (
     ceil,
     cos,
     cosh,
+    divide,
+    equal,
     exp,
+    expm1,
     floor,
+    greater,
+    greater_equal,
+    less,
+    less_equal,
     log,
+    log1p,
     log10,
+    logaddexp,
+    multiply,
     negative,
+    not_equal,
+    positive,
     pow,
+    sqrt,
+    square,
+    subtract,
     sin,
     sinh,
     sqrt,

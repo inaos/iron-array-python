@@ -198,7 +198,7 @@ class IArray(ext.Container):
         kwargs : dict
             A dictionary for setting some or all of the fields in the :class:`Config`
             dataclass that should override the configuration.
-            By default, this function deactives btune unless it is specified.
+            By default, this function deactivates btune unless it is specified.
 
         Returns
         -------
@@ -490,21 +490,26 @@ class IArray(ext.Container):
             dst = np.ones(shape, dtype=self.dtype)
             return ext.get_orthogonal_selection(cfg, self, dst, selection)
 
-    def astype(self, view_dtype):
+    def astype(self, view_dtype, /, *, copy: bool = False) -> IArray:
         """
         Cast the array into a view of a specified type.
 
         Parameters
         ----------
-        view_dtype: (np.float64, np.float32, np.int64, np.int32, np.int16, np.int8, np.uint64, np.uint32, np.uint16,
-            np.uint8, np.bool_)
-            The dtype in which the array will be casted. Only upcasting is supported.
+        view_dtype: (float64, float32, int64, int32, int16, int8, uint64, uint32, uint16,
+            uint8, bool)
+            The dtype in which the array will be casted. Only upcasting is supported
+            unless :param:`copy` is `True`.
+        copy: bool
+            Whether to copy the array or do a view instead. Default is False.
 
         Returns
         -------
         :ref:`IArray`
-            The new view as a normal IArray.
+            The new view or array as a normal :ref:`IArray`.
         """
+        if copy:
+            return self.copy(dtype=view_dtype)
         view_dtypesize = np.dtype(view_dtype).itemsize
         src_dtypesize = np.dtype(self.dtype).itemsize
         if view_dtypesize < src_dtypesize:
@@ -646,20 +651,7 @@ class IArray(ext.Container):
         """
         Absolute value, element-wise.
 
-        Parameters
-        ----------
-        iarr(self): :ref:`IArray`
-           Input array.
-
-        Returns
-        -------
-        abs: :ref:`iarray.Expr`
-           A lazy expression that must be evaluated via `out.eval()`, which will compute the
-           absolute value of each element in x.
-
-        References
-        ----------
-        `np.absolute <https://numpy.org/doc/stable/reference/generated/numpy.absolute.html>`_
+        See :func:`abs`.
         """
         if self.dtype not in _numeric_dtypes:
             raise TypeError("Only numeric dtypes are allowed in __abs__")
@@ -669,20 +661,7 @@ class IArray(ext.Container):
         """
         Numerical negative, element-wise.
 
-        Parameters
-        ----------
-        iarr(self): :ref:`IArray`
-            Input array.
-
-        Returns
-        -------
-        out: :ref:`iarray.Expr`
-            A lazy expression that must be evaluated via `out.eval()`, which will compute
-            :math:`out = -iarr`.
-
-        References
-        ----------
-        `np.negative <https://numpy.org/doc/stable/reference/generated/numpy.negative.html>`_
+        See :func:`negative`.
         """
         if self.dtype not in _numeric_dtypes:
             raise TypeError("Only numeric dtypes are allowed in __neg__")
@@ -692,47 +671,12 @@ class IArray(ext.Container):
         """
         First array elements raised to powers from second array, element-wise.
 
-        Parameters
-        ----------
-        iarr1(self): :ref:`IArray`
-            The bases.
-        iarr2: :ref:`IArray`
-            The exponents.
-
-        Returns
-        -------
-        out: :ref:`iarray.Expr`
-            A lazy expression that must be evaluated via `out.eval()`, which will compute the
-            bases raised to the exponents.
-
-        References
-        ----------
-        `np.power <https://numpy.org/doc/stable/reference/generated/numpy.power.html>`_
+        See :func:`pow`.
         """
         self._check_allowed_dtypes(iarr2, "numeric", "__pow__")
         return ia.LazyExpr(new_op=(self, "pow", iarr2))
 
     def __rpow__(self, iarr2: Union[int, float, IArray], /):
-        """
-        First array elements raised to powers from second array, element-wise.
-
-        Parameters
-        ----------
-        iarr1(self): :ref:`IArray`
-            The bases.
-        iarr2: :ref:`IArray`
-            The exponents.
-
-        Returns
-        -------
-        out: :ref:`iarray.Expr`
-            A lazy expression that must be evaluated via `out.eval()`, which will compute the
-            bases raised to the exponents.
-
-        References
-        ----------
-        `np.power <https://numpy.org/doc/stable/reference/generated/numpy.power.html>`_
-        """
         self._check_allowed_dtypes(iarr2, "numeric", "__pow__")
         return ia.LazyExpr(new_op=(iarr2, "pow", self))
 
@@ -825,19 +769,33 @@ class IArray(ext.Container):
     def __ixor__(self, value: Union[int, bool, IArray], /):
         raise NotImplementedError("self.__ixor__ is not supported yet")
 
-    def to_device(device: device, /, *, stream: Optional[Union[int, Any]] = None) -> IArray:
+    def to_device(self, device: device, /, *, stream: Optional[Union[int, Any]] = None) -> IArray:
         raise NotImplementedError("self.to_device is not supported yet")
 
 
-def abs(iarr: IArray):
+def abs(iarr: IArray, /):
     """
-    See :meth:`IArray.__abs__`
+    Absolute value, element-wise.
 
+    Parameters
+    ----------
+    iarr: :ref:`IArray`
+       Input array.
+
+    Returns
+    -------
+    abs: :ref:`iarray.Expr`
+       A lazy expression that must be evaluated via `out.eval()`, which will compute the
+       absolute value of each element in :paramref:`iarr`.
+
+    References
+    ----------
+    `np.absolute <https://numpy.org/doc/stable/reference/generated/numpy.absolute.html>`_
     """
     return iarr.__abs__()
 
 
-def acos(iarr: IArray):
+def acos(iarr: IArray, /):
     """
     Trigonometric inverse cosine, element-wise.
 
@@ -870,7 +828,27 @@ def acos(iarr: IArray):
     return ia.LazyExpr(new_op=(iarr, "acos", None))
 
 
-def asin(iarr: IArray):
+def add(iarr1: IArray, iarr2: IArray, /):
+    """
+    Add arguments element-wise.
+
+    Parameters
+    ----------
+    iarr1: :ref:`IArray`
+        First input array.
+    iarr2: :ref:`IArray`
+        Second input array.
+
+    Returns
+    -------
+    add: :ref:`iarray.Expr`
+        A lazy expression that must be evaluated via `out.eval()`, which will compute
+        the sum of :paramref:`iarr1` and :paramref:`iarr2`, element-wise.
+    """
+    return iarr1 + iarr2
+
+
+def asin(iarr: IArray, /):
     """
     Trigonometric inverse sine, element-wise.
 
@@ -903,7 +881,7 @@ def asin(iarr: IArray):
     return ia.LazyExpr(new_op=(iarr, "asin", None))
 
 
-def atan(iarr: IArray):
+def atan(iarr: IArray, /):
     """
     Trigonometric inverse tangent, element-wise.
 
@@ -935,7 +913,7 @@ def atan(iarr: IArray):
     return ia.LazyExpr(new_op=(iarr, "atan", None))
 
 
-def atan2(iarr1: IArray, iarr2: IArray):
+def atan2(iarr1: IArray, iarr2: IArray, /):
     """
     Element-wise arc tangent of :math:`\\frac{iarr_1}{iarr_2}` choosing the quadrant correctly.
 
@@ -962,7 +940,7 @@ def atan2(iarr1: IArray, iarr2: IArray):
     return ia.LazyExpr(new_op=(iarr1, "atan2", iarr2))
 
 
-def ceil(iarr: IArray):
+def ceil(iarr: IArray, /):
     """
     Return the ceiling of the input, element-wise.  It is often denoted as :math:`\\lceil x \\rceil`.
 
@@ -986,7 +964,7 @@ def ceil(iarr: IArray):
     return ia.LazyExpr(new_op=(iarr, "ceil", None))
 
 
-def cos(iarr: IArray):
+def cos(iarr: IArray, /):
     """
     Trigonometric cosine, element-wise.
 
@@ -1010,7 +988,7 @@ def cos(iarr: IArray):
     return ia.LazyExpr(new_op=(iarr, "cos", None))
 
 
-def cosh(iarr: IArray):
+def cosh(iarr: IArray, /):
     """
     Hyperbolic cosine, element-wise.
 
@@ -1036,7 +1014,47 @@ def cosh(iarr: IArray):
     return ia.LazyExpr(new_op=(iarr, "cosh", None))
 
 
-def exp(iarr: IArray):
+def divide(iarr1: IArray, iarr2: IArray, /):
+    """
+    Divide arrays element-wise.
+
+    Parameters
+    ----------
+    iarr1: :ref:`IArray`
+        Dividend array.
+    iarr2: :ref:`IArray`
+        Divisor array.
+
+    Returns
+    -------
+    out: :ref:`iarray.Expr`
+        A lazy expression that must be evaluated via `out.eval()`, which will compute the quotient
+        `iarr1 / iarr2` element-wise.
+    """
+    return iarr1 / iarr2
+
+
+def equal(iarr1: IArray, iarr2: IArray, /):
+    """
+    Return (x1 == x2) element-wise.
+
+    Parameters
+    ----------
+    iarr1: :ref:`IArray`
+        First input array.
+    iarr2: :ref:`IArray`
+        Second input array.
+
+    Returns
+    -------
+    out: :ref:`iarray.Expr`
+        A lazy expression that must be evaluated via `out.eval()`, which will compute the comparison
+        of :paramref:`iarr1` and :paramref:`iarr2` element-wise.
+    """
+    return iarr1 == iarr2
+
+
+def exp(iarr: IArray, /):
     """
     Calculate the exponential of all elements in the input array.
 
@@ -1060,7 +1078,31 @@ def exp(iarr: IArray):
     return ia.LazyExpr(new_op=(iarr, "exp", None))
 
 
-def floor(iarr: IArray):
+def expm1(iarr: IArray, /):
+    """
+    Calculate `exp(x) - 1` for all elements in the input array.
+
+    Parameters
+    ----------
+    iarr: :ref:`IArray`
+        Input array.
+
+    Returns
+    -------
+    out: :ref:`iarray.Expr`
+        A lazy expression that must be evaluated via `out.eval()`, which will compute the
+        element-wise exponential minus one.
+
+    References
+    ----------
+    `np.expm1 <https://numpy.org/doc/stable/reference/generated/numpy.expm1.html>`_
+    """
+    if iarr.dtype not in _floating_dtypes:
+        raise TypeError("Only floating dtypes are allowed in exp")
+    return eval("ia.exp(x) - 1", {"ia": ia, "x": iarr})
+
+
+def floor(iarr: IArray, /):
     """
     Return the floor of the input, element-wise. It is often denoted as :math:`\\lfloor x \\rfloor`.
 
@@ -1084,7 +1126,87 @@ def floor(iarr: IArray):
     return ia.LazyExpr(new_op=(iarr, "floor", None))
 
 
-def log(iarr: IArray):
+def greater(iarr1: IArray, iarr2: IArray, /):
+    """
+    Return the truth value of (:paramref:`iarr1` > :paramref:`iarr2`) element-wise.
+
+    Parameters
+    ----------
+    iarr1: :ref:`IArray`
+        First input array.
+    iarr2: :ref:`IArray`
+        Second input array.
+
+    Returns
+    -------
+    out: :ref:`iarray.Expr`
+        A lazy expression that must be evaluated via `out.eval()`, which will compute the
+        actual comparison element-wise.
+    """
+    return iarr1 > iarr2
+
+
+def greater_equal(iarr1: IArray, iarr2: IArray, /):
+    """
+    Return the truth value of (:paramref:`iarr1` >= :paramref:`iarr2`) element-wise.
+
+    Parameters
+    ----------
+    iarr1: :ref:`IArray`
+        First input array.
+    iarr2: :ref:`IArray`
+        Second input array.
+
+    Returns
+    -------
+    out: :ref:`iarray.Expr`
+        A lazy expression that must be evaluated via `out.eval()`, which will compute the
+        actual comparison element-wise.
+    """
+    return iarr1 >= iarr2
+
+
+def less(iarr1: IArray, iarr2: IArray, /):
+    """
+    Return the truth value of (:paramref:`iarr1` < :paramref:`iarr2`) element-wise.
+
+    Parameters
+    ----------
+    iarr1: :ref:`IArray`
+        First input array.
+    iarr2: :ref:`IArray`
+        Second input array.
+
+    Returns
+    -------
+    out: :ref:`iarray.Expr`
+        A lazy expression that must be evaluated via `out.eval()`, which will compute the
+        actual comparison element-wise.
+    """
+    return iarr1 < iarr2
+
+
+def less_equal(iarr1: IArray, iarr2: IArray, /):
+    """
+    Return the truth value of (:paramref:`iarr1` <= :paramref:`iarr2`) element-wise.
+
+    Parameters
+    ----------
+    iarr1: :ref:`IArray`
+        First input array.
+    iarr2: :ref:`IArray`
+        Second input array.
+
+    Returns
+    -------
+    out: :ref:`iarray.Expr`
+        A lazy expression that must be evaluated via `out.eval()`, which will compute the
+        actual comparison element-wise.
+    """
+    return iarr1 <= iarr2
+
+
+def log(iarr: IArray, /):
     """
     Natural logarithm, element-wise.
 
@@ -1111,7 +1233,34 @@ def log(iarr: IArray):
     return ia.LazyExpr(new_op=(iarr, "log", None))
 
 
-def log10(iarr: IArray):
+def log1p(iarr: IArray, /):
+    """
+    Natural logarithm of one plus the input array, element-wise.
+
+    The natural logarithm log is the inverse of the exponential function, so that
+    :math:`\\log(\\exp(x+1)) = x + 1`. The natural logarithm is logarithm in base :math:`e`.
+
+    Parameters
+    ----------
+    iarr: :ref:`IArray`
+        Input array.
+
+    Returns
+    -------
+    out: :ref:`iarray.Expr`
+        A lazy expression that must be evaluated via `out.eval()`, which will compute the
+        natural logarithm of one plus the input data, element-wise.
+
+    References
+    ----------
+    `np.log1p <https://numpy.org/doc/stable/reference/generated/numpy.log1p.html>`_
+    """
+    if iarr.dtype not in _floating_dtypes:
+        raise TypeError("Only floating dtypes are allowed in log")
+    return eval("ia.log(x + 1)", {"ia": ia, "x": iarr})
+
+
+def log10(iarr: IArray, /):
     """
     Return the base 10 logarithm of the input array, element-wise.
 
@@ -1135,23 +1284,149 @@ def log10(iarr: IArray):
     return ia.LazyExpr(new_op=(iarr, "log10", None))
 
 
-def negative(iarr: IArray):
+def logaddexp(iarr1: IArray, iarr2: IArray, /):
     """
-    See :meth:`IArray.__neg__`
+    Logarithm of the sum of exponentiations of the inputs.
 
+    Calculates `log(exp(iarr1) + exp(iarr2))`.
+
+    Parameters
+    ----------
+    iarr1: :ref:`IArray`
+        First input array.
+    iarr2: :ref:`IArray`
+        Second input array.
+
+    Returns
+    -------
+    out: :ref:`iarray.Expr`
+        A lazy expression that must be evaluated via `out.eval()`, which will compute the
+        logarithm to the base 10 of `exp(iarr1) + exp(iarr2)`, element-wise.
+
+    References
+    ----------
+    `np.logaddexp <https://numpy.org/doc/stable/reference/generated/numpy.logaddexp.html>`_
+    """
+    if iarr1.dtype not in _floating_dtypes or iarr2.dtype not in _floating_dtypes:
+        raise TypeError("Only floating dtypes are allowed in log")
+    return eval("ia.log(ia.exp(x) + ia.exp(y))", {"ia": ia, "x": iarr1, "y": iarr2})
+
+
+def multiply(iarr1: IArray, iarr2: IArray, /):
+    """
+    Multiply arguments element-wise.
+
+    Parameters
+    ----------
+    iarr1: :ref:`IArray`
+        First input array.
+
+    iarr2: :ref:`IArray`
+        Second input array.
+
+    Returns
+    -------
+    out: :ref:`iarray.Expr`
+        A lazy expression that must be evaluated via `out.eval()`, which will compute the
+        product of :paramref:`iarr1` and :paramref:`iarr2`, element-wise.
+
+    References
+    ----------
+    `np.multiply <https://numpy.org/doc/stable/reference/generated/numpy.multiply.html>`_
+    """
+    if iarr1.dtype not in _numeric_dtypes or iarr2.dtype not in _numeric_dtypes:
+        raise TypeError("Only numeric dtypes are allowed in log")
+    return iarr1 * iarr2
+
+
+def negative(iarr: IArray, /):
+    """
+    Numerical negative, element-wise.
+
+    Parameters
+    ----------
+    iarr: :ref:`IArray`
+        Input array.
+
+    Returns
+    -------
+    out: :ref:`iarray.Expr`
+        A lazy expression that must be evaluated via `out.eval()`, which will compute
+        :math:`out = -iarr`.
+
+    References
+    ----------
+    `np.negative <https://numpy.org/doc/stable/reference/generated/numpy.negative.html>`_
     """
     return iarr.__neg__()
 
 
-def pow(iarr1: IArray, iarr2: IArray):
+def not_equal(iarr: IArray, iarr2: IArray, /):
     """
-    See :meth:`IArray.__pow__`
+    Return the truth value of (:paramref:`iarr1` != :paramref:`iarr2`) element-wise.
 
+    Parameters
+    ----------
+    iarr1: :ref:`IArray`
+        First input array.
+    iarr2: :ref:`IArray`
+        Second input array.
+
+    Returns
+    -------
+    out: :ref:`iarray.Expr`
+        A lazy expression that must be evaluated via `out.eval()`, which will compute the
+        actual comparison element-wise.
+    """
+    return iarr.__ne__(iarr2)
+
+
+def positive(iarr: IArray, /):
+    """
+    Numerical positive element-wise.
+
+    Parameters
+    ----------
+    iarr1: :ref:`IArray`
+        First input array.
+
+    Returns
+    -------
+    out: :ref:`iarray.Expr`
+        A lazy expression that must be evaluated via `out.eval()`.
+
+    Notes
+    -----
+    Equivalent to :meth:`IArray.copy` but only for numerical dtypes.
+    """
+    return iarr.__pos__()
+
+
+def pow(iarr1: IArray, iarr2: IArray, /):
+    """
+    First array elements raised to powers from second array, element-wise.
+
+    Parameters
+    ----------
+    iarr1: :ref:`IArray`
+        The bases.
+    iarr2: :ref:`IArray`
+        The exponents.
+
+    Returns
+    -------
+    out: :ref:`iarray.Expr`
+        A lazy expression that must be evaluated via `out.eval()`, which will compute the
+        bases raised to the exponents.
+
+    References
+    ----------
+    `np.power <https://numpy.org/doc/stable/reference/generated/numpy.power.html>`_
     """
     return iarr1.__pow__(iarr2)
 
 
-def sin(iarr: IArray):
+def sin(iarr: IArray, /):
     """
     Trigonometric sine, element-wise.
 
@@ -1175,7 +1450,7 @@ def sin(iarr: IArray):
     return ia.LazyExpr(new_op=(iarr, "sin", None))
 
 
-def sinh(iarr: IArray):
+def sinh(iarr: IArray, /):
     """
     Hyperbolic sine, element-wise.
 
@@ -1201,7 +1476,28 @@ def sinh(iarr: IArray):
     return ia.LazyExpr(new_op=(iarr, "sinh", None))
 
 
-def sqrt(iarr: IArray):
+def square(iarr1: IArray, /):
+    """
+    Return the element-wise square of the input.
+
+    Parameters
+    ----------
+    iarr: :ref:`IArray`
+        Input array.
+
+    Returns
+    -------
+    out: :ref:`iarray.Expr`
+        A lazy expression that must be evaluated via `out.eval()`, which will compute :math:`x * x` element-wise.
+
+    References
+    ----------
+    `np.square <https://numpy.org/doc/stable/reference/generated/numpy.square.html>`_
+    """
+    return iarr1 * iarr1
+
+
+def sqrt(iarr: IArray, /):
     """
     Return the non-negative square-root of an array, element-wise.
 
@@ -1225,7 +1521,28 @@ def sqrt(iarr: IArray):
     return ia.LazyExpr(new_op=(iarr, "sqrt", None))
 
 
-def tan(iarr: IArray):
+def subtract(iarr1: IArray, iarr2: IArray, /):
+    """
+    Subtract arguments, element-wise.
+
+    Parameters
+    ----------
+    iarr1: :ref:`IArray`
+        First input array.
+    iarr2: :ref:`IArray`
+        Second input array.
+
+    Returns
+    -------
+    out: :ref:`iarray.Expr`
+        A lazy expression that must be evaluated via `out.eval()`, which will compute the
+        difference of :paramref:`iarr1` and paramref:`iarr2`, element-wise.
+    """
+    return iarr1 - iarr2
+
+
+
+def tan(iarr: IArray, /):
     """
     Compute tangent element-wise.
 
@@ -1251,7 +1568,7 @@ def tan(iarr: IArray):
     return ia.LazyExpr(new_op=(iarr, "tan", None))
 
 
-def tanh(iarr: IArray):
+def tanh(iarr: IArray, /):
     """
     Compute hyperbolic tangent element-wise.
 
@@ -1275,6 +1592,7 @@ def tanh(iarr: IArray):
     if iarr.dtype not in _floating_dtypes:
         raise TypeError("Only floating dtypes are allowed in tanh")
     return ia.LazyExpr(new_op=(iarr, "tanh", None))
+
 
 # Reductions
 
@@ -1302,12 +1620,9 @@ def reduce(
         c = ext.reduce_multi(cfg, a, method, axis, oneshot)
         if dtype is not None and dtype != c.dtype:
             raise RuntimeError("Cannot set the result's data type")
-        if c.ndim == 0:
-            c = c.dtype(ia.iarray2numpy(c))
         return c
 
 
-# TODO: return a 0 dimensional array if the reduction is performed over the entire array
 def all(
     a: IArray,
     /,
@@ -1345,9 +1660,9 @@ def all(
 
     Returns
     -------
-    all : :ref:`IArray` or bool
-        If axis is None, the result is a value. If axis is given, the result is
-        an array of dimension a.ndim - len(axis). The `dtype` is always the `dtype` of :paramref:`a`.
+    all : :ref:`IArray`
+        The result is an array of dimension a.ndim - len(axis).
+        The `dtype` is always the `dtype` of :paramref:`a`.
     """
     if keepdims:
         raise NotImplementedError("Keeping the original array dimensions is not supported yet")
@@ -1360,7 +1675,6 @@ def all(
         return reduce(a, ia.Reduce.MIN, axis, oneshot=oneshot, cfg=cfg, **kwargs)
 
 
-# TODO: return a 0 dimensional array if the reduction is performed over the entire array
 def any(
     a: IArray,
     /,
@@ -1398,9 +1712,9 @@ def any(
 
     Returns
     -------
-    any : :ref:`IArray` or bool
-        If axis is None, the result is a bool. If axis is given, the result is
-        an array of dimension a.ndim - len(axis). The `dtype` is always the `dtype` of :paramref:`a`.
+    any : :ref:`IArray`
+        The result is an array of dimension a.ndim - len(axis).
+        The `dtype` is always the `dtype` of :paramref:`a`.
     """
     if keepdims:
         raise NotImplementedError("Keeping the original array dimensions is not supported yet")
@@ -1450,8 +1764,8 @@ def max(
 
     Returns
     -------
-    max : :ref:`IArray` or float
-        Maximum of a. If axis is None, the result is a value. If axis is given, the result is
+    max : :ref:`IArray`
+        Maximum of a. The result is
         an array of dimension a.ndim - len(axis). The `dtype` is always the `dtype` of :paramref:`a`.
     """
     if keepdims:
@@ -1502,8 +1816,8 @@ def min(
 
     Returns
     -------
-    min : :ref:`IArray` or float
-        Minimum of a. If axis is None, the result is a value. If axis is given, the result is
+    min : :ref:`IArray`
+        Minimum of a. The result is
         an array of dimension a.ndim - len(axis). The `dtype` is always the `dtype` of :paramref:`a`.
     """
     if keepdims:
@@ -1554,8 +1868,8 @@ def sum(
 
     Returns
     -------
-    sum : :ref:`IArray` or float
-        Sum of a. If axis is None, the result is a value. If axis is given, the result is
+    sum : :ref:`IArray`
+        Sum of a. The result is
         an array of dimension a.ndim - len(axis). Its `dtype` is `np.int64` for integers and bools,
         `np.uint64` for unsigned integers and the `dtype` of :paramref:`a` otherwise.
     """
@@ -1607,8 +1921,8 @@ def prod(
 
     Returns
     -------
-    prod : :ref:`IArray` or float
-        Product of a. If axis is None, the result is a value. If axis is given, the result is
+    prod : :ref:`IArray`
+        Product of a. The result is
         an array of dimension a.ndim - len(axis). Its `dtype` is `np.int64` for integers and bools,
         `np.uint64` for unsigned integers and the `dtype` of :paramref:`a` otherwise.
     """
@@ -1660,8 +1974,8 @@ def mean(
 
     Returns
     -------
-    mean : :ref:`IArray` or float
-        Mean of a. If axis is None, the result is a value. If axis is given, the result is
+    mean : :ref:`IArray`
+        Mean of a. The result is
         an array of dimension a.ndim - len(axis). Its `dtype` is `np.float32` when the `dtype` of
         :paramref:`a` is `np.float32` and `np.float64` otherwise.
     """
@@ -1711,8 +2025,8 @@ def std(
 
     Returns
     -------
-    std : :ref:`IArray` or float
-        Standard deviation of a. If axis is None, the result is a value. If axis is given, the result is
+    std : :ref:`IArray`
+        Standard deviation of a. The result is
         an array of dimension a.ndim - len(axis). Its `dtype` is `np.float32` when the `dtype` of
         :paramref:`a` is `np.float32` and `np.float64` otherwise.
     """
@@ -1762,8 +2076,8 @@ def var(
 
     Returns
     -------
-    var : :ref:`IArray` or float
-        Variance of a. If axis is None, the result is a value. If axis is given, the result is
+    var : :ref:`IArray`
+        Variance of a. The result is
         an array of dimension a.ndim - len(axis). Its `dtype` is `np.float32` when the `dtype` of
         :paramref:`a` is `np.float32` and `np.float64` otherwise.
     """
@@ -1800,8 +2114,8 @@ def median(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **k
 
     Returns
     -------
-    median : :ref:`IArray` or float
-        Median of a. If axis is None, the result is a value. If axis is given, the result is
+    median : :ref:`IArray`
+        Median of a. The result is
         an array of dimension a.ndim - len(axis). Its `dtype` is `np.float32` when the `dtype` of
         :paramref:`a` is `np.float32` and `np.float64` otherwise.
     """
@@ -1843,8 +2157,8 @@ def nanmax(
 
     Returns
     -------
-    max : :ref:`IArray` or float
-        Maximum of a. If axis is None, the result is a value. If axis is given, the result is
+    max : :ref:`IArray`
+        Maximum of a. The result is
         an array of dimension a.ndim - len(axis). The `dtype` is always the `dtype` of :paramref:`a`.
 
     See Also
@@ -1889,8 +2203,8 @@ def nanmin(
 
     Returns
     -------
-    min : :ref:`IArray` or float
-        Minimum of a. If axis is None, the result is a value. If axis is given, the result is
+    min : :ref:`IArray`
+        Minimum of a. The result is
         an array of dimension a.ndim - len(axis). The `dtype` is always the `dtype` of :paramref:`a`.
 
     See Also
@@ -1935,8 +2249,8 @@ def nansum(
 
     Returns
     -------
-    sum : :ref:`IArray` or float
-        Sum of a. If axis is None, the result is a value. If axis is given, the result is
+    sum : :ref:`IArray`
+        Sum of a. The result is
         an array of dimension a.ndim - len(axis). The `dtype` is always the `dtype` of :paramref:`a`.
 
     See Also
@@ -1980,8 +2294,8 @@ def nanprod(
 
     Returns
     -------
-    prod : :ref:`IArray` or float
-        Product of a. If axis is None, the result is a value. If axis is given, the result is
+    prod : :ref:`IArray`
+        Product of a. The result is
         an array of dimension a.ndim - len(axis). The `dtype` is always the `dtype` of :paramref:`a`.
 
     See Also
@@ -2016,8 +2330,8 @@ def nanmean(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **
 
     Returns
     -------
-    mean : :ref:`IArray` or float
-        Mean of a. If axis is None, the result is a value. If axis is given, the result is
+    mean : :ref:`IArray`
+        Mean of a. The result is
         an array of dimension a.ndim - len(axis). The `dtype` is always the `dtype` of :paramref:`a`.
 
     See Also
@@ -2052,8 +2366,8 @@ def nanstd(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **k
 
     Returns
     -------
-    std : :ref:`IArray` or float
-        Standard deviation of a. If axis is None, the result is a value. If axis is given, the result is
+    std : :ref:`IArray`
+        Standard deviation of a. The result is
         an array of dimension a.ndim - len(axis). The `dtype` is always the `dtype` of :paramref:`a`.
 
     See Also
@@ -2089,8 +2403,8 @@ def nanvar(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **k
 
     Returns
     -------
-    var : :ref:`IArray` or float
-        Variance of a. If axis is None, the result is a value. If axis is given, the result is
+    var : :ref:`IArray`
+        Variance of a. The result is
         an array of dimension a.ndim - len(axis). The `dtype` is always the `dtype` of :paramref:`a`.
 
     See Also
@@ -2125,8 +2439,8 @@ def nanmedian(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, 
 
     Returns
     -------
-    median : :ref:`IArray` or float
-        Median of a. If axis is None, the result is a value. If axis is given, the result is
+    median : :ref:`IArray`
+        Median of a. The result is
         an array of dimension a.ndim - len(axis). The `dtype` is always the `dtype` of :paramref:`a`.
 
     See Also
@@ -2410,7 +2724,7 @@ def matmul(a: IArray, b: IArray, cfg=None, **kwargs):
         return ext.matmul(cfg, a, b)
 
 
-def matrix_transpose(a: IArray, cfg=None, **kwargs):
+def matrix_transpose(a: IArray, /, cfg=None, **kwargs):
     """Transpose an array.
 
     Parameters
