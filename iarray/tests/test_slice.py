@@ -79,19 +79,13 @@ def test_slice(slices, shape, chunks, blocks, dtype, np_dtype, acontiguous, aurl
     b = a[slices]
     an2 = an[slices]
 
-    if b.ndim == 0:
-        if out_dtype in [np.float16, np.float32, np.float64]:
-            isclose(an2, b)
-        else:
-            assert an2 == b
+    bn = ia.iarray2numpy(b)
+    assert an2.shape == bn.shape
+    assert an2.ndim == bn.ndim
+    if out_dtype in [np.float16, np.float32, np.float64]:
+        np.testing.assert_almost_equal(an[slices], bn)
     else:
-        bn = ia.iarray2numpy(b)
-        assert an2.shape == bn.shape
-        assert an2.ndim == bn.ndim
-        if out_dtype in [np.float16, np.float32, np.float64]:
-            np.testing.assert_almost_equal(an[slices], bn)
-        else:
-            np.testing.assert_equal(an[slices], bn)
+        np.testing.assert_equal(an[slices], bn)
 
     ia.remove_urlpath(aurlpath)
 

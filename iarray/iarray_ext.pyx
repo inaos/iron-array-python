@@ -1184,9 +1184,6 @@ def get_slice(cfg, data, start, stop, squeeze_mask, view, storage):
 
     b =  ia.IArray(ctx, c_c)
     b.view_ref = data  # Keep a reference of the parent container
-    if b.ndim == 0:
-        # Scalars will be represented by NumPy containers
-        return ia.iarray2numpy(b)
 
     return b
 
@@ -1205,10 +1202,7 @@ def get_type_view(cfg, iarray, view_dtype):
     c_c = PyCapsule_New(c, <char*>"iarray_container_t*", NULL)
 
     b =  ia.IArray(ctx, c_c)
-    b.view_ref = iarray  # Keep a reference of the parent container ???
-    if b.ndim == 0:
-        # Scalars will be represented by NumPy containers
-        return ia.iarray2numpy(b)
+    b.view_ref = iarray  # Keep a reference of the parent container
 
     return b
 

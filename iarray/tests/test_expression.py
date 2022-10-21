@@ -987,7 +987,7 @@ def test_scalar_params(sexpr, sexpr_scalar, inputs):
             True,
             None,
             np.bool_,
-            np.int8,
+            np.float32,
         ),
         (
             "ia.sin(x) * ia.sin(x) + ia.cos(y)",
