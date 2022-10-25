@@ -21,7 +21,7 @@ from typing import (
     Tuple,
     Union,
 )
-from ._dtypes import (
+from .dtypes import (
     _all_dtypes,
     _boolean_dtypes,
     _integer_dtypes,
