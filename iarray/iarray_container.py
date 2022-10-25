@@ -665,7 +665,7 @@ class IArray(ext.Container):
         """
         if self.dtype not in _numeric_dtypes:
             raise TypeError("Only numeric dtypes are allowed in __neg__")
-        return ia.LazyExpr(new_op=(self, "negate", None))
+        return ia.LazyExpr(new_op=(self, "-", None))
 
     def __pow__(self, iarr2: Union[int, float, IArray], /):
         """
@@ -1257,7 +1257,7 @@ def log1p(iarr: IArray, /):
     """
     if iarr.dtype not in _floating_dtypes:
         raise TypeError("Only floating dtypes are allowed in log")
-    return eval("ia.log(x + 1)", {"ia": ia, "x": iarr})
+    return ia.expr_from_string("log(x + 1)", {"x": iarr})
 
 
 def log10(iarr: IArray, /):
@@ -1309,7 +1309,7 @@ def logaddexp(iarr1: IArray, iarr2: IArray, /):
     """
     if iarr1.dtype not in _floating_dtypes or iarr2.dtype not in _floating_dtypes:
         raise TypeError("Only floating dtypes are allowed in log")
-    return eval("ia.log(ia.exp(x) + ia.exp(y))", {"ia": ia, "x": iarr1, "y": iarr2})
+    return ia.expr_from_string("log(exp(x) + exp(y))", {"x": iarr1, "y": iarr2})
 
 
 def multiply(iarr1: IArray, iarr2: IArray, /):

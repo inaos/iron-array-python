@@ -7,6 +7,7 @@ ironArray API tries to follow the [array_api](https://data-apis.org/array-api/la
 ### Operators
 
 * From the arithmetic operators, `__floordiv__` and `__mod__` are not supported yet.
+* The dtype of the result obtained in the comparison operators will be determined by the operands. If you would like to view the result as a specific dtype, you can set np_dtype of the result or when evaluating the lazy expression.
 * None of the in-place (arithmetic, array and bitwise) operators are supported yet.
 * From the reflected operators, `__rfloordiv__` and `__rmod__` are not supported yet.
 * None of the bitwise operators are supported yet.
@@ -30,6 +31,17 @@ The behaviour in special cases may also differ from the array API standard.
 * `__and__`, `__bool__`, `__dlpack__`, `__dlpack_device__`, `__float__`, `__floordiv__`, `__index__`, `__int__`, `__invert__`, `__lshift__`, `__mod__`, `__or__`, `__rshift__`, `__xor__` and `to_device` are not supported yet. The rest of the methods from the array API not listed, and that must return an array, return instead a lazy expression which must be evaluated in order to obtain the result.
 
 The behaviour of some methods regarding `Nan` and `infinity` values is implementation defined and may not follow the standard.
+
+## Broadcasting
+
+Broadcasting is only supported for scalars.
+
+## Creation Functions
+
+* `eye`, `from_dlpack`,  are not supported yet.
+* `arange` and `linspace` also support a `shape` param.
+* Since ironArray is CPU only, the only supported device is `"cpu"`.
+
 
 ## Data Type Functions
 
