@@ -61,7 +61,6 @@ _dtype_categories = {
     "floating-point": _floating_dtypes,
 }
 
-
 _promotion_table = {
     (int8, int8): int8,
     (int8, int16): int16,
@@ -131,3 +130,11 @@ def _result_type(type1, type2):
     if (type1, type2) in _promotion_table:
         return _promotion_table[type1, type2]
     raise TypeError(f"{type1} and {type2} cannot be type promoted together")
+
+
+# Constants
+e = np.e
+inf = np.inf
+nan = np.nan
+pi = np.pi
+newaxis = None

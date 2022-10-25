@@ -217,6 +217,7 @@ from .config_params import (
 
 from .iarray_container import (
     IArray,
+    Device,
     matmul_params,
     matmul,
     matrix_transpose,
@@ -323,7 +324,7 @@ from .attrs import (
     Attributes,
 )
 
-from ._dtypes import (
+from .dtypes import (
     int8,
     int16,
     int32,
@@ -335,6 +336,12 @@ from ._dtypes import (
     float32,
     float64,
     bool,
+    # Constants
+    e,
+    inf,
+    nan,
+    pi,
+    newaxis,
 )
 
 # For some reason this needs to go to the end, else matmul function does not work.
