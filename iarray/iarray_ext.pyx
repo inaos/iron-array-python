@@ -427,10 +427,9 @@ cdef class Container:
 
     def __dealloc__(self):
         if self.context is not None and self.context.ia_ctx != NULL:
-
-            if self.view_count > 0:
-                # TODO: set Blosc flag `cframe_avoid_free = True`
-                pass
+            # if self.view_count > 0:
+            #     # TODO: set Blosc flag `cframe_avoid_free = True`
+            #     pass
 
             ciarray.iarray_container_free(self.context.ia_ctx, &self.ia_container)
             self.context = None
