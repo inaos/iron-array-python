@@ -222,7 +222,9 @@ def zeros(shape: Sequence, cfg: ia.Config = None, **kwargs) -> ia.IArray:
 
 
 def concatenate(shape: Sequence, data: list, cfg: ia.Config = None, **kwargs) -> ia.IArray:
-    """
+    """Concatenate a list of one-chunk arrays into a specified shape.
+
+    `cfg` and `kwargs` are the same as for :func:`empty`.
 
     Parameters
     ----------
@@ -230,8 +232,6 @@ def concatenate(shape: Sequence, data: list, cfg: ia.Config = None, **kwargs) ->
         The shape of the concatenated array.
     data: list
         A list with the arrays (with one chunk) to concatenate
-
-    cfg` and `kwargs` are the same as for :func:`empty`.
 
     Returns
     -------
