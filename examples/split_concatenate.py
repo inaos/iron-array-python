@@ -3,7 +3,6 @@
 from time import time
 import iarray as ia
 import numpy as np
-from dataclasses import asdict
 
 # Create an ironArray array
 a = ia.arange([10, 10], chunks=[4, 5], blocks=[2, 2], contiguous=True, dtype=np.int64)
