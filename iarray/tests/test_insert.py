@@ -46,7 +46,7 @@ def test_insert(
     if out_dtype not in [np.float64, np.float32]:
         for i in range(len(shape)):
             max *= shape[i]
-    a = ia.arange(shape, 0, max, cfg=cfg, mode="w", dtype=dtype, np_dtype=np_dtype)
+    a = ia.arange(0, max, shape=shape, cfg=cfg, mode="w", dtype=dtype, np_dtype=np_dtype)
 
     with pytest.raises(ValueError):
         np_data = np.full(shape=5, fill_value=47, dtype=out_dtype)

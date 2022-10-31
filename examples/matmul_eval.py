@@ -14,10 +14,10 @@ dtype = np.float64
 shape = [2000, 2000]
 ia.set_config_defaults(nthreads=nthreads, dtype=dtype)
 
-a = ia.arange(shape)
+a = ia.arange(2000 * 2000, shape=shape)
 an = ia.iarray2numpy(a)
 
-b = ia.arange(shape)
+b = ia.arange(2000 * 2000, shape=shape)
 bn = ia.iarray2numpy(b)
 
 nrep = 10

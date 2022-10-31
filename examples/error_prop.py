@@ -6,13 +6,15 @@ import numpy as np
 
 ashape = [100, 100]
 bshape = [100, 100]
+anum = int(np.prod(ashape))
+bnum = int(np.prod(bshape))
 
 dtype = np.float64
 
-a = ia.linspace(ashape, -1, 1, dtype=dtype)
+a = ia.linspace(-1, 1, anum, shape=ashape, dtype=dtype)
 an = ia.iarray2numpy(a)
 
-b = ia.linspace(bshape, -1, 1, dtype=dtype)
+b = ia.linspace(-1, 1, bnum, shape=bshape, dtype=dtype)
 bn = ia.iarray2numpy(b)
 
 c = ia.matmul(a, b)

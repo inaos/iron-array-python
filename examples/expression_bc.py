@@ -15,7 +15,7 @@ dtype = np.float64
 cfg = ia.Config(chunks=cshape, blocks=bshape)
 
 # Create initial containers
-a1 = ia.linspace(shape, 0, 10, cfg=cfg, dtype=dtype)
+a1 = ia.linspace(0, 10, int(np.prod(shape)), shape=shape, cfg=cfg, dtype=dtype)
 a2 = np.linspace(0, 10, shape[0], dtype=dtype).reshape(shape)
 
 

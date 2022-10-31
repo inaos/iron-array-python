@@ -1,7 +1,6 @@
 import pytest
 import iarray as ia
 import numpy as np
-import zarr
 
 array_data = [
     ([30, 100], [20, 20], [10, 13], 0, 0, 20, True, None),

@@ -14,7 +14,7 @@ blocks = [100, 100]
 ia.set_config_defaults(chunks=chunks, blocks=blocks, dtype=dtype)
 
 # Create initial arrays
-ia1 = ia.linspace(shape, 0, 10)
+ia1 = ia.linspace(0, 10, num=int(np.prod(shape)), shape=shape)
 np1 = ia.iarray2numpy(ia1)
 
 t0 = time()

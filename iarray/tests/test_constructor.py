@@ -49,9 +49,10 @@ def test_linspace(start, stop, shape, chunks, blocks, dtype, np_dtype, contiguou
     size = int(np.prod(shape))
     ia.remove_urlpath(urlpath)
     a = ia.linspace(
-        shape,
         start,
         stop,
+        int(np.prod(shape)),
+        shape=shape,
         dtype=dtype,
         np_dtype=np_dtype,
         chunks=chunks,
@@ -140,10 +141,10 @@ def test_arange(start, stop, shape, chunks, blocks, dtype, np_dtype, contiguous,
         step = (stop - start) / size
     ia.remove_urlpath(urlpath)
     a = ia.arange(
-        shape,
         start,
         stop,
         step,
+        shape=shape,
         dtype=dtype,
         np_dtype=np_dtype,
         chunks=chunks,
@@ -154,6 +155,39 @@ def test_arange(start, stop, shape, chunks, blocks, dtype, np_dtype, contiguous,
     b = ia.iarray2numpy(a)
     out_dtype = dtype if np_dtype is None else np_dtype
     c = np.arange(start, stop, step, dtype=out_dtype).reshape(shape)
+    if "f" in np.dtype(out_dtype).str:
+        np.testing.assert_almost_equal(b, c)
+    else:
+        np.testing.assert_array_equal(b, c)
+    ia.remove_urlpath(urlpath)
+
+
+# asarray
+@pytest.mark.parametrize(
+    "obj, copy, dtype, np_dtype, contiguous, urlpath",
+    [
+        (ia.arange(0, 10, step=10/(22*21*51), shape=(22, 21, 51), chunks=(12, 14, 22),
+                   blocks=(5, 3, 6), dtype=np.float64, np_dtype=np.dtype(">f8"), contiguous=True),
+         False,  np.float64, None, True, None),
+        (6, True, ia.int16, None, False, None),
+        (False, True, ia.bool, None, True, None),
+        ([(True, 1), (False, 2), (False, 3), (True, 4), (True, 8)], True, ia.uint8, None, True, "test_asarray_contiguous.iarr"),
+        ([np.datetime64("1900", "D"), np.datetime64("1914", "D"), np.datetime64("1929", "D")],
+         True, ia.int64, "<M8[D]", True, None),
+        (ia.arange(-0.1, -0.2, step=4*3*5*2/0.1, shape=(4, 3, 5, 2), chunks=(2, 2, 2, 2), blocks=(2, 2, 2, 2),
+                   dtype=ia.int32), True, ia.float64, None, False, "test_asarray_sparse.iarr"),
+        (np.arange(start=np.timedelta64(1234, "Y"), stop=np.timedelta64(11234, "Y")), True, np.int64, "<m8[Y]", False, None),
+    ],
+)
+def test_asarray(obj, copy, dtype, np_dtype, contiguous, urlpath):
+    ia.remove_urlpath(urlpath)
+    a = ia.asarray(obj, copy=copy, dtype=dtype, np_dtype=np_dtype, contiguous=contiguous, urlpath=urlpath)
+    b = ia.iarray2numpy(a)
+    out_dtype = dtype if np_dtype is None else np_dtype
+    if isinstance(obj, ia.IArray):
+        c = obj.data
+    else:
+        c = np.asarray(obj, dtype=out_dtype)
     if "f" in np.dtype(out_dtype).str:
         np.testing.assert_almost_equal(b, c)
     else:
@@ -274,10 +308,10 @@ def test_slice(start, stop, slice, shape, chunks, blocks, dtype, np_dtype, conti
         step = (stop - start) / size
     ia.remove_urlpath(urlpath)
     a = ia.arange(
-        shape,
         start,
         stop,
         step,
+        shape=shape,
         dtype=dtype,
         np_dtype=np_dtype,
         chunks=chunks,
@@ -318,6 +352,37 @@ def test_empty(shape, chunks, blocks, dtype, np_dtype, contiguous, urlpath):
     ia.remove_urlpath(urlpath)
     with ia.config(chunks=chunks, blocks=blocks, contiguous=contiguous, urlpath=urlpath):
         a = ia.empty(shape, dtype=dtype, np_dtype=np_dtype)
+    b = ia.iarray2numpy(a)
+    out_dtype = dtype if np_dtype is None else np_dtype
+    assert b.dtype == np.dtype(out_dtype)
+    assert b.shape == tuple(shape)
+
+    ia.remove_urlpath(urlpath)
+
+
+# empty_like
+@pytest.mark.parametrize(
+    "shape, chunks, blocks, dtype, np_dtype, contiguous, urlpath",
+    [
+        ([55, 123, 72], [10, 12, 25], [2, 3, 7], np.dtype(np.float64), ">M8[h]", True, None),
+        ([10, 12, 5], [10, 12, 1], [5, 12, 1], np.float32, "i8", False, "test_empty_like_sparse.iarr"),
+        (
+            [55, 123, 72],
+            [10, 12, 25],
+            [2, 3, 7],
+            np.bool_,
+            "u1",
+            True,
+            "test_empty_like_contiguous.iarr",
+        ),
+        ([10, 12, 5], [5, 12, 5], [2, 12, 5], np.int64, np.dtype("m8[ns]"), False, None),
+    ],
+)
+def test_empty_like(shape, chunks, blocks, dtype, np_dtype, contiguous, urlpath):
+    ia.remove_urlpath(urlpath)
+    aux = ia.empty(shape, dtype=dtype, np_dtype=np_dtype)
+    with ia.config(chunks=chunks, blocks=blocks, contiguous=contiguous, urlpath=urlpath):
+        a = ia.empty_like(aux, dtype=dtype, np_dtype=np_dtype)
     b = ia.iarray2numpy(a)
     out_dtype = dtype if np_dtype is None else np_dtype
     assert b.dtype == np.dtype(out_dtype)
@@ -369,6 +434,56 @@ def test_zeros(shape, chunks, blocks, dtype, np_dtype, contiguous, urlpath):
     ia.remove_urlpath(urlpath)
 
 
+# zeros_like
+@pytest.mark.parametrize(
+    "shape, chunks, blocks, dtype, np_dtype, contiguous, urlpath",
+    [
+        pytest.param(
+            [134, 1234, 238],
+            [10, 25, 35],
+            [2, 7, 12],
+            np.float64,
+            None,
+            True,
+            "test_zeros_like_contiguous.iarr",
+            marks=pytest.mark.heavy,
+        ),
+        ([456, 431], [102, 16], [12, 7], np.float32, None, False, "test_zeros_like_sparse.iarr"),
+        ([10, 12, 5], [10, 1, 1], [10, 1, 1], np.int16, None, False, None),
+        ([10, 12, 5], [10, 1, 1], [10, 1, 1], np.int16, "|b1", False, None),
+        ([12, 16], [1, 16], [1, 16], np.float32, ">M8[Y]", True, None),
+        ([12, 16], [1, 16], [1, 16], np.bool_, ">i8", True, "test_zeros_like_contiguous.iarr"),
+    ],
+)
+def test_zeros_like(shape, chunks, blocks, dtype, np_dtype, contiguous, urlpath):
+    ia.remove_urlpath(urlpath)
+    aux = ia.empty(
+        shape,
+        dtype=dtype,
+        np_dtype=np_dtype,
+        chunks=chunks,
+        blocks=blocks,
+    )
+    a = ia.zeros_like(
+        aux,
+        dtype=dtype,
+        np_dtype=np_dtype,
+        chunks=chunks,
+        blocks=blocks,
+        contiguous=contiguous,
+        urlpath=urlpath,
+    )
+    b = ia.iarray2numpy(a)
+    out_dtype = dtype if np_dtype is None else np_dtype
+    c = np.zeros(shape, dtype=out_dtype)
+    if "f" in np.dtype(out_dtype).str:
+        np.testing.assert_almost_equal(b, c)
+    else:
+        np.testing.assert_array_equal(b, c)
+
+    ia.remove_urlpath(urlpath)
+
+
 # ones
 @pytest.mark.parametrize(
     "shape, chunks, blocks, dtype, np_dtype, contiguous, urlpath",
@@ -396,6 +511,58 @@ def test_ones(shape, chunks, blocks, dtype, np_dtype, contiguous, urlpath):
     ia.remove_urlpath(urlpath)
     a = ia.ones(
         shape,
+        dtype=dtype,
+        np_dtype=np_dtype,
+        chunks=chunks,
+        blocks=blocks,
+        contiguous=contiguous,
+        urlpath=urlpath,
+    )
+    b = ia.iarray2numpy(a)
+    out_dtype = dtype if np_dtype is None else np_dtype
+    c = np.ones(shape, dtype=out_dtype)
+    if "f" in np.dtype(out_dtype).str:
+        np.testing.assert_almost_equal(b, c)
+    else:
+        np.testing.assert_array_equal(b, c)
+
+    ia.remove_urlpath(urlpath)
+
+
+# ones_like
+@pytest.mark.parametrize(
+    "shape, chunks, blocks, dtype, np_dtype, contiguous, urlpath",
+    [
+        ([100, 12, 34], [55, 6, 21], [12, 3, 5], np.float64, None, False, None),
+        pytest.param(
+            [456, 12, 234],
+            [55, 6, 21],
+            [12, 3, 5],
+            np.float64,
+            None,
+            False,
+            None,
+            marks=pytest.mark.heavy,
+        ),
+        ([100, 55], [66, 22], [12, 3], np.float32, None, True, "test_ones_like_contiguous.iarr"),
+        ([10, 12, 5], [5, 6, 5], [5, 3, 5], np.int8, None, True, None),
+        ([120, 130], [45, 64], [33, 12], np.uint16, None, False, "test_ones_like_sparse.iarr"),
+        ([10, 12, 5], [5, 6, 5], [5, 3, 5], np.bool_, None, True, None),
+        ([12, 5], [5, 5], [3, 5], np.float32, ">M8[Y]", True, None),
+        ([10, 12], [5, 6], [5, 3], np.int8, ">m8[ps]", False, None),
+    ],
+)
+def test_ones_like(shape, chunks, blocks, dtype, np_dtype, contiguous, urlpath):
+    ia.remove_urlpath(urlpath)
+    aux = ia.empty(
+        shape,
+        dtype=dtype,
+        np_dtype=np_dtype,
+        chunks=chunks,
+        blocks=blocks,
+    )
+    a = ia.ones_like(
+        aux,
         dtype=dtype,
         np_dtype=np_dtype,
         chunks=chunks,
@@ -510,6 +677,77 @@ def test_full(fill_value, shape, chunks, blocks, dtype, np_dtype, contiguous, ur
     ia.remove_urlpath(urlpath)
 
 
+# full_like
+@pytest.mark.parametrize(
+    "fill_value, shape, chunks, blocks, dtype, np_dtype, contiguous, urlpath",
+    [
+        pytest.param(
+            8.34,
+            [123, 432, 222],
+            [24, 31, 15],
+            [6, 6, 6],
+            np.dtype(np.float64),
+            None,
+            True,
+            None,
+            marks=pytest.mark.heavy,
+        ),
+        (2.00001, [56, 37], [20, 16], [9, 7], np.float32, None, False, "test_full_like_sparse.iarr"),
+        (8, [10, 12, 5], [5, 5, 5], [5, 5, 5], np.int32, None, True, "test_full_like_contiguous.iarr"),
+        (True, [12, 16], [12, 16], [10, 10], np.uint8, np.dtype(np.bool_).str, False, None),
+        (
+            np.datetime64("1929", "D"),
+            [12, 16],
+            [12, 16],
+            [10, 10],
+            np.int32,
+            "<M8[D]",
+            False,
+            None,
+        ),
+        (
+            np.timedelta64(2034, "h"),
+            [50, 42],
+            [20, 16],
+            [9, 7],
+            np.uint32,
+            ">m8[h]",
+            False,
+            "test_full_like_sparse.iarr",
+        ),
+        (4, [12, 16], [12, 16], [10, 10], np.uint8, np.dtype(np.float64).str, True, None),
+    ],
+)
+def test_full_like(fill_value, shape, chunks, blocks, dtype, np_dtype, contiguous, urlpath):
+    ia.remove_urlpath(urlpath)
+    aux = ia.empty(
+        shape,
+        dtype=dtype,
+        np_dtype=np_dtype,
+        chunks=chunks,
+        blocks=blocks,
+    )
+    a = ia.full_like(
+        aux,
+        fill_value,
+        dtype=dtype,
+        np_dtype=np_dtype,
+        chunks=chunks,
+        blocks=blocks,
+        contiguous=contiguous,
+        urlpath=urlpath,
+    )
+    b = ia.iarray2numpy(a)
+    out_dtype = dtype if np_dtype is None else np_dtype
+    c = np.full(shape, fill_value, dtype=out_dtype)
+    if "f" in np.dtype(out_dtype).str:
+        np.testing.assert_almost_equal(b, c)
+    else:
+        np.testing.assert_array_equal(b, c)
+
+    ia.remove_urlpath(urlpath)
+
+
 # TODO: Update this when persistent sparse would be supported
 @pytest.mark.parametrize(
     "contiguous",
@@ -521,10 +759,11 @@ def test_full(fill_value, shape, chunks, blocks, dtype, np_dtype, contiguous, ur
 def test_overwrite(contiguous):
     fname = "pepe.iarr"
     ia.remove_urlpath(fname)
-    a = ia.arange([10, 20, 10, 14], contiguous=contiguous, urlpath=fname)
-    b = ia.arange([10, 20, 10, 14], contiguous=contiguous, urlpath=fname, mode="w")
+    shape = [10, 20, 10, 14]
+    a = ia.arange(int(np.prod(shape)), shape=shape, contiguous=contiguous, urlpath=fname)
+    b = ia.arange(int(np.prod(shape)), shape=shape, contiguous=contiguous, urlpath=fname, mode="w")
     with pytest.raises(IOError):
-        b = ia.arange([10, 20, 10, 14], contiguous=contiguous, urlpath=fname, mode="w-")
+        b = ia.arange(int(np.prod(shape)), shape=shape, contiguous=contiguous, urlpath=fname, mode="w-")
 
     ia.remove_urlpath(fname)
 
@@ -599,6 +838,6 @@ def test_fortran(shape, np_dtype, contiguous, urlpath):
     ],
 )
 def test_btune_copy(clevel, codec, filters):
-    a = ia.linspace([100], 0, 1)
+    a = ia.linspace(0, 1, 100)
     a_copy = a.copy(clevel=clevel, codec=codec, filters=filters, btune=False)
     np.testing.assert_almost_equal(a_copy.data, a.data)

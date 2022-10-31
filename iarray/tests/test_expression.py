@@ -311,9 +311,10 @@ def test_expression(
     ia.remove_urlpath("test_expression_zarray.iarr")
 
     x = ia.linspace(
-        shape,
         0.1,
         0.2,
+        int(np.prod(shape)),
+        shape=shape,
         dtype=dtype,
         np_dtype=np_dtype,
         chunks=chunks,
@@ -322,9 +323,10 @@ def test_expression(
         urlpath=xurlpath,
     )
     y = ia.linspace(
-        shape,
         0,
         1,
+        int(np.prod(shape)),
+        shape=shape,
         dtype=dtype,
         np_dtype=np_dtype,
         chunks=chunks,
@@ -470,9 +472,10 @@ def test_ufuncs(ufunc, ia_expr, xcontiguous, xurlpath, ycontiguous, yurlpath):
     for dtype in np.float64, np.float32:
         # The ranges below are important for not overflowing operations
         x = ia.linspace(
-            shape,
             0.1,
             0.9,
+            int(np.prod(shape)),
+            shape=shape,
             dtype=dtype,
             chunks=chunks,
             blocks=bshape,
@@ -480,9 +483,10 @@ def test_ufuncs(ufunc, ia_expr, xcontiguous, xurlpath, ycontiguous, yurlpath):
             urlpath=xurlpath,
         )
         y = ia.linspace(
-            shape,
             0,
             1,
+            int(np.prod(shape)),
+            shape=shape,
             dtype=dtype,
             chunks=chunks,
             blocks=bshape,
@@ -603,13 +607,13 @@ def test_expr_ufuncs(ufunc, xcontiguous, xurlpath, ycontiguous, yurlpath):
     for dtype in np.float64, np.float32:
         # The ranges below are important for not overflowing operations
         if dtype == np.float32:
-            x = ia.linspace(shape, 0.1, 0.9, dtype=dtype, cfg=x32cfg)
+            x = ia.linspace(0.1, 0.9, int(np.prod(shape)), shape=shape, dtype=dtype, cfg=x32cfg)
             assert x.cfg.dtype == dtype
-            y = ia.linspace(shape, 0.5, 1, dtype=dtype, cfg=y32cfg)
+            y = ia.linspace(0.5, 1, int(np.prod(shape)), shape=shape, dtype=dtype, cfg=y32cfg)
         else:
-            x = ia.linspace(shape, 0.1, 0.9, dtype=dtype, cfg=xcfg)
+            x = ia.linspace(0.1, 0.9, int(np.prod(shape)), shape=shape, dtype=dtype, cfg=xcfg)
             assert x.cfg.dtype == dtype
-            y = ia.linspace(shape, 0.5, 1, dtype=dtype, cfg=ycfg)
+            y = ia.linspace(0.5, 1, int(np.prod(shape)), shape=shape, dtype=dtype, cfg=ycfg)
 
         # NumPy computation
         npx = ia.iarray2numpy(x)
@@ -842,15 +846,15 @@ def test_expr_fusion(
     for dtype in np.float64, np.float32:
         # The ranges below are important for not overflowing operations
         if dtype == np.float32:
-            x = ia.linspace(shape, 0.1, 0.9, dtype=dtype, cfg=x32cfg)
-            y = ia.linspace(shape, 0.5, 1, dtype=dtype, cfg=y32cfg)
-            z = ia.linspace(shape, 0.1, 0.9, dtype=dtype, cfg=z32cfg)
-            t = ia.linspace(shape, 0.5, 1, dtype=dtype, cfg=t32cfg)
+            x = ia.linspace(0.1, 0.9, int(np.prod(shape)), shape=shape, dtype=dtype, cfg=x32cfg)
+            y = ia.linspace(0.5, 1, int(np.prod(shape)), shape=shape, dtype=dtype, cfg=y32cfg)
+            z = ia.linspace(0.1, 0.9, int(np.prod(shape)), shape=shape, dtype=dtype, cfg=z32cfg)
+            t = ia.linspace(0.5, 1, int(np.prod(shape)), shape=shape, dtype=dtype, cfg=t32cfg)
         else:
-            x = ia.linspace(shape, 0.1, 0.9, dtype=dtype, cfg=xcfg)
-            y = ia.linspace(shape, 0.5, 1, dtype=dtype, cfg=ycfg)
-            z = ia.linspace(shape, 1.0, 2.0, dtype=dtype, cfg=zcfg)
-            t = ia.linspace(shape, 1.5, 3.0, dtype=dtype, cfg=tcfg)
+            x = ia.linspace(0.1, 0.9, int(np.prod(shape)), shape=shape, dtype=dtype, cfg=xcfg)
+            y = ia.linspace(0.5, 1, int(np.prod(shape)), shape=shape, dtype=dtype, cfg=ycfg)
+            z = ia.linspace(1.0, 2.0, int(np.prod(shape)), shape=shape, dtype=dtype, cfg=zcfg)
+            t = ia.linspace(1.5, 3.0, int(np.prod(shape)), shape=shape, dtype=dtype, cfg=tcfg)
 
         # NumPy computation
         npx = ia.iarray2numpy(x)
@@ -899,8 +903,8 @@ def test_chunks_blocks_params(expression, contiguous, zurlpath, zcontiguous):
     ycfg = ia.Config(chunks=chunks, blocks=blocks, contiguous=contiguous)
     zcfg = ia.Config(contiguous=zcontiguous, urlpath=zurlpath)
 
-    x = ia.linspace(shape, 0.1, 0.2, cfg=xcfg)
-    y = ia.linspace(shape, 0, 1, cfg=ycfg)
+    x = ia.linspace(0.1, 0.2, int(np.prod(shape)), shape=shape, cfg=xcfg)
+    y = ia.linspace(0, 1, int(np.prod(shape)), shape=shape, cfg=ycfg)
 
     expr = ia.expr_from_string(expression, {"x": x, "y": y}, cfg=zcfg)
     iout = expr.eval()
@@ -911,7 +915,7 @@ def test_chunks_blocks_params(expression, contiguous, zurlpath, zcontiguous):
     # Now with default chunks and blocks when operands chunks and blocks are not equal
     ycfg = ia.Config(chunks=[30], blocks=blocks, contiguous=contiguous)
     zcfg = ia.Config(contiguous=zcontiguous, urlpath=zurlpath)
-    y = ia.linspace(shape, 0, 1, cfg=ycfg)
+    y = ia.linspace(0, 1, int(np.prod(shape)), shape=shape, cfg=ycfg)
     expr = ia.expr_from_string(expression, {"x": x, "y": y}, cfg=zcfg)
     iout = expr.eval()
     assert iout.cfg.chunks != chunks
@@ -921,7 +925,7 @@ def test_chunks_blocks_params(expression, contiguous, zurlpath, zcontiguous):
     # Check that the provided chunks and blocks are used
     ycfg = ia.Config(chunks=chunks, blocks=blocks, contiguous=contiguous)
     zcfg = ia.Config(chunks=[10], blocks=[5], contiguous=zcontiguous, urlpath=zurlpath)
-    y = ia.linspace(shape, 0, 1, cfg=ycfg)
+    y = ia.linspace(0, 1, int(np.prod(shape)), shape=shape, cfg=ycfg)
     expr = ia.expr_from_string(expression, {"x": x, "y": y}, cfg=zcfg)
     iout = expr.eval()
     assert iout.cfg.chunks == zcfg.chunks
@@ -947,8 +951,8 @@ def test_get_operands(expression, operands):
 @pytest.mark.parametrize(
     "sexpr, sexpr_scalar, inputs",
     [
-        ("x + 1", "x + y", {"x": ia.arange((10,)), "y": 1}),
-        ("x + y + 1.35", "x + y + z", {"x": ia.arange((10,)), "y": 1, "z": 1.35}),
+        ("x + 1", "x + y", {"x": ia.arange(9, shape=(10,)), "y": 1}),
+        ("x + y + 1.35", "x + y + z", {"x": ia.arange(10, shape=(10,)), "y": 1, "z": 1.35}),
     ],
 )
 def test_scalar_params(sexpr, sexpr_scalar, inputs):
@@ -1033,9 +1037,9 @@ def test_expr_type_view(
     ia.remove_urlpath(tcfg.urlpath)
 
     # The ranges below are important for not overflowing operations
-    x_ = ia.linspace(shape, 0.1, 0.9, dtype=dtype, cfg=xcfg)
-    y_ = ia.linspace(shape, 0.5, 1, dtype=dtype, cfg=ycfg)
-    t_ = ia.linspace(shape, 0.5, 1, dtype=dtype, cfg=tcfg)
+    x_ = ia.linspace(0.1, 0.9, int(np.prod(shape)), shape=shape, dtype=dtype, cfg=xcfg)
+    y_ = ia.linspace(0.5, 1, int(np.prod(shape)), shape=shape, dtype=dtype, cfg=ycfg)
+    t_ = ia.linspace(0.5, 1, int(np.prod(shape)), shape=shape, dtype=dtype, cfg=tcfg)
     x = x_.astype(view_dtype)
     y = y_.astype(view_dtype)
     t = t_.astype(view_dtype)

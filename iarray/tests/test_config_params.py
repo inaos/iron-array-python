@@ -359,7 +359,7 @@ def test_default_params():
 
     cfg = ia.get_config_defaults()
     ia.set_config_defaults(split_mode=ia.SplitMode.ALWAYS_SPLIT, mode="w")
-    a = ia.linspace([10], start=0, stop=1, urlpath=urlpath, contiguous=False)
+    a = ia.linspace(0, 1, 10, urlpath=urlpath, contiguous=False)
     ia.set_config_defaults(split_mode=cfg.split_mode)
     cfg2 = ia.Config()
 

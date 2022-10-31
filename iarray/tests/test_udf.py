@@ -48,10 +48,16 @@ def cmp_udf_np(
 
     cfg = ia.Config(chunks=chunks, blocks=blocks)
 
-    inputs = [
-        input_factory(shape, start, stop, cfg=cfg, dtype=dtype, np_dtype=None, **cparams)
-        for start, stop in start_stop
-    ]
+    if input_factory == ia.linspace:
+        inputs = [
+            input_factory(start, stop, num=int(np.prod(shape)), shape=shape, cfg=cfg, dtype=dtype, np_dtype=None, **cparams)
+            for start, stop in start_stop
+        ]
+    else:
+        inputs = [
+            input_factory(start, stop, shape=shape, cfg=cfg, dtype=dtype, np_dtype=None, **cparams)
+            for start, stop in start_stop
+        ]
     expr = ia.expr_from_udf(
         f, inputs, user_params, shape=shape, dtype=dtype, np_dtype=np_dtype, cfg=cfg, **cparams
     )
@@ -89,7 +95,7 @@ def cmp_udf_np_strict(f, start, stop, shape, partitions, dtype, cparams):
     assert len(blocks) == 1
     cfg = ia.Config(chunks=chunks, blocks=blocks)
 
-    x = ia.linspace(shape, start, stop, cfg=cfg, dtype=dtype, **cparams)
+    x = ia.linspace(start, stop, int(np.prod(shape)), shape=shape, cfg=cfg, dtype=dtype, **cparams)
     assert x.cfg.dtype == dtype
     expr = ia.expr_from_udf(f, [x], cfg=cfg, **cparams)
 
@@ -407,7 +413,7 @@ def test_error(f):
     start, stop = 0, 10
 
     cfg = ia.Config(chunks=chunks, blocks=blocks)
-    x = ia.linspace(shape, start, stop, cfg=cfg, dtype=dtype, **cparams)
+    x = ia.linspace(start, stop, int(np.prod(shape)), shape=shape, cfg=cfg, dtype=dtype, **cparams)
     expr = f.create_expr([x], cfg=cfg, **cparams)
 
     with pytest.raises(ia.IArrayError):

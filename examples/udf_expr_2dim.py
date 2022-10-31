@@ -5,8 +5,8 @@ import numpy as np
 
 
 ia.set_config_defaults(dtype=np.float64)
-a = ia.arange([10, 10])
-b = ia.arange([10, 10])
+a = ia.arange(100, shape=[10, 10])
+b = ia.arange(100, shape=[10, 10])
 
 
 # Using a UDF clip

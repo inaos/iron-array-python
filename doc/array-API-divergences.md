@@ -8,7 +8,7 @@ ironArray API tries to follow the [array_api](https://data-apis.org/array-api/la
 
 * From the arithmetic operators, `__floordiv__` and `__mod__` are not supported yet.
 * The dtype of the result obtained in the comparison operators will be determined by the operands. If you would like to view the result as a specific dtype, you can set np_dtype of the result or when evaluating the lazy expression.
-* None of the in-place (arithmetic, array and bitwise) operators are supported yet.
+* None of the in-place (arithmetic, array and bitwise) operators are supported yet. The arithmetic operators **could be implemented**.
 * From the reflected operators, `__rfloordiv__` and `__rmod__` are not supported yet.
 * None of the bitwise operators are supported yet.
 
@@ -16,7 +16,7 @@ All the supported operators return a lazy expression, except for `__matmul__` an
 
 Broadcasting between arrays is not supported since the operands must have the same shape. The only exception to this rule is when one of the operands is a scalar, in which case it is promoted to the shape of the other array operand.
 
-Type promotion rules do not exist since the operands must have the same dtype. The only exception to this rule is when one of the operands is a scalar, in which case it is casted to the dtype of the other array operand.
+Type promotion rules do not follow the standard since the operands must have the same dtype (**could be implemented**). The only exception to this rule is when one of the operand is a scalar, in which case it is casted to the dtype of the other array operand.
 
 The behaviour in special cases may also differ from the array API standard.
 
@@ -38,14 +38,17 @@ Broadcasting is only supported for scalars.
 
 ## Creation Functions
 
-* `eye`, `from_dlpack`,  are not supported yet.
-* `arange` and `linspace` also support a `shape` param.
+* `eye`, `from_dlpack`, `meshgrid`, `tril` and `triu`  are not supported yet.
+* `arange` and `linspace` also support the `shape` param to build multi-dimensional arrays.
+* `linspace` can also create arrays of numeric or boolean type.
+* `asarray` can only avoid the copy when the array is an IArray instance.
 * Since ironArray is CPU only, the only supported device is `"cpu"`.
-
+* The default dtype is determined by the config defaults.
 
 ## Data Type Functions
 
-Since the code is optimized for doing so, `astype`'s `copy` param is `False` by default and the copy can be avoided even when dtypes are different. Thus, it only performs a copy if `copy` is specified as `True`.
+* `broadcast_arrays`, `broadcast_to`, `can_cast`, `finfo`, `iinfo`, `result_type` are not implemented yet.
+* Since the code is optimized for doing so, `astype`'s `copy` param is `False` by default and the copy can be avoided even when dtypes are different. Thus, it only performs a copy if `copy` is specified as `True`.
 
 ## Element-wise functions
 
@@ -56,11 +59,29 @@ Since the code is optimized for doing so, `astype`'s `copy` param is `False` by 
 
 ## Linear Algebra Functions
 
-Cannot compute transpose of a stack of matrices, only 2-dim arrays.
+* `tensordot` and `vecdot` are not implemented yet.
+* Cannot compute transpose of a stack of matrices, only 2-dim arrays.
+
+## Manipulation functions
+
+None of them are supported yet. If you want to expand or shrink an array use `iarray.resize` function. Some of them **could be implemented**.
+
+## Searching functions
+
+None of them are supported yet as functions. `argmax`, `argmin` and maybe `nonzero` **could be implemented**. 
+
+## Set functions
+
+None are supported yet.
+
+## Sorting functions
+
+None are supported yet.
 
 ## Statistical functions
 
-The `keepdims` param will always be `False`. If it is set to `True` an error will be raised.
+* The `correction` param in `std` and `var` is not supported yet. If != 0, an error will be raised. **Could be implemented**
+* The `keepdims` param will always be `False`. If it is set to `True` an error will be raised. **Could be implemented**
 
 ## Utility functions
 

@@ -1,7 +1,6 @@
 import pytest
 import iarray as ia
 import numpy as np
-from math import isclose
 
 params_names = "shape, chunks, blocks, axis, dtype"
 params_data = [
@@ -45,7 +44,7 @@ def test_reduce(shape, chunks, blocks, axis, dtype, rfunc, contiguous, urlpath, 
         pytest.skip("cannot compute this reduction with this dtype")
 
     a1 = ia.linspace(
-        shape, 0, 100, chunks=chunks, blocks=blocks, urlpath=urlpath, mode="w", dtype=dtype
+        0, 100, int(np.prod(shape)), shape=shape, chunks=chunks, blocks=blocks, urlpath=urlpath, mode="w", dtype=dtype
     )
 
     if nan:
@@ -112,7 +111,7 @@ def test_reduce_nan(shape, chunks, blocks, axis, dtype, rfunc, contiguous, urlpa
     ia.remove_urlpath("test_reduce_nan_res.iarr")
 
     a1 = ia.linspace(
-        shape, 0, 100, chunks=chunks, blocks=blocks, urlpath=urlpath, mode="w", dtype=dtype
+        0, 100, int(np.prod(shape)), shape=shape, chunks=chunks, blocks=blocks, urlpath=urlpath, mode="w", dtype=dtype
     )
 
     if nan:
@@ -184,7 +183,7 @@ def test_red_type_view(shape, chunks, blocks, axis, dtype, view_dtype, rfunc, co
     elif view_dtype == ia.bool and rfunc in ["max", "min"]:
         rfunc = "any" if rfunc == "max" else "all"
     cfg = ia.Config(chunks=chunks, blocks=blocks, contiguous=contiguous, urlpath=urlpath)
-    a1 = ia.linspace(shape, 0, 100, dtype=dtype, cfg=cfg)
+    a1 = ia.linspace(0, 100, int(np.prod(shape)), shape=shape, dtype=dtype, cfg=cfg)
     a2 = a1.astype(view_dtype)
 
     b2 = getattr(np, rfunc)(a2.data, axis=axis)
@@ -238,7 +237,7 @@ def test_reduce_storage(shape, chunks, blocks, axis, dtype, rfunc, contiguous, u
     ia.remove_urlpath("test_reduce_res.iarr")
 
     a1 = ia.linspace(
-        shape, 0, 100, chunks=chunks, blocks=blocks, urlpath=urlpath, mode="w", dtype=dtype
+        0, 100, int(np.prod(shape)), shape=shape, chunks=chunks, blocks=blocks, urlpath=urlpath, mode="w", dtype=dtype
     )
     a2 = a1.data
 

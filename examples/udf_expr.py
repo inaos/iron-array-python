@@ -30,7 +30,7 @@ def fmult(a: udf.float64, b: udf.float64) -> float:
 print("Registered UDF funcs:", tuple(ia.udf_registry.iter_all_func_names()))
 
 # Create initial containers
-a1 = ia.linspace(shape, 0, 10)
+a1 = ia.linspace(0, 10, int(np.prod(shape)), shape=shape)
 a2 = np.linspace(0, 10, shape[0]).reshape(shape)
 
 print("** pure expr evaluation ...")

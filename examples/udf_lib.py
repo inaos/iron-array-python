@@ -26,7 +26,7 @@ def fsum(a: udf.float64, b: udf.float64) -> float:
 print("Registered UDF funcs:", tuple(ia.udf_registry.iter_all_func_names()))
 
 # Create initial containers
-a1 = ia.linspace(shape, -5, 5)
+a1 = ia.linspace(-5, 5, num=int(np.prod(shape)), shape=shape)
 
 print("** scalar udf evaluation ...")
 expr = "4 * ulib.fsum(x, y)"

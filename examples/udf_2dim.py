@@ -34,7 +34,7 @@ def f(out: Array(float64, 2), x: Array(float64, 2)) -> int:
 
 
 # Create input arrays
-ia_in = ia.arange(shape, 0, np.prod(shape), 1)
+ia_in = ia.arange(0, int(np.prod(shape)), 1, shape=shape)
 np_in = np.arange(0, reduce(lambda x, y: x * y, shape), 1, dtype=dtype).reshape(shape)
 ia.cmp_arrays(np_in, ia_in)
 

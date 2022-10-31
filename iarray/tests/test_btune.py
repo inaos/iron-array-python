@@ -72,9 +72,10 @@ def test_btune(start, stop, shape, chunks, blocks, dtype, contiguous, urlpath):
     ia.remove_urlpath(urlpath)
     with ia.config(favor=ia.Favor.SPEED, btune=True):
         a = ia.linspace(
-            shape,
             start,
             stop,
+            np.prod(shape),
+            shape=shape,
             dtype=dtype,
             chunks=chunks,
             blocks=blocks,
@@ -86,9 +87,10 @@ def test_btune(start, stop, shape, chunks, blocks, dtype, contiguous, urlpath):
     ia.remove_urlpath(urlpath)
     with ia.config(favor=ia.Favor.CRATIO, btune=True):
         a = ia.linspace(
-            shape,
             start,
             stop,
+            np.prod(shape),
+            shape=shape,
             dtype=dtype,
             chunks=chunks,
             blocks=blocks,

@@ -262,8 +262,8 @@ if __name__ == "__main__":
     a4 = ia.linspace(dtshape_, 0, 10)
 
     # Evaluate with different methods
-    # a3 = a1.tan() * (a2.sin() * a2.sin() + a3.cos()) + (a4.sqrt() * 2)
-    ia_expr = a1.sin() + 2 * a1 + 1
+    # a3 = ia.tan(a1) * (ia.sin(a2) * ia.sin(a2) + ia.cos(a3)) + (ia.sqrt(a4) * 2)
+    ia_expr = ia.sin(a1) + 2 * a1 + 1
     ia_expr += 2
     print(ia_expr)
     ia_res = ia_expr.eval().data

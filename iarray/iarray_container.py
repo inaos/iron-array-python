@@ -1628,9 +1628,9 @@ def all(
     /,
     *,
     axis: Union[int, tuple] = None,
+    keepdims: bool = False,
     oneshot: bool = False,
     cfg: ia.Config = None,
-    keepdims: bool = False,
     **kwargs,
 ):
     """
@@ -1645,15 +1645,15 @@ def all(
         the reduction over all dimensions of the input array.
         If this is a tuple of ints, a reduction is performed on multiple axes, instead of a single
         axis or all the axes as default.
+    keepdims : bool
+        Whether to keep the reduced axes in the result or not. The only supported value for this param is
+        `False` (the default).
     oneshot : bool
         Enforce the use of the oneshot algorithm.  Oneshot normally uses less memory,
         albeit is slower in general. Default is False.
     cfg : :class:`Config` or None
         The configuration for this operation. If None (default), the current configuration will be
         used.
-    keepdims : bool
-        Whether to keep the reduced axes in the result or not. The only supported value for this param is
-        `False` (the default).
     kwargs : dict
         A dictionary for setting some or all of the fields in the :class:`Config` dataclass that should
         override the current configuration.
@@ -1680,9 +1680,9 @@ def any(
     /,
     *,
     axis: Union[int, tuple] = None,
+    keepdims: bool = False,
     oneshot: bool = False,
     cfg: ia.Config = None,
-    keepdims: bool = False,
     **kwargs,
 ):
     """
@@ -1697,15 +1697,15 @@ def any(
         the reduction over all dimensions of the input array.
         If this is a tuple of ints, a reduction is performed on multiple axes, instead of a single
         axis or all the axes as default.
+    keepdims : bool
+        Whether to keep the reduced axes in the result or not. The only supported value for this param is
+        `False` (the default).
     oneshot : bool
         Enforce the use of the oneshot algorithm.  Oneshot normally uses less memory,
         albeit is slower in general. Default is False.
     cfg : :class:`Config` or None
         The configuration for this operation. If None (default), the current configuration will be
         used.
-    keepdims : bool
-        Whether to keep the reduced axes in the result or not. The only supported value for this param is
-        `False` (the default).
     kwargs : dict
         A dictionary for setting some or all of the fields in the :class:`Config` dataclass that should
         override the current configuration.
@@ -1732,9 +1732,9 @@ def max(
     /,
     *,
     axis: Union[int, tuple] = None,
+    keepdims: bool = False,
     oneshot: bool = False,
     cfg: ia.Config = None,
-    keepdims: bool = False,
     **kwargs,
 ):
     """
@@ -1749,15 +1749,15 @@ def max(
         the reduction over all dimensions of the input array.
         If this is a tuple of ints, a reduction is performed on multiple axes, instead of a single
         axis or all the axes as default.
+    keepdims : bool
+        Whether to keep the reduced axes in the result or not. The only supported value for this param is
+        `False` (the default).
     oneshot : bool
         Enforce the use of the oneshot algorithm.  Oneshot normally uses less memory,
         albeit is slower in general. Default is False.
     cfg : :class:`Config` or None
         The configuration for this operation. If None (default), the current configuration will be
         used.
-    keepdims : bool
-        Whether to keep the reduced axes in the result or not. The only supported value for this param is
-        `False` (the default).
     kwargs : dict
         A dictionary for setting some or all of the fields in the :class:`Config` dataclass that should
         override the current configuration.
@@ -1784,9 +1784,9 @@ def min(
     /,
     *,
     axis: Union[int, tuple] = None,
+    keepdims: bool = False,
     oneshot: bool = False,
     cfg: ia.Config = None,
-    keepdims: bool = False,
     **kwargs,
 ):
     """
@@ -1801,15 +1801,15 @@ def min(
         the reduction over all dimensions of the input array.
         If this is a tuple of ints, a reduction is performed on multiple axes, instead of a single
         axis or all the axes as default.
+    keepdims : bool
+        Whether to keep the reduced axes in the result or not. The only supported value for this param is
+        `False` (the default).
     oneshot : bool
         Enforce the use of the oneshot algorithm.  Oneshot normally uses less memory,
         albeit is slower in general. Default is False.
     cfg : :class:`Config` or None
         The configuration for this operation. If None (default), the current configuration will be
         used.
-    keepdims : bool
-        Whether to keep the reduced axes in the result or not. The only supported value for this param is
-        `False` (the default).
     kwargs : dict
         A dictionary for setting some or all of the fields in the :class:`Config` dataclass that should
         override the current configuration.
@@ -1836,9 +1836,9 @@ def sum(
     /,
     *,
     axis: Union[int, tuple] = None,
+    keepdims: bool = False,
     oneshot: bool = False,
     cfg: ia.Config = None,
-    keepdims: bool = False,
     **kwargs,
 ):
     """
@@ -1853,15 +1853,15 @@ def sum(
         the reduction over all dimensions of the input array.
         If this is a tuple of ints, a reduction is performed on multiple axes, instead of a single
         axis or all the axes as default.
+    keepdims : bool
+        Whether to keep the reduced axes in the result or not. The only supported value for this param is
+        `False` (the default).
     oneshot : bool
         Enforce the use of the oneshot algorithm.  Oneshot normally uses less memory,
         albeit is slower in general. Default is False.
     cfg : :class:`Config` or None
         The configuration for this operation. If None (default), the current configuration will be
         used.
-    keepdims : bool
-        Whether to keep the reduced axes in the result or not. The only supported value for this param is
-        `False` (the default).
     kwargs : dict
         A dictionary for setting some or all of the fields in the :class:`Config` dataclass that should
         override the current configuration.
@@ -1889,9 +1889,9 @@ def prod(
     /,
     *,
     axis: Union[int, tuple] = None,
+    keepdims: bool = False,
     oneshot: bool = False,
     cfg: ia.Config = None,
-    keepdims: bool = False,
     **kwargs,
 ):
     """
@@ -1906,15 +1906,15 @@ def prod(
         the reduction over all dimensions of the input array.
         If this is a tuple of ints, a reduction is performed on multiple axes, instead of a single
         axis or all the axes as default.
+    keepdims : bool
+        Whether to keep the reduced axes in the result or not. The only supported value for this param is
+        `False` (the default).
     oneshot : bool
         Enforce the use of the oneshot algorithm.  Oneshot normally uses less memory,
         albeit is slower in general. Default is False.
     cfg : :class:`Config` or None
         The configuration for this operation. If None (default), the current configuration will be
         used.
-    keepdims : bool
-        Whether to keep the reduced axes in the result or not. The only supported value for this param is
-        `False` (the default).
     kwargs : dict
         A dictionary for setting some or all of the fields in the :class:`Config` dataclass that should
         override the current configuration.
@@ -1942,9 +1942,9 @@ def mean(
     /,
     *,
     axis: Union[int, tuple] = None,
+    keepdims: bool = False,
     oneshot: bool = False,
     cfg: ia.Config = None,
-    keepdims: bool = False,
     **kwargs,
 ):
     """
@@ -1962,12 +1962,12 @@ def mean(
     oneshot : bool
         Enforce the use of the oneshot algorithm.  Oneshot normally uses less memory,
         albeit is slower in general. Default is False.
-    cfg : :class:`Config` or None
-        The configuration for this operation. If None (default), the current configuration will be
-        used.
     keepdims : bool
         Whether to keep the reduced axes in the result or not. The only supported value for this param is
         `False` (the default).
+    cfg : :class:`Config` or None
+        The configuration for this operation. If None (default), the current configuration will be
+        used.
     kwargs : dict
         A dictionary for setting some or all of the fields in the :class:`Config` dataclass that should
         override the current configuration.
@@ -1995,8 +1995,9 @@ def std(
     /,
     *,
     axis: Union[int, tuple] = None,
-    cfg: ia.Config = None,
     keepdims: bool = False,
+    correction: Union[int, float] = 0.0,
+    cfg: ia.Config = None,
     **kwargs
 ):
     """
@@ -2013,12 +2014,14 @@ def std(
         the reduction over all dimensions of the input array.
         If this is a tuple of ints, a reduction is performed on multiple axes, instead of a single
         axis or all the axes as default.
-    cfg : :class:`Config` or None
-        The configuration for this operation. If None (default), the current configuration will be
-        used.
+    correction : int or float
+        Degrees of freedom adjustment. The only supported value is 0 (default).
     keepdims : bool
         Whether to keep the reduced axes in the result or not. The only supported value for this param is
         `False` (the default).
+    cfg : :class:`Config` or None
+        The configuration for this operation. If None (default), the current configuration will be
+        used.
     kwargs : dict
         A dictionary for setting some or all of the fields in the :class:`Config` dataclass that should
         override the current configuration.
@@ -2030,6 +2033,8 @@ def std(
         an array of dimension a.ndim - len(axis). Its `dtype` is `np.float32` when the `dtype` of
         :paramref:`a` is `np.float32` and `np.float64` otherwise.
     """
+    if correction != 0.0:
+        raise NotImplementedError("`correction` != 0 is not supported yet")
     if keepdims:
         raise NotImplementedError("Keeping the original array dimensions is not supported yet")
     if a.dtype not in _floating_dtypes:
@@ -2046,8 +2051,9 @@ def var(
     /,
     *,
     axis: Union[int, tuple] = None,
-    cfg: ia.Config = None,
+    correction: Union[int, float] = 0.0,
     keepdims: bool = False,
+    cfg: ia.Config = None,
     **kwargs
 ):
     """
@@ -2064,12 +2070,14 @@ def var(
         the reduction over all dimensions of the input array.
         If this is a tuple of ints, a reduction is performed on multiple axes, instead of a single
         axis or all the axes as default.
-    cfg : :class:`Config` or None
-        The configuration for this operation. If None (default), the current configuration will be
-        used.
+    correction : int or float
+        Degrees of freedom adjustment. The only supported value is 0 (default).
     keepdims : bool
         Whether to keep the reduced axes in the result or not. The only supported value for this param is
         `False` (the default).
+    cfg : :class:`Config` or None
+        The configuration for this operation. If None (default), the current configuration will be
+        used.
     kwargs : dict
         A dictionary for setting some or all of the fields in the :class:`Config` dataclass that should
         override the current configuration.
@@ -2081,6 +2089,8 @@ def var(
         an array of dimension a.ndim - len(axis). Its `dtype` is `np.float32` when the `dtype` of
         :paramref:`a` is `np.float32` and `np.float64` otherwise.
     """
+    if correction != 0.0:
+        raise NotImplementedError("`correction` != 0 is not supported yet")
     if keepdims:
         raise NotImplementedError("Keeping the original array dimensions is not supported yet")
     if a.dtype not in _floating_dtypes:
@@ -2165,6 +2175,8 @@ def nanmax(
     --------
     max
     """
+    if a.dtype not in _floating_dtypes:
+        raise TypeError("Only floating dtypes are allowed in nanmax")
     if cfg is None:
         cfg = a.cfg
         cfg.urlpath = None
@@ -2211,6 +2223,8 @@ def nanmin(
     --------
     min
     """
+    if a.dtype not in _floating_dtypes:
+        raise TypeError("Only floating dtypes are allowed in nanmin")
     if cfg is None:
         cfg = a.cfg
         cfg.urlpath = None
@@ -2257,6 +2271,8 @@ def nansum(
     --------
     sum
     """
+    if a.dtype not in _floating_dtypes:
+        raise TypeError("Only floating dtypes are allowed in nansum")
     if cfg is None:
         cfg = a.cfg
         cfg.urlpath = None
@@ -2302,6 +2318,8 @@ def nanprod(
     --------
     prod
     """
+    if a.dtype not in _floating_dtypes:
+        raise TypeError("Only floating dtypes are allowed in nanprod")
     if cfg is None:
         cfg = a.cfg
         cfg.urlpath = None
@@ -2338,6 +2356,8 @@ def nanmean(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **
     --------
     mean
     """
+    if a.dtype not in _floating_dtypes:
+        raise TypeError("Only floating dtypes are allowed in nanmean")
     if cfg is None:
         cfg = a.cfg
         cfg.urlpath = None
@@ -2374,6 +2394,8 @@ def nanstd(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **k
     --------
     std
     """
+    if a.dtype not in _floating_dtypes:
+        raise TypeError("Only floating dtypes are allowed in nanstd")
     if cfg is None:
         cfg = a.cfg
         cfg.urlpath = None
@@ -2411,6 +2433,8 @@ def nanvar(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **k
     --------
     var
     """
+    if a.dtype not in _floating_dtypes:
+        raise TypeError("Only floating dtypes are allowed in nanvar")
     if cfg is None:
         cfg = a.cfg
         cfg.urlpath = None
@@ -2447,6 +2471,8 @@ def nanmedian(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, 
     --------
     median
     """
+    if a.dtype not in _floating_dtypes:
+        raise TypeError("Only floating dtypes are allowed in nanmedian")
     if cfg is None:
         cfg = a.cfg
         cfg.urlpath = None

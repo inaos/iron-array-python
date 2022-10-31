@@ -17,7 +17,7 @@ ia.remove_urlpath(urlpath1)
 ia.remove_urlpath(urlpath2)
 
 a = ia.arange(
-    shape, chunks=chunks, blocks=blocks, dtype=dtype, urlpath=urlpath1, btune=False, mode="w"
+    int(np.prod(shape)), shape=shape, chunks=chunks, blocks=blocks, dtype=dtype, urlpath=urlpath1, btune=False, mode="w"
 )
 slices = tuple([slice(np.random.randint(1, s)) for s in a.shape])
 a[slices] = np.nan

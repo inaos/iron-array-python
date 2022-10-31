@@ -30,7 +30,7 @@ def f(out: Array(float64, 1), x: Array(float64, 1)) -> int:
 
 
 # Create initial containers
-a1 = ia.linspace(shape, 0, 10)
+a1 = ia.linspace(0, 10, int(np.prod(shape)), shape=shape)
 a2 = np.linspace(0, 10, shape[0], dtype=dtype).reshape(shape)
 
 print("numpy evaluation...")
