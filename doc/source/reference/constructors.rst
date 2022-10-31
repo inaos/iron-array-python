@@ -11,11 +11,15 @@ Basic constructors
    :toctree: autofiles/constructors/
    :nosignatures:
 
+   asarray
    empty
-   uninit
+   empty_like
    ones
+   ones_like
    zeros
+   zeros_like
    full
+   full_like
    arange
    linspace
    concatenate

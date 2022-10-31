@@ -23,7 +23,7 @@ nrep = 5
 ia.set_config_defaults(nthreads=nthreads, clevel=clevel, btune=False)
 
 # Create the iarray object
-a1 = ia.linspace(shape, 0, 10)
+a1 = ia.linspace(0, 10, int(np.prod(shape)), shape=shape)
 np_a1 = np.linspace(0, 10, shape[0])
 
 

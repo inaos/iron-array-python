@@ -1,7 +1,6 @@
 import pytest
 import iarray as ia
 import numpy as np
-from math import isclose
 
 
 # Slice
@@ -57,7 +56,7 @@ def test_slice(slices, shape, chunks, blocks, dtype, np_dtype, acontiguous, aurl
     if out_dtype not in [np.float64, np.float32]:
         for i in range(len(shape)):
             max *= shape[i]
-    a = ia.arange(shape, 0, max, cfg=cfg, mode="w", dtype=dtype, np_dtype=np_dtype)
+    a = ia.arange(0, max, shape=shape, cfg=cfg, mode="w", dtype=dtype, np_dtype=np_dtype)
     an = ia.iarray2numpy(a)
 
     a[slices] = 0
@@ -67,7 +66,7 @@ def test_slice(slices, shape, chunks, blocks, dtype, np_dtype, acontiguous, aurl
     else:
         np.testing.assert_equal(a.data, an)
 
-    data = ia.arange(shape, dtype=dtype, np_dtype=np_dtype)[slices]
+    data = ia.arange(int(np.prod(shape)), shape=shape, dtype=dtype, np_dtype=np_dtype)[slices]
 
     a[slices] = data
     an[slices] = data.data if isinstance(data, ia.IArray) else data
@@ -106,7 +105,7 @@ def test_double_slice(shape, chunks, blocks, dtype, np_dtype, acontiguous, aurlp
     ia.remove_urlpath(aurlpath)
     cfg = ia.Config(chunks=chunks, blocks=blocks, contiguous=acontiguous, urlpath=aurlpath)
 
-    a = ia.linspace(shape, -10, 10, cfg=cfg, mode="a", dtype=dtype, np_dtype=np_dtype)
+    a = ia.linspace(-10, 10, int(np.prod(shape)), shape=shape, cfg=cfg, mode="a", dtype=dtype, np_dtype=np_dtype)
     b1 = a[4]
     b2 = a[4]
     np.testing.assert_almost_equal(b1.data, b2.data)

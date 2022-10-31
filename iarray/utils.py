@@ -54,7 +54,7 @@ def _check_access_mode(urlpath, mode, update=False):
         if mode == b"w":
             if not update:
                 ia.remove_urlpath(urlpath)
-        elif os.path.exists(urlpath) and mode == b"w-":
+        elif os.path.exists(urlpath) and mode == b"w-" and not update:
             raise IOError(
                 f"The writing mode cannot overwrite the already existing array '{urlpath}'."
             )

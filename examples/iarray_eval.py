@@ -26,7 +26,7 @@ for i in range(NITER):
     y0 = (x - 1.35) * (x - 4.45) * (x - 8.5)
 print("Regular evaluate via numpy:", round((time() - t0) / NITER, 4))
 
-xa = ia.linspace(shape, 0.0, 10.0)
+xa = ia.linspace(0.0, 10.0, num=N, shape=shape)
 print("Operand cratio:", round(xa.cratio, 2))
 
 ya = None

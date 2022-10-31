@@ -704,7 +704,7 @@ def test_zproxy_expression(
     ia.remove_urlpath("test_expression_zarray.iarr")
 
     zx = zarr.open("x.zarr", mode="w", shape=shape, chunks=chunks, dtype=dtype)
-    zx[:] = ia.linspace(start=0.1, stop=0.2, shape=shape, dtype=dtype).data
+    zx[:] = ia.linspace(0.1, 0.2, num=int(np.prod(shape)), shape=shape, dtype=dtype).data
 
     x = ia.zarr_proxy(
         "x.zarr", chunks=chunks, blocks=blocks, contiguous=xcontiguous, urlpath=xurlpath
@@ -782,7 +782,7 @@ def test_ufuncs(ufunc, ia_expr, xcontiguous, xurlpath):
     for dtype in np.float64, np.float32:
         # The ranges below are important for not overflowing operations
         zx = zarr.open("x.zarr", mode="w", shape=shape, chunks=chunks, dtype=dtype)
-        zx[:] = ia.linspace(start=0.1, stop=0.9, shape=shape, dtype=dtype).data
+        zx[:] = ia.linspace(0.1, 0.9, num=int(np.prod(shape)), shape=shape, dtype=dtype).data
 
         x = ia.zarr_proxy(
             "x.zarr", chunks=chunks, blocks=bshape, contiguous=xcontiguous, urlpath=xurlpath
@@ -861,11 +861,11 @@ def test_expr_ufuncs(ufunc, xcontiguous, xurlpath, ycontiguous, yurlpath):
 
     dtype = np.float32
     zx = zarr.open("x.zarr", mode="w", shape=shape, chunks=cshape, dtype=dtype)
-    zx[:] = ia.linspace(start=0.1, stop=0.9, shape=shape, dtype=dtype).data
+    zx[:] = ia.linspace(0.1, 0.9, num=int(np.prod(shape)), shape=shape, dtype=dtype).data
     x = ia.zarr_proxy(
         "x.zarr", chunks=cshape, blocks=bshape, contiguous=xcontiguous, urlpath=xurlpath
     )
-    y = ia.linspace(shape, 0.5, 1, dtype=dtype, cfg=ycfg)
+    y = ia.linspace(0.5, 1, num=int(np.prod(shape)), shape=shape, dtype=dtype, cfg=ycfg)
 
     # NumPy computation
     npx = ia.iarray2numpy(x)
@@ -919,11 +919,11 @@ def test_expr_fusion(expr, np_expr, xcontiguous, xurlpath, ycontiguous, yurlpath
 
     dtype = np.float64
     zx = zarr.open("x.zarr", mode="w", shape=shape, chunks=chunks, dtype=dtype)
-    zx[:] = ia.linspace(start=0.1, stop=0.9, shape=shape, dtype=dtype).data
+    zx[:] = ia.linspace(0.1, 0.9, num=int(np.prod(shape)), shape=shape, dtype=dtype).data
     x = ia.zarr_proxy(
         "x.zarr", chunks=chunks, blocks=bshape, contiguous=xcontiguous, urlpath=xurlpath
     )
-    y = ia.linspace(shape, 0.5, 1, dtype=dtype, cfg=ycfg)
+    y = ia.linspace(0.5, 1, num=int(np.prod(shape)), shape=shape, dtype=dtype, cfg=ycfg)
 
     # NumPy computation
     npx = ia.iarray2numpy(x)
@@ -981,12 +981,12 @@ def test_expr_type_view(
 
     # The ranges below are important for not overflowing operations
     zx = zarr.open("x.zarr", mode="w", shape=shape, chunks=chunks, dtype=dtype)
-    zx[:] = ia.linspace(start=0.1, stop=0.9, shape=shape, dtype=dtype).data
+    zx[:] = ia.linspace(0.1, 0.9, num=int(np.prod(shape)), shape=shape, dtype=dtype).data
     x_ = ia.zarr_proxy(
         "x.zarr", chunks=chunks, blocks=bshape, contiguous=xcontiguous, urlpath=xurlpath
     )
 
-    y_ = ia.linspace(shape, 0.5, 1, dtype=dtype, cfg=ycfg)
+    y_ = ia.linspace(0.5, 1, num=int(np.prod(shape)), shape=shape, dtype=dtype, cfg=ycfg)
     x = x_.astype(view_dtype)
     y = y_.astype(view_dtype)
 

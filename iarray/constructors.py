@@ -9,14 +9,41 @@
 ###########################################################################################
 
 import numpy as np
-import zarr
-import s3fs
 
 import iarray as ia
 from iarray import iarray_ext as ext
 from .utils import IllegalArgumentError, zarr_to_iarray_dtypes
 from dataclasses import dataclass
-from typing import Sequence
+from typing import (
+    Any,
+    Optional,
+    Protocol,
+    Sequence,
+    Tuple,
+    TypeVar,
+    Union,
+)
+from .dtypes import (
+    _all_dtypes,
+    _boolean_dtypes,
+    _integer_dtypes,
+    _integer_or_boolean_dtypes,
+    _floating_dtypes,
+    _numeric_dtypes,
+    _dtype_categories,
+)
+
+
+_T_co = TypeVar("_T_co", covariant=True)
+
+
+class NestedSequence(Protocol[_T_co]):
+    def __getitem__(self, key: int, /): ...
+
+    def __len__(self, /): ...
+
+
+SupportsBufferProtocol = Any
 
 
 @dataclass
@@ -52,17 +79,24 @@ class DTShape:
             raise ValueError("shape must be non-empty")
 
 
-def empty(shape: Sequence, cfg: ia.Config = None, **kwargs) -> ia.IArray:
-    """Return an empty array.
+def empty(shape: Union[int, Tuple[int, ...]],
+          *,
+          device: Optional[ia.Device] = None,
+          cfg: ia.Config = None,
+          **kwargs
+          ) -> ia.IArray:
+    """Return an uninitialized array.
 
     An empty array has no data and needs to be filled via a write iterator.
 
     Parameters
     ----------
-    shape : tuple, list
+    shape : int, tuple
         The shape of the array to be created.
+    device: Device
+        The device on which to place the created array. The only supported value is `"cpu"`.
     cfg : :class:`Config`
-        The configuration for running the expression.
+        The configuration to use.
         If None (default), global defaults are used.
     kwargs : dict
         A dictionary for setting some or all of the fields in the :class:`Config`
@@ -73,37 +107,8 @@ def empty(shape: Sequence, cfg: ia.Config = None, **kwargs) -> ia.IArray:
     :ref:`IArray`
         The new array.
     """
-
-    if cfg is None:
-        cfg = ia.get_config_defaults()
-
-    with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
-        dtshape = ia.DTShape(shape, cfg.dtype)
-        return ext.empty(cfg, dtshape)
-
-
-def uninit(shape: Sequence, cfg: ia.Config = None, **kwargs) -> ia.IArray:
-    """Return an uninitialized array.
-
-    An uninitialized array has no data and needs to be filled via a write iterator.
-
-    Parameters
-    ----------
-    shape : tuple, list
-        The shape of the array to be created.
-    cfg : :class:`Config`
-        The configuration for running the expression.
-        If None (default), global defaults are used.
-    kwargs : dict
-        A dictionary for setting some or all of the fields in the :class:`Config`
-        dataclass that should override the current configuration.
-
-    Returns
-    -------
-    :ref:`IArray`
-        The new array.
-    """
-
+    if device not in ["cpu", None]:
+        raise ValueError(f"Unsupported device {device!r}")
     if cfg is None:
         cfg = ia.get_config_defaults()
 
@@ -112,12 +117,43 @@ def uninit(shape: Sequence, cfg: ia.Config = None, **kwargs) -> ia.IArray:
         return ext.uninit(cfg, dtshape)
 
 
-def arange(
-    shape: Sequence, start=None, stop=None, step=None, cfg: ia.Config = None, **kwargs
-) -> ia.IArray:
+def empty_like(iarr: ia.IArray, /, *, device: Optional[ia.Device] = None,
+               cfg: ia.Config = None, **kwargs) -> ia.IArray:
+    """Returns an uninitialized array with the same shape as an input array :paramref:`iarr`.
+
+    Parameters
+    ----------
+    iarr: :ref:`IArray`
+    device: Device
+        The device on which to place the created array. The only supported value is `"cpu"`.
+    cfg: :class:`Config`
+        The configuration for running the expression.
+        If None (default), global defaults are used.
+    kwargs: dict
+        A dictionary for setting some or all of the fields in the :class:`Config`
+        dataclass that should override the current configuration.
+
+    Returns
+    -------
+    :ref:`IArray`
+        The new array.
+    """
+    return empty(iarr.shape, device=device, cfg=cfg, **kwargs)
+
+
+def arange(start: Union[int, float],
+           /,
+           stop: Optional[Union[int, float]] = None,
+           step: Union[int, float] = 1,
+           *,
+           shape: Sequence = None,
+           device: Optional[ia.Device] = None,
+           cfg: ia.Config = None,
+           **kwargs
+           ) -> ia.IArray:
     """Return evenly spaced values within a given interval.
 
-    `shape`, `cfg` and `kwargs` are the same than for :func:`empty`.
+    `shape`, `device`, `cfg` and `kwargs` are the same than for :func:`empty`.
 
     `start`, `stop`, `step` are the same as in `np.arange <https://numpy.org/doc/stable/reference/generated/numpy.arange.html>`_.
 
@@ -130,6 +166,8 @@ def arange(
     --------
     empty : Create an empty array.
     """
+    if device not in ["cpu", None]:
+        raise ValueError(f"Unsupported device {device!r}")
     if cfg is None:
         cfg = ia.get_config_defaults()
 
@@ -146,38 +184,107 @@ def arange(
             and stop.dtype.str[1:] != cfg.np_dtype[1:]
         ):
             raise ValueError("`stop` has to be the same type as `cfg.np_dtype`")
-        if (start, stop, step) == (None, None, None):
-            stop = np.prod(shape)
-            start = 0
-            step = 1
-        elif (stop, step) == (None, None):
-            stop = np.array(start, dtype=cfg.dtype)
-            start = 0
-            step = 1
-        elif step is None:
+
+        if step == 0:
+            raise ValueError("`step` cannot be 0")
+        if stop is None:
+            if cfg.np_dtype is not None:
+                # For datetimes
+                stop = np.array(start, dtype=cfg.dtype)
+            else:
+                stop = start
+            start = np.array(0, dtype=cfg.dtype)
+        elif cfg.np_dtype is not None:
+            # For datetimes
             stop = np.array(stop, dtype=cfg.dtype)
             start = np.array(start, dtype=cfg.dtype)
 
-            if shape is None:
-                step = 1
-            else:
-                step = (stop - start) / np.prod(shape)
-        else:
-            stop = np.array(stop, dtype=cfg.dtype)
-            start = np.array(start, dtype=cfg.dtype)
+        if (stop - start <= 0 and step > 0) or (stop - start >= 0 and step < 0):
+            # Return 0 length array
+            shape = (0,)
+            return empty(shape, cfg=cfg, **kwargs)
+        if shape is None:
+            shape = [np.ceil((stop - start) / step)]
 
         slice_ = slice(start, stop, step)
         dtshape = ia.DTShape(shape, cfg.dtype)
         return ext.arange(cfg, slice_, dtshape)
 
 
-def linspace(
-    shape: Sequence, start: float, stop: float, cfg: ia.Config = None, **kwargs
-) -> ia.IArray:
+def asarray(obj: Union[ia.IArray, bool, int, float, NestedSequence, SupportsBufferProtocol],
+            /, *, device: Optional[ia.Device] = None,
+            copy: Optional[bool] = None, cfg: ia.Config = None, **kwargs) -> ia.IArray:
+    """
+    Convert the input to an :ref:`IArray`.
 
-    """Return evenly spaced numbers over a specified interval.
+    Parameters
+    ----------
+    obj: :ref:`IArray`, Python scalar, (possibly nested) sequence of Python scalars, or object supporting the Python buffer protocol
+        The input to convert into an :ref:`IArray`.
+    device: Device
+        The device on which to place the created array. The only supported value is `"cpu"`.
+    copy: bool
+        Whether to copy the buffer data in case of an :ref:`IArray` instance.
+    cfg: :class:`ia.Config`
+        The configuration to use.
+        If None (default), global defaults are used.
+    kwargs: dict
+        A dictionary for setting some or all of the fields in the :class:`Config`
+        dataclass that should override the current configuration.
 
-    `shape`, `cfg` and `kwargs` are the same than for :func:`empty`.
+    Returns
+    -------
+    out: :ref:`IArray`
+        An array containing the data of :paramref:`obj`.
+    """
+    if device not in ["cpu", None]:
+        raise ValueError(f"Unsupported device {device!r}")
+
+    if cfg is None:
+        cfg = ia.get_config_defaults()
+    if isinstance(obj, ia.IArray):
+        with ia.config(cfg=cfg, **kwargs) as cfg:
+            if copy is None:
+                if np.dtype(cfg.dtype).itemsize < np.dtype(obj.dtype).itemsize:
+                    copy = True
+                else:
+                    copy = False
+            if copy:
+                return obj.copy(cfg=cfg)
+            else:
+                if cfg.urlpath is not None or cfg.contiguous not in [None, obj.cfg.contiguous]\
+                        or cfg.chunks not in [None, obj.chunks] \
+                        or cfg.blocks not in [None, obj.blocks]:
+                    raise ValueError("Cannot change array config when avoiding the copy")
+
+                if cfg.dtype == obj.dtype:
+                    return obj[...]
+                else:
+                    return obj.astype(cfg.dtype)
+    else:
+        copy = True if copy is None else copy
+        if not copy:
+            raise ValueError("Cannot avoid copy for non IArray instances")
+        with ia.config(cfg=cfg, **kwargs) as cfg:
+            dtype = cfg.dtype if cfg.np_dtype is None else cfg.np_dtype
+            arr = np.asarray(obj, dtype=dtype)
+            res = ia.empty(arr.shape)
+            if arr.ndim == 0:
+                res[()] = arr[()]
+            else:
+                res[...] = arr[...]
+            del arr
+            return res
+
+
+def linspace(start: Union[int, float], stop: Union[int, float], /, num: int, *,
+             shape: Sequence = None, device: Optional[
+            ia.Device] = None, endpoint: bool = True, cfg: ia.Config = None, **kwargs
+             ) -> ia.IArray:
+    """Return evenly spaced numbers over a specified interval. If :paramref:`endpoint` is False,
+    the numbers will be generated over the half-open interval `[start, stop)`.
+
+    `shape`, `device`, `cfg` and `kwargs` are the same than for :func:`empty`.
 
     `start`, `stop` are the same as in `np.linspace <https://numpy.org/doc/stable/reference/generated/numpy.linspace.html>`_.
 
@@ -190,16 +297,59 @@ def linspace(
     --------
     empty : Create an empty array.
     """
+    if device not in ["cpu", None]:
+        raise ValueError(f"Unsupported device {device!r}")
+    if shape is None:
+        shape = [num]
+    elif np.prod(shape) != num:
+        raise ValueError("`shape` must agree with `num`")
+    if not endpoint and len(shape) > 1:
+        raise ValueError("`endpoint` can only be False with 1-dim arrays")
+
     if cfg is None:
         cfg = ia.get_config_defaults()
 
     with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
+        if not endpoint:
+            shape = [num + 1]
         dtshape = ia.DTShape(shape, cfg.dtype)
-        return ext.linspace(cfg, start, stop, dtshape)
+        a = ext.linspace(cfg, start, stop, dtshape)
+        if not endpoint:
+            a.resize([num])
+        return a
 
 
-def zeros(shape: Sequence, cfg: ia.Config = None, **kwargs) -> ia.IArray:
+def zeros(shape: Union[int, Tuple[int, ...]], *, device: Optional[ia.Device] = None, cfg: ia.Config = None,
+          **kwargs) -> ia.IArray:
     """Return a new array of given shape and type, filled with zeros.
+
+    `shape`, `device`, `cfg` and `kwargs` are the same than for :func:`empty`.
+
+    Returns
+    -------
+    :ref:`IArray`
+        The new array.
+
+    See Also
+    --------
+    empty : Create an empty array.
+    ones : Create an array filled with ones.
+    """
+    if device not in ["cpu", None]:
+        raise ValueError(f"Unsupported device {device!r}")
+    if cfg is None:
+        cfg = ia.get_config_defaults()
+
+    with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
+        if cfg.dtype not in _all_dtypes:
+            raise TypeError("dtype is not supported")
+        dtshape = ia.DTShape(shape, cfg.dtype)
+        return ext.zeros(cfg, dtshape)
+
+
+def zeros_like(iarr: ia.IArray, /, *, device: Optional[ia.Device] = None,
+               cfg: ia.Config = None, **kwargs) -> ia.IArray:
+    """Return a new array of same shape as :paramref:`iarr`, filled with zeros.
 
     `shape`, `cfg` and `kwargs` are the same than for :func:`empty`.
 
@@ -213,12 +363,7 @@ def zeros(shape: Sequence, cfg: ia.Config = None, **kwargs) -> ia.IArray:
     empty : Create an empty array.
     ones : Create an array filled with ones.
     """
-    if cfg is None:
-        cfg = ia.get_config_defaults()
-
-    with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
-        dtshape = ia.DTShape(shape, cfg.dtype)
-        return ext.zeros(cfg, dtshape)
+    return zeros(iarr.shape, device=device, cfg=cfg, **kwargs)
 
 
 def concatenate(shape: Sequence, data: list, cfg: ia.Config = None, **kwargs) -> ia.IArray:
@@ -275,7 +420,8 @@ def from_cframe(
         return ext.from_cframe(cfg, cframe, copy)
 
 
-def ones(shape: Sequence, cfg: ia.Config = None, **kwargs) -> ia.IArray:
+def ones(shape: Union[int, Tuple[int, ...]], *, device: Optional[ia.Device] = None, cfg: ia.Config = None,
+         **kwargs) -> ia.IArray:
     """Return a new array of given shape and type, filled with ones.
 
     `shape`, `cfg` and `kwargs` are the same than for :func:`empty`.
@@ -290,18 +436,47 @@ def ones(shape: Sequence, cfg: ia.Config = None, **kwargs) -> ia.IArray:
     empty : Create an empty array.
     zeros : Create an array filled with zeros.
     """
+    if device not in ["cpu", None]:
+        raise ValueError(f"Unsupported device {device!r}")
     if cfg is None:
         cfg = ia.get_config_defaults()
 
     with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
+        if cfg.dtype not in _all_dtypes:
+            raise TypeError("dtype is not supported")
         dtshape = ia.DTShape(shape, cfg.dtype)
         return ext.ones(cfg, dtshape)
 
 
-def full(shape: Sequence, fill_value, cfg: ia.Config = None, **kwargs) -> ia.IArray:
-    """Return a new array of given shape and type, filled with `fill_value`.
+def ones_like(iarr: ia.IArray, /, *, device: Optional[ia.Device] = None,
+              cfg: ia.Config = None, **kwargs) -> ia.IArray:
+    """Return a new array with the same shape as an input array :paramref:`iarr`, filled with ones.
 
-    `shape`, `cfg` and `kwargs` are the same than for :func:`empty`.
+    Parameters
+    ----------
+    iarr: :ref:`IArray`
+    device: ia.Device
+        The device on which to place the created array. The only supported value is `"cpu"`.
+    cfg: :class:`Config`
+        The configuration for running the expression.
+        If None (default), global defaults are used.
+    kwargs: dict
+        A dictionary for setting some or all of the fields in the :class:`Config`
+        dataclass that should override the current configuration.
+
+    Returns
+    -------
+    :ref:`IArray`
+        The new array.
+    """
+    return ones(iarr.shape, device=device, cfg=cfg, **kwargs)
+
+
+def full(shape: Union[int, Tuple[int, ...]], fill_value: Union[bool, int, float], *, device: Optional[ia.Device] = None,
+         cfg: ia.Config = None, **kwargs) -> ia.IArray:
+    """Return a new array of given shape and type, filled with :paramref:`fill_value`.
+
+    `shape`, `device`, `cfg` and `kwargs` are the same than for :func:`empty`.
 
     Returns
     -------
@@ -313,10 +488,14 @@ def full(shape: Sequence, fill_value, cfg: ia.Config = None, **kwargs) -> ia.IAr
     empty : Create an empty array.
     zeros : Create an array filled with zeros.
     """
+    if device not in ["cpu", None]:
+        raise ValueError(f"Unsupported device {device!r}")
     if cfg is None:
         cfg = ia.get_config_defaults()
 
     with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
+        if cfg.dtype not in _all_dtypes:
+            raise TypeError("dtype is not supported")
         dtshape = ia.DTShape(shape, cfg.dtype)
         if (
             cfg.np_dtype is not None
@@ -326,6 +505,20 @@ def full(shape: Sequence, fill_value, cfg: ia.Config = None, **kwargs) -> ia.IAr
             raise ValueError("`fill_value` has to be the same type as `cfg.np_dtype`")
         fill_value = np.array(fill_value, dtype=cfg.dtype)
         return ext.full(cfg, fill_value, dtshape)
+
+
+def full_like(iarr: ia.IArray, /, fill_value: Union[bool, int, float], *, device: Optional[ia.Device] = None,
+              cfg: ia.Config = None, **kwargs) -> ia.IArray:
+    """Return a new array with the same shape as an input array :paramref:`iarr`, filled with :paramref:`fill_value`.
+
+    `fill_value`, `device`, `cfg` and `kwargs` are the same than for :func:`empty`.
+
+    Returns
+    -------
+    :ref:`IArray`
+        The new array.
+    """
+    return full(iarr.shape, fill_value=fill_value, device=device, cfg=cfg, **kwargs)
 
 
 def zarr_proxy(zarr_urlpath, cfg: ia.Config = None, **kwargs) -> ia.IArray:
@@ -386,7 +579,7 @@ def zarr_proxy(zarr_urlpath, cfg: ia.Config = None, **kwargs) -> ia.IArray:
     with ia.config(
         cfg=cfg, dtype=dtype, chunks=z.chunks, blocks=blocks, nthreads=1, **kwargs
     ) as cfg:
-        a = uninit(shape=z.shape, cfg=cfg)
+        a = empty(shape=z.shape, cfg=cfg)
 
     # Set special attr to identify zarr_proxy
     a.attrs["zproxy_urlpath"] = zarr_urlpath

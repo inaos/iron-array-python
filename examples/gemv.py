@@ -30,7 +30,7 @@ print(aia.info)
 
 a = aia.data
 
-bia = ia.linspace((aia.shape[1],), 2, 10, chunks=b_chunks, blocks=b_blocks)
+bia = ia.linspace(2, 10, num=aia.shape[1], chunks=b_chunks, blocks=b_blocks)
 b = bia.data
 
 t0 = time()

@@ -36,7 +36,7 @@ def f(out: Array(float64, 1), x: Array(float64, 1)) -> int:
 
 
 # Create input arrays
-ia_in = ia.linspace(shape, 0, 10)
+ia_in = ia.linspace(0, 10, int(np.prod(shape)), shape=shape)
 np_in = np.linspace(0, 10, reduce(lambda x, y: x * y, shape), dtype=dtype).reshape(shape)
 ia.cmp_arrays(np_in, ia_in)
 # print(np_in)

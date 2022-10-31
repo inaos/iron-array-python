@@ -44,9 +44,9 @@ def test_copy(shape, chunks, blocks, dtype, np_dtype, contiguous, urlpath, urlpa
         for i in range(len(shape)):
             max *= shape[i]
     a_ = ia.arange(
-        shape,
         0,
         max,
+        shape=shape,
         dtype=dtype,
         np_dtype=np_dtype,
         chunks=chunks,

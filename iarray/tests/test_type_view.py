@@ -1,7 +1,6 @@
 import pytest
 import iarray as ia
 import numpy as np
-from math import isclose
 
 
 @pytest.mark.parametrize(
@@ -32,7 +31,7 @@ def test_type(shape, chunks, blocks, dtype, view_dtype, contiguous, urlpath):
     if dtype == np.bool_:
         a = ia.full(shape, True, dtype=dtype)
     else:
-        a = ia.arange(shape=shape, start=0, stop=size, dtype=dtype)
+        a = ia.arange(0, size, shape=shape, dtype=dtype)
     b = ia.iarray2numpy(a)
     assert not a.is_view
     c = a.astype(view_dtype)
@@ -86,7 +85,7 @@ def test_slice_type(shape, chunks, blocks, acontiguous, aurlpath, dtype, view_dt
     if dtype not in [np.float64, np.float32]:
         for i in range(len(shape)):
             max *= shape[i]
-    a = ia.arange(shape, 0, max, cfg=cfg, mode="w", dtype=dtype)
+    a = ia.arange(0, max, shape=shape, cfg=cfg, mode="w", dtype=dtype)
     an = ia.iarray2numpy(a)
 
     slices = tuple([slice(0, s - 1) for s in shape])

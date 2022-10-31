@@ -94,23 +94,24 @@ def test_math(func, np_func, nan, nargs, start, stop, shape, chunks, blocks, dty
         c = ia.iarray2numpy(a)
     else:
         a = ia.linspace(
+            start,
+            stop,
+            int(np.prod(shape)),
             shape=shape,
-            start=start,
-            stop=stop,
             dtype=dtype,
             chunks=chunks,
             blocks=blocks,
             contiguous=contiguous,
             urlpath=urlpath,
-            mode="w",
         )
         c = np.linspace(start, stop, size, dtype=dtype).reshape(shape)
 
     if nargs == 2:
         b = ia.linspace(
-            shape,
             start + 1,
             stop + 1,
+            int(np.prod(shape)),
+            shape=shape,
             dtype=dtype,
             chunks=chunks,
             blocks=blocks,

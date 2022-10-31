@@ -12,9 +12,9 @@ NITER = 1
 shape = [10, 1_000]
 N = int(np.prod(shape))
 
-x = ia.linspace(shape, 0.0, 10.0)
-y = ia.arange(shape)
-z = ia.linspace(shape, 0.0, 10.0)
+x = ia.linspace(0.0, 10.0, N, shape=shape)
+y = ia.arange(0, N, shape=shape)
+z = ia.linspace(0.0, 10.0, N, shape=shape)
 # ia.set_config_defaults(btune=False, clevel=0) #, fp_mantissa_bits=20)
 
 res = None

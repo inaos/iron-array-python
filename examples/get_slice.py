@@ -11,7 +11,7 @@ dtype = np.float64
 ia.set_config_defaults(dtype=dtype)
 
 asize = int(np.prod(ashape))
-a = ia.linspace(ashape, -10, 10)
+a = ia.linspace(-10, 10, num=asize, shape=ashape)
 
 an = ia.iarray2numpy(a)
 aslices = tuple(slice(astart[i], astop[i]) for i in range(len(astart)))
@@ -21,7 +21,7 @@ asl = a[aslices]
 print(ia.iarray2numpy(asl))
 
 bsize = int(np.prod(bshape))
-b = ia.linspace(bshape, -10, 10)
+b = ia.linspace(-10, 10, num=bsize, shape=bshape)
 bn = ia.iarray2numpy(b)
 bslices = tuple(slice(bstart[i], bstop[i]) for i in range(len(bstart)))
 if len(bstart) == 1:

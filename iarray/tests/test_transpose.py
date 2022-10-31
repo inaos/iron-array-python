@@ -45,7 +45,7 @@ def test_transpose(shape, chunks, blocks, dtype, np_dtype, contiguous, urlpath, 
     ia.remove_urlpath(urlpath)
     cfg = ia.Config(chunks=chunks, blocks=blocks, contiguous=contiguous, urlpath=urlpath)
 
-    a = ia.linspace(shape, -10, 10, cfg=cfg, dtype=dtype, np_dtype=np_dtype)
+    a = ia.linspace(-10, 10, int(np.prod(shape)), shape=shape, cfg=cfg, dtype=dtype, np_dtype=np_dtype)
 
     b = ia.iarray2numpy(a)
     bn = b.T

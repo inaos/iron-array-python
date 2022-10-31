@@ -132,10 +132,10 @@ def test_expr_fusion(expr, np_expr, dtype):
 
     ia.set_config_defaults(chunks=chunks, blocks=bshape, dtype=dtype)
 
-    x = ia.linspace(shape, 0.1, 0.9)
-    y = ia.linspace(shape, 0.5, 1)
-    z = ia.linspace(shape, 0.1, 0.9)
-    t = ia.linspace(shape, 0.5, 1)
+    x = ia.linspace(0.1, 0.9, int(np.prod(shape)), shape=shape)
+    y = ia.linspace(0.5, 1, int(np.prod(shape)), shape=shape)
+    z = ia.linspace(0.1, 0.9, int(np.prod(shape)), shape=shape)
+    t = ia.linspace(0.5, 1, int(np.prod(shape)), shape=shape)
 
     # NumPy computation
     npx = x.data
