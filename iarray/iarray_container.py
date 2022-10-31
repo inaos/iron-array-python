@@ -490,32 +490,6 @@ class IArray(ext.Container):
             dst = np.ones(shape, dtype=self.dtype)
             return ext.get_orthogonal_selection(cfg, self, dst, selection)
 
-    def astype(self, view_dtype, /, *, copy: bool = False) -> IArray:
-        """
-        Cast the array into a view of a specified type.
-
-        Parameters
-        ----------
-        view_dtype: (float64, float32, int64, int32, int16, int8, uint64, uint32, uint16,
-            uint8, bool)
-            The dtype in which the array will be casted. Only upcasting is supported
-            unless :param:`copy` is `True`.
-        copy: bool
-            Whether to copy the array or do a view instead. Default is False.
-
-        Returns
-        -------
-        :ref:`IArray`
-            The new view or array as a normal :ref:`IArray`.
-        """
-        if copy:
-            return self.copy(dtype=view_dtype)
-        view_dtypesize = np.dtype(view_dtype).itemsize
-        src_dtypesize = np.dtype(self.dtype).itemsize
-        if view_dtypesize < src_dtypesize:
-            raise OverflowError("`view_dtype` itemsize must be greater or equal than `self.dtype`")
-        return ext.get_type_view(self.cfg, self, view_dtype)
-
     def __iter__(self):
         return self.iter_read_block()
 
@@ -771,6 +745,36 @@ class IArray(ext.Container):
 
     def to_device(self, device: device, /, *, stream: Optional[Union[int, Any]] = None) -> IArray:
         raise NotImplementedError("self.to_device is not supported yet")
+
+
+
+def astype(x: IArray, view_dtype, /, *, copy: bool = False) -> IArray:
+    """
+    Cast the array into a view of a specified type.
+
+    Parameters
+    ----------
+    x: :ref:`IArray`
+        The array to cast.
+    view_dtype: (float64, float32, int64, int32, int16, int8, uint64, uint32, uint16,
+        uint8, bool)
+        The dtype in which the array will be casted. Only upcasting is supported
+        unless :param:`copy` is `True`.
+    copy: bool
+        Whether to copy the array or do a view instead. Default is False.
+
+    Returns
+    -------
+    :ref:`IArray`
+        The new view or array as a normal :ref:`IArray`.
+    """
+    if copy:
+        return x.copy(dtype=view_dtype)
+    view_dtypesize = np.dtype(view_dtype).itemsize
+    src_dtypesize = np.dtype(x.dtype).itemsize
+    if view_dtypesize < src_dtypesize:
+        raise OverflowError("`view_dtype` itemsize must be greater or equal than `self.dtype`")
+    return ext.get_type_view(x.cfg, x, view_dtype)
 
 
 def abs(iarr: IArray, /):

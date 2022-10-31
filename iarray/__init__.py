@@ -276,6 +276,7 @@ from .iarray_container import (
     sqrt,
     tan,
     tanh,
+    astype,
 )
 
 from .constructors import (

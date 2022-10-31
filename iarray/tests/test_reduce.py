@@ -184,7 +184,7 @@ def test_red_type_view(shape, chunks, blocks, axis, dtype, view_dtype, rfunc, co
         rfunc = "any" if rfunc == "max" else "all"
     cfg = ia.Config(chunks=chunks, blocks=blocks, contiguous=contiguous, urlpath=urlpath)
     a1 = ia.linspace(0, 100, int(np.prod(shape)), shape=shape, dtype=dtype, cfg=cfg)
-    a2 = a1.astype(view_dtype)
+    a2 = ia.astype(a1, view_dtype)
 
     b2 = getattr(np, rfunc)(a2.data, axis=axis)
     b1 = getattr(ia, rfunc)(a2, axis=axis, urlpath="test_reduce_res.iarr")

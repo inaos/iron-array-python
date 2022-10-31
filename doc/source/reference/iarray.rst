@@ -49,7 +49,6 @@ Methods
    IArray.split
    IArray.get_orthogonal_selection
    IArray.set_orthogonal_selection
-   IArray.astype
 
 
 Mathematical methods

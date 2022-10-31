@@ -10,6 +10,7 @@ Convenience functions
    :toctree: autofiles/ndarray
    :nosignatures:
 
+   astype
    load
    open
    save
