@@ -1040,9 +1040,9 @@ def test_expr_type_view(
     x_ = ia.linspace(0.1, 0.9, int(np.prod(shape)), shape=shape, dtype=dtype, cfg=xcfg)
     y_ = ia.linspace(0.5, 1, int(np.prod(shape)), shape=shape, dtype=dtype, cfg=ycfg)
     t_ = ia.linspace(0.5, 1, int(np.prod(shape)), shape=shape, dtype=dtype, cfg=tcfg)
-    x = x_.astype(view_dtype)
-    y = y_.astype(view_dtype)
-    t = t_.astype(view_dtype)
+    x = ia.astype(x_, view_dtype)
+    y = ia.astype(y_, view_dtype)
+    t = ia.astype(t_, view_dtype)
 
     # NumPy computation
     npx = ia.iarray2numpy(x)

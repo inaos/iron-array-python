@@ -644,7 +644,7 @@ def test_type_slice_zproxy(view_dtype, shape, chunks, blocks, dtype, contiguous,
     ia.remove_urlpath(urlpath)
     a = ia.zarr_proxy("test_type_view.zarr", contiguous=contiguous, urlpath=urlpath, blocks=blocks)
 
-    c = a.astype(view_dtype)
+    c = ia.astype(a, view_dtype)
     sl = tuple([slice(0, s) for s in shape])
     f = c[sl]
     b = ia.iarray2numpy(f)
@@ -987,8 +987,8 @@ def test_expr_type_view(
     )
 
     y_ = ia.linspace(0.5, 1, num=int(np.prod(shape)), shape=shape, dtype=dtype, cfg=ycfg)
-    x = x_.astype(view_dtype)
-    y = y_.astype(view_dtype)
+    x = ia.astype(x_, view_dtype)
+    y = ia.astype(y_, view_dtype)
 
     # NumPy computation
     npx = ia.iarray2numpy(x)

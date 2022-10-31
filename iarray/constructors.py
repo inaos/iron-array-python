@@ -260,7 +260,7 @@ def asarray(obj: Union[ia.IArray, bool, int, float, NestedSequence, SupportsBuff
                 if cfg.dtype == obj.dtype:
                     return obj[...]
                 else:
-                    return obj.astype(cfg.dtype)
+                    return ia.astype(obj, cfg.dtype)
     else:
         copy = True if copy is None else copy
         if not copy:

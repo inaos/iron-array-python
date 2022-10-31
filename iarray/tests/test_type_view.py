@@ -34,7 +34,7 @@ def test_type(shape, chunks, blocks, dtype, view_dtype, contiguous, urlpath):
         a = ia.arange(0, size, shape=shape, dtype=dtype)
     b = ia.iarray2numpy(a)
     assert not a.is_view
-    c = a.astype(view_dtype)
+    c = ia.astype(a, view_dtype)
     assert c.is_view
     c = ia.iarray2numpy(c)
     d = b.astype(view_dtype)
@@ -97,7 +97,7 @@ def test_slice_type(shape, chunks, blocks, acontiguous, aurlpath, dtype, view_dt
         np.testing.assert_equal(a.data, an)
 
     b_ = a[slices]
-    c = b_.astype(view_dtype)
+    c = ia.astype(b_, view_dtype)
 
     d_ = an[slices]
     d = d_.astype(view_dtype)
