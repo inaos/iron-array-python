@@ -58,8 +58,7 @@ import iarray as ia
         (ia.sinh, np.sinh, False, 1),
         (ia.tan, np.tan, False, 1),
         (ia.tanh, np.tanh, False, 1),
-    ]
-
+    ],
 )
 @pytest.mark.parametrize(
     "start, stop, shape, chunks, blocks, dtype, contiguous, urlpath",
@@ -78,7 +77,9 @@ import iarray as ia
         (0.2, 0.1, [4, 3, 5, 2], [4, 3, 5, 2], [2, 3, 2, 2], ia.float32, True, None),
     ],
 )
-def test_math(func, np_func, nan, nargs, start, stop, shape, chunks, blocks, dtype, contiguous, urlpath):
+def test_math(
+    func, np_func, nan, nargs, start, stop, shape, chunks, blocks, dtype, contiguous, urlpath
+):
     size = int(np.prod(shape))
     ia.remove_urlpath(urlpath)
     if func in [ia.all, ia.any]:

@@ -28,7 +28,11 @@ def fmult(a: udf.float64, b: udf.float64) -> float:
             "2 * (sin(x) + cos(x)) + lib2.fmult(x, x)",
             {"x": ia.arange(5, shape=(10,))},
         ),
-        ("2 + x * x * (x + x)", "2 + lib2.fmult(x, x) * lib.fsum(x, x)", {"x": ia.arange(10, shape=(10,))}),
+        (
+            "2 + x * x * (x + x)",
+            "2 + lib2.fmult(x, x) * lib.fsum(x, x)",
+            {"x": ia.arange(10, shape=(10,))},
+        ),
         (
             "2 + x * x * ((x * x) + x)",
             "2 + lib2.fmult(x, x) * lib.fsum(lib2.fmult(x, x), x)",
@@ -161,7 +165,11 @@ def udf_mult_sum_mult_scalar(
         ("2 * (sin(x) + cos(x)) + x * x", udf_sin_cos, {"x": ia.arange(10, shape=(10,))}),
         ("2 + x * x * (x + x)", udf_mult_sum, {"x": ia.arange(5, shape=(10,))}),
         ("2 + x * x * ((x * x) + x)", udf_mult_sum_mult, {"x": ia.arange(10, shape=(10,))}),
-        ("x * y * ((x * y) + y)", udf_mult_sum_mult_scalar, {"x": ia.arange(5, shape=(10,)), "y": 2}),
+        (
+            "x * y * ((x * y) + y)",
+            udf_mult_sum_mult_scalar,
+            {"x": ia.arange(5, shape=(10,)), "y": 2},
+        ),
     ],
 )
 def test_udf(sexpr, func, inputs):

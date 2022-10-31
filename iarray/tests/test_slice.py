@@ -105,7 +105,16 @@ def test_double_slice(shape, chunks, blocks, dtype, np_dtype, acontiguous, aurlp
     ia.remove_urlpath(aurlpath)
     cfg = ia.Config(chunks=chunks, blocks=blocks, contiguous=acontiguous, urlpath=aurlpath)
 
-    a = ia.linspace(-10, 10, int(np.prod(shape)), shape=shape, cfg=cfg, mode="a", dtype=dtype, np_dtype=np_dtype)
+    a = ia.linspace(
+        -10,
+        10,
+        int(np.prod(shape)),
+        shape=shape,
+        cfg=cfg,
+        mode="a",
+        dtype=dtype,
+        np_dtype=np_dtype,
+    )
     b1 = a[4]
     b2 = a[4]
     np.testing.assert_almost_equal(b1.data, b2.data)

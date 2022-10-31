@@ -50,7 +50,16 @@ def cmp_udf_np(
 
     if input_factory == ia.linspace:
         inputs = [
-            input_factory(start, stop, num=int(np.prod(shape)), shape=shape, cfg=cfg, dtype=dtype, np_dtype=None, **cparams)
+            input_factory(
+                start,
+                stop,
+                num=int(np.prod(shape)),
+                shape=shape,
+                cfg=cfg,
+                dtype=dtype,
+                np_dtype=None,
+                **cparams,
+            )
             for start, stop in start_stop
         ]
     else:

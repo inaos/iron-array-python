@@ -19,6 +19,7 @@ from time import time
 N = 80_000  # around 50 GB
 size = N * N * 8 / 2**30  # size in GB
 
+
 @jit
 def eye(out: Array(float64, 2)) -> int:
     n = out.window_shape[0]
@@ -37,7 +38,7 @@ def eye(out: Array(float64, 2)) -> int:
 if True:
     ia.set_config_defaults(favor=ia.Favor.CRATIO)
     t0 = time()
-    expr = ia.expr_from_udf(eye, [], shape=(N, N), mode='w', urlpath="reduce-eye.iarr")
+    expr = ia.expr_from_udf(eye, [], shape=(N, N), mode="w", urlpath="reduce-eye.iarr")
     # expr = ia.expr_from_udf(eye, [], shape=(N, N))  # in-memory
     iax = expr.eval()
     t = time() - t0
@@ -46,7 +47,7 @@ if True:
 iax = ia.open("reduce-eye.iarr")
 
 t0 = time()
-total = iax.sum(axis=(1,0))
+total = iax.sum(axis=(1, 0))
 t = time() - t0
 print(f"time for reducing array: {t:.3f}s ({size / t:.2g} GB/s)")
 

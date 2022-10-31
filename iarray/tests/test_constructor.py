@@ -166,22 +166,73 @@ def test_arange(start, stop, shape, chunks, blocks, dtype, np_dtype, contiguous,
 @pytest.mark.parametrize(
     "obj, copy, dtype, np_dtype, contiguous, urlpath",
     [
-        (ia.arange(0, 10, step=10/(22*21*51), shape=(22, 21, 51), chunks=(12, 14, 22),
-                   blocks=(5, 3, 6), dtype=np.float64, np_dtype=np.dtype(">f8"), contiguous=True),
-         False,  np.float64, None, True, None),
+        (
+            ia.arange(
+                0,
+                10,
+                step=10 / (22 * 21 * 51),
+                shape=(22, 21, 51),
+                chunks=(12, 14, 22),
+                blocks=(5, 3, 6),
+                dtype=np.float64,
+                np_dtype=np.dtype(">f8"),
+                contiguous=True,
+            ),
+            False,
+            np.float64,
+            None,
+            True,
+            None,
+        ),
         (6, True, ia.int16, None, False, None),
         (False, True, ia.bool, None, True, None),
-        ([(True, 1), (False, 2), (False, 3), (True, 4), (True, 8)], True, ia.uint8, None, True, "test_asarray_contiguous.iarr"),
-        ([np.datetime64("1900", "D"), np.datetime64("1914", "D"), np.datetime64("1929", "D")],
-         True, ia.int64, "<M8[D]", True, None),
-        (ia.arange(-0.1, -0.2, step=4*3*5*2/0.1, shape=(4, 3, 5, 2), chunks=(2, 2, 2, 2), blocks=(2, 2, 2, 2),
-                   dtype=ia.int32), True, ia.float64, None, False, "test_asarray_sparse.iarr"),
-        (np.arange(start=np.timedelta64(1234, "Y"), stop=np.timedelta64(11234, "Y")), True, np.int64, "<m8[Y]", False, None),
+        (
+            [(True, 1), (False, 2), (False, 3), (True, 4), (True, 8)],
+            True,
+            ia.uint8,
+            None,
+            True,
+            "test_asarray_contiguous.iarr",
+        ),
+        (
+            [np.datetime64("1900", "D"), np.datetime64("1914", "D"), np.datetime64("1929", "D")],
+            True,
+            ia.int64,
+            "<M8[D]",
+            True,
+            None,
+        ),
+        (
+            ia.arange(
+                -0.1,
+                -0.2,
+                step=4 * 3 * 5 * 2 / 0.1,
+                shape=(4, 3, 5, 2),
+                chunks=(2, 2, 2, 2),
+                blocks=(2, 2, 2, 2),
+                dtype=ia.int32,
+            ),
+            True,
+            ia.float64,
+            None,
+            False,
+            "test_asarray_sparse.iarr",
+        ),
+        (
+            np.arange(start=np.timedelta64(1234, "Y"), stop=np.timedelta64(11234, "Y")),
+            True,
+            np.int64,
+            "<m8[Y]",
+            False,
+            None,
+        ),
     ],
 )
 def test_asarray(obj, copy, dtype, np_dtype, contiguous, urlpath):
     ia.remove_urlpath(urlpath)
-    a = ia.asarray(obj, copy=copy, dtype=dtype, np_dtype=np_dtype, contiguous=contiguous, urlpath=urlpath)
+    a = ia.asarray(
+        obj, copy=copy, dtype=dtype, np_dtype=np_dtype, contiguous=contiguous, urlpath=urlpath
+    )
     b = ia.iarray2numpy(a)
     out_dtype = dtype if np_dtype is None else np_dtype
     if isinstance(obj, ia.IArray):
@@ -365,7 +416,15 @@ def test_empty(shape, chunks, blocks, dtype, np_dtype, contiguous, urlpath):
     "shape, chunks, blocks, dtype, np_dtype, contiguous, urlpath",
     [
         ([55, 123, 72], [10, 12, 25], [2, 3, 7], np.dtype(np.float64), ">M8[h]", True, None),
-        ([10, 12, 5], [10, 12, 1], [5, 12, 1], np.float32, "i8", False, "test_empty_like_sparse.iarr"),
+        (
+            [10, 12, 5],
+            [10, 12, 1],
+            [5, 12, 1],
+            np.float32,
+            "i8",
+            False,
+            "test_empty_like_sparse.iarr",
+        ),
         (
             [55, 123, 72],
             [10, 12, 25],
@@ -692,8 +751,26 @@ def test_full(fill_value, shape, chunks, blocks, dtype, np_dtype, contiguous, ur
             None,
             marks=pytest.mark.heavy,
         ),
-        (2.00001, [56, 37], [20, 16], [9, 7], np.float32, None, False, "test_full_like_sparse.iarr"),
-        (8, [10, 12, 5], [5, 5, 5], [5, 5, 5], np.int32, None, True, "test_full_like_contiguous.iarr"),
+        (
+            2.00001,
+            [56, 37],
+            [20, 16],
+            [9, 7],
+            np.float32,
+            None,
+            False,
+            "test_full_like_sparse.iarr",
+        ),
+        (
+            8,
+            [10, 12, 5],
+            [5, 5, 5],
+            [5, 5, 5],
+            np.int32,
+            None,
+            True,
+            "test_full_like_contiguous.iarr",
+        ),
         (True, [12, 16], [12, 16], [10, 10], np.uint8, np.dtype(np.bool_).str, False, None),
         (
             np.datetime64("1929", "D"),
@@ -763,7 +840,9 @@ def test_overwrite(contiguous):
     a = ia.arange(int(np.prod(shape)), shape=shape, contiguous=contiguous, urlpath=fname)
     b = ia.arange(int(np.prod(shape)), shape=shape, contiguous=contiguous, urlpath=fname, mode="w")
     with pytest.raises(IOError):
-        b = ia.arange(int(np.prod(shape)), shape=shape, contiguous=contiguous, urlpath=fname, mode="w-")
+        b = ia.arange(
+            int(np.prod(shape)), shape=shape, contiguous=contiguous, urlpath=fname, mode="w-"
+        )
 
     ia.remove_urlpath(fname)
 

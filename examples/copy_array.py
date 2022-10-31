@@ -6,7 +6,15 @@ import numpy as np
 from dataclasses import asdict
 
 # Create an ironArray array
-a = ia.linspace(-10, 10, num=10000**2, shape=[10000, 10000], chunks=[2000, 2000], blocks=[256, 256], dtype=np.float64)
+a = ia.linspace(
+    -10,
+    10,
+    num=10000**2,
+    shape=[10000, 10000],
+    chunks=[2000, 2000],
+    blocks=[256, 256],
+    dtype=np.float64,
+)
 print(f"src chunks: {a.chunks}")
 
 # Do a regular copy changing the parameters

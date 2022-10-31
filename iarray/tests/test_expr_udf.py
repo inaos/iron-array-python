@@ -52,7 +52,10 @@ def test_simple(sexpr, inputs):
         ("b > 5", {"a": ia.arange(10, shape=[10]), "b": ia.arange(10, shape=[10])}),
         (
             "b > 5",
-            {"a": ia.arange(10, shape=[10], dtype=np.float32), "b": ia.arange(10, shape=[10], dtype=np.float32)},
+            {
+                "a": ia.arange(10, shape=[10], dtype=np.float32),
+                "b": ia.arange(10, shape=[10], dtype=np.float32),
+            },
         ),
         (
             "(b > 5) and not (a > 7) or (b > 42)",

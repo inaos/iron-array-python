@@ -38,9 +38,11 @@ _T_co = TypeVar("_T_co", covariant=True)
 
 
 class NestedSequence(Protocol[_T_co]):
-    def __getitem__(self, key: int, /): ...
+    def __getitem__(self, key: int, /):
+        ...
 
-    def __len__(self, /): ...
+    def __len__(self, /):
+        ...
 
 
 SupportsBufferProtocol = Any
@@ -79,12 +81,13 @@ class DTShape:
             raise ValueError("shape must be non-empty")
 
 
-def empty(shape: Union[int, Tuple[int, ...]],
-          *,
-          device: Optional[ia.Device] = None,
-          cfg: ia.Config = None,
-          **kwargs
-          ) -> ia.IArray:
+def empty(
+    shape: Union[int, Tuple[int, ...]],
+    *,
+    device: Optional[ia.Device] = None,
+    cfg: ia.Config = None,
+    **kwargs,
+) -> ia.IArray:
     """Return an uninitialized array.
 
     An empty array has no data and needs to be filled via a write iterator.
@@ -117,8 +120,9 @@ def empty(shape: Union[int, Tuple[int, ...]],
         return ext.uninit(cfg, dtshape)
 
 
-def empty_like(iarr: ia.IArray, /, *, device: Optional[ia.Device] = None,
-               cfg: ia.Config = None, **kwargs) -> ia.IArray:
+def empty_like(
+    iarr: ia.IArray, /, *, device: Optional[ia.Device] = None, cfg: ia.Config = None, **kwargs
+) -> ia.IArray:
     """Returns an uninitialized array with the same shape as an input array :paramref:`iarr`.
 
     Parameters
@@ -141,16 +145,17 @@ def empty_like(iarr: ia.IArray, /, *, device: Optional[ia.Device] = None,
     return empty(iarr.shape, device=device, cfg=cfg, **kwargs)
 
 
-def arange(start: Union[int, float],
-           /,
-           stop: Optional[Union[int, float]] = None,
-           step: Union[int, float] = 1,
-           *,
-           shape: Sequence = None,
-           device: Optional[ia.Device] = None,
-           cfg: ia.Config = None,
-           **kwargs
-           ) -> ia.IArray:
+def arange(
+    start: Union[int, float],
+    /,
+    stop: Optional[Union[int, float]] = None,
+    step: Union[int, float] = 1,
+    *,
+    shape: Sequence = None,
+    device: Optional[ia.Device] = None,
+    cfg: ia.Config = None,
+    **kwargs,
+) -> ia.IArray:
     """Return evenly spaced values within a given interval.
 
     `shape`, `device`, `cfg` and `kwargs` are the same than for :func:`empty`.
@@ -211,9 +216,15 @@ def arange(start: Union[int, float],
         return ext.arange(cfg, slice_, dtshape)
 
 
-def asarray(obj: Union[ia.IArray, bool, int, float, NestedSequence, SupportsBufferProtocol],
-            /, *, device: Optional[ia.Device] = None,
-            copy: Optional[bool] = None, cfg: ia.Config = None, **kwargs) -> ia.IArray:
+def asarray(
+    obj: Union[ia.IArray, bool, int, float, NestedSequence, SupportsBufferProtocol],
+    /,
+    *,
+    device: Optional[ia.Device] = None,
+    copy: Optional[bool] = None,
+    cfg: ia.Config = None,
+    **kwargs,
+) -> ia.IArray:
     """
     Convert the input to an :ref:`IArray`.
 
@@ -252,9 +263,12 @@ def asarray(obj: Union[ia.IArray, bool, int, float, NestedSequence, SupportsBuff
             if copy:
                 return obj.copy(cfg=cfg)
             else:
-                if cfg.urlpath is not None or cfg.contiguous not in [None, obj.cfg.contiguous]\
-                        or cfg.chunks not in [None, obj.chunks] \
-                        or cfg.blocks not in [None, obj.blocks]:
+                if (
+                    cfg.urlpath is not None
+                    or cfg.contiguous not in [None, obj.cfg.contiguous]
+                    or cfg.chunks not in [None, obj.chunks]
+                    or cfg.blocks not in [None, obj.blocks]
+                ):
                     raise ValueError("Cannot change array config when avoiding the copy")
 
                 if cfg.dtype == obj.dtype:
@@ -277,10 +291,18 @@ def asarray(obj: Union[ia.IArray, bool, int, float, NestedSequence, SupportsBuff
             return res
 
 
-def linspace(start: Union[int, float], stop: Union[int, float], /, num: int, *,
-             shape: Sequence = None, device: Optional[
-            ia.Device] = None, endpoint: bool = True, cfg: ia.Config = None, **kwargs
-             ) -> ia.IArray:
+def linspace(
+    start: Union[int, float],
+    stop: Union[int, float],
+    /,
+    num: int,
+    *,
+    shape: Sequence = None,
+    device: Optional[ia.Device] = None,
+    endpoint: bool = True,
+    cfg: ia.Config = None,
+    **kwargs,
+) -> ia.IArray:
     """Return evenly spaced numbers over a specified interval. If :paramref:`endpoint` is False,
     the numbers will be generated over the half-open interval `[start, stop)`.
 
@@ -319,8 +341,13 @@ def linspace(start: Union[int, float], stop: Union[int, float], /, num: int, *,
         return a
 
 
-def zeros(shape: Union[int, Tuple[int, ...]], *, device: Optional[ia.Device] = None, cfg: ia.Config = None,
-          **kwargs) -> ia.IArray:
+def zeros(
+    shape: Union[int, Tuple[int, ...]],
+    *,
+    device: Optional[ia.Device] = None,
+    cfg: ia.Config = None,
+    **kwargs,
+) -> ia.IArray:
     """Return a new array of given shape and type, filled with zeros.
 
     `shape`, `device`, `cfg` and `kwargs` are the same than for :func:`empty`.
@@ -347,8 +374,9 @@ def zeros(shape: Union[int, Tuple[int, ...]], *, device: Optional[ia.Device] = N
         return ext.zeros(cfg, dtshape)
 
 
-def zeros_like(iarr: ia.IArray, /, *, device: Optional[ia.Device] = None,
-               cfg: ia.Config = None, **kwargs) -> ia.IArray:
+def zeros_like(
+    iarr: ia.IArray, /, *, device: Optional[ia.Device] = None, cfg: ia.Config = None, **kwargs
+) -> ia.IArray:
     """Return a new array of same shape as :paramref:`iarr`, filled with zeros.
 
     `shape`, `cfg` and `kwargs` are the same than for :func:`empty`.
@@ -420,8 +448,13 @@ def from_cframe(
         return ext.from_cframe(cfg, cframe, copy)
 
 
-def ones(shape: Union[int, Tuple[int, ...]], *, device: Optional[ia.Device] = None, cfg: ia.Config = None,
-         **kwargs) -> ia.IArray:
+def ones(
+    shape: Union[int, Tuple[int, ...]],
+    *,
+    device: Optional[ia.Device] = None,
+    cfg: ia.Config = None,
+    **kwargs,
+) -> ia.IArray:
     """Return a new array of given shape and type, filled with ones.
 
     `shape`, `cfg` and `kwargs` are the same than for :func:`empty`.
@@ -448,8 +481,9 @@ def ones(shape: Union[int, Tuple[int, ...]], *, device: Optional[ia.Device] = No
         return ext.ones(cfg, dtshape)
 
 
-def ones_like(iarr: ia.IArray, /, *, device: Optional[ia.Device] = None,
-              cfg: ia.Config = None, **kwargs) -> ia.IArray:
+def ones_like(
+    iarr: ia.IArray, /, *, device: Optional[ia.Device] = None, cfg: ia.Config = None, **kwargs
+) -> ia.IArray:
     """Return a new array with the same shape as an input array :paramref:`iarr`, filled with ones.
 
     Parameters
@@ -472,8 +506,14 @@ def ones_like(iarr: ia.IArray, /, *, device: Optional[ia.Device] = None,
     return ones(iarr.shape, device=device, cfg=cfg, **kwargs)
 
 
-def full(shape: Union[int, Tuple[int, ...]], fill_value: Union[bool, int, float], *, device: Optional[ia.Device] = None,
-         cfg: ia.Config = None, **kwargs) -> ia.IArray:
+def full(
+    shape: Union[int, Tuple[int, ...]],
+    fill_value: Union[bool, int, float],
+    *,
+    device: Optional[ia.Device] = None,
+    cfg: ia.Config = None,
+    **kwargs,
+) -> ia.IArray:
     """Return a new array of given shape and type, filled with :paramref:`fill_value`.
 
     `shape`, `device`, `cfg` and `kwargs` are the same than for :func:`empty`.
@@ -507,8 +547,15 @@ def full(shape: Union[int, Tuple[int, ...]], fill_value: Union[bool, int, float]
         return ext.full(cfg, fill_value, dtshape)
 
 
-def full_like(iarr: ia.IArray, /, fill_value: Union[bool, int, float], *, device: Optional[ia.Device] = None,
-              cfg: ia.Config = None, **kwargs) -> ia.IArray:
+def full_like(
+    iarr: ia.IArray,
+    /,
+    fill_value: Union[bool, int, float],
+    *,
+    device: Optional[ia.Device] = None,
+    cfg: ia.Config = None,
+    **kwargs,
+) -> ia.IArray:
     """Return a new array with the same shape as an input array :paramref:`iarr`, filled with :paramref:`fill_value`.
 
     `fill_value`, `device`, `cfg` and `kwargs` are the same than for :func:`empty`.
