@@ -1019,8 +1019,8 @@ def test_expr_type_view(
     dtype,
     view_dtype,
 ):
-    if (view_dtype not in [np.float32, np.float64]
-        and any(func in expr for func in ["cos", "sin", "tan", "acos", "asin", "atan"])
+    if view_dtype not in [np.float32, np.float64] and any(
+        func in expr for func in ["cos", "sin", "tan", "acos", "asin", "atan"]
     ):
         pytest.skip("cannot compute this reduction with this dtype")
 

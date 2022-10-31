@@ -492,11 +492,15 @@ def test_matmul_opt(ashape, bshape, dtype, np_dtype, acontiguous, aurlpath, bcon
     ia.remove_urlpath(burlpath)
 
     acfg = ia.Config(chunks=achunks, blocks=ablocks, contiguous=acontiguous, urlpath=aurlpath)
-    a = ia.linspace(-10, 1, int(np.prod(ashape)), shape=ashape, dtype=dtype, np_dtype=np_dtype, cfg=acfg)
+    a = ia.linspace(
+        -10, 1, int(np.prod(ashape)), shape=ashape, dtype=dtype, np_dtype=np_dtype, cfg=acfg
+    )
     an = ia.iarray2numpy(a)
 
     bcfg = ia.Config(chunks=bchunks, blocks=bblocks, contiguous=bcontiguous, urlpath=burlpath)
-    b = ia.linspace(-1, 10, int(np.prod(bshape)), shape=bshape, dtype=dtype, np_dtype=np_dtype, cfg=bcfg)
+    b = ia.linspace(
+        -1, 10, int(np.prod(bshape)), shape=bshape, dtype=dtype, np_dtype=np_dtype, cfg=bcfg
+    )
     bn = ia.iarray2numpy(b)
 
     c = ia.matmul(a, b)

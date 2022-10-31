@@ -160,6 +160,7 @@ class IArray(ext.Container):
         """
         with ia.config() as cfg:
             return ext.from_chunk_index(cfg, self, shape, chunk_index)
+
     @property
     def device(self) -> Device:
         """
@@ -178,7 +179,9 @@ class IArray(ext.Container):
         """
         return int(np.prod(self.shape))
 
-    def _check_allowed_dtypes(self, value: bool | int | float | IArray, dtype_category: str, op: str) -> IArray:
+    def _check_allowed_dtypes(
+        self, value: bool | int | float | IArray, dtype_category: str, op: str
+    ) -> IArray:
         if self.dtype not in _dtype_categories[dtype_category]:
             raise TypeError(f"Only {dtype_category} dtypes are allowed in {op}")
         if isinstance(value, IArray):
@@ -401,8 +404,9 @@ class IArray(ext.Container):
                 iterblock, _ = ia.partition_advice(self.shape)
         return ext.WriteBlockIter(self, iterblock)
 
-    def __getitem__(self, key: Union[int, slice, ellipsis, Tuple[Union[int, slice, ellipsis], ...], IArray], /) \
-            -> IArray:
+    def __getitem__(
+        self, key: Union[int, slice, ellipsis, Tuple[Union[int, slice, ellipsis], ...], IArray], /
+    ) -> IArray:
         if isinstance(key, ia.LazyExpr):
             return key.update_expr(new_op=(self, f"[]", key))
         # Massage the key a bit so that it is compatible with self.shape
@@ -412,8 +416,12 @@ class IArray(ext.Container):
 
         return super().__getitem__([start, stop, mask])
 
-    def __setitem__(self, key: Union[int, slice, ellipsis, Tuple[Union[int, slice, ellipsis], ...], IArray],
-                    value: Union[int, float, bool, IArray], /) -> None:
+    def __setitem__(
+        self,
+        key: Union[int, slice, ellipsis, Tuple[Union[int, slice, ellipsis], ...], IArray],
+        value: Union[int, float, bool, IArray],
+        /,
+    ) -> None:
         key, mask = process_key(key, self.shape)
         start = [sl.start for sl in key]
         stop = [sl.stop for sl in key]
@@ -588,6 +596,7 @@ class IArray(ext.Container):
         if self.dtype not in _numeric_dtypes:
             raise TypeError("Only numeric dtypes are allowed in __pos__")
         return self.copy()
+
     # def __array_function__(self, func, types, args, kwargs):
     #     if not all(issubclass(t, np.ndarray) for t in types):
     #         # Defer to any non-subclasses that implement __array_function__
@@ -745,7 +754,6 @@ class IArray(ext.Container):
 
     def to_device(self, device: device, /, *, stream: Optional[Union[int, Any]] = None) -> IArray:
         raise NotImplementedError("self.to_device is not supported yet")
-
 
 
 def astype(x: IArray, view_dtype, /, *, copy: bool = False) -> IArray:
@@ -1545,7 +1553,6 @@ def subtract(iarr1: IArray, iarr2: IArray, /):
     return iarr1 - iarr2
 
 
-
 def tan(iarr: IArray, /):
     """
     Compute tangent element-wise.
@@ -2002,7 +2009,7 @@ def std(
     keepdims: bool = False,
     correction: Union[int, float] = 0.0,
     cfg: ia.Config = None,
-    **kwargs
+    **kwargs,
 ):
     """
     Returns the standard deviation, a measure of the spread of a distribution,
@@ -2058,7 +2065,7 @@ def var(
     correction: Union[int, float] = 0.0,
     keepdims: bool = False,
     cfg: ia.Config = None,
-    **kwargs
+    **kwargs,
 ):
     """
     Compute the variance along the specified axis. Returns the variance of the array elements,
@@ -2482,6 +2489,7 @@ def nanmedian(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, 
         cfg.urlpath = None
     with ia.config(cfg=cfg) as cfg:
         return reduce(a, ia.Reduce.NAN_MEDIAN, axis, oneshot=True, cfg=cfg, **kwargs)
+
 
 # Linear Algebra
 

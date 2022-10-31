@@ -14,7 +14,9 @@ import iarray as ia
 def test_serialize(shape, chunks, blocks, dtype, contiguous, urlpath):
     ia.remove_urlpath(urlpath)
     a = ia.arange(
-        shape,
+        0,
+        np.prod(shape),
+        shape=shape,
         dtype=dtype,
         chunks=chunks,
         blocks=blocks,
