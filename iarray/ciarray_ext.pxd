@@ -213,11 +213,6 @@ cdef extern from "libiarray/iarray.h":
                                      int64_t min_chunksize, int64_t max_chunksize,
                                      int64_t min_blocksize, int64_t max_blocksize);
 
-    ina_rc_t iarray_empty(iarray_context_t *ctx,
-                                       iarray_dtshape_t *dtshape,
-                                       iarray_storage_t *storage,
-                                       iarray_container_t **container)
-
     ina_rc_t iarray_uninit(iarray_context_t *ctx,
                            iarray_dtshape_t *dtshape,
                            iarray_storage_t *storage,
