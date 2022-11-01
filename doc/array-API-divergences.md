@@ -30,7 +30,7 @@ The behaviour in special cases may also differ from the array API standard.
 
 ### Methods
 
-* `__and__`, `__bool__`, `__dlpack__`, `__dlpack_device__`, `__float__`, `__floordiv__`, `__index__`, `__int__`, `__invert__`, `__lshift__`, `__mod__`, `__or__`, `__rshift__`, `__xor__` and `to_device` are not supported yet. The rest of the methods from the array API not listed, and that must return an array, return instead a lazy expression which must be evaluated in order to obtain the result. `__bool__`, `__float__` and `__int__` **could be implemented**.
+* `__and__`, `__dlpack__`, `__dlpack_device__`, `__floordiv__`, `__invert__`, `__lshift__`, `__mod__`, `__or__`, `__rshift__`, `__xor__` and `to_device` are not supported yet. The rest of the methods from the array API not listed, and that must return an array, return instead a lazy expression which must be evaluated in order to obtain the result.
 
 The behaviour of some methods regarding `Nan` and `infinity` values is implementation defined and may not follow the standard.
 
@@ -88,3 +88,7 @@ None are supported yet.
 ## Utility functions
 
 `any` and `all` only accept bool dtype arrays. The parameter `keepdims` is not supported yet since ironArray never includes the reduced axes in the result.
+
+## Function and methods signatures
+
+* The functions/methods not listed in the standard may have their optional parameters as positional and keyword arguments.

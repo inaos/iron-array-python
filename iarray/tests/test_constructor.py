@@ -5,23 +5,24 @@ import iarray as ia
 
 # linspace
 @pytest.mark.parametrize(
-    "start, stop, shape, chunks, blocks, dtype, np_dtype, contiguous, urlpath",
+    "start, stop, endpoint, shape, chunks, blocks, dtype, np_dtype, contiguous, urlpath",
     [
         pytest.param(
             0,
             10,
-            [100, 90, 50],
-            [33, 21, 34],
-            [12, 13, 7],
+            False,
+            [100],
+            [33],
+            [12],
             np.float64,
             np.dtype("f8"),
             False,
             "test_linspace_sparse.iarr",
-            marks=pytest.mark.heavy,
         ),
         pytest.param(
             -0.1,
             -0.2,
+            True,
             [40, 39, 52, 12],
             [12, 17, 6, 5],
             [5, 4, 6, 5],
@@ -34,6 +35,7 @@ import iarray as ia
         (
             0,
             10,
+            True,
             [55, 24, 31],
             [55, 24, 15],
             [55, 24, 5],
@@ -42,16 +44,17 @@ import iarray as ia
             True,
             "test_linspace_contiguous.iarr",
         ),
-        (-0.1, -0.2, [4, 3, 5, 2], [4, 3, 5, 2], [2, 3, 2, 2], np.float32, "M8[D]", False, None),
+        (-0.1, -0.2, True, [4, 3, 5, 2], [4, 3, 5, 2], [2, 3, 2, 2], np.float32, "M8[D]", False, None),
     ],
 )
-def test_linspace(start, stop, shape, chunks, blocks, dtype, np_dtype, contiguous, urlpath):
+def test_linspace(start, stop, endpoint, shape, chunks, blocks, dtype, np_dtype, contiguous, urlpath):
     size = int(np.prod(shape))
     ia.remove_urlpath(urlpath)
     a = ia.linspace(
         start,
         stop,
         int(np.prod(shape)),
+        endpoint=endpoint,
         shape=shape,
         dtype=dtype,
         np_dtype=np_dtype,
@@ -61,7 +64,7 @@ def test_linspace(start, stop, shape, chunks, blocks, dtype, np_dtype, contiguou
         urlpath=urlpath,
     )
     b = ia.iarray2numpy(a)
-    c = np.linspace(start, stop, size, dtype=np_dtype).reshape(shape)
+    c = np.linspace(start, stop, size, endpoint=endpoint, dtype=np_dtype).reshape(shape)
     if c.dtype in [np.float32, np.float64]:
         np.testing.assert_almost_equal(b, c)
     else:

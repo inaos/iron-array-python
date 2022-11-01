@@ -731,30 +731,6 @@ def copy(cfg, src):
     return a
 
 
-def empty(cfg, dtshape):
-    ctx = Context(cfg)
-    cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(
-        ctx.to_capsule(), <char*>"iarray_context_t*")
-
-    dtshape = IaDTShape(dtshape).to_dict()
-    cdef ciarray.iarray_dtshape_t dtshape_ = <ciarray.iarray_dtshape_t> dtshape
-
-    # Check that we are not inadvertently overwriting anything
-    ia._check_access_mode(cfg.urlpath, cfg.mode)
-
-    cdef ciarray.iarray_storage_t store_
-    set_storage(cfg, &store_)
-
-    cdef ciarray.iarray_container_t *c
-    iarray_check(ciarray.iarray_empty(ctx_, &dtshape_, &store_, &c))
-
-    c_c = PyCapsule_New(c, <char*>"iarray_container_t*", NULL)
-    a = ia.IArray(ctx, c_c)
-    a.np_dtype = cfg.np_dtype
-
-    return a
-
-
 def uninit(cfg, dtshape):
     ctx = Context(cfg)
     cdef ciarray.iarray_context_t *ctx_ = <ciarray.iarray_context_t*> PyCapsule_GetPointer(ctx.to_capsule(),

@@ -187,8 +187,8 @@ class IArray(ext.Container):
         if isinstance(value, IArray):
             if value.dtype not in _dtype_categories[dtype_category]:
                 raise TypeError(f"Only {dtype_category} dtypes are allowed in {op}")
-        elif not isinstance(value, (int, float, bool)):
-            raise RuntimeError("Expected bool, int, float or IArray instance")
+        elif not isinstance(value, (int, float, bool, ia.LazyExpr)):
+            raise RuntimeError("Expected bool, int, float, LazyExpr or IArray instance")
 
     def copy(self, cfg=None, **kwargs) -> IArray:
         """Return a copy of the array.
@@ -407,6 +407,8 @@ class IArray(ext.Container):
     def __getitem__(
         self, key: Union[int, slice, ellipsis, Tuple[Union[int, slice, ellipsis], ...], IArray], /
     ) -> IArray:
+        if key == () and self.ndim == 0:
+            return self.data[()]
         if isinstance(key, ia.LazyExpr):
             return key.update_expr(new_op=(self, f"[]", key))
         # Massage the key a bit so that it is compatible with self.shape
@@ -684,7 +686,9 @@ class IArray(ext.Container):
         raise NotImplementedError("self.__iand__ is not supported yet")
 
     def __bool__(self) -> bool:
-        raise NotImplementedError("self.__bool__ is not supported yet")
+        if self.ndim != 0:
+            raise AttributeError("Cannot convert a non zero dimensional array into a Python scalar")
+        return bool(self.data)
 
     def __dlpack__(self, *, stream: Optional[Union[int, Any]] = None) -> PyCapsule:
         raise NotImplementedError("DLPack is not supported yet")
@@ -693,7 +697,9 @@ class IArray(ext.Container):
         raise NotImplementedError("DLPack is not supported yet")
 
     def __float__(self) -> float:
-        raise NotImplementedError("self.__float__ is not supported yet")
+        if self.ndim != 0:
+            raise AttributeError("Cannot convert a non zero dimensional array into a Python scalar")
+        return float(self.data)
 
     def __floordiv__(self, value: Union[int, float, IArray], /) -> IArray:
         raise NotImplementedError("self.__floordiv__ is not supported yet")
@@ -705,10 +711,12 @@ class IArray(ext.Container):
         raise NotImplementedError("self.__ifloordiv__ is not supported yet")
 
     def __index__(self) -> int:
-        raise NotImplementedError("self.__index__ is not supported yet")
+        return self.__int__()
 
     def __int__(self) -> int:
-        raise NotImplementedError("self.__int__ is not supported yet")
+        if self.ndim != 0:
+            raise AttributeError("Cannot convert a non zero dimensional array into a Python scalar")
+        return int(self.data)
 
     def __invert__(self) -> IArray:
         raise NotImplementedError("self.__invert__ is not supported yet")
