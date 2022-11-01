@@ -11,8 +11,10 @@ ironArray API tries to follow the [array_api](https://data-apis.org/array-api/la
 * None of the in-place (arithmetic, array and bitwise) operators are supported yet. The arithmetic operators **could be implemented**.
 * From the reflected operators, `__rfloordiv__` and `__rmod__` are not supported yet.
 * None of the bitwise operators are supported yet.
+* `self` must have two dimensions in `__matmul__`.
+* If arrays have more than 2 dimensions, `__matmul__` does not compute the multiplication from the last two dimensions.
 
-All the supported operators return a lazy expression, except for `__matmul__` and `__rmatmul__`, which return an array.
+All the supported operators return a lazy expression, except for `__matmul__`, `__rmatmul__` and `__pos__`, which return an array.
 
 Broadcasting between arrays is not supported since the operands must have the same shape. The only exception to this rule is when one of the operands is a scalar, in which case it is promoted to the shape of the other array operand.
 
@@ -28,7 +30,7 @@ The behaviour in special cases may also differ from the array API standard.
 
 ### Methods
 
-* `__and__`, `__bool__`, `__dlpack__`, `__dlpack_device__`, `__float__`, `__floordiv__`, `__index__`, `__int__`, `__invert__`, `__lshift__`, `__mod__`, `__or__`, `__rshift__`, `__xor__` and `to_device` are not supported yet. The rest of the methods from the array API not listed, and that must return an array, return instead a lazy expression which must be evaluated in order to obtain the result.
+* `__and__`, `__bool__`, `__dlpack__`, `__dlpack_device__`, `__float__`, `__floordiv__`, `__index__`, `__int__`, `__invert__`, `__lshift__`, `__mod__`, `__or__`, `__rshift__`, `__xor__` and `to_device` are not supported yet. The rest of the methods from the array API not listed, and that must return an array, return instead a lazy expression which must be evaluated in order to obtain the result. `__bool__`, `__float__` and `__int__` **could be implemented**.
 
 The behaviour of some methods regarding `Nan` and `infinity` values is implementation defined and may not follow the standard.
 

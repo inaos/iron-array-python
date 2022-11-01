@@ -611,6 +611,12 @@ class IArray(ext.Container):
 
     @property
     def T(self):
+        """
+        Transpose of the array.
+
+        See :meth:`transpose`.
+
+        """
         return self.transpose()
 
     def transpose(self, **kwargs):
@@ -648,7 +654,7 @@ class IArray(ext.Container):
         """
         if self.dtype not in _numeric_dtypes:
             raise TypeError("Only numeric dtypes are allowed in __neg__")
-        return ia.LazyExpr(new_op=(self, "-", None))
+        return ia.LazyExpr(new_op=(self, "negate", None))
 
     def __pow__(self, iarr2: Union[int, float, IArray], /):
         """
@@ -767,7 +773,7 @@ def astype(x: IArray, view_dtype, /, *, copy: bool = False) -> IArray:
     view_dtype: (float64, float32, int64, int32, int16, int8, uint64, uint32, uint16,
         uint8, bool)
         The dtype in which the array will be casted. Only upcasting is supported
-        unless :param:`copy` is `True`.
+        unless :paramref:`copy` is `True`.
     copy: bool
         Whether to copy the array or do a view instead. Default is False.
 
@@ -792,7 +798,7 @@ def abs(iarr: IArray, /):
     Parameters
     ----------
     iarr: :ref:`IArray`
-       Input array.
+       Input array. Should have a numeric data type.
 
     Returns
     -------
@@ -817,6 +823,7 @@ def acos(iarr: IArray, /):
     ----------
     iarr: :ref:`IArray`
         x-coordinate on the unit circle. For real arguments, the domain is :math:`\\left [ -1, 1 \\right]`.
+        Should have a floating-point data type.
 
     Returns
     -------
@@ -847,9 +854,9 @@ def add(iarr1: IArray, iarr2: IArray, /):
     Parameters
     ----------
     iarr1: :ref:`IArray`
-        First input array.
+        First input array. Should have a numeric data type.
     iarr2: :ref:`IArray`
-        Second input array.
+        Second input array. Should have a numeric data type.
 
     Returns
     -------
@@ -869,7 +876,7 @@ def asin(iarr: IArray, /):
     Parameters
     ----------
     iarr: :ref:`IArray`
-       y-coordinate on the unit circle.
+       y-coordinate on the unit circle. Should have a floating-point data type.
 
     Returns
     -------
@@ -902,7 +909,7 @@ def atan(iarr: IArray, /):
     Parameters
     ----------
     iarr: :ref:`IArray`
-        Input array.
+        Input array. Should have a floating-point data type.
 
     Returns
     -------
@@ -933,9 +940,9 @@ def atan2(iarr1: IArray, iarr2: IArray, /):
     Parameters
     ----------
     iarr1: :ref:`IArray`
-        y-coordinates.
+        y-coordinates. Should have a floating-point data type.
     iarr2: :ref:`IArray`
-        x-coordinates.
+        x-coordinates. Should have a floating-point data type.
 
     Returns
     -------
@@ -947,8 +954,7 @@ def atan2(iarr1: IArray, iarr2: IArray, /):
     ----------
     `np.atan2 <https://numpy.org/doc/stable/reference/generated/numpy.atan2.html>`_
     """
-    if iarr1.dtype not in _floating_dtypes or iarr2.dtype not in _floating_dtypes:
-        raise TypeError("Only floating dtypes are allowed in atan2")
+    iarr1._check_allowed_dtypes(iarr2, "floating-point", "atan2")
     return ia.LazyExpr(new_op=(iarr1, "atan2", iarr2))
 
 
@@ -959,7 +965,7 @@ def ceil(iarr: IArray, /):
     Parameters
     ----------
     iarr: :ref:`IArray`
-        Input array.
+        Input array. Should have a numeric data type.
 
     Returns
     -------
@@ -983,7 +989,7 @@ def cos(iarr: IArray, /):
     Parameters
     ----------
     iarr: :ref:`IArray`
-        Angle, in radians.
+        Angle, in radians. Should have a numeric data type.
 
     Returns
     -------
@@ -1009,7 +1015,7 @@ def cosh(iarr: IArray, /):
     Parameters
     ----------
     iarr: :ref:`IArray`
-        Input data.
+        Input data. Should have a numeric data type.
 
     Returns
     -------
@@ -1033,9 +1039,9 @@ def divide(iarr1: IArray, iarr2: IArray, /):
     Parameters
     ----------
     iarr1: :ref:`IArray`
-        Dividend array.
+        Dividend array. Should have a numeric data type.
     iarr2: :ref:`IArray`
-        Divisor array.
+        Divisor array. Should have a numeric data type.
 
     Returns
     -------
@@ -1048,7 +1054,7 @@ def divide(iarr1: IArray, iarr2: IArray, /):
 
 def equal(iarr1: IArray, iarr2: IArray, /):
     """
-    Return (x1 == x2) element-wise.
+    Return (:paramref:`iarr1` == :paramref:`iarr2`) element-wise.
 
     Parameters
     ----------
@@ -1073,7 +1079,7 @@ def exp(iarr: IArray, /):
     Parameters
     ----------
     iarr: :ref:`IArray`
-        Input array.
+        Input array. Should have a floating-point data type.
 
     Returns
     -------
@@ -1092,12 +1098,12 @@ def exp(iarr: IArray, /):
 
 def expm1(iarr: IArray, /):
     """
-    Calculate `exp(x) - 1` for all elements in the input array.
+    Calculate :math:`\\exp(x) - 1` for all elements in the input array.
 
     Parameters
     ----------
     iarr: :ref:`IArray`
-        Input array.
+        Input array. Should have a floating-point data type.
 
     Returns
     -------
@@ -1121,7 +1127,7 @@ def floor(iarr: IArray, /):
     Parameters
     ----------
     iarr: :ref:`IArray`
-        Input array.
+        Input array. Should have a numeric data type.
 
     Returns
     -------
@@ -1145,9 +1151,9 @@ def greater(iarr1: IArray, iarr2: IArray, /):
     Parameters
     ----------
     iarr1: :ref:`IArray`
-        First input array.
+        First input array. Should have a numeric data type.
     iarr2: :ref:`IArray`
-        Second input array.
+        Second input array. Should have a numeric data type.
 
     Returns
     -------
@@ -1165,9 +1171,9 @@ def greater_equal(iarr1: IArray, iarr2: IArray, /):
     Parameters
     ----------
     iarr1: :ref:`IArray`
-        First input array.
+        First input array. Should have a numeric data type.
     iarr2: :ref:`IArray`
-        Second input array.
+        Second input array. Should have a numeric data type.
 
     Returns
     -------
@@ -1185,9 +1191,9 @@ def less(iarr1: IArray, iarr2: IArray, /):
     Parameters
     ----------
     iarr1: :ref:`IArray`
-        First input array.
+        First input array. Should have a numeric data type
     iarr2: :ref:`IArray`
-        Second input array.
+        Second input array. Should have a numeric data type
 
     Returns
     -------
@@ -1205,9 +1211,9 @@ def less_equal(iarr1: IArray, iarr2: IArray, /):
     Parameters
     ----------
     iarr1: :ref:`IArray`
-        First input array.
+        First input array. Should have a numeric data type.
     iarr2: :ref:`IArray`
-        Second input array.
+        Second input array. Should have a numeric data type.
 
     Returns
     -------
@@ -1228,7 +1234,7 @@ def log(iarr: IArray, /):
     Parameters
     ----------
     iarr: :ref:`IArray`
-        Input array.
+        Input array. Should have a floating-point data type.
 
     Returns
     -------
@@ -1255,7 +1261,7 @@ def log1p(iarr: IArray, /):
     Parameters
     ----------
     iarr: :ref:`IArray`
-        Input array.
+        Input array. Should have a floating-point data type.
 
     Returns
     -------
@@ -1279,7 +1285,7 @@ def log10(iarr: IArray, /):
     Parameters
     ----------
     iarr: :ref:`IArray`
-        Input array.
+        Input array. Should have a floating-point data type.
 
     Returns
     -------
@@ -1305,9 +1311,9 @@ def logaddexp(iarr1: IArray, iarr2: IArray, /):
     Parameters
     ----------
     iarr1: :ref:`IArray`
-        First input array.
+        First input array. Should have a floating-point data type.
     iarr2: :ref:`IArray`
-        Second input array.
+        Second input array. Should have a floating-point data type.
 
     Returns
     -------
@@ -1331,10 +1337,10 @@ def multiply(iarr1: IArray, iarr2: IArray, /):
     Parameters
     ----------
     iarr1: :ref:`IArray`
-        First input array.
+        First input array. Should have a numeric data type.
 
     iarr2: :ref:`IArray`
-        Second input array.
+        Second input array. Should have a numeric data type.
 
     Returns
     -------
@@ -1358,7 +1364,7 @@ def negative(iarr: IArray, /):
     Parameters
     ----------
     iarr: :ref:`IArray`
-        Input array.
+        Input array.  Should have a numeric data type.
 
     Returns
     -------
@@ -1380,9 +1386,9 @@ def not_equal(iarr: IArray, iarr2: IArray, /):
     Parameters
     ----------
     iarr1: :ref:`IArray`
-        First input array.
+        First input array. Should have a numeric data type.
     iarr2: :ref:`IArray`
-        Second input array.
+        Second input array. Should have a numeric data type.
 
     Returns
     -------
@@ -1393,37 +1399,37 @@ def not_equal(iarr: IArray, iarr2: IArray, /):
     return iarr.__ne__(iarr2)
 
 
-def positive(iarr: IArray, /):
+def positive(x: IArray, /):
     """
     Numerical positive element-wise.
 
     Parameters
     ----------
-    iarr1: :ref:`IArray`
-        First input array.
+    x: :ref:`IArray`
+        Input array. Should have a numeric data type.
 
     Returns
     -------
-    out: :ref:`iarray.Expr`
-        A lazy expression that must be evaluated via `out.eval()`.
+    out: :ref:`IArray`
+        An array containing the evaluated result for each element in :paramref:`x`.
 
     Notes
     -----
     Equivalent to :meth:`IArray.copy` but only for numerical dtypes.
     """
-    return iarr.__pos__()
+    return x.__pos__()
 
 
-def pow(iarr1: IArray, iarr2: IArray, /):
+def pow(iarr1: IArray, iarr2: Union[int, float, IArray], /):
     """
     First array elements raised to powers from second array, element-wise.
 
     Parameters
     ----------
     iarr1: :ref:`IArray`
-        The bases.
-    iarr2: :ref:`IArray`
-        The exponents.
+        The bases. Should have a numeric data type.
+    iarr2: int, float or :ref:`IArray`
+        The exponents. Should have a numeric data type.
 
     Returns
     -------
@@ -1445,7 +1451,7 @@ def sin(iarr: IArray, /):
     Parameters
     ----------
     iarr: :ref:`IArray`
-        Angle, in radians.
+        Angle, in radians. Should have a floating-point data type.
 
     Returns
     -------
@@ -1471,7 +1477,7 @@ def sinh(iarr: IArray, /):
     Parameters
     ----------
     iarr: :ref:`IArray`
-        Input data.
+        Input data. Should have a floating-point data type.
 
     Returns
     -------
@@ -1495,7 +1501,7 @@ def square(iarr1: IArray, /):
     Parameters
     ----------
     iarr: :ref:`IArray`
-        Input array.
+        Input array. Should have a numeric data type.
 
     Returns
     -------
@@ -1516,7 +1522,7 @@ def sqrt(iarr: IArray, /):
     Parameters
     ----------
     iarr: :ref:`IArray`
-        The values whose square-roots are required.
+        The values whose square-roots are required. Should have a floating-point data type.
 
     Returns
     -------
@@ -1540,9 +1546,9 @@ def subtract(iarr1: IArray, iarr2: IArray, /):
     Parameters
     ----------
     iarr1: :ref:`IArray`
-        First input array.
+        Minuend array. Should have a numeric data type.
     iarr2: :ref:`IArray`
-        Second input array.
+        Subtrahend array. Should have a numeric data type.
 
     Returns
     -------
@@ -1562,7 +1568,7 @@ def tan(iarr: IArray, /):
     Parameters
     ----------
     iarr: :ref:`IArray`
-        Input data.
+        Input data. Should have a floating-point data type.
 
     Returns
     -------
@@ -1588,7 +1594,7 @@ def tanh(iarr: IArray, /):
     Parameters
     ----------
     iarr: :ref:`IArray`
-        Input data.
+        Input data. Should have a floating-point data type.
 
     Returns
     -------
@@ -1754,7 +1760,7 @@ def max(
     Parameters
     ----------
     a : :ref:`IArray`
-        Input data.
+        Input data. Should have a numeric data type.
     axis : None, int, tuple of ints, optional
         Axis or axes along which the reduction is performed. The default (axis = None) is perform
         the reduction over all dimensions of the input array.
@@ -1806,7 +1812,7 @@ def min(
     Parameters
     ----------
     a : :ref:`IArray`
-        Input data.
+        Input data. Should have a numeric data type.
     axis : None, int, tuple of ints, optional
         Axis or axes along which the reduction is performed. The default (axis = None) is perform
         the reduction over all dimensions of the input array.
@@ -1858,7 +1864,7 @@ def sum(
     Parameters
     ----------
     a : :ref:`IArray`
-        Input data.
+        Input data. Should have a numeric data type.
     axis : None, int, tuple of ints, optional
         Axis or axes along which the reduction is performed. The default (axis = None) is perform
         the reduction over all dimensions of the input array.
@@ -1911,7 +1917,7 @@ def prod(
     Parameters
     ----------
     a : :ref:`IArray`
-        Input data.
+        Input data. Should have a numeric data type.
     axis : None, int, tuple of ints, optional
         Axis or axes along which the reduction is performed. The default (axis = None) is perform
         the reduction over all dimensions of the input array.
@@ -1964,7 +1970,7 @@ def mean(
     Parameters
     ----------
     a : :ref:`IArray`
-        Input data.
+        Input data. Should have a floating-point data type.
     axis : None, int, tuple of ints, optional
         Axis or axes along which the reduction is performed. The default (axis = None) is perform
         the reduction over all dimensions of the input array.
@@ -2019,7 +2025,7 @@ def std(
     Parameters
     ----------
     a : :ref:`IArray`
-        Input data.
+        Input data. Should have a floating-point data type.
     axis : None, int, tuple of ints, optional
         Axis or axes along which the reduction is performed. The default (axis = None) is perform
         the reduction over all dimensions of the input array.
@@ -2075,7 +2081,7 @@ def var(
     Parameters
     ----------
     a : :ref:`IArray`
-        Input data.
+        Input data. Should have a floating-point data type.
     axis : None, int, tuple of ints, optional
         Axis or axes along which the reduction is performed. The default (axis = None) is perform
         the reduction over all dimensions of the input array.
@@ -2113,7 +2119,7 @@ def var(
         return reduce(a, ia.Reduce.VAR, axis, oneshot=True, cfg=cfg, **kwargs)
 
 
-def median(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
+def median(a: IArray, /, *, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
     """
     Compute the median along the specified axis. Returns the median of the array elements.
 
@@ -2149,6 +2155,8 @@ def median(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **k
 
 def nanmax(
     a: IArray,
+    /,
+    *,
     axis: Union[int, tuple] = None,
     oneshot: bool = False,
     cfg: ia.Config = None,
@@ -2160,7 +2168,7 @@ def nanmax(
     Parameters
     ----------
     a : :ref:`IArray`
-        Input data.
+        Input data. Should have a floating-point data type.
     axis : None, int, tuple of ints, optional
         Axis or axes along which the reduction is performed. The default (axis = None) is perform
         the reduction over all dimensions of the input array.
@@ -2197,6 +2205,8 @@ def nanmax(
 
 def nanmin(
     a: IArray,
+    /,
+    *,
     axis: Union[int, tuple] = None,
     oneshot: bool = False,
     cfg: ia.Config = None,
@@ -2208,7 +2218,7 @@ def nanmin(
     Parameters
     ----------
     a : :ref:`IArray`
-        Input data.
+        Input data. Should have a floating-point data type.
     axis : None, int, tuple of ints, optional
         Axis or axes along which the reduction is performed. The default (axis = None) is perform
         the reduction over all dimensions of the input array.
@@ -2245,6 +2255,8 @@ def nanmin(
 
 def nansum(
     a: IArray,
+    /,
+    *,
     axis: Union[int, tuple] = None,
     oneshot: bool = False,
     cfg: ia.Config = None,
@@ -2256,7 +2268,7 @@ def nansum(
     Parameters
     ----------
     a : :ref:`IArray`
-        Input data.
+        Input data. Should have a floating-point data type.
     axis : None, int, tuple of ints, optional
         Axis or axes along which the reduction is performed. The default (axis = None) is perform
         the reduction over all dimensions of the input array.
@@ -2293,6 +2305,8 @@ def nansum(
 
 def nanprod(
     a: IArray,
+    /,
+    *,
     axis: Union[int, tuple] = None,
     oneshot: bool = False,
     cfg: ia.Config = None,
@@ -2303,7 +2317,7 @@ def nanprod(
     Parameters
     ----------
     a : :ref:`IArray`
-        Input data.
+        Input data. Should have a floating-point data type.
     axis : None, int, tuple of ints, optional
         Axis or axes along which the reduction is performed. The default (axis = None) is perform
         the reduction over all dimensions of the input array.
@@ -2338,13 +2352,13 @@ def nanprod(
         return reduce(a, ia.Reduce.NAN_PROD, axis, oneshot=oneshot, cfg=cfg, **kwargs)
 
 
-def nanmean(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
+def nanmean(a: IArray, /, *, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
     """Compute the arithmetic mean along the specified axis ignoring NaNs.
 
     Parameters
     ----------
     a : :ref:`IArray`
-        Input data.
+        Input data. Should have a floating-point data type.
     axis : None, int, tuple of ints, optional
         Axis or axes along which the reduction is performed. The default (axis = None) is perform
         the reduction over all dimensions of the input array.
@@ -2376,13 +2390,13 @@ def nanmean(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **
         return reduce(a, ia.Reduce.NAN_MEAN, axis, oneshot=True, cfg=cfg, **kwargs)
 
 
-def nanstd(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
+def nanstd(a: IArray, /, *, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
     """Returns the standard deviation  ignoring NaNs.
 
     Parameters
     ----------
     a : :ref:`IArray`
-        Input data.
+        Input data. Should have a floating-point data type.
     axis : None, int, tuple of ints, optional
         Axis or axes along which the reduction is performed. The default (axis = None) is perform
         the reduction over all dimensions of the input array.
@@ -2414,14 +2428,14 @@ def nanstd(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **k
         return reduce(a, ia.Reduce.NAN_STD, axis, oneshot=True, cfg=cfg, **kwargs)
 
 
-def nanvar(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
+def nanvar(a: IArray, /, *, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
     """Compute the variance along the specified axis ignoring NaNs. The variance is computed for the flattened
     array by default, otherwise over the specified axis.
 
     Parameters
     ----------
     a : :ref:`IArray`
-        Input data.
+        Input data. Should have a floating-point data type.
     axis : None, int, tuple of ints, optional
         Axis or axes along which the reduction is performed. The default (axis = None) is perform
         the reduction over all dimensions of the input array.
@@ -2453,13 +2467,13 @@ def nanvar(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **k
         return reduce(a, ia.Reduce.NAN_VAR, axis, oneshot=True, cfg=cfg, **kwargs)
 
 
-def nanmedian(a: IArray, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
+def nanmedian(a: IArray, /, *, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
     """Compute the median ignoring NaNs along the specified axis. Returns the median of the array elements.
 
     Parameters
     ----------
     a(self) : :ref:`IArray`
-        Input data.
+        Input data. Should have a floating-point data type.
     axis : None, int, tuple of ints, optional
         Axis or axes along which the reduction is performed. The default (axis = None) is perform
         the reduction over all dimensions of the input array.
@@ -2705,15 +2719,15 @@ def matmul_gemm_params(M, K, N, itemsize=8, l2_size=512 * 1024, chunk_size=128 *
     return a_chunks, a_blocks, b_chunks, b_blocks
 
 
-def matmul(a: IArray, b: IArray, cfg=None, **kwargs):
+def matmul(a: IArray, b: IArray, /, *, cfg=None, **kwargs):
     """Multiply two matrices.
 
     Parameters
     ----------
     a : :ref:`IArray`
-        First array.
+        First array. Should have a numeric data type.
     b : :ref:`IArray`
-        Second array.
+        Second array. Should have a numeric data type.
     cfg : :class:`Config`
         The configuration for running the expression.
         If None (default), global defaults are used.
@@ -2728,6 +2742,10 @@ def matmul(a: IArray, b: IArray, cfg=None, **kwargs):
 
     """
     a._check_allowed_dtypes(b, "numeric", "matmul")
+    if 0 in [a.ndim, b.ndim]:
+        raise AttributeError("arrays must have at least one dimension")
+    if a.ndim == 1:
+        raise NotImplementedError("`a` must be two dimensional")
     shape = (a.shape[0], b.shape[1]) if b.ndim == 2 else (a.shape[0],)
 
     if cfg is None:
@@ -2762,7 +2780,7 @@ def matmul(a: IArray, b: IArray, cfg=None, **kwargs):
         return ext.matmul(cfg, a, b)
 
 
-def matrix_transpose(a: IArray, /, cfg=None, **kwargs):
+def matrix_transpose(a: IArray, /, *, cfg=None, **kwargs):
     """Transpose an array.
 
     Parameters
