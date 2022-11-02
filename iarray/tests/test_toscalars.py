@@ -24,7 +24,7 @@ import numpy as np
         (2.345554, np.float64, None),
         (123456789, np.int64, "u4"),
         (33, np.int32, "b1"),
-        (2**34, np.uint32, None),
+        (2**34, np.uint64, None),
     ],
 )
 @pytest.mark.parametrize(
