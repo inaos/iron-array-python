@@ -1627,6 +1627,7 @@ def reduce(
     method: ia.Reduce,
     axis: Union[int, tuple] = None,
     oneshot=True,
+    correction: Union[int, float] = 0.0,
     cfg: ia.Config = None,
     **kwargs,
 ):
@@ -1642,7 +1643,7 @@ def reduce(
 
     dtype = kwargs.get("dtype")
     with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
-        c = ext.reduce_multi(cfg, a, method, axis, oneshot)
+        c = ext.reduce_multi(cfg, a, method, axis, oneshot, correction)
         if dtype is not None and dtype != c.dtype:
             raise RuntimeError("Cannot set the result's data type")
         return c
@@ -2040,7 +2041,7 @@ def std(
         If this is a tuple of ints, a reduction is performed on multiple axes, instead of a single
         axis or all the axes as default.
     correction : int or float
-        Degrees of freedom adjustment. The only supported value is 0 (default).
+        Degrees of freedom adjustment. Default is 0.
     keepdims : bool
         Whether to keep the reduced axes in the result or not. The only supported value for this param is
         `False` (the default).
@@ -2058,8 +2059,6 @@ def std(
         an array of dimension a.ndim - len(axis). Its `dtype` is `np.float32` when the `dtype` of
         :paramref:`a` is `np.float32` and `np.float64` otherwise.
     """
-    if correction != 0.0:
-        raise NotImplementedError("`correction` != 0 is not supported yet")
     if keepdims:
         raise NotImplementedError("Keeping the original array dimensions is not supported yet")
     if a.dtype not in _floating_dtypes:
@@ -2068,7 +2067,7 @@ def std(
         cfg = a.cfg
         cfg.urlpath = None
     with ia.config(cfg=cfg) as cfg:
-        return reduce(a, ia.Reduce.STD, axis, oneshot=True, cfg=cfg, **kwargs)
+        return reduce(a, ia.Reduce.STD, axis, oneshot=True, correction=correction, cfg=cfg, **kwargs)
 
 
 def var(
@@ -2096,7 +2095,7 @@ def var(
         If this is a tuple of ints, a reduction is performed on multiple axes, instead of a single
         axis or all the axes as default.
     correction : int or float
-        Degrees of freedom adjustment. The only supported value is 0 (default).
+        Degrees of freedom adjustment. Default is 0.
     keepdims : bool
         Whether to keep the reduced axes in the result or not. The only supported value for this param is
         `False` (the default).
@@ -2114,8 +2113,6 @@ def var(
         an array of dimension a.ndim - len(axis). Its `dtype` is `np.float32` when the `dtype` of
         :paramref:`a` is `np.float32` and `np.float64` otherwise.
     """
-    if correction != 0.0:
-        raise NotImplementedError("`correction` != 0 is not supported yet")
     if keepdims:
         raise NotImplementedError("Keeping the original array dimensions is not supported yet")
     if a.dtype not in _floating_dtypes:
@@ -2124,7 +2121,7 @@ def var(
         cfg = a.cfg
         cfg.urlpath = None
     with ia.config(cfg=cfg) as cfg:
-        return reduce(a, ia.Reduce.VAR, axis, oneshot=True, cfg=cfg, **kwargs)
+        return reduce(a, ia.Reduce.VAR, axis, oneshot=True, correction=correction, cfg=cfg, **kwargs)
 
 
 def median(a: IArray, /, *, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
@@ -2398,7 +2395,7 @@ def nanmean(a: IArray, /, *, axis: Union[int, tuple] = None, cfg: ia.Config = No
         return reduce(a, ia.Reduce.NAN_MEAN, axis, oneshot=True, cfg=cfg, **kwargs)
 
 
-def nanstd(a: IArray, /, *, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
+def nanstd(a: IArray, /, *, axis: Union[int, tuple] = None, correction: Union[int, float] = 0.0, cfg: ia.Config = None, **kwargs):
     """Returns the standard deviation  ignoring NaNs.
 
     Parameters
@@ -2410,6 +2407,8 @@ def nanstd(a: IArray, /, *, axis: Union[int, tuple] = None, cfg: ia.Config = Non
         the reduction over all dimensions of the input array.
         If this is a tuple of ints, a reduction is performed on multiple axes, instead of a single
         axis or all the axes as default.
+    correction : int or float
+        Degrees of freedom adjustment. Default is 0.
     cfg : :class:`Config` or None
         The configuration for this operation. If None (default), the current configuration will be
         used.
@@ -2433,10 +2432,10 @@ def nanstd(a: IArray, /, *, axis: Union[int, tuple] = None, cfg: ia.Config = Non
         cfg = a.cfg
         cfg.urlpath = None
     with ia.config(cfg=cfg) as cfg:
-        return reduce(a, ia.Reduce.NAN_STD, axis, oneshot=True, cfg=cfg, **kwargs)
+        return reduce(a, ia.Reduce.NAN_STD, axis, oneshot=True, correction=correction, cfg=cfg, **kwargs)
 
 
-def nanvar(a: IArray, /, *, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
+def nanvar(a: IArray, /, *, axis: Union[int, tuple] = None, correction: Union[int, float] = 0.0, cfg: ia.Config = None, **kwargs):
     """Compute the variance along the specified axis ignoring NaNs. The variance is computed for the flattened
     array by default, otherwise over the specified axis.
 
@@ -2449,6 +2448,8 @@ def nanvar(a: IArray, /, *, axis: Union[int, tuple] = None, cfg: ia.Config = Non
         the reduction over all dimensions of the input array.
         If this is a tuple of ints, a reduction is performed on multiple axes, instead of a single
         axis or all the axes as default.
+    correction : int or float
+        Degrees of freedom adjustment. Default is 0.
     cfg : :class:`Config` or None
         The configuration for this operation. If None (default), the current configuration will be
         used.
@@ -2472,7 +2473,7 @@ def nanvar(a: IArray, /, *, axis: Union[int, tuple] = None, cfg: ia.Config = Non
         cfg = a.cfg
         cfg.urlpath = None
     with ia.config(cfg=cfg) as cfg:
-        return reduce(a, ia.Reduce.NAN_VAR, axis, oneshot=True, cfg=cfg, **kwargs)
+        return reduce(a, ia.Reduce.NAN_VAR, axis, oneshot=True, correction=correction, cfg=cfg, **kwargs)
 
 
 def nanmedian(a: IArray, /, *, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):

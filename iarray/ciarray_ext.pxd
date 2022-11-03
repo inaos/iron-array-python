@@ -477,7 +477,8 @@ cdef extern from "libiarray/iarray.h":
                            int8_t axis,
                            iarray_storage_t *store,
                            iarray_container_t **b,
-                           bool oneshot);
+                           bool oneshot,
+                           double correction);
 
     ina_rc_t iarray_reduce_multi(iarray_context_t *ctx,
                                  iarray_container_t *a,
@@ -486,7 +487,8 @@ cdef extern from "libiarray/iarray.h":
                                  int8_t *axis,
                                  iarray_storage_t *store,
                                  iarray_container_t **b,
-                                 bool oneshot);
+                                 bool oneshot,
+                                 double correction);
 
 
     # Iterators
