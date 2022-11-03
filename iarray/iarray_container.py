@@ -687,7 +687,9 @@ class IArray(ext.Container):
 
     def __bool__(self) -> bool:
         if self.ndim != 0:
-            raise AttributeError("Cannot convert a non zero dimensional array into a Python scalar")
+            raise AttributeError(
+                "Cannot convert a non zero dimensional array into a Python scalar"
+            )
         return bool(self.data)
 
     def __dlpack__(self, *, stream: Optional[Union[int, Any]] = None) -> PyCapsule:
@@ -698,7 +700,9 @@ class IArray(ext.Container):
 
     def __float__(self) -> float:
         if self.ndim != 0:
-            raise AttributeError("Cannot convert a non zero dimensional array into a Python scalar")
+            raise AttributeError(
+                "Cannot convert a non zero dimensional array into a Python scalar"
+            )
         return float(self.data)
 
     def __floordiv__(self, value: Union[int, float, IArray], /) -> IArray:
@@ -715,7 +719,9 @@ class IArray(ext.Container):
 
     def __int__(self) -> int:
         if self.ndim != 0:
-            raise AttributeError("Cannot convert a non zero dimensional array into a Python scalar")
+            raise AttributeError(
+                "Cannot convert a non zero dimensional array into a Python scalar"
+            )
         return int(self.data)
 
     def __invert__(self) -> IArray:
@@ -2067,7 +2073,9 @@ def std(
         cfg = a.cfg
         cfg.urlpath = None
     with ia.config(cfg=cfg) as cfg:
-        return reduce(a, ia.Reduce.STD, axis, oneshot=True, correction=correction, cfg=cfg, **kwargs)
+        return reduce(
+            a, ia.Reduce.STD, axis, oneshot=True, correction=correction, cfg=cfg, **kwargs
+        )
 
 
 def var(
@@ -2121,7 +2129,9 @@ def var(
         cfg = a.cfg
         cfg.urlpath = None
     with ia.config(cfg=cfg) as cfg:
-        return reduce(a, ia.Reduce.VAR, axis, oneshot=True, correction=correction, cfg=cfg, **kwargs)
+        return reduce(
+            a, ia.Reduce.VAR, axis, oneshot=True, correction=correction, cfg=cfg, **kwargs
+        )
 
 
 def median(a: IArray, /, *, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
@@ -2395,7 +2405,15 @@ def nanmean(a: IArray, /, *, axis: Union[int, tuple] = None, cfg: ia.Config = No
         return reduce(a, ia.Reduce.NAN_MEAN, axis, oneshot=True, cfg=cfg, **kwargs)
 
 
-def nanstd(a: IArray, /, *, axis: Union[int, tuple] = None, correction: Union[int, float] = 0.0, cfg: ia.Config = None, **kwargs):
+def nanstd(
+    a: IArray,
+    /,
+    *,
+    axis: Union[int, tuple] = None,
+    correction: Union[int, float] = 0.0,
+    cfg: ia.Config = None,
+    **kwargs,
+):
     """Returns the standard deviation  ignoring NaNs.
 
     Parameters
@@ -2432,10 +2450,20 @@ def nanstd(a: IArray, /, *, axis: Union[int, tuple] = None, correction: Union[in
         cfg = a.cfg
         cfg.urlpath = None
     with ia.config(cfg=cfg) as cfg:
-        return reduce(a, ia.Reduce.NAN_STD, axis, oneshot=True, correction=correction, cfg=cfg, **kwargs)
+        return reduce(
+            a, ia.Reduce.NAN_STD, axis, oneshot=True, correction=correction, cfg=cfg, **kwargs
+        )
 
 
-def nanvar(a: IArray, /, *, axis: Union[int, tuple] = None, correction: Union[int, float] = 0.0, cfg: ia.Config = None, **kwargs):
+def nanvar(
+    a: IArray,
+    /,
+    *,
+    axis: Union[int, tuple] = None,
+    correction: Union[int, float] = 0.0,
+    cfg: ia.Config = None,
+    **kwargs,
+):
     """Compute the variance along the specified axis ignoring NaNs. The variance is computed for the flattened
     array by default, otherwise over the specified axis.
 
@@ -2473,7 +2501,9 @@ def nanvar(a: IArray, /, *, axis: Union[int, tuple] = None, correction: Union[in
         cfg = a.cfg
         cfg.urlpath = None
     with ia.config(cfg=cfg) as cfg:
-        return reduce(a, ia.Reduce.NAN_VAR, axis, oneshot=True, correction=correction, cfg=cfg, **kwargs)
+        return reduce(
+            a, ia.Reduce.NAN_VAR, axis, oneshot=True, correction=correction, cfg=cfg, **kwargs
+        )
 
 
 def nanmedian(a: IArray, /, *, axis: Union[int, tuple] = None, cfg: ia.Config = None, **kwargs):
