@@ -47,7 +47,7 @@ if True:
 iax = ia.open("reduce-eye.iarr")
 
 t0 = time()
-total = iax.sum(axis=(1, 0))
+total = ia.sum(iax, axis=(1, 0))
 t = time() - t0
 print(f"time for reducing array: {t:.3f}s ({size / t:.2g} GB/s)")
 

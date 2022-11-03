@@ -42,7 +42,7 @@ def f2(sl, x):
 if __name__ == "__main__":
     # Create content for populating arrays
     dtshape = ia.DTShape(shape=shape, pshape=pshape, dtype=np.float32)
-    carr = ia.linspace(dtshape, 0, 10, clevel=clevel, clib=clib, nthreads=nthreads)
+    carr = ia.linspace(0, 10, int(np.prod(shape)), shape=shape, clevel=clevel, clib=clib, nthreads=nthreads)
     content = ia.iarray2numpy(carr)
 
     t0 = time()

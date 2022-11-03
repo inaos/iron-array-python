@@ -53,7 +53,7 @@ def poly_numba2(x, y):
 
 
 @udf.jit
-def poly_llvm(out: udf.Array(float64, 1), x: udf.Array(float64, 1)) -> int64:
+def poly_llvm(out: udf.Array(float64, 1), x: udf.Array(float64, 1)) -> udf.int64:
     n = out.shape[0]
     for i in range(n):
         out[i] = (math.cos(x[i]) - 1.35) * (x[i] - 4.45) * (math.sin(x[i]) - 8.5)
@@ -125,7 +125,7 @@ def do_block_evaluation():
     # The latest versions of BTune work much better for 1-dim arrays
     ia.set_config_defaults(cfg=cfg, favor=ia.Favor.SPEED)
 
-    xa = ia.linspace(shape, 0.0, 10.0)
+    xa = ia.linspace(0.0, 10.0, int(np.prod(shape)), shape=shape)
     # x = np.linspace(0, 10, N, dtype=np.double).reshape(shape)
     #
     # print("Operand cratio:", round(xa.cratio, 2))

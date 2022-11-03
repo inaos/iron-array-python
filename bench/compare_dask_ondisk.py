@@ -35,7 +35,7 @@ for i, shape in enumerate(shapes):
 
     cfg_in = ia.Config(chunks=chunks, blocks=blocks, urlpath="iarray_infile.iarray")
     ia.remove_urlpath(cfg_in.urlpath)
-    ia.arange(shape, cfg=cfg_in, dtype=dtype)
+    ia.arange(0, np.prod(shape), shape=shape, cfg=cfg_in, dtype=dtype)
 
     t0 = time()
     data = ia.open("iarray_infile.iarray")

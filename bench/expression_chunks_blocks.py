@@ -7,8 +7,8 @@ from time import time
 
 
 def te_expression(method, shape, xcfg, ycfg, zcfg, dtype, expression):
-    x = ia.linspace(shape, 0.1, 0.2, dtype=dtype, cfg=xcfg)
-    y = ia.linspace(shape, 0, 1, dtype=dtype, cfg=ycfg)
+    x = ia.linspace(0.1, 0.2, int(np.prod(shape)), shape=shape, dtype=dtype, cfg=xcfg)
+    y = ia.linspace(0, 1, int(np.prod(shape)), shape=shape, dtype=dtype, cfg=ycfg)
     npx = ia.iarray2numpy(x)
     npy = ia.iarray2numpy(y)
 

@@ -82,7 +82,6 @@ None are supported yet.
 
 ## Statistical functions
 
-* The `correction` param in `std` and `var` is not supported yet. If != 0, an error will be raised. **Could be implemented**
 * The `keepdims` param will always be `False`. If it is set to `True` an error will be raised. **Could be implemented**
 
 ## Utility functions

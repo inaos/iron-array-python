@@ -26,12 +26,12 @@ t1 = time()
 print(f"uniform (np): {t1 - t0:.2f}s")
 
 t0 = time()
-ia.random.binomial(shape, 5, 0.3)
+ia.random.binomial(shape, 5, 0.3, dtype=ia.int32)
 t1 = time()
 print(f"binomial: {t1 - t0:.2f}s")
 
 t0 = time()
-ia.linspace(shape, 0.0, 1.0)
+ia.linspace(0.0, 1.0, int(np.prod(shape)), shape=shape)
 t1 = time()
 print(f"linspace: {t1 - t0:.2f}s")
 
@@ -41,6 +41,6 @@ t1 = time()
 print(f"linspace (np): {t1 - t0:.2f}s")
 
 t0 = time()
-ia.arange(shape, 0.0, np.prod(shape) / 1)
+ia.arange(0.0, np.prod(shape) / 1, shape=shape)
 t1 = time()
 print(f"arange: {t1 - t0:.2f}s")

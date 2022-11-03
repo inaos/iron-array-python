@@ -92,7 +92,12 @@ for num_threads in range(1, max_num_threads + 1):
 
     # Superchunk with compression and UDF
     with ia.config(cfg=bcfg, nthreads=num_threads):
-        a1 = ia.linspace(shape, 0, 10)
+        a1 = ia.linspace(
+            0,
+            10,
+            int(np.prod(shape)),
+            shape=shape,
+        )
         expr = ia.expr_from_udf(poly_udf, [a1])
         time_expr(expr, res_i)
 
