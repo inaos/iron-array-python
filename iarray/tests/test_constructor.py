@@ -44,10 +44,23 @@ import iarray as ia
             True,
             "test_linspace_contiguous.iarr",
         ),
-        (-0.1, -0.2, True, [4, 3, 5, 2], [4, 3, 5, 2], [2, 3, 2, 2], np.float32, "M8[D]", False, None),
+        (
+            -0.1,
+            -0.2,
+            True,
+            [4, 3, 5, 2],
+            [4, 3, 5, 2],
+            [2, 3, 2, 2],
+            np.float32,
+            "M8[D]",
+            False,
+            None,
+        ),
     ],
 )
-def test_linspace(start, stop, endpoint, shape, chunks, blocks, dtype, np_dtype, contiguous, urlpath):
+def test_linspace(
+    start, stop, endpoint, shape, chunks, blocks, dtype, np_dtype, contiguous, urlpath
+):
     size = int(np.prod(shape))
     ia.remove_urlpath(urlpath)
     a = ia.linspace(
