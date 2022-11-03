@@ -44,7 +44,8 @@ def test_append(shape, chunks, blocks, data_shape, axis, dtype, np_dtype, aconti
     if out_dtype not in [np.float64, np.float32]:
         for i in range(len(shape)):
             max *= shape[i]
-    a = ia.arange(0, stop=max, shape=shape, cfg=cfg, mode="w", dtype=dtype, np_dtype=np_dtype)
+
+    a = ia.linspace(0, max, num=int(np.prod(shape)), shape=shape, cfg=cfg, mode="w", dtype=dtype, np_dtype=np_dtype)
 
     npa = ia.iarray2numpy(a)
     z = zarr.array(npa, dtype=out_dtype)

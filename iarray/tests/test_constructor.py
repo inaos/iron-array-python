@@ -147,30 +147,58 @@ def test_linspace(
             True,
             "test_arange_contiguous.iarr",
         ),
+        (
+                0,
+                1,
+                None,
+                None,
+                None,
+                np.int64,
+                None,
+                False,
+                "test_arange_sparse.iarr",
+        ),
     ],
 )
 def test_arange(start, stop, shape, chunks, blocks, dtype, np_dtype, contiguous, urlpath):
-    size = int(np.prod(shape))
-    if type(start) in [np.datetime64, np.timedelta64]:
-        step = 1
-    else:
-        step = (stop - start) / size
     ia.remove_urlpath(urlpath)
-    a = ia.arange(
-        start,
-        stop,
-        step,
-        shape=shape,
-        dtype=dtype,
-        np_dtype=np_dtype,
-        chunks=chunks,
-        blocks=blocks,
-        contiguous=contiguous,
-        urlpath=urlpath,
-    )
-    b = ia.iarray2numpy(a)
+
     out_dtype = dtype if np_dtype is None else np_dtype
-    c = np.arange(start, stop, step, dtype=out_dtype).reshape(shape)
+
+    if shape is not None:
+        size = int(np.prod(shape))
+        if type(start) in [np.datetime64, np.timedelta64]:
+            step = 1
+        else:
+            step = (stop - start) / size
+        a = ia.arange(
+            start,
+            stop,
+            step,
+            shape=shape,
+            dtype=dtype,
+            np_dtype=np_dtype,
+            chunks=chunks,
+            blocks=blocks,
+            contiguous=contiguous,
+            urlpath=urlpath,
+        )
+        c = np.arange(start, stop, step, dtype=out_dtype).reshape(shape)
+
+    else:
+        a = ia.arange(
+            start,
+            stop,
+            dtype=dtype,
+            np_dtype=np_dtype,
+            chunks=chunks,
+            blocks=blocks,
+            contiguous=contiguous,
+            urlpath=urlpath,
+        )
+        c = np.arange(start, stop, dtype=out_dtype)
+
+    b = ia.iarray2numpy(a)
     if "f" in np.dtype(out_dtype).str:
         np.testing.assert_almost_equal(b, c)
     else:

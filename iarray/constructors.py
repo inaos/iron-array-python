@@ -176,7 +176,7 @@ def arange(
     if cfg is None:
         cfg = ia.get_config_defaults()
 
-    with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
+    with ia.config(cfg=cfg, **kwargs) as cfg:
         if (
             cfg.np_dtype is not None
             and type(start) in [np.datetime64, np.timedelta64]
@@ -210,7 +210,11 @@ def arange(
             return empty(shape, cfg=cfg, **kwargs)
         if shape is None:
             shape = [np.ceil((stop - start) / step)]
+        elif np.prod(shape) > (stop - start) / step:
+            raise ValueError("shape must agree with `start`, `stop` and `step`")
 
+    with ia.config(shape=shape, cfg=cfg, **kwargs) as cfg:
+        # Another config context for chunks, blocks defaults
         slice_ = slice(start, stop, step)
         dtshape = ia.DTShape(shape, cfg.dtype)
         return ext.arange(cfg, slice_, dtshape)
