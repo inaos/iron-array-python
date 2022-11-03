@@ -51,4 +51,4 @@ total = ia.sum(iax, axis=(1, 0))
 t = time() - t0
 print(f"time for reducing array: {t:.3f}s ({size / t:.2g} GB/s)")
 
-print("Total sum:", total)
+print("Total sum:", total[()])

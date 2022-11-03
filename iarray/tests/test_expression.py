@@ -951,7 +951,7 @@ def test_get_operands(expression, operands):
 @pytest.mark.parametrize(
     "sexpr, sexpr_scalar, inputs",
     [
-        ("x + 1", "x + y", {"x": ia.arange(9, shape=(10,)), "y": 1}),
+        ("x + 1", "x + y", {"x": ia.arange(9, step=9/10, shape=(10,)), "y": 1}),
         ("x + y + 1.35", "x + y + z", {"x": ia.arange(10, shape=(10,)), "y": 1, "z": 1.35}),
     ],
 )

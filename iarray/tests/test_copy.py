@@ -43,9 +43,10 @@ def test_copy(shape, chunks, blocks, dtype, np_dtype, contiguous, urlpath, urlpa
     if dtype not in [np.float64, np.float32]:
         for i in range(len(shape)):
             max *= shape[i]
-    a_ = ia.arange(
+    a_ = ia.linspace(
         0,
         max,
+        int(np.prod(shape)),
         shape=shape,
         dtype=dtype,
         np_dtype=np_dtype,

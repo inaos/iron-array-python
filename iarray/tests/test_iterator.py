@@ -129,7 +129,7 @@ def test_iterator(
     if out_dtype not in [np.float64, np.float32]:
         for i in range(len(shape)):
             max *= shape[i]
-    a = ia.arange(0, max, shape=shape, dtype=dtype, np_dtype=np_dtype, cfg=acfg)
+    a = ia.linspace(0, max, int(np.prod(shape)), shape=shape, dtype=dtype, np_dtype=np_dtype, cfg=acfg)
     an = ia.iarray2numpy(a)
 
     b = ia.empty(shape, dtype=dtype, np_dtype=np_dtype, cfg=bcfg)

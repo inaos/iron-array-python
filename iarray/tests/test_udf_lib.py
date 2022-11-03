@@ -17,16 +17,16 @@ def fmult(a: udf.float64, b: udf.float64) -> float:
 @pytest.mark.parametrize(
     "sexpr, sexpr_udf, inputs",
     [
-        ("x + x", "lib.fsum(x, x)", {"x": ia.arange(5, shape=(10,))}),
+        ("x + x", "lib.fsum(x, x)", {"x": ia.arange(5, step=0.5, shape=(10,))}),
         ("x * x", "lib2.fmult(x, x)", {"x": ia.arange(10, shape=(10,))}),
-        ("x + y", "lib.fsum(x, y)", {"x": ia.arange(5, shape=(10,)), "y": 1}),  # scalar as param!
+        ("x + y", "lib.fsum(x, y)", {"x": ia.arange(5, step=0.5, shape=(10,)), "y": 1}),  # scalar as param!
         ("2 * (x + x)", "2 * lib.fsum(x, x)", {"x": ia.arange(10, shape=(10,))}),
-        ("2 + x * x", "2 + lib2.fmult(x, x)", {"x": ia.arange(5, shape=(10,))}),
+        ("2 + x * x", "2 + lib2.fmult(x, x)", {"x": ia.arange(5, step=0.5, shape=(10,))}),
         ("2 + sin(x) + x * x", "2 + sin(x) + lib2.fmult(x, x)", {"x": ia.arange(10, shape=(10,))}),
         (
             "2 * (sin(x) + cos(x)) + x * x",
             "2 * (sin(x) + cos(x)) + lib2.fmult(x, x)",
-            {"x": ia.arange(5, shape=(10,))},
+            {"x": ia.arange(5, step=0.5, shape=(10,))},
         ),
         (
             "2 + x * x * (x + x)",
@@ -36,7 +36,7 @@ def fmult(a: udf.float64, b: udf.float64) -> float:
         (
             "2 + x * x * ((x * x) + x)",
             "2 + lib2.fmult(x, x) * lib.fsum(lib2.fmult(x, x), x)",
-            {"x": ia.arange(5, shape=[10])},
+            {"x": ia.arange(5, step=0.5, shape=[10])},
         ),
         (
             "x * y * ((x * y) + y)",
@@ -69,11 +69,11 @@ def test_simple(sexpr, sexpr_udf, inputs):
     "sexpr_udf, inputs",
     [
         ("lib.fsum(x1, x)", {"x": ia.arange(10, shape=(10,))}),
-        ("lib.fsum(x1, x1)", {"x": ia.arange(5, shape=(10,))}),
+        ("lib.fsum(x1, x1)", {"x": ia.arange(5, step=0.5, shape=(10,))}),
         ("2 + lib.fmult2(x, x)", {"x": ia.arange(10, shape=(10,))}),
-        ("2 + lib.fmult(x, x)", {"x": ia.arange(5, shape=(10,))}),
+        ("2 + lib.fmult(x, x)", {"x": ia.arange(5, step=0.5, shape=(10,))}),
         ("2 + sin(x) + lib.fmult(x, x)", {"x": ia.arange(10, shape=(10,))}),
-        ("2 + lib.fmult(x, x) * lib2.fsum(x, x)", {"x": ia.arange(5, shape=(10,))}),
+        ("2 + lib.fmult(x, x) * lib2.fsum(x, x)", {"x": ia.arange(5, step=0.5, shape=(10,))}),
     ],
 )
 def test_malformed(sexpr_udf, inputs):
@@ -157,18 +157,18 @@ def udf_mult_sum_mult_scalar(
     "sexpr, func, inputs",
     [
         ("x + x", udf_sum, {"x": ia.arange(10, shape=(10,))}),
-        ("x * x", udf_mult, {"x": ia.arange(5, shape=(10,))}),
+        ("x * x", udf_mult, {"x": ia.arange(5, step=0.5, shape=(10,))}),
         ("x + y", udf_scalar, {"x": ia.arange(10, shape=(10,)), "y": 1}),  # scalar as param!
-        ("2 * (x + x)", udf_const_sum, {"x": ia.arange(5, shape=(10,))}),
+        ("2 * (x + x)", udf_const_sum, {"x": ia.arange(5, step=0.5, shape=(10,))}),
         ("2 + x * x", udf_const_mult, {"x": ia.arange(10, shape=(10,))}),
-        ("2 + sin(x) + x * x", udf_sin, {"x": ia.arange(5, shape=(10,))}),
+        ("2 + sin(x) + x * x", udf_sin, {"x": ia.arange(5, step=0.5, shape=(10,))}),
         ("2 * (sin(x) + cos(x)) + x * x", udf_sin_cos, {"x": ia.arange(10, shape=(10,))}),
-        ("2 + x * x * (x + x)", udf_mult_sum, {"x": ia.arange(5, shape=(10,))}),
+        ("2 + x * x * (x + x)", udf_mult_sum, {"x": ia.arange(5, step=0.5, shape=(10,))}),
         ("2 + x * x * ((x * x) + x)", udf_mult_sum_mult, {"x": ia.arange(10, shape=(10,))}),
         (
             "x * y * ((x * y) + y)",
             udf_mult_sum_mult_scalar,
-            {"x": ia.arange(5, shape=(10,)), "y": 2},
+            {"x": ia.arange(5, step=0.5, shape=(10,)), "y": 2},
         ),
     ],
 )
@@ -231,7 +231,7 @@ def fcond_else(a: udf.float64, b: udf.float64) -> float:
 
 @pytest.mark.parametrize("name", ["fcond_none", "fcond_both", "fcond_if", "fcond_else"])
 def test_conditional(name):
-    a = ia.arange(5, shape=[10])
+    a = ia.arange(5, step=0.5, shape=[10])
     b = ia.ones([10])
     expr = ia.expr_from_string(f"lib.{name}(a, b)", {"a": a, "b": b})
     out = expr.eval()
