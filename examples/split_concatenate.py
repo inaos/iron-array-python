@@ -5,7 +5,15 @@ import iarray as ia
 import numpy as np
 
 # Create an ironArray array
-a = ia.arange([10, 10], chunks=[4, 5], blocks=[2, 2], contiguous=True, dtype=np.int64)
+a = ia.arange(
+    0,
+    int(np.prod((10, 10))),
+    shape=(10, 10),
+    chunks=[4, 5],
+    blocks=[2, 2],
+    contiguous=True,
+    dtype=np.int64,
+)
 
 split = a.split()
 print(a.split())

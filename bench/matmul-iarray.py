@@ -1,4 +1,5 @@
 import iarray as ia
+import numpy as np
 import os
 from time import time
 
@@ -25,20 +26,20 @@ ia.set_config_defaults(chunks=amchunks, blocks=amblocks, btune=False)
 print("(Re-)Generating operand A")
 if persistent:
     if not os.path.exists(aurlpath):
-        a = ia.linspace(shape, -1, 1, urlpath=aurlpath)
+        a = ia.linspace(-1, 1, int(np.prod(shape)), shape=shape, urlpath=aurlpath)
     else:
         a = ia.open("a.iarr")
 else:
-    a = ia.linspace(shape, -1, 1, urlpath=aurlpath)
+    a = ia.linspace(-1, 1, int(np.prod(shape)), shape=shape, urlpath=aurlpath)
 
 print("(Re-)Generating operand B")
 if persistent:
     if not os.path.exists(burlpath):
-        b = ia.linspace(shape, -1, 1, urlpath=burlpath)
+        b = ia.linspace(-1, 1, int(np.prod(shape)), shape=shape, urlpath=burlpath)
     else:
         b = ia.open("b.iarr")
 else:
-    b = ia.linspace(shape, -1, 1, urlpath=burlpath)
+    b = ia.linspace(-1, 1, int(np.prod(shape)), shape=shape, urlpath=burlpath)
 
 if persistent:
     if os.path.exists(curlpath):

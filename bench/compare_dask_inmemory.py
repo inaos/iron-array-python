@@ -3,7 +3,6 @@ import numpy as np
 
 import dask
 import dask.array as da
-from multiprocessing.pool import ThreadPool
 import zarr
 from numcodecs import Blosc
 
@@ -34,7 +33,7 @@ for i, shape in enumerate(shapes):
     shape = (shape,)
     print("Using vector of length:", shape[0])
     cfg = ia.Config(chunks=chunks, blocks=blocks)
-    data = ia.linspace(shape, 0, 1, cfg=cfg, dtype=dtype)
+    data = ia.linspace(0, 1, int(np.prod(shape)), shape=shape, cfg=cfg, dtype=dtype)
 
     t0 = time()
     expr = ia.expr_from_string(sexpr, {"x": data})

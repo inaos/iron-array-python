@@ -55,7 +55,7 @@ def poly_numba2(x, y):
 
 
 @udf.jit
-def poly_llvm(out: udf.Array(float64, 1), x: udf.Array(float64, 1)) -> int64:
+def poly_llvm(out: udf.Array(float64, 1), x: udf.Array(float64, 1)) -> udf.int64:
     n = out.shape[0]
     for i in range(n):
         out[i] = (x[i] - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
@@ -140,7 +140,7 @@ def do_block_evaluation():
     ia.set_config_defaults(cfg=cfg, favor=ia.Favor.SPEED)
     print(ia.get_config_defaults())
 
-    xa = ia.linspace(shape, 0.0, 10.0)
+    xa = ia.linspace(0.0, 10.0, int(np.prod(shape)), shape=shape)
     # x = np.linspace(0, 10, N).reshape(shape)
     #
     # print("Operand cratio:", round(xa.cratio, 2))

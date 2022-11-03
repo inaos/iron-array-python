@@ -37,7 +37,7 @@ out_prec = 30
 
 
 @udf.jit
-def f1(out: Array(float64, 1), x: Array(float64, 1)) -> int64:
+def f1(out: Array(float64, 1), x: Array(float64, 1)) -> udf.int64:
     n = out.shape[0]
     for i in range(n):
         out[i] = (x[i] - 1.35) * (x[i] - 4.45) * (x[i] - 8.5)
@@ -49,7 +49,7 @@ def f1(out: Array(float64, 1), x: Array(float64, 1)) -> int64:
 @udf.jit
 def f3(
     out: Array(float64, 1), x: Array(float64, 1), y: Array(float64, 1), z: Array(float64, 1)
-) -> int64:
+) -> udf.int64:
     n = out.shape[0]
     for i in range(n):
         out[i] = (x[i] - 1.35) * (y[i] - 4.45) * (z[i] - 8.5)
@@ -64,12 +64,17 @@ if PROFILE:
     if not os.path.isfile(a1_fname):
         print(f"Creating {a1_fname}")
         a1_cfg = ia.Config(urlpath=a1_fname)
-        a1 = ia.linspace(shape, 0, 10, cfg=a1_cfg)
+        a1 = ia.linspace(0, 10, int(np.prod(shape)), shape=shape, cfg=a1_cfg)
     else:
         print(f"Reading {a1_fname}")
         a1 = ia.load(a1_fname)
 else:
-    a1 = ia.linspace(shape, 0, 10)
+    a1 = ia.linspace(
+        0,
+        10,
+        int(np.prod(shape)),
+        shape=shape,
+    )
 
 
 a2 = np.linspace(0, 10, shape[0], dtype=dtype).reshape(shape)

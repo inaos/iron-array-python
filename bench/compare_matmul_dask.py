@@ -56,7 +56,7 @@ compressor = Blosc(
 ia.set_config_defaults(codec=CODEC, clevel=CLEVEL, nthreads=NTHREADS, dtype=DTYPE, btune=False)
 
 acfg = ia.Config(chunks=achunks, blocks=ablocks)
-lia = ia.linspace(ashape, 0, 1, cfg=acfg)
+lia = ia.linspace(0, 1, int(np.prod(ashape)), shape=ashape, cfg=acfg)
 nia = ia.random.normal(
     ashape,
     0,
@@ -66,7 +66,7 @@ nia = ia.random.normal(
 aia = (lia + nia).eval(cfg=acfg)
 
 bcfg = ia.Config(chunks=bchunks, blocks=bblocks)
-lia = ia.linspace(bshape, 0, 1, cfg=bcfg)
+lia = ia.linspace(0, 1, int(np.prod(bshape)), shape=bshape, cfg=bcfg)
 nia = ia.random.normal(bshape, 0, 0.0000001, cfg=bcfg)
 bia = (lia + nia).eval(cfg=bcfg)
 
