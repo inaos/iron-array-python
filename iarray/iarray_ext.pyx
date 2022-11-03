@@ -1875,7 +1875,7 @@ reduce_to_c = {
     ia.Reduce.NAN_MEDIAN: ciarray.IARRAY_REDUCE_NAN_MEDIAN,
 }
 
-def reduce(cfg, a, method, axis, oneshot):
+def reduce(cfg, a, method, axis, oneshot, correction):
     ctx = Context(cfg)
 
     cdef ciarray.iarray_reduce_func_t func = reduce_to_c[method]
@@ -1891,13 +1891,13 @@ def reduce(cfg, a, method, axis, oneshot):
     # Check that we are not inadvertently overwriting anything
     ia._check_access_mode(cfg.urlpath, cfg.mode)
 
-    iarray_check(ciarray.iarray_reduce(ctx_, a_, func, axis, &store_, &c, oneshot))
+    iarray_check(ciarray.iarray_reduce(ctx_, a_, func, axis, &store_, &c, oneshot, correction))
 
     c_c = PyCapsule_New(c, <char*>"iarray_container_t*", NULL)
     return ia.IArray(ctx, c_c)
 
 
-def reduce_multi(cfg, a, method, axis, oneshot):
+def reduce_multi(cfg, a, method, axis, oneshot, correction):
     ctx = Context(cfg)
 
     cdef ciarray.iarray_reduce_func_t func = reduce_to_c[method]
@@ -1918,7 +1918,7 @@ def reduce_multi(cfg, a, method, axis, oneshot):
     ia._check_access_mode(cfg.urlpath, cfg.mode)
 
     cdef ciarray.int8_t naxis = len(axis)
-    iarray_check(ciarray.iarray_reduce_multi(ctx_, a_, func, naxis, axis_, &store_, &c, oneshot))
+    iarray_check(ciarray.iarray_reduce_multi(ctx_, a_, func, naxis, axis_, &store_, &c, oneshot, correction))
 
     c_c = PyCapsule_New(c, <char*>"iarray_container_t*", NULL)
     cfg2 = get_cfg_from_container(cfg, ctx_, c, cfg.urlpath)

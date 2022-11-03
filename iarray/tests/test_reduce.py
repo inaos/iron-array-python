@@ -29,12 +29,14 @@ params_data = [
 
 
 @pytest.mark.parametrize(params_names, params_data)
-@pytest.mark.parametrize("rfunc", ["mean", "sum", "prod", "max", "min", "median", "var", "std"])
+@pytest.mark.parametrize("rfunc, correction", [("mean", None), ("sum", None), ("prod", None), ("max", None), ("min", None),
+                                               ("median", None), ("var", 0), ("var", 1), ("var", 10), ("std", 0),
+                                               ("std", 1), ("std", 23)])
 @pytest.mark.parametrize("contiguous", [True])
 @pytest.mark.parametrize("urlpath", [None])
 @pytest.mark.parametrize("view", [True, False])
 @pytest.mark.parametrize("nan", [True, False])
-def test_reduce(shape, chunks, blocks, axis, dtype, rfunc, contiguous, urlpath, view, nan):
+def test_reduce(shape, chunks, blocks, axis, dtype, rfunc, correction, contiguous, urlpath, view, nan):
 
     ia.remove_urlpath(urlpath)
     ia.remove_urlpath("test_reduce_res.iarr")
@@ -71,11 +73,18 @@ def test_reduce(shape, chunks, blocks, axis, dtype, rfunc, contiguous, urlpath, 
 
     a2 = a1.data
 
-    b2 = getattr(np, rfunc)(a2, axis=axis)
-    if urlpath:
-        b1 = getattr(ia, rfunc)(a1, axis=axis, urlpath="test_reduce_res.iarr")
+    if rfunc in ["var", "std"]:
+        b2 = getattr(np, rfunc)(a2, axis=axis, ddof=correction)
+        if urlpath:
+            b1 = getattr(ia, rfunc)(a1, axis=axis, correction=correction, urlpath="test_reduce_res.iarr")
+        else:
+            b1 = getattr(ia, rfunc)(a1, axis=axis, correction=correction)
     else:
-        b1 = getattr(ia, rfunc)(a1, axis=axis)
+        b2 = getattr(np, rfunc)(a2, axis=axis)
+        if urlpath:
+            b1 = getattr(ia, rfunc)(a1, axis=axis, urlpath="test_reduce_res.iarr")
+        else:
+            b1 = getattr(ia, rfunc)(a1, axis=axis)
 
     tol = 1e-5 if dtype is np.float32 else 1e-14
     np.testing.assert_allclose(ia.iarray2numpy(b1), b2, rtol=tol, atol=tol)
@@ -113,13 +122,14 @@ params_data = [
 
 @pytest.mark.parametrize(params_names, params_data)
 @pytest.mark.parametrize(
-    "rfunc", ["nanmean", "nansum", "nanprod", "nanmax", "nanmin", "nanmedian", "nanvar", "nanstd"]
+    "rfunc, correction", [("nanmean", None), ("nansum", None), ("nanprod", None), ("nanmax", None), ("nanmin", None),
+                          ("nanmedian", None), ("nanvar", 0.0), ("nanvar", 1), ("nanstd", 0.0), ("nanstd", 1.0)]
 )
 @pytest.mark.parametrize("contiguous", [False])
 @pytest.mark.parametrize("urlpath", [None])
 @pytest.mark.parametrize("view", [True, False])
 @pytest.mark.parametrize("nan", [True, False])
-def test_reduce_nan(shape, chunks, blocks, axis, dtype, rfunc, contiguous, urlpath, view, nan):
+def test_reduce_nan(shape, chunks, blocks, axis, dtype, rfunc, correction, contiguous, urlpath, view, nan):
 
     ia.remove_urlpath(urlpath)
     ia.remove_urlpath("test_reduce_nan_res.iarr")
@@ -146,11 +156,18 @@ def test_reduce_nan(shape, chunks, blocks, axis, dtype, rfunc, contiguous, urlpa
 
     a2 = a1.data
 
-    b2 = getattr(np, rfunc)(a2, axis=axis)
-    if urlpath:
-        b1 = getattr(ia, rfunc)(a1, axis=axis, urlpath="test_reduce_nan_res.iarr")
+    if rfunc in ["nanvar", "nanstd"]:
+        b2 = getattr(np, rfunc)(a2, axis=axis, ddof=correction)
+        if urlpath:
+            b1 = getattr(ia, rfunc)(a1, axis=axis, correction=correction, urlpath="test_reduce_nan_res.iarr")
+        else:
+            b1 = getattr(ia, rfunc)(a1, axis=axis, correction=correction)
     else:
-        b1 = getattr(ia, rfunc)(a1, axis=axis)
+        b2 = getattr(np, rfunc)(a2, axis=axis)
+        if urlpath:
+            b1 = getattr(ia, rfunc)(a1, axis=axis, urlpath="test_reduce_nan_res.iarr")
+        else:
+            b1 = getattr(ia, rfunc)(a1, axis=axis)
 
     tol = 1e-5 if dtype is np.float32 else 1e-14
     np.testing.assert_allclose(ia.iarray2numpy(b1), b2, rtol=tol, atol=tol)
