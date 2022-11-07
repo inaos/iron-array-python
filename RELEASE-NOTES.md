@@ -4,26 +4,25 @@ Release notes for ironArray 2022.2
 Changes from 2022.2 to 2022.3
 =============================
 
-Adopted array [API standard](https://data-apis.org/array-api/latest/API_specification/index.html) (when possible), this includes the following changes:
-* `astype` has been changed from method to function.
-* `transpose` function was renamed to `matrix_transpose`.
-* Mathematical functions cannot be used as methods.
-* The trigonometric functions beginning with `arc*` can no longer be used, instead use `a*`.
-* `absolute` has been renamed to `abs`.
-* `negate` has been renamed to `negative`.
-* `power` has been renamed to `pow`.
-* `empty_like`, `ones_like`, `full_like`, `zeros_like`, and `asarray` constructors have been added.
-* `arange` shape's param is left as a keyword-only argument and step param is 1 by default.
-* `linspace` shape's param is left as a keyword-only argument and a `num` param has been added. 
-* Some parameters are positional-only and some others are keyword-only.
-* In `std`, `var`, `nanstd` and `nanvar` you can now choose the degrees of freedom adjustment with the `correction` keyword-only parameter.
-* `all` and `any` reductions have been added only for boolean data.
-* Type restrictions have been added to some functions and methods. For example, the trigonometric functions will only work with floating-point data arrays.
-* `add`, `divide`, `expm1`, `greater`, `greater_equal`, `less`, `less_equal`, `log1p`, `logaddexp`, `multiply`, `not_equal`, `positive`, `square` and `subtract` methods have been added.
-* If a function returned a Python scalar, now it will return a 0-dim IArray.
-* `__pos__`, `__neg__`, `__pow__`, `__bool__`, `__float__`, `__int__` methods have been added.
-
-For more info visit [ironArray documentation page](https://ironarray.io/docs/html/reference.html).
+* Adopted array [API standard](https://data-apis.org/array-api/latest/API_specification/index.html) (when possible), this includes the following changes:
+  * `astype` has been changed from method to function.
+  * `transpose` function was renamed to `matrix_transpose`.
+  * `size` attribute has been added.
+  * Mathematical functions cannot be used as methods.
+  * The trigonometric functions beginning with `arc*` can no longer be used; use `a*` instead.
+  * `absolute` has been renamed to `abs`.
+  * `negate` has been renamed to `negative`.
+  * `power` has been renamed to `pow`.
+  * `empty_like`, `ones_like`, `full_like`, `zeros_like`, and `asarray` constructors have been added.
+  * `arange` shape's param is left as a keyword-only argument and step param is 1 by default.
+  * `linspace` shape's param is left as a keyword-only argument and a `num` param has been added. 
+  * Before, all parameters could be positional or keyword parameters; now some parameters are positional-only and some others are keyword-only.
+  * In `std`, `var`, `nanstd` and `nanvar` you can now choose the degrees of freedom adjustment with the `correction` keyword-only parameter.
+  * `all` and `any` reductions have been added only for boolean data.
+  * Type restrictions have been added to some functions and methods. For example, the trigonometric functions will only work with floating-point data arrays.
+  * `add`, `divide`, `expm1`, `greater`, `greater_equal`, `less`, `less_equal`, `log1p`, `logaddexp`, `multiply`, `not_equal`, `positive`, `square` and `subtract` functions have been added.
+  * When previously a function returned a Python scalar, now it will return a 0-dim IArray.
+  * `__pos__`, `__neg__`, `__pow__`, `__bool__`, `__float__`, `__int__` methods have been added.
 
 
 Changes from 2022.1 to 2022.2
