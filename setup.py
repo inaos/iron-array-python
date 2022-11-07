@@ -69,7 +69,6 @@ else:
     # For some reason this is necessary for inplace compilation
     # One can avoid using this if we nuke _skbuild/ next to iarray/
     package_info = dict(
-        # package_dir={"": "."},  # this seems to create issues when building wheels locally
         packages=["iarray"],
     )
 

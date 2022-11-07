@@ -6,37 +6,30 @@ ironArray API tries to follow the [array_api](https://data-apis.org/array-api/la
 
 ### Operators
 
-* From the arithmetic operators, `__floordiv__` and `__mod__` are not supported yet.
+* Regarding the arithmetic operators, `__floordiv__` and `__mod__` are not supported yet.
 * The dtype of the result obtained in the comparison operators will be determined by the operands. If you would like to view the result as a specific dtype, you can set np_dtype of the result or when evaluating the lazy expression.
 * None of the in-place (arithmetic, array and bitwise) operators are supported yet. The arithmetic operators **could be implemented**.
-* From the reflected operators, `__rfloordiv__` and `__rmod__` are not supported yet.
+* Regarding the reflected operators, `__rfloordiv__` and `__rmod__` are not supported yet.
 * None of the bitwise operators are supported yet.
-* `self` must have two dimensions in `__matmul__`.
-* If arrays have more than 2 dimensions, `__matmul__` does not compute the multiplication from the last two dimensions.
-
-All the supported operators return a lazy expression, except for `__matmul__`, `__rmatmul__` and `__pos__`, which return an array.
-
-Broadcasting between arrays is not supported since the operands must have the same shape. The only exception to this rule is when one of the operands is a scalar, in which case it is promoted to the shape of the other array operand.
-
-Type promotion rules do not follow the standard since the operands must have the same dtype (**could be implemented**). The only exception to this rule is when one of the operand is a scalar, in which case it is casted to the dtype of the other array operand.
-
-The behaviour in special cases may also differ from the array API standard.
+* `__matmul__` will not work with arrays of more than 2 dimensions.
+* All the supported operators return a lazy expression, except for `__matmul__`, `__rmatmul__` and `__pos__`, which return an array.
+* Type promotion rules do not follow the standard since the operands must have the same dtype (**could be implemented**). The only exception to this rule is when one of the operand is a scalar, in which case it is casted to the dtype of the other array operand.
+* The behaviour in special cases may also differ from the array API standard.
 
 
 ### Attributes
 
 * `mT` is not supported yet.
-* Maximum `ndim` value supported is 8. 
+* Maximum `ndim` value supported is 8, but supporting more is just a parameter change and recompilation away."
 
 ### Methods
 
 * `__and__`, `__dlpack__`, `__dlpack_device__`, `__floordiv__`, `__invert__`, `__lshift__`, `__mod__`, `__or__`, `__rshift__`, `__xor__` and `to_device` are not supported yet. The rest of the methods from the array API not listed, and that must return an array, return instead a lazy expression which must be evaluated in order to obtain the result.
-
-The behaviour of some methods regarding `Nan` and `infinity` values is implementation defined and may not follow the standard.
+* The behaviour of some methods regarding `Nan` and `infinity` values is implementation defined and may not follow the standard.
 
 ## Broadcasting
 
-Broadcasting is only supported for scalars.
+Broadcasting is only supported for scalars, in which case the scalar is promoted to the shape of the other array operand.
 
 ## Creation Functions
 

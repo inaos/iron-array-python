@@ -811,18 +811,6 @@ def test_ufuncs(ufunc, ia_expr, xcontiguous, xurlpath):
         npout2 = ia.iarray2numpy(iout2)
         np.testing.assert_allclose(npout, npout2, rtol=tol, atol=tol)
 
-        # Lazy expression eval, but via numpy ufunc machinery
-        # TODO: the next ufuncs still have some problems with the numpy machinery (bug?)
-        # abs(x) : TypeError: bad operand type for abs(): 'IArray'
-        # ceil(x) : TypeError: must be real number, not IArray
-        # floor(x): TypeError: must be real number, not IArray
-        # negative(x) : TypeError: bad operand type for unary -: 'IArray'
-        # power(x,y) : TypeError: unsupported operand type(s) for ** or pow(): 'IArray' and 'IArray'
-        # if ufunc not in ("abs(x)", "ceil(x)", "floor(x)", "negative(x)", "power(x, y)"):
-        #     lazy_expr = eval("np." + ufunc, {"np": np, "x": x})
-        #     iout2 = lazy_expr.eval()
-        #     npout2 = ia.iarray2numpy(iout2)
-        # else:
         npout2 = eval("np." + ufunc, {"np": np, "x": x.data})
         np.testing.assert_allclose(npout, npout2, rtol=tol, atol=tol)
 
