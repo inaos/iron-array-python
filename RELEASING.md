@@ -4,31 +4,64 @@
 
 * Make sure that the current develop branch is passing the tests on Azure pipelines.
 
-* Make sure that `RELEASE-NOTES.md` and `ANNOUNCE.md` are up to date with
+* Make sure that `RELEASE-NOTES.md` and `ANNOUNCE.md` are up-to-date with
  the latest news in the release.
 
-* Re-run tutorials and benchmarks in the `iron-array-notebooks` submodule. This includes the benchmarks in `iron-array-notebooks/perf-history`.  Change first to the submodule and update it to the latest version:
+### Keep track of possible regressions
+
+* Re-run tutorials and benchmarks in the `iron-array-notebooks` submodule.
+  This includes the benchmarks in `iron-array-notebooks/perf-history`.
+  Change first to the submodule and update it to the latest version:
 ```
 cd iron-array-notebooks/
 git switch main
 git pull
 ```
 
-* Fix any possible change in the API or possible performance or memory consumption regressions you may detect.
+* Fix any possible change in the API or possible performance or memory consumption
+  regressions you may detect.
 
-* After completion, add the new `iron-array-notebooks/perf-history/perf-history.csv` file to the `iron-array-notebooks` repo:
+* After completion, add the new `iron-array-notebooks/perf-history/perf-history.csv`
+  file to the `iron-array-notebooks` repo:
 ```
 git commit perf-history/perf-history.csv -m "Getting ready for release X.Y.Z"
 git push
 ```
 
-* Push a tag in `iron-array-notebooks` so that the `.csv` file is renamed according to the tag in the `iron-array-notebooks`. The tag does not have to be the same as in `iron-array-python`.
+* Push a tag in `iron-array-notebooks` so that the `.csv` file is renamed according
+  to the tag in the `iron-array-notebooks`. The tag does not have to be the same as in
+  `iron-array-python`.
 ```
 git tag -a vX.Y.Z -m "Tagging version X.Y.Z"
 git push --tags
 ```
 
-* Go back to the top repo and check that `__version__` in `iarray/__init__.py` file contains the correct number.
+### Regenerate docs
+
+* Use this for generating docs:
+```
+cd doc
+PYTHONPATH=.. make html
+```
+
+* Create tar and check that everything is fine:
+```
+cd build
+tar cvfz /tmp/html-docs.tar.gz html
+tar xfvz html-docs.tar.gz
+open html/index.html
+```
+
+* Go to https://ironarray.io:2083 and then to `public_html/docs/` and:
+  * Remove `html.bck` dir.
+  * Move `html` dir to `html.bck`.
+  * Go home and extract the html doc tarball to `public_html/docs`.
+  * Finally, go check that new docs in https://ironarray.io/docs/html/ are correct.
+
+### Update the version and commit
+
+* Go back to the top repo and check that `__version__` in `iarray/__init__.py` file
+  contains the correct number.
 ```
 cd ..
 cat iarray/__init__.py
@@ -40,12 +73,10 @@ git commit -a -m "Getting ready for release X.Y.Z"
 git push
 ```
 
-* Check that the documentation has been correctly generated at https://ironarray.io/docs/html.
-
 
 ## Tagging
 
-* Create a signed tag ``X.Y.Z`` from ``develop``.  Use the next message:
+* Create a (signed) tag ``X.Y.Z`` from ``develop``.  Use the next message:
 ```
 git tag -a vX.Y.Z -m "Tagging version X.Y.Z"
 ```
@@ -56,12 +87,13 @@ git push
 git push --tags
 ```
 
-After the tag would be up, update the release notes in: https://github.com/ironArray/ironArray-support/releases
+After the tag would be up, update the release notes in:
+https://github.com/ironArray/ironArray-support/releases
 
-* Check that the wheels have been uploaded correctly to our PyPi server (distribution-ssh.ironarray.io).
+* Check that the wheels have been uploaded correctly to our PyPi server
+  (distribution-ssh.ironarray.io).
 
 * Test that the wheels can be correctly installed:
-
 ```
 pip install --index-url https://distribution.ironarray.io:443/simple iarray -U --force
 ```
