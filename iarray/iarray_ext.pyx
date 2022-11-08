@@ -1873,6 +1873,8 @@ reduce_to_c = {
     ia.Reduce.NAN_STD: ciarray.IARRAY_REDUCE_NAN_STD,
     ia.Reduce.NAN_VAR: ciarray.IARRAY_REDUCE_NAN_VAR,
     ia.Reduce.NAN_MEDIAN: ciarray.IARRAY_REDUCE_NAN_MEDIAN,
+    ia.Reduce.ALL: ciarray.IARRAY_REDUCE_ALL,
+    ia.Reduce.ANY: ciarray.IARRAY_REDUCE_ANY,
 }
 
 def reduce(cfg, a, method, axis, oneshot, correction):

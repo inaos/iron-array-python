@@ -1661,7 +1661,6 @@ def all(
     *,
     axis: Union[int, tuple] = None,
     keepdims: bool = False,
-    oneshot: bool = False,
     cfg: ia.Config = None,
     **kwargs,
 ):
@@ -1680,9 +1679,6 @@ def all(
     keepdims : bool
         Whether to keep the reduced axes in the result or not. The only supported value for this param is
         `False` (the default).
-    oneshot : bool
-        Enforce the use of the oneshot algorithm.  Oneshot normally uses less memory,
-        albeit is slower in general. Default is False.
     cfg : :class:`Config` or None
         The configuration for this operation. If None (default), the current configuration will be
         used.
@@ -1693,18 +1689,15 @@ def all(
     Returns
     -------
     all : :ref:`IArray`
-        The result is an array of dimension a.ndim - len(axis).
-        The `dtype` is always the `dtype` of :paramref:`a`.
+        The result is an array of dimension a.ndim - len(axis) with boolean dtype.
     """
     if keepdims:
         raise NotImplementedError("Keeping the original array dimensions is not supported yet")
-    if a.dtype not in _boolean_dtypes:
-        raise TypeError("Only boolean dtypes are allowed `all`")
     if cfg is None:
         cfg = a.cfg
         cfg.urlpath = None
     with ia.config(cfg=cfg) as cfg:
-        return reduce(a, ia.Reduce.MIN, axis, oneshot=oneshot, cfg=cfg, **kwargs)
+        return reduce(a, ia.Reduce.ALL, axis, oneshot=True, cfg=cfg, **kwargs)
 
 
 def any(
@@ -1713,7 +1706,6 @@ def any(
     *,
     axis: Union[int, tuple] = None,
     keepdims: bool = False,
-    oneshot: bool = False,
     cfg: ia.Config = None,
     **kwargs,
 ):
@@ -1732,9 +1724,6 @@ def any(
     keepdims : bool
         Whether to keep the reduced axes in the result or not. The only supported value for this param is
         `False` (the default).
-    oneshot : bool
-        Enforce the use of the oneshot algorithm.  Oneshot normally uses less memory,
-        albeit is slower in general. Default is False.
     cfg : :class:`Config` or None
         The configuration for this operation. If None (default), the current configuration will be
         used.
@@ -1745,18 +1734,15 @@ def any(
     Returns
     -------
     any : :ref:`IArray`
-        The result is an array of dimension a.ndim - len(axis).
-        The `dtype` is always the `dtype` of :paramref:`a`.
+        The result is an array of dimension a.ndim - len(axis) with boolean dtype.
     """
     if keepdims:
         raise NotImplementedError("Keeping the original array dimensions is not supported yet")
-    if a.dtype not in _boolean_dtypes:
-        raise TypeError("Only boolean dtypes are allowed in `any`")
     if cfg is None:
         cfg = a.cfg
         cfg.urlpath = None
     with ia.config(cfg=cfg) as cfg:
-        return reduce(a, ia.Reduce.MAX, axis, oneshot=oneshot, cfg=cfg, **kwargs)
+        return reduce(a, ia.Reduce.ANY, axis, oneshot=True, cfg=cfg, **kwargs)
 
 
 def max(

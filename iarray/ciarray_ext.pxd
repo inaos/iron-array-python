@@ -469,7 +469,9 @@ cdef extern from "libiarray/iarray.h":
         IARRAY_REDUCE_NAN_MEAN,
         IARRAY_REDUCE_NAN_VAR,
         IARRAY_REDUCE_NAN_STD,
-        IARRAY_REDUCE_NAN_MEDIAN
+        IARRAY_REDUCE_NAN_MEDIAN,
+        IARRAY_REDUCE_ALL,
+        IARRAY_REDUCE_ANY,
 
     ina_rc_t iarray_reduce(iarray_context_t *ctx,
                            iarray_container_t *a,
