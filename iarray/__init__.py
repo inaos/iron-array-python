@@ -44,7 +44,7 @@ if platform_system == "Linux":
         binding.load_library_permanently(os.path.join(install_dir, "libsvml.so"))
     lib0 = cdll.LoadLibrary(os.path.join(install_dir, "libiarray.so"))
 elif platform_system == "Darwin":
-    binding.load_library_permanently(os.path.join(install_dir, "libsvml.dylib"))
+    binding.load_library_permanently("libsvml.dylib")
     lib0 = cdll.LoadLibrary(os.path.join(install_dir, "libiarray.dylib"))
 else:
     binding.load_library_permanently(os.path.join(install_dir, "svml_dispmd.dll"))
