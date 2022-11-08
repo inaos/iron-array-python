@@ -428,8 +428,9 @@ def concatenate(shape: Sequence, data: list, cfg: ia.Config = None, **kwargs) ->
 def from_cframe(
     cframe: [bytes, bytearray], copy: bool = False, cfg: ia.Config = None, **kwargs
 ) -> ia.IArray:
-    """
-    Create an array from a cframe in bytes.
+    """Create an array from a cframe in bytes.
+
+   `cfg` and `kwargs` are the same as for :func:`empty`.
 
     Parameters
     ----------
@@ -437,8 +438,6 @@ def from_cframe(
         The cframe in bytes.
     copy: bool
         If `copy` is True, a copy is made.
-
-    cfg` and `kwargs` are the same as for :func:`empty`.
 
     Returns
     -------

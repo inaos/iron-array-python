@@ -15,3 +15,4 @@ Library Reference
    reference/linalg
    reference/expressions
    reference/udf
+   reference/array_api

@@ -1320,7 +1320,7 @@ def logaddexp(iarr1: IArray, iarr2: IArray, /):
     """
     Logarithm of the sum of exponentiations of the inputs.
 
-    Calculates `log(exp(iarr1) + exp(iarr2))`.
+    Calculates :math:`\\log(\\exp(iarr1) + \\exp(iarr2))`.
 
     Parameters
     ----------

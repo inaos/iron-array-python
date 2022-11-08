@@ -47,6 +47,7 @@ Methods
    IArray.append
    IArray.delete
    IArray.split
+   IArray.slice_chunk_index
    IArray.get_orthogonal_selection
    IArray.set_orthogonal_selection
 

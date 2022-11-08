@@ -1,4 +1,4 @@
-# ironArray API and divergences with the array API standard
+# Array API compliance and divergences
 
 ironArray API tries to follow the [array_api](https://data-apis.org/array-api/latest/API_specification/index.html) standard, but there may be some divergences.
 
@@ -79,7 +79,7 @@ None are supported yet.
 
 ## Utility functions
 
-`any` and `all` only accept bool dtype arrays. The parameter `keepdims` is not supported yet since ironArray never includes the reduced axes in the result.
+* The parameter `keepdims` is not supported yet since ironArray never includes the reduced axes in the result.
 
 ## Function and methods signatures
 

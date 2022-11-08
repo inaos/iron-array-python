@@ -352,8 +352,7 @@ class Config(ext.Config):
     random_gen : :class:`RandomGen`
         The random generator to be used.  The default is
         :py:obj:`RandomGen.MERSENNE_TWISTER <RandomGen>`.
-    dtype: (float64, float32, int64, int32, int16, int8, uint64, uint32, uint16,
-        uint8, bool)
+    dtype: (float64, float32, int64, int32, int16, int8, uint64, uint32, uint16, uint8, bool)
         The data type to use. The default is float64.
     np_dtype: bytes, str or np.dtype instance
         The array-protocol typestring of the np.dtype object to use. Default is None. If set, :paramref:`dtype`

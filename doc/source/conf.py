@@ -47,6 +47,7 @@ extensions = [
     "nbsphinx",
     "numpydoc",
     "sphinx_paramlinks",
+    "myst_parser",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
