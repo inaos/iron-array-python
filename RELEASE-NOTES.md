@@ -5,24 +5,36 @@ Changes from 2022.2 to 2022.3
 =============================
 
 * Adopted array [API standard](https://data-apis.org/array-api/latest/API_specification/index.html) (when possible), this includes the following changes:
-  * `astype` has been changed from method to function.
+  * `astype` has been changed from a method to a function.
   * `transpose` function was renamed to `matrix_transpose`.
-  * `size` attribute has been added.
-  * Mathematical functions cannot be used as methods.
+  * `size` has been added as an attribute of `IArray`.
+  * Mathematical functions cannot be used as methods anymore.
   * The trigonometric functions beginning with `arc*` can no longer be used; use `a*` instead.
   * `absolute` has been renamed to `abs`.
   * `negate` has been renamed to `negative`.
   * `power` has been renamed to `pow`.
   * `empty_like`, `ones_like`, `full_like`, `zeros_like`, and `asarray` constructors have been added.
-  * `arange` shape's param is left as a keyword-only argument and step param is 1 by default.
-  * `linspace` shape's param is left as a keyword-only argument and a `num` param has been added. 
+  * `arange`: param `shape` is left as a keyword-only argument and `step` param is 1 by default.
+  * `linspace`: param `shape` is left as a keyword-only argument and a `num` param has been added. 
   * Before, all parameters could be positional or keyword parameters; now some parameters are positional-only and some others are keyword-only.
   * In `std`, `var`, `nanstd` and `nanvar` you can now choose the degrees of freedom adjustment with the `correction` keyword-only parameter.
-  * `all` and `any` reductions have been added only for boolean data.
+  * `all` and `any` reductions have been added for all the supported types.
   * Type restrictions have been added to some functions and methods. For example, the trigonometric functions will only work with floating-point data arrays.
   * `add`, `divide`, `expm1`, `greater`, `greater_equal`, `less`, `less_equal`, `log1p`, `logaddexp`, `multiply`, `not_equal`, `positive`, `square` and `subtract` functions have been added.
-  * When previously a function returned a Python scalar, now it will return a 0-dim IArray.
   * `__pos__`, `__neg__`, `__pow__`, `__bool__`, `__float__`, `__int__` methods have been added.
+  * When a function used to return a Python scalar, it returns now a 0-dim IArray.
+
+* Fixed a crash when evaluating expressions with zarr proxies.
+
+* Reduction functions can take a new `oneshot` bool argument.  Oneshot algorithm normally uses less memory, albeit is slower in general. Default is False.
+
+* New `concatenate()` function for concatenating a list of one-chunk arrays into one with a specified shape.
+
+* New `from_cframe()` function for serializing an array into a cframe (`bytes` object).  This is useful to e.g. sending the data to workers. Complements the `IArray.to_cframe()` method.
+
+* New `IArray.split()` method for efficiently splitting an array into a list of one-chunk arrays.  You can use `concatenate()` function to assemble the parts later on.
+
+* New `IArray.slice_chunk_index()` method for getting slices on an array using plain chunk indices.
 
 
 Changes from 2022.1 to 2022.2
