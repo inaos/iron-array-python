@@ -38,6 +38,8 @@ params_data = [
         ("max", None),
         ("min", None),
         ("median", None),
+        ("all", None),
+        ("any", None),
         ("var", 0),
         ("var", 1),
         ("var", 10),
@@ -241,7 +243,7 @@ params_data = [
 
 
 @pytest.mark.parametrize(params_names, params_data)
-@pytest.mark.parametrize("rfunc", ["mean", "sum", "prod", "max", "min"])
+@pytest.mark.parametrize("rfunc", ["mean", "sum", "prod", "max", "min", "all", "any"])
 @pytest.mark.parametrize("contiguous", [True, False])
 @pytest.mark.parametrize("urlpath", [None, "test_reduce.iarr"])
 def test_red_type_view(shape, chunks, blocks, axis, dtype, view_dtype, rfunc, contiguous, urlpath):
@@ -252,11 +254,9 @@ def test_red_type_view(shape, chunks, blocks, axis, dtype, view_dtype, rfunc, co
     if (
         (view_dtype not in [np.float32, np.float64] and rfunc in ["mean", "var", "std"])
         or view_dtype == ia.bool
-        and rfunc in ["sum", "prod"]
+        and rfunc in ["sum", "prod", "max", "min"]
     ):
         pytest.skip("cannot compute this reduction with this dtype")
-    elif view_dtype == ia.bool and rfunc in ["max", "min"]:
-        rfunc = "any" if rfunc == "max" else "all"
     cfg = ia.Config(chunks=chunks, blocks=blocks, contiguous=contiguous, urlpath=urlpath)
     a1 = ia.linspace(0, 100, int(np.prod(shape)), shape=shape, dtype=dtype, cfg=cfg)
     a2 = ia.astype(a1, view_dtype)
@@ -294,6 +294,8 @@ params_data = [
         "median",
         "var",
         "std",
+        "all",
+        "any",
         "nanmean",
         "nansum",
         "nanprod",

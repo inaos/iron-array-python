@@ -144,6 +144,8 @@ class Reduce(Enum):
     NAN_VAR = 13
     NAN_STD = 14
     NAN_MEDIAN = 15
+    ALL = 16
+    ANY = 17
 
 
 # List of all know universal functions including NumPy aliases

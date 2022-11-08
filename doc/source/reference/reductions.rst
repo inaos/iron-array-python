@@ -14,6 +14,8 @@ the functions and methods involving reductions do return an :ref:`IArray` and no
    :toctree: autofiles/reductions/
    :nosignatures:
 
+   all
+   any
    max
    min
    sum
