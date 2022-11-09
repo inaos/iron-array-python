@@ -137,7 +137,7 @@ jobs:
       conda update --yes -n base -c defaults conda
       python -m pip install --upgrade pip
       python -m pip install --retries 3 -U -r requirements-build.txt
-      python -m pip install delocate==0.8.2
+      python -m pip install delocate
       conda install -y -c intel mkl-include
       conda install -y -c intel mkl-static
       conda install -y -c intel icc_rt
@@ -310,7 +310,7 @@ jobs:
       python -m pip install twine
       python -m twine upload -r iarray dist/*
     displayName: Deploy Wheel
-    
+
 # This is currently issuing the error: "Host key verification failed." for Linux/MacOSX
 # and complaining about "sshpass not found" on Win.  This requires more testing.
 #  - bash: |
