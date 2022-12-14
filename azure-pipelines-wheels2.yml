@@ -166,8 +166,8 @@ jobs:
         -DCMAKE_OSX_ARCHITECTURES:STRING=x86_64 \
         -DDISABLE_LLVM_CONFIG=True \
         -DLLVM_DIR=$CONDA/lib/cmake/llvm
-      delocate-listdeps ./dist/*.whl
-      delocate-wheel ./dist/*.whl
+      DYLD_FALLBACK_LIBRARY_PATH=iarray:$CONDA_PREFIX/lib delocate-listdeps ./dist/*.whl
+      DYLD_FALLBACK_LIBRARY_PATH=iarray:$CONDA_PREFIX/lib delocate-wheel ./dist/*.whl
     displayName: 'Build wheel'
     env:
       # The $(CONDA_PREFIX) does not exist on Azure pipelines.  $(CONDA) is fine.
